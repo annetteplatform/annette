@@ -1,0 +1,59 @@
+/*
+ * Copyright 2013 Valery Lobachev
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package biz.lobachev.annette.persons.impl
+
+import akka.{Done, NotUsed}
+import biz.lobachev.annette.core.elastic.FindResult
+import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.persons.api.PersonServiceApi
+import biz.lobachev.annette.persons.api.person._
+import biz.lobachev.annette.persons.impl.person.PersonEntityService
+import com.lightbend.lagom.scaladsl.api.ServiceCall
+
+class PersonServiceApiImpl(personEntityService: PersonEntityService) extends PersonServiceApi {
+
+  override def createPerson: ServiceCall[CreatePersonPayload, Done] =
+    ServiceCall { payload =>
+      personEntityService.createPerson(payload)
+    }
+
+  override def updatePerson: ServiceCall[UpdatePersonPayload, Done] =
+    ServiceCall { payload =>
+      personEntityService.updatePerson(payload)
+    }
+
+  override def deletePerson: ServiceCall[DeletePersonPayload, Done] =
+    ServiceCall { payload =>
+      personEntityService.deletePerson(payload)
+    }
+
+  override def getPersonById(id: PersonId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Person] =
+    ServiceCall { _ =>
+      personEntityService.getPersonById(id, fromReadSide)
+    }
+
+  override def getPersonsById(fromReadSide: Boolean): ServiceCall[Set[PersonId], Map[PersonId, Person]] =
+    ServiceCall { ids =>
+      personEntityService.getPersonsById(ids, fromReadSide)
+    }
+
+  override def findPersons: ServiceCall[PersonFindQuery, FindResult] =
+    ServiceCall { query =>
+      personEntityService.findPersons(query)
+    }
+
+}

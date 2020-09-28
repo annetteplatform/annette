@@ -1,0 +1,183 @@
+/*
+ * Copyright 2013 Valery Lobachev
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package biz.lobachev.annette.attributes.impl.assignment
+
+import java.util.concurrent.TimeUnit
+
+import akka.Done
+import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import akka.util.Timeout
+import biz.lobachev.annette.attributes.api.assignment._
+import biz.lobachev.annette.attributes.api.attribute_def.{AttributeDef, AttributeId, AttributeType}
+import biz.lobachev.annette.attributes.api.schema.{ActiveSchemaAttribute, SchemaAttributeId, SchemaId}
+import biz.lobachev.annette.core.model.AnnettePrincipal
+import com.typesafe.config.Config
+import org.slf4j.{Logger, LoggerFactory}
+
+import scala.collection.immutable.Map
+import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Try
+
+class AssignmentEntityService(
+  clusterSharding: ClusterSharding,
+  repository: AssignmentRepository,
+  config: Config
+)(implicit
+  ec: ExecutionContext
+) {
+
+  val log: Logger = LoggerFactory.getLogger(this.getClass)
+
+  implicit val timeout =
+    Try(config.getDuration("annette.timeout"))
+      .map(d => Timeout(FiniteDuration(d.toNanos, TimeUnit.NANOSECONDS)))
+      .getOrElse(Timeout(60.seconds))
+
+  private def refFor(id: AttributeAssignmentId): EntityRef[AssignmentEntity.Command] =
+    clusterSharding.entityRefFor(AssignmentEntity.typeKey, id.toComposed)
+
+  private def convertSuccess(confirmation: AssignmentEntity.Confirmation): Done =
+    confirmation match {
+      case AssignmentEntity.Success              => Done
+      case AssignmentEntity.AssignmentNotFound   => throw AssignmentNotFound()
+      case AssignmentEntity.InvalidAttributeType => throw InvalidAttributeType()
+      case _                                     => throw new RuntimeException("Match fail")
+    }
+
+  private def convertSuccessAttribute(confirmation: AssignmentEntity.Confirmation): AttributeAssignment =
+    confirmation match {
+      case AssignmentEntity.SuccessAttributeAssignment(attributeAssignment) => attributeAssignment
+      case AssignmentEntity.AssignmentNotFound                              => throw AssignmentNotFound()
+      case AssignmentEntity.InvalidAttributeType                            => throw InvalidAttributeType()
+      case _                                                                => throw new RuntimeException("Match fail")
+    }
+
+  def assignAttribute(
+    payload: AssignAttributePayload,
+    schemaAttribute: ActiveSchemaAttribute,
+    attributeDef: AttributeDef
+  ): Future[Done] =
+    validateAssignment(payload, attributeDef) match {
+      case Right(_)        =>
+        val indexAlias = schemaAttribute.index.map(_.alias)
+        refFor(payload.id)
+          .ask[AssignmentEntity.Confirmation](AssignmentEntity.AssignAttribute(payload, indexAlias, _))
+          .map(convertSuccess)
+      case Left(throwable) => Future.failed(throwable)
+    }
+
+  def validateAssignment(
+    payload: AssignAttributePayload,
+    attributeDef: AttributeDef
+  ): Either[Throwable, Done] =
+    payload.attribute match {
+      case StringAttribute(_)
+          if attributeDef.attributeType == AttributeType.String &&
+            attributeDef.allowedValues.isEmpty =>
+        Right(Done)
+      case StringAttribute(value)
+          if attributeDef.attributeType == AttributeType.String &&
+            attributeDef.allowedValues.isDefinedAt(value) =>
+        Right(Done)
+      case StringAttribute(_) if attributeDef.attributeType == AttributeType.String                 =>
+        Left(ValueNotAllowed())
+      case BooleanAttribute(_) if attributeDef.attributeType == AttributeType.Boolean               => Right(Done)
+      case LongAttribute(_) if attributeDef.attributeType == AttributeType.Long                     => Right(Done)
+      case DoubleAttribute(_) if attributeDef.attributeType == AttributeType.Double                 => Right(Done)
+      case OffsetDateTimeAttribute(_) if attributeDef.attributeType == AttributeType.OffsetDateTime => Right(Done)
+      case LocalDateAttribute(_) if attributeDef.attributeType == AttributeType.LocalDate           => Right(Done)
+      case LocalTimeAttribute(_) if attributeDef.attributeType == AttributeType.LocalTime           => Right(Done)
+      case _                                                                                        => Left(InvalidAttributeType())
+
+    }
+
+  def unassignAttribute(payload: UnassignAttributePayload, schemaAttribute: ActiveSchemaAttribute): Future[Done] = {
+    val indexAlias = schemaAttribute.index.map(_.alias)
+    refFor(payload.id)
+      .ask[AssignmentEntity.Confirmation](AssignmentEntity.UnassignAttribute(payload, indexAlias, _))
+      .map(convertSuccess)
+  }
+
+  def unassignAllAttributes(
+    schemaId: SchemaId,
+    attributeId: AttributeId,
+    updatedBy: AnnettePrincipal,
+    alias: String
+  ): Future[Done] =
+    for {
+      ids <- repository.getSchemaAttributeAssignmentIds(schemaId, attributeId)
+      _   <- Future.traverse(ids) { id =>
+               val payload = UnassignAttributePayload(id, updatedBy)
+               refFor(payload.id)
+                 .ask[AssignmentEntity.Confirmation](AssignmentEntity.UnassignAttribute(payload, Some(alias), _))
+             }
+    } yield Done
+
+  def getAssignmentById(
+    composedId: ComposedAssignmentId,
+    fromReadSide: Boolean
+  ): Future[AttributeAssignment] = {
+    val id = AttributeAssignmentId.fromComposed(composedId)
+    if (fromReadSide)
+      repository
+        .getAssignmentById(id)
+        .map(_.getOrElse(throw AssignmentNotFound()))
+    else
+      refFor(id)
+        .ask[AssignmentEntity.Confirmation](AssignmentEntity.GetAssignment(id, _))
+        .map(convertSuccessAttribute)
+  }
+
+  def getAssignmentsById(
+    composedIds: Set[ComposedAssignmentId],
+    fromReadSide: Boolean
+  ): Future[Map[ComposedAssignmentId, AttributeAssignment]] = {
+    val ids = composedIds.map(AttributeAssignmentId.fromComposed)
+    if (fromReadSide)
+      repository.getAssignmentsById(ids)
+    else
+      for {
+        schemas <- Future.traverse(ids) { id =>
+                     refFor(id)
+                       .ask[AssignmentEntity.Confirmation](AssignmentEntity.GetAssignment(id, _))
+                       .map {
+                         case AssignmentEntity.SuccessAttributeAssignment(attributeAssignment) =>
+                           Some(attributeAssignment)
+                         case _                                                                => None
+                       }
+                   }
+      } yield schemas.flatten.map(schema => schema.id.toComposed -> schema).toMap
+  }
+
+  def getObjectAssignments(composedId: ComposedAssignmentId): Future[Map[ComposedAssignmentId, AttributeAssignment]] = {
+    val id = ObjectAssignmentsId.fromComposed(composedId)
+    repository.getObjectAssignments(id)
+  }
+
+  def getAttributeAssignments(id: SchemaAttributeId): Future[Map[ComposedAssignmentId, AttributeAssignment]] =
+    repository.getAttributeAssignments(id)
+
+  def getAttributesWithAssignment(id: SchemaId, attributeIds: Seq[AttributeId]): Future[Set[AttributeId]] =
+    repository.getAttributesWithAssignment(id, attributeIds): Future[Set[AttributeId]]
+
+  def reindexAssignment(id: AttributeAssignmentId, indexAlias: String): Future[Done] =
+    refFor(id)
+      .ask[AssignmentEntity.Confirmation](AssignmentEntity.ReindexAssignment(id, indexAlias, _))
+      .map(convertSuccess)
+
+}

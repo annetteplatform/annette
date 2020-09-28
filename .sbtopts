@@ -1,0 +1,4 @@
+-J-Xms2G
+-J-Xmx8G
+-J-Xss32M
+-J-XX:MaxMetaspaceSize=2G

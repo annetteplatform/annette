@@ -1,0 +1,211 @@
+{
+  "id": "ANSOFT",
+  "name": "Annette Software",
+  "short-name": "Annette Software",
+  "type": "U",
+  "chief": "ANSOFT-CEO",
+  "children": [
+    {
+      "id": "ANSOFT-CEO",
+      "name": "Chief Executive Officer",
+      "short-name": "CEO",
+      "type": "P",
+      "limit": 1,
+      "person": "P0001"
+    },
+    {
+      "id": "ANSOFT-CA",
+      "name": "Chief Accountant",
+      "short-name": "Chief Accountant",
+      "type": "P",
+      "limit": 1,
+      "person": "P0002"
+    },
+    {
+      "id": "ANSOFT-SM",
+      "name": "Sales & Marketing Department",
+      "short-name": "S&M Dept.",
+      "type": "U",
+      "chief": "ANSOFT-SM-HEAD",
+      "children": [
+        {
+          "id": "ANSOFT-SM-HEAD",
+          "name": "Head of Sales & Marketing Dept.",
+          "short-name": "Head of S&M Dept.",
+          "type": "P",
+          "limit": 1,
+          "person": "P0003"
+        },
+        {
+          "id": "ANSOFT-SM-SM",
+          "name": "Sales Manager",
+          "short-name": "Sales Manager",
+          "type": "P",
+          "limit": 1,
+          "person": "P0004"
+        }
+      ]
+    },
+    {
+      "id": "ANSOFT-DEV",
+      "name": "Development Department",
+      "short-name": "DevelopmentDept.",
+      "type": "U",
+      "chief": "ANSOFT-DEV-CTO",
+      "children": [
+        {
+          "id": "ANSOFT-DEV-CTO",
+          "name": "Chief Technical Officer",
+          "short-name": "CTO",
+          "type": "P",
+          "limit": 1,
+          "person": "P0005"
+        },
+        {
+          "id": "ANSOFT-DEV-PM-1",
+          "name": "Project Manager",
+          "short-name": "PM",
+          "type": "P",
+          "limit": 1,
+          "person": "P0006"
+        },
+        {
+          "id": "ANSOFT-DEV-PM-2",
+          "name": "Project Manager",
+          "short-name": "PM",
+          "type": "P",
+          "limit": 1,
+          "person": "P0007"
+        },
+        {
+          "id": "ANSOFT-DEV-SBD-1",
+          "name": "Senior Backend Developer",
+          "short-name": "Sen. Backend Dev.",
+          "type": "P",
+          "limit": 1,
+          "person": "P0008"
+        },
+        {
+          "id": "ANSOFT-DEV-SBD-2",
+          "name": "Senior Backend Developer",
+          "short-name": "Sen. Backend Dev.",
+          "type": "P",
+          "limit": 1,
+          "person": "P0009"
+        },
+        {
+          "id": "ANSOFT-DEV-BD-1",
+          "name": "Backend Developer",
+          "short-name": "Backend Dev.",
+          "type": "P",
+          "limit": 1,
+          "person": "P0010"
+        },
+        {
+          "id": "ANSOFT-DEV-BD-2",
+          "name": "Backend Developer",
+          "short-name": "Backend Dev.",
+          "type": "P",
+          "limit": 1,
+          "person": "P0011"
+        },
+        {
+          "id": "ANSOFT-DEV-BD-3",
+          "name": "Backend Developer",
+          "short-name": "Backend Dev.",
+          "type": "P",
+          "limit": 1,
+          "person": "P0012"
+        },
+        {
+          "id": "ANSOFT-DEV-SFD-1",
+          "name": "Senior Frontend Developer",
+          "short-name": "Sen. Frontend Dev.",
+          "type": "P",
+          "limit": 1,
+          "person": "P0013"
+        },
+        {
+          "id": "ANSOFT-DEV-SFD-2",
+          "name": "Senior Frontend Developer",
+          "short-name": "Sen. Frontend Dev.",
+          "type": "P",
+          "limit": 1,
+          "person": "P0014"
+        },
+        {
+          "id": "ANSOFT-DEV-FD-1",
+          "name": "Frontend Developer",
+          "short-name": "Frontend Dev.",
+          "type": "P",
+          "limit": 1,
+          "person": "P0015"
+        },
+        {
+          "id": "ANSOFT-DEV-FD-2",
+          "name": "Frontend Developer",
+          "short-name": "Frontend Dev.",
+          "type": "P",
+          "limit": 1,
+          "person": "P0016"
+        },
+        {
+          "id": "ANSOFT-DEV-FD-3",
+          "name": "Frontend Developer",
+          "short-name": "Frontend Dev.",
+          "type": "P",
+          "limit": 1,
+          "person": "P0017"
+        },
+        {
+          "id": "ANSOFT-DEV-MD-1",
+          "name": "Mobile Developer",
+          "short-name": "Mobile Dev.",
+          "type": "P",
+          "limit": 1,
+          "person": "P0018"
+        },
+        {
+          "id": "ANSOFT-DEV-MD-2",
+          "name": "Mobile Developer",
+          "short-name": "Mobile Dev.",
+          "type": "P",
+          "limit": 1,
+          "person": "P0019"
+        },
+        {
+          "id": "ANSOFT-DEV-DES-1",
+          "name": "Designer",
+          "short-name": "Designer",
+          "type": "P",
+          "limit": 1,
+          "person": "P0020"
+        },
+        {
+          "id": "ANSOFT-DEV-DES-2",
+          "name": "Designer",
+          "short-name": "Designer",
+          "type": "P",
+          "limit": 1,
+          "person": "P0021"
+        },
+        {
+          "id": "ANSOFT-DEV-DEVOPS-1",
+          "name": "DevOps Engineer",
+          "short-name": "DevOps Engineer",
+          "type": "P",
+          "limit": 1,
+          "person": "P0022"
+        },
+        {
+          "id": "ANSOFT-DEV-DEVOPS-2",
+          "name": "DevOps Engineer",
+          "short-name": "DevOps Engineer",
+          "type": "P",
+          "limit": 1,
+          "person": "P0023"
+        }
+      ]
+    }
+  ]
+}
