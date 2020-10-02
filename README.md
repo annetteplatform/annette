@@ -1,6 +1,6 @@
 # Annette Platform Community Edition
 
-Annette Platform is a platform to build business application. It is designed to be highly available. 
+Annette Platform is a platform to build business applications. It is designed to be highly available. 
 Annette Platform is “cloud-native” as it has been designed scale out in large, distributed environments,
 and works well inside containers. It uses in-memory calculation and non-blocking processing 
 technologies to provide high performance. Annette Platform has been build on microservice architecture. 

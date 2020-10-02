@@ -1,15 +1,47 @@
 import com.typesafe.sbt.SbtNativePackager.autoImport.NativePackagerHelper._
-import com.typesafe.sbt.packager.docker.{Cmd, DockerChmodType}
+import com.typesafe.sbt.packager.docker.{DockerChmodType}
 import play.sbt.routes.RoutesKeys
-import sbt.Keys.sources
 
 scalaVersion := "2.13.3"
 maintainer := "valery@lobachev.biz"
 
-organization in ThisBuild := "biz.lobachev.annette"
-version in ThisBuild := "0.1.2"
-maintainer in ThisBuild := "valery@lobachev.biz"
+version in ThisBuild := "0.1.3"
 scalaVersion in ThisBuild := "2.13.3"
+
+maintainer in ThisBuild := "valery@lobachev.biz"
+
+ThisBuild / organization := "biz.lobachev.annette"
+ThisBuild / organizationName := "Valery Lobachev"
+ThisBuild / organizationHomepage := Some(url("https://lobachev.biz/"))
+
+ThisBuild / scmInfo := Some(
+  ScmInfo(
+    url("https://github.com/annetteplatform/annette"),
+    "scm:git@github.com:annetteplatform/annette.git"
+  )
+)
+ThisBuild / developers := List(
+  Developer(
+    id    = "valerylobachev",
+    name  = "Valery Lobachev",
+    email = "valery@lobachev.biz",
+    url   = url("https://lobachev.biz/")
+  )
+)
+
+ThisBuild / description := "Annette Platform Community Edition"
+ThisBuild / licenses := List("Apache-2.0" -> new URL("http://www.apache.org/licenses/LICENSE-2.0.txt"))
+ThisBuild / homepage := Some(url("https://github.com/annetteplatform/annette"))
+
+// Remove all additional repository other than Maven Central from POM
+ThisBuild / pomIncludeRepository := { _ => false }
+ThisBuild / publishTo := {
+  val nexus = "https://oss.sonatype.org/"
+  if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
+  else Some("releases" at nexus + "service/local/staging/deploy/maven2")
+}
+ThisBuild / publishMavenStyle := true
+
 
 // Use external Kafka
 lagomKafkaEnabled in ThisBuild := false
@@ -21,8 +53,6 @@ def annetteSettings: Seq[Setting[_]] =
   Seq(
     organizationName := "Valery Lobachev",
     startYear := Some(2013),
-    licenses += ("Apache-2.0", new URL("https://www.apache.org/licenses/LICENSE-2.0.txt")),
-    sources in (Compile, doc) := Seq.empty
   )
 
 def confDirSettings: Seq[Setting[_]] =
