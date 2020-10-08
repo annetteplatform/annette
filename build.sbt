@@ -5,7 +5,7 @@ import play.sbt.routes.RoutesKeys
 scalaVersion := "2.13.3"
 maintainer := "valery@lobachev.biz"
 
-version in ThisBuild := "0.1.3"
+version in ThisBuild := "0.1.4-SNAPSHOT"
 scalaVersion in ThisBuild := "2.13.3"
 
 maintainer in ThisBuild := "valery@lobachev.biz"
@@ -34,13 +34,13 @@ ThisBuild / licenses := List("Apache-2.0" -> new URL("http://www.apache.org/lice
 ThisBuild / homepage := Some(url("https://github.com/annetteplatform/annette"))
 
 // Remove all additional repository other than Maven Central from POM
-ThisBuild / pomIncludeRepository := { _ => false }
-ThisBuild / publishTo := {
-  val nexus = "https://oss.sonatype.org/"
-  if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
-  else Some("releases" at nexus + "service/local/staging/deploy/maven2")
-}
-ThisBuild / publishMavenStyle := true
+//ThisBuild / pomIncludeRepository := { _ => false }
+//ThisBuild / publishTo := {
+//  val nexus = "https://oss.sonatype.org/"
+//  if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
+//  else Some("releases" at nexus + "service/local/staging/deploy/maven2")
+//}
+//ThisBuild / publishMavenStyle := true
 
 
 // Use external Kafka
