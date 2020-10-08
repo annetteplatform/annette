@@ -85,6 +85,7 @@ POST    /api/annette/v1/person/deletePerson          biz.lobachev.annette.gatewa
 POST    /api/annette/v1/person/findPersons           biz.lobachev.annette.gateway.api.person.PersonController.findPersons
 GET     /api/annette/v1/person/getPersonById/:id/:fromReadSide        biz.lobachev.annette.gateway.api.person.PersonController.getPersonById(id: String, fromReadSide: Boolean)
 POST    /api/annette/v1/person/getPersonsById/:fromReadSide           biz.lobachev.annette.gateway.api.person.PersonController.getPersonsById(fromReadSide: Boolean)
+GET     /api/annette/v1/person/profile       biz.lobachev.annette.gateway.api.person.PersonController.profile
 
 
 
