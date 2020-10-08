@@ -49,7 +49,7 @@ class AnnetteErrorHandler extends HttpErrorHandler {
   def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = {
     log.error("Server error", exception)
     exception match {
-      case ex: AnnetteTransportException => Future.successful(Status(ex.errorCode.http)(Json.toJson(ex.toMessage)))
+      case ex: AnnetteTransportException => Future.successful(Status(ex.errorCode.http)(Json.toJson(ex.errorMessage)))
       case ex: AnnetteException          => Future.successful(Status(ex.errorMessage.errorCode)(Json.toJson(ex.errorMessage)))
       case ex: TransportException        => Future.successful(Status(ex.errorCode.http)(Json.toJson(ex.exceptionMessage.name)))
       case th: Throwable                 =>

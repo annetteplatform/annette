@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.core.exception
 
-import biz.lobachev.annette.core.message.{AnnetteMessage, ErrorMessage}
+import biz.lobachev.annette.core.message.ErrorMessage
 import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
 
 case class AnnetteTransportException(
@@ -24,7 +24,7 @@ case class AnnetteTransportException(
   code: String,
   params: Map[String, String] = Map.empty
 ) extends RuntimeException(AnnetteTransportException.toMessageString(errorCode, code, params)) {
-  def toMessage: AnnetteMessage = ErrorMessage(code, params, errorCode.http)
+  def errorMessage = ErrorMessage(code, params, errorCode.http)
 }
 
 object AnnetteTransportException {
