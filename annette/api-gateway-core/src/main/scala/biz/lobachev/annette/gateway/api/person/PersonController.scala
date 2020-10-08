@@ -18,6 +18,7 @@ package biz.lobachev.annette.gateway.api.person
 
 import biz.lobachev.annette.core.model.{DescendantUnitPrincipal, DirectUnitPrincipal, PersonId, UnitChiefPrincipal}
 import biz.lobachev.annette.gateway.api.person.Permissions._
+import biz.lobachev.annette.gateway.api.person.dto._
 import biz.lobachev.annette.gateway.core.authentication.{AuthenticatedAction, AuthenticatedRequest}
 import biz.lobachev.annette.gateway.core.authorization.Authorizer
 import biz.lobachev.annette.org_structure.api.OrgStructureService
@@ -28,6 +29,7 @@ import biz.lobachev.annette.persons.api.person.{
   PersonFindQuery,
   UpdatePersonPayload
 }
+import io.scalaland.chimney.dsl._
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}
@@ -47,8 +49,11 @@ class PersonController @Inject() (
   // private val log = LoggerFactory.getLogger(this.getClass)
 
   def createPerson =
-    authenticated.async(parse.json[CreatePersonPayload]) { implicit request =>
+    authenticated.async(parse.json[CreatePersonPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[CreatePersonPayload]
+        .withFieldConst(_.createdBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainPerson(payload.id)) {
         for {
           _      <- personService.createPerson(payload)
@@ -58,8 +63,11 @@ class PersonController @Inject() (
     }
 
   def updatePerson =
-    authenticated.async(parse.json[UpdatePersonPayload]) { implicit request =>
+    authenticated.async(parse.json[UpdatePersonPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[UpdatePersonPayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainPerson(payload.id)) {
         for {
           _      <- personService.updatePerson(payload)
@@ -69,8 +77,11 @@ class PersonController @Inject() (
     }
 
   def deletePerson =
-    authenticated.async(parse.json[DeletePersonPayload]) { implicit request =>
+    authenticated.async(parse.json[DeletePersonPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[DeletePersonPayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainPerson(payload.id)) {
         for {
           _ <- personService.deletePerson(payload)
@@ -104,6 +115,14 @@ class PersonController @Inject() (
         } yield Ok(Json.toJson(result))
       }
 
+    }
+
+  def profile =
+    authenticated.async { implicit request =>
+      val id = request.subject.principals.head.principalId
+      for {
+        person <- personService.getPersonById(id, true)
+      } yield Ok(Json.toJson(person))
     }
 
   private def canMaintainPerson[A](personId: PersonId)(implicit request: AuthenticatedRequest[A]): Future[Boolean] =

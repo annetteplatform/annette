@@ -17,6 +17,7 @@
 package biz.lobachev.annette.persons.api.person
 
 import biz.lobachev.annette.attributes.api.query.AttributeQuery
+import biz.lobachev.annette.core.elastic.SortBy
 import play.api.libs.json.{Format, Json}
 
 object PersonSortField extends Enumeration {
@@ -49,7 +50,7 @@ case class PersonFindQuery(
   phone: Option[String] = None,       //search in phone
   email: Option[String] = None,       //search in email
   attributes: Option[AttributeQuery] = None,
-  sortBy: Option[PersonSortBy] = None //sort results by field provided
+  sortBy: Option[Seq[SortBy]] = None //sort results by field provided
 )
 
 object PersonFindQuery {

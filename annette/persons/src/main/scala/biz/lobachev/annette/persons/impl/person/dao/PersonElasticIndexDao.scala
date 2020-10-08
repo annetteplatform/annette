@@ -26,7 +26,7 @@ import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.analysis.{Analysis, CustomAnalyzer, EdgeNGramTokenizer}
 import com.sksamuel.elastic4s.requests.common.RefreshPolicy
 import com.sksamuel.elastic4s.requests.indexes.CreateIndexRequest
-import com.sksamuel.elastic4s.requests.searches.sort.{FieldSort, SortOrder}
+import com.sksamuel.elastic4s.requests.searches.sort.FieldSort
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -134,7 +134,7 @@ class PersonElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Ela
       query.filter,
       Seq("lastname" -> 3.0, "firstname" -> 2.0, "middlename" -> 1.0, "email" -> 3.0, "phone" -> 1.0)
     )
-    val sortBy: Seq[FieldSort] = buildSortBy(query)
+    val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
     val attributeQuery         = buildAttributeQuery(query.attributes)
 
     val searchRequest = search(indexName)
@@ -151,32 +151,4 @@ class PersonElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Ela
 
   }
 
-  private def buildSortBy(query: PersonFindQuery) =
-    query.sortBy.map { sortBy =>
-      val sortOrder =
-        if (sortBy.ascending) SortOrder.Asc
-        else SortOrder.Desc
-      sortBy.field match {
-        case PersonSortField.Lastname  =>
-          Seq(
-            FieldSort("lastname.keyword", order = sortOrder),
-            FieldSort("firstname.keyword", order = sortOrder),
-            FieldSort("middlename.keyword", order = sortOrder)
-          )
-        case PersonSortField.Firstname =>
-          Seq(
-            FieldSort("firstname.keyword", order = sortOrder),
-            FieldSort("lastname.keyword", order = sortOrder),
-            FieldSort("middlename.keyword", order = sortOrder)
-          )
-        case PersonSortField.Email     =>
-          Seq(
-            FieldSort("email.keyword", order = sortOrder)
-          )
-        case PersonSortField.Phone     =>
-          Seq(
-            FieldSort("phone.keyword", order = sortOrder)
-          )
-      }
-    }.getOrElse(Seq.empty)
 }

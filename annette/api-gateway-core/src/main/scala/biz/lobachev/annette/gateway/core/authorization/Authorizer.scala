@@ -55,6 +55,11 @@ trait Authorizer {
   )(action: => Future[B])(implicit request: AuthenticatedRequest[A]): Future[B] =
     for {
       isAuthorized <- checkAny(permissions: _*)
+      _ = {
+        println(permissions)
+        println(isAuthorized)
+        println(request.subject)
+      }
       result       <- if (isAuthorized) action
                       else Future.failed(AuthorizationFailedException())
     } yield result
