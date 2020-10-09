@@ -49,7 +49,7 @@ class PersonController @Inject() (
   // private val log = LoggerFactory.getLogger(this.getClass)
 
   def createPerson =
-    authenticated.async(parse.json[CreatePersonPayloadDto]) { implicit request =>
+    authenticated.async(parse.json[PersonPayloadDto]) { implicit request =>
       val payload = request.body
         .into[CreatePersonPayload]
         .withFieldConst(_.createdBy, request.subject.principals.head)
@@ -63,7 +63,7 @@ class PersonController @Inject() (
     }
 
   def updatePerson =
-    authenticated.async(parse.json[UpdatePersonPayloadDto]) { implicit request =>
+    authenticated.async(parse.json[PersonPayloadDto]) { implicit request =>
       val payload = request.body
         .into[UpdatePersonPayload]
         .withFieldConst(_.updatedBy, request.subject.principals.head)

@@ -14,20 +14,23 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.gateway.api.person.dto
+package biz.lobachev.annette.gateway.api.authorization.dto
 
-import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.authorization.api.role.AuthRoleId
+import biz.lobachev.annette.core.model.Permission
 import play.api.libs.json.Json
 
-case class UpdatePersonPayloadDto(
-  id: PersonId, // person id
-  lastname: String, // last name of the person
-  firstname: String, // first name
-  middlename: Option[String], // middle name
-  phone: Option[String], // phone
-  email: Option[String], // email
+case class RolePayloadDto(
+  id: AuthRoleId,
+  name: String,
+  description: String,
+  permissions: Set[Permission],
 )
 
-object UpdatePersonPayloadDto {
-  implicit val format = Json.format[UpdatePersonPayloadDto]
+
+object RolePayloadDto {
+  implicit val format = Json.format[RolePayloadDto]
 }
+
+
+

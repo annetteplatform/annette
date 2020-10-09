@@ -20,13 +20,15 @@ import biz.lobachev.annette.authorization.api.AuthorizationService
 import biz.lobachev.annette.authorization.api.assignment.FindAssignmentsQuery
 import biz.lobachev.annette.authorization.api.role._
 import biz.lobachev.annette.gateway.api.authorization.Permissions._
+import biz.lobachev.annette.gateway.api.authorization.dto.{DeleteRolePayloadDto, RolePayloadDto}
 import biz.lobachev.annette.gateway.core.authentication.AuthenticatedAction
 import biz.lobachev.annette.gateway.core.authorization.Authorizer
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json
-import play.api.mvc.{AbstractController, Action, ControllerComponents}
+import play.api.mvc.{AbstractController, ControllerComponents}
 
 import scala.concurrent.ExecutionContext
+import io.scalaland.chimney.dsl._
 
 @Singleton
 class AuthorizationController @Inject() (
@@ -39,10 +41,13 @@ class AuthorizationController @Inject() (
 
   // private val log = LoggerFactory.getLogger(this.getClass)
 
-  def createRole: Action[CreateRolePayload] =
-    authenticated.async(parse.json[CreateRolePayload]) { implicit request =>
+  def createRole =
+    authenticated.async(parse.json[RolePayloadDto]) { implicit request =>
       authorizer.performCheckAll(MAINTAIN_AUTHORIZATION_ROLE) {
         val payload = request.body
+          .into[CreateRolePayload]
+          .withFieldConst(_.createdBy, request.subject.principals.head)
+          .transform
         for {
           _    <- authorizationService.createRole(payload)
           role <- authorizationService.getRoleById(payload.id, false)
@@ -51,9 +56,12 @@ class AuthorizationController @Inject() (
     }
 
   def updateRole =
-    authenticated.async(parse.json[UpdateRolePayload]) { implicit request =>
+    authenticated.async(parse.json[RolePayloadDto]) { implicit request =>
       authorizer.performCheckAll(MAINTAIN_AUTHORIZATION_ROLE) {
         val payload = request.body
+          .into[UpdateRolePayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
         for {
           _    <- authorizationService.updateRole(payload)
           role <- authorizationService.getRoleById(payload.id, false)
@@ -62,9 +70,12 @@ class AuthorizationController @Inject() (
     }
 
   def deleteRole =
-    authenticated.async(parse.json[DeleteRolePayload]) { implicit request =>
+    authenticated.async(parse.json[DeleteRolePayloadDto]) { implicit request =>
       authorizer.performCheckAll(MAINTAIN_AUTHORIZATION_ROLE) {
         val payload = request.body
+          .into[DeleteRolePayload]
+          .withFieldConst(_.deletedBy, request.subject.principals.head)
+          .transform
         for {
           _ <- authorizationService.deleteRole(payload)
         } yield Ok("")
