@@ -22,5 +22,4 @@ object Permissions {
   final val MAINTAIN_ALL_APPLICATIONS = Permission("annette.application.application.maintain.all")
   final val MAINTAIN_ALL_TRANSLATIONS = Permission("annette.application.translation.maintain.all")
   final val MAINTAIN_ALL_LANGUAGES    = Permission("annette.application.language.maintain.all")
-
 }

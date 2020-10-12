@@ -20,7 +20,7 @@ import biz.lobachev.annette.authorization.api.AuthorizationService
 import biz.lobachev.annette.authorization.api.assignment.FindAssignmentsQuery
 import biz.lobachev.annette.authorization.api.role._
 import biz.lobachev.annette.gateway.api.authorization.Permissions._
-import biz.lobachev.annette.gateway.api.authorization.dto.{DeleteRolePayloadDto, RolePayloadDto}
+import biz.lobachev.annette.gateway.api.authorization.dto.{DeleteRolePayloadDto, RolePayloadDto, RolePrincipalPayload}
 import biz.lobachev.annette.gateway.core.authentication.AuthenticatedAction
 import biz.lobachev.annette.gateway.core.authorization.Authorizer
 import javax.inject.{Inject, Singleton}
@@ -95,7 +95,6 @@ class AuthorizationController @Inject() (
   def getRoleById(id: AuthRoleId, fromReadSide: Boolean) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(VIEW_AUTHORIZATION_ROLE, MAINTAIN_AUTHORIZATION_ROLE) {
-        println(fromReadSide)
         for {
           role <- authorizationService.getRoleById(id, fromReadSide)
         } yield Ok(Json.toJson(role))
@@ -113,9 +112,12 @@ class AuthorizationController @Inject() (
     }
 
   def assignPrincipal =
-    authenticated.async(parse.json[AssignPrincipalPayload]) { implicit request =>
+    authenticated.async(parse.json[RolePrincipalPayload]) { implicit request =>
       authorizer.performCheckAll(MAINTAIN_ROLE_PRINCIPALS) {
         val payload = request.body
+          .into[AssignPrincipalPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
         for {
           _ <- authorizationService.assignPrincipal(payload)
         } yield Ok("")
@@ -123,9 +125,12 @@ class AuthorizationController @Inject() (
     }
 
   def unassignPrincipal =
-    authenticated.async(parse.json[UnassignPrincipalPayload]) { implicit request =>
+    authenticated.async(parse.json[RolePrincipalPayload]) { implicit request =>
       authorizer.performCheckAll(MAINTAIN_ROLE_PRINCIPALS) {
         val payload = request.body
+          .into[UnassignPrincipalPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
         for {
           _ <- authorizationService.unassignPrincipal(payload)
         } yield Ok("")
