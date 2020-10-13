@@ -41,6 +41,7 @@ POST    /api/annette/v1/authorization/getRolesById/:fromReadSide           biz.l
 POST    /api/annette/v1/authorization/assignPrincipal     biz.lobachev.annette.gateway.api.authorization.AuthorizationController.assignPrincipal
 POST    /api/annette/v1/authorization/unassignPrincipal   biz.lobachev.annette.gateway.api.authorization.AuthorizationController.unassignPrincipal
 GET     /api/annette/v1/authorization/getRolePrincipals/:id/:fromReadSide  biz.lobachev.annette.gateway.api.authorization.AuthorizationController.getRolePrincipals(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/authorization/findAssignments     biz.lobachev.annette.gateway.api.authorization.AuthorizationController.findAssignments
 
 
 # OrgStructure API
