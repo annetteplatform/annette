@@ -59,7 +59,7 @@ private[impl] class SchemaIndexEventProcessor(
       _             <- indexEntityService.createIndexAttribute(
                          id = id,
                          attributeType = attributeType,
-                         textContentIndex = event.textContentIndex,
+                         index = event.index.toAttributeIndex(event.attributeId),
                          fieldName = fieldName
                        )
     } yield {

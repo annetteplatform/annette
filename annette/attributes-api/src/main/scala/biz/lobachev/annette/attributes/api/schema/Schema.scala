@@ -24,10 +24,10 @@ import play.api.libs.json.Json
 case class Schema(
   id: SchemaId,
   name: String,
-  activeAttributes: Map[AttributeId, ActiveSchemaAttribute] = Map.empty,
+  activeAttributes: Map[AttributeId, Attribute] = Map.empty,
   activatedAt: Option[OffsetDateTime] = None,
   activatedBy: Option[AnnettePrincipal] = None,
-  preparedAttributes: Map[AttributeId, PreparedSchemaAttribute] = Map.empty,
+  preparedAttributes: Map[AttributeId, PreparedAttribute] = Map.empty,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal,
   usedAliases: Map[AttributeId, Int] = Map.empty

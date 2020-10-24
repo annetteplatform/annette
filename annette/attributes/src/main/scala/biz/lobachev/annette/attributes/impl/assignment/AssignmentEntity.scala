@@ -70,7 +70,7 @@ object AssignmentEntity {
 
   final case class AttributeAssigned(
     id: AttributeAssignmentId,
-    attribute: Attribute,
+    attribute: AttributeValue,
     indexAlias: Option[String],
     updatedAt: OffsetDateTime = OffsetDateTime.now(),
     updatedBy: AnnettePrincipal
@@ -83,7 +83,7 @@ object AssignmentEntity {
   ) extends Event
   final case class AssignmentReindexed(
     id: AttributeAssignmentId,
-    attribute: Attribute,
+    attribute: AttributeValue,
     indexAlias: String,
     updatedAt: OffsetDateTime = OffsetDateTime.now(),
     updatedBy: AnnettePrincipal

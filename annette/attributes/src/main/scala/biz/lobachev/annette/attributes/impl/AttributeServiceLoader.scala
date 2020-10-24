@@ -23,6 +23,7 @@ import biz.lobachev.annette.attributes.impl.assignment._
 import biz.lobachev.annette.attributes.impl.attribute_def._
 import biz.lobachev.annette.attributes.impl.index.{IndexEntity, IndexEntityService, IndexSerializerRegistry}
 import biz.lobachev.annette.attributes.impl.schema._
+import biz.lobachev.annette.attributes.impl.schema.model.SchemaSerializerRegistry
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.core.elastic.ElasticModule
 import com.lightbend.lagom.scaladsl.api.LagomConfigComponent

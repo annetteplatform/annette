@@ -20,9 +20,9 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
-import biz.lobachev.annette.attributes.api.assignment.{Attribute, ObjectId}
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeType
-import biz.lobachev.annette.attributes.api.schema.SchemaAttributeId
+import biz.lobachev.annette.attributes.api.assignment.{AttributeValue, ObjectId}
+import biz.lobachev.annette.attributes.api.attribute_def.AttributeValueType
+import biz.lobachev.annette.attributes.api.schema.{AttributeIndex, SchemaAttributeId}
 import com.lightbend.lagom.scaladsl.persistence._
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
@@ -34,8 +34,8 @@ object IndexEntity {
   sealed trait Command extends CommandSerializable
   final case class CreateIndexAttribute(
     id: SchemaAttributeId,
-    attributeType: AttributeType.AttributeType,
-    textContentIndex: Boolean,
+    attributeType: AttributeValueType.AttributeValueType,
+    index: AttributeIndex,
     fieldName: String,
     replyTo: ActorRef[Confirmation]
   )                    extends Command
@@ -44,7 +44,7 @@ object IndexEntity {
   final case class AssignIndexAttribute(
     id: SchemaAttributeId,
     objectId: ObjectId,
-    attribute: Attribute,
+    attribute: AttributeValue,
     fieldName: String,
     replyTo: ActorRef[Confirmation]
   )                    extends Command
@@ -71,15 +71,15 @@ object IndexEntity {
 
   final case class IndexAttributeCreated(
     id: SchemaAttributeId,
-    attributeType: AttributeType.AttributeType,
-    textContentIndex: Boolean,
+    attributeType: AttributeValueType.AttributeValueType,
+    index: AttributeIndex,
     fieldName: String
   )                                                                                                       extends Event
   final case class IndexAttributeRemoved(id: SchemaAttributeId, fieldName: String)                        extends Event
   final case class IndexAttributeAssigned(
     id: SchemaAttributeId,
     objectId: ObjectId,
-    attribute: Attribute,
+    attribute: AttributeValue,
     fieldName: String
   )                                                                                                       extends Event
   final case class IndexAttributeUnassigned(id: SchemaAttributeId, objectId: ObjectId, fieldName: String) extends Event

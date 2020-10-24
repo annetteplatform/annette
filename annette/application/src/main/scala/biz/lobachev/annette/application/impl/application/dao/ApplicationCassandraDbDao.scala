@@ -20,9 +20,9 @@ import java.time.OffsetDateTime
 
 import akka.Done
 import biz.lobachev.annette.application.api.application._
-import biz.lobachev.annette.application.api.translation.{Caption, TextCaption, TranslationCaption}
 import biz.lobachev.annette.application.impl.application.ApplicationEntity
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model
+import biz.lobachev.annette.core.model.{AnnettePrincipal, Caption, TextCaption, TranslationCaption}
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 import org.slf4j.LoggerFactory
@@ -73,7 +73,7 @@ private[impl] class ApplicationCassandraDbDao(session: CassandraSession)(implici
                                    |      server_url            ,
                                    |      updated_at            ,
                                    |      updated_by_type       ,
-                                   |      updated_by_id         
+                                   |      updated_by_id
                                    |     )
                                    |   VALUES (
                                    |      :id                    ,
@@ -84,8 +84,8 @@ private[impl] class ApplicationCassandraDbDao(session: CassandraSession)(implici
                                    |      :server_url            ,
                                    |      :updated_at            ,
                                    |      :updated_by_type       ,
-                                   |      :updated_by_id          
-                                   |     )  
+                                   |      :updated_by_id
+                                   |     )
                                    |""".stripMargin
                                            )
       updateApplicationNameStmt         <- session.prepare(
@@ -94,7 +94,7 @@ private[impl] class ApplicationCassandraDbDao(session: CassandraSession)(implici
                                        |   name = :name,
                                        |   updated_at = :updated_at,
                                        |   updated_by_type = :updated_by_type,
-                                       |   updated_by_id = :updated_by_id   
+                                       |   updated_by_id = :updated_by_id
                                        | WHERE id = :id
                                        |""".stripMargin
                                            )
@@ -125,7 +125,7 @@ private[impl] class ApplicationCassandraDbDao(session: CassandraSession)(implici
                                             |   server_url = :server_url,
                                             |   updated_at = :updated_at,
                                             |   updated_by_type = :updated_by_type,
-                                            |   updated_by_id = :updated_by_id             
+                                            |   updated_by_id = :updated_by_id
                                             | WHERE id = :id
                                             |""".stripMargin
                                            )
@@ -239,7 +239,7 @@ private[impl] class ApplicationCassandraDbDao(session: CassandraSession)(implici
   def convertApplication(row: Row): Application = {
     val caption: Caption = Option(row.getString("caption_text"))
       .map(t => TextCaption(t))
-      .getOrElse(TranslationCaption(row.getString("caption_translation_id")))
+      .getOrElse(model.TranslationCaption(row.getString("caption_translation_id")))
     Application(
       id = row.getString("id"),
       name = row.getString("name"),

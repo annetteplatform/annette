@@ -22,7 +22,7 @@ import play.api.libs.json.Json
 case class CreateSchemaPayload(
   id: SchemaId,
   name: String,
-  preparedAttributes: Set[PreparedSchemaAttribute] = Set.empty,
+  preparedAttributes: Set[PreparedAttribute] = Set.empty,
   updatedBy: AnnettePrincipal
 )
 

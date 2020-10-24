@@ -70,9 +70,6 @@ class SchemaElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Ela
         .refresh(RefreshPolicy.Immediate)
     }.map(processResponse("onSchemaNameUpdated", event.id.toComposed)(_))
 
-  def updateActiveAttributeName(event: SchemaEntity.ActiveAttributeNameUpdated): Future[Unit] =
-    updateTimestamp(event.id.toComposed, event.updatedAt, "updateActiveAttributeName")
-
   def createActiveAttribute(event: SchemaEntity.ActiveAttributeCreated): Future[Unit] =
     updateTimestamp(event.id.toComposed, event.activatedAt, "createActiveAttribute")
 

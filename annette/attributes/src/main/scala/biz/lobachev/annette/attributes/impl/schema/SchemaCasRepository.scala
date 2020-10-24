@@ -21,10 +21,11 @@ import java.time.OffsetDateTime
 import akka.Done
 import biz.lobachev.annette.attributes.api.attribute_def.AttributeId
 import biz.lobachev.annette.attributes.api.schema._
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.{AnnettePrincipal, Caption}
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 import org.slf4j.LoggerFactory
+import play.api.libs.json.Json
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -32,20 +33,19 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
 
   val log = LoggerFactory.getLogger(this.getClass)
 
-  private var onSchemaCreatedStatement: PreparedStatement              = _
-  private var onSchemaNameUpdatedStatement: PreparedStatement          = _
-  private var updateUpdatedStatement: PreparedStatement                = _
-  private var updateActivatedStatement: PreparedStatement              = _
-  private var onActiveAttributeNameUpdatedStatement: PreparedStatement = _
-  private var onActiveAttributeCreatedStatement: PreparedStatement     = _
-  private var onActiveAttributeUpdatedStatement: PreparedStatement     = _
-  private var onActiveAttributeRemovedStatement: PreparedStatement     = _
-  private var onPreparedAttributeCreatedStatement: PreparedStatement   = _
-  private var onPreparedAttributeUpdatedStatement: PreparedStatement   = _
-  private var onPreparedAttributeRemovedStatement: PreparedStatement   = _
-  private var onSchemaDeletedStatement: PreparedStatement              = _
-  private var preparedAttributesRemoveStatement: PreparedStatement     = _
-  private var activeAttributesRemoveStatement: PreparedStatement       = _
+  private var onSchemaCreatedStatement: PreparedStatement            = _
+  private var onSchemaNameUpdatedStatement: PreparedStatement        = _
+  private var updateUpdatedStatement: PreparedStatement              = _
+  private var updateActivatedStatement: PreparedStatement            = _
+  private var onActiveAttributeCreatedStatement: PreparedStatement   = _
+  private var onActiveAttributeUpdatedStatement: PreparedStatement   = _
+  private var onActiveAttributeRemovedStatement: PreparedStatement   = _
+  private var onPreparedAttributeCreatedStatement: PreparedStatement = _
+  private var onPreparedAttributeUpdatedStatement: PreparedStatement = _
+  private var onPreparedAttributeRemovedStatement: PreparedStatement = _
+  private var onSchemaDeletedStatement: PreparedStatement            = _
+  private var preparedAttributesRemoveStatement: PreparedStatement   = _
+  private var activeAttributesRemoveStatement: PreparedStatement     = _
 
   def createTables(): Future[Unit] =
     for {
@@ -71,10 +71,8 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
                |          attribute_id       text,
                |          name               text,
                |          caption            text,
-               |          attribute_def_id   text,
-               |          indexed              boolean,
-               |          text_content_index   boolean,
-               |          alias_no           int,
+               |          attribute_type     text,
+               |          index              text,
                |          PRIMARY KEY (id, attribute_id)
                |)
                |""".stripMargin
@@ -86,9 +84,8 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
                |          attribute_id       text,
                |          name               text,
                |          caption            text,
-               |          attribute_def_id   text,  
-               |          indexed              boolean,
-               |          text_content_index   boolean,
+               |          attribute_type     text,
+               |          index              text,
                |          PRIMARY KEY (id, attribute_id)
                |)
                |""".stripMargin
@@ -97,8 +94,8 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
 
   def prepareStatements(): Future[Done] = {
     for {
-      onSchemaCreatedStmt              <- session.prepare(
-                                            """
+      onSchemaCreatedStmt            <- session.prepare(
+                                          """
                                  | INSERT INTO schemas (
                                  |   id                ,
                                  |   name              ,
@@ -114,9 +111,9 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
                                  |   :updated_by_id
                                  | )
                                  |""".stripMargin
-                                          )
-      onSchemaNameUpdatedStmt          <- session.prepare(
-                                            """
+                                        )
+      onSchemaNameUpdatedStmt        <- session.prepare(
+                                          """
                                      | UPDATE schemas SET
                                      |    name            =  :name           ,
                                      |    updated_at      =  :updated_at     ,
@@ -124,18 +121,18 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
                                      |    updated_by_id   =  :updated_by_id
                                      | WHERE id = :id
                                      |""".stripMargin
-                                          )
-      updateUpdatedStmt                <- session.prepare(
-                                            """
+                                        )
+      updateUpdatedStmt              <- session.prepare(
+                                          """
                                | UPDATE schemas SET
                                |    updated_at      =  :updated_at     ,
                                |    updated_by_type =  :updated_by_type,
                                |    updated_by_id   =  :updated_by_id
                                | WHERE id = :id
                                |""".stripMargin
-                                          )
-      updateActivatedStmt              <- session.prepare(
-                                            """
+                                        )
+      updateActivatedStmt            <- session.prepare(
+                                          """
                                  | UPDATE schemas SET
                                  |    updated_at      =  :activated_at     ,
                                  |    updated_by_type =  :activated_by_type,
@@ -145,121 +142,104 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
                                  |    activated_by_id   =  :activated_by_id
                                  | WHERE id = :id
                                  |""".stripMargin
-                                          )
-      onActiveAttributeNameUpdatedStmt <- session.prepare(
-                                            """
-                                              | UPDATE active_attributes SET
-                                              |     name            =  :name           ,
-                                              |     caption         =  :caption
-                                              | WHERE id = :id AND attribute_id = :attribute_id
-                                              |""".stripMargin
-                                          )
-      onActiveAttributeCreatedStmt     <- session.prepare(
-                                            """
+                                        )
+
+      onActiveAttributeCreatedStmt   <- session.prepare(
+                                          """
                                           | INSERT INTO active_attributes (
                                           |   id                 ,
                                           |   attribute_id       ,
                                           |   name               ,
                                           |   caption            ,
-                                          |   attribute_def_id   ,
-                                          |   indexed            ,
-                                          |   text_content_index ,
-                                          |   alias_no
+                                          |   attribute_type   ,
+                                          |   index
                                           | )
                                           | VALUES (
                                           |   :id                 ,
                                           |   :attribute_id       ,
                                           |   :name               ,
                                           |   :caption            ,
-                                          |   :attribute_def_id   ,
-                                          |   :indexed            ,
-                                          |   :text_content_index ,
-                                          |   :alias_no
+                                          |   :attribute_type     ,
+                                          |   :index
                                           | )
                                           |""".stripMargin
-                                          )
-      onActiveAttributeUpdatedStmt     <- session.prepare(
-                                            """
+                                        )
+      onActiveAttributeUpdatedStmt   <- session.prepare(
+                                          """
                                           | UPDATE active_attributes SET
                                           |    name               = :name               ,
                                           |    caption            = :caption            ,
-                                          |    attribute_def_id   = :attribute_def_id   ,
-                                          |    indexed              = :indexed              ,
-                                          |    text_content_index   = :text_content_index   ,
-                                          |    alias_no             = :alias_no
+                                          |    attribute_type     = :attribute_type   ,
+                                          |    index              = :index
                                           | WHERE id = :id AND attribute_id = :attribute_id
                                           |""".stripMargin
-                                          )
-      onActiveAttributeRemovedStmt     <- session.prepare(
-                                            """
+                                        )
+      onActiveAttributeRemovedStmt   <- session.prepare(
+                                          """
                                           | DELETE FROM active_attributes
                                           | WHERE id = :id AND attribute_id = :attribute_id
                                           |""".stripMargin
-                                          )
+                                        )
 
-      onPreparedAttributeCreatedStmt   <- session.prepare(
-                                            """
+      onPreparedAttributeCreatedStmt <- session.prepare(
+                                          """
                                             | INSERT INTO prepared_attributes (
                                             |   id                 ,
                                             |   attribute_id       ,
                                             |   name               ,
                                             |   caption            ,
-                                            |   attribute_def_id   ,
-                                            |   indexed            ,
-                                            |   text_content_index   
+                                            |   attribute_type     ,
+                                            |   index
                                             | )
                                             | VALUES (
                                             |   :id                 ,
                                             |   :attribute_id       ,
                                             |   :name               ,
                                             |   :caption            ,
-                                            |   :attribute_def_id   ,
-                                            |   :indexed            ,
-                                            |   :text_content_index   
+                                            |   :attribute_type     ,
+                                            |   :index
                                             | )
                                             |""".stripMargin
-                                          )
-      onPreparedAttributeUpdatedStmt   <- session.prepare(
-                                            """
+                                        )
+      onPreparedAttributeUpdatedStmt <- session.prepare(
+                                          """
                                             | UPDATE prepared_attributes SET
                                             |    name               = :name               ,
                                             |    caption            = :caption            ,
-                                            |    attribute_def_id   = :attribute_def_id   ,
-                                            |    indexed              = :indexed          ,
-                                            |    text_content_index   = :text_content_index   
+                                            |    attribute_type   = :attribute_type   ,
+                                            |    index              = :index
                                             | WHERE id = :id AND attribute_id = :attribute_id
                                             |""".stripMargin
-                                          )
-      onPreparedAttributeRemovedStmt   <- session.prepare(
-                                            """
+                                        )
+      onPreparedAttributeRemovedStmt <- session.prepare(
+                                          """
                                             | DELETE FROM prepared_attributes
                                             | WHERE id = :id AND attribute_id = :attribute_id
                                             |""".stripMargin
-                                          )
-      onSchemaDeletedStmt              <- session.prepare(
-                                            """
+                                        )
+      onSchemaDeletedStmt            <- session.prepare(
+                                          """
                                  | DELETE FROM schemas
                                  | WHERE id = :id
                                  |""".stripMargin
-                                          )
-      preparedAttributesRemoveStmt     <- session.prepare(
-                                            """
+                                        )
+      preparedAttributesRemoveStmt   <- session.prepare(
+                                          """
                                           | DELETE FROM prepared_attributes
                                           | WHERE id = :id
                                           |""".stripMargin
-                                          )
-      activeAttributesRemoveStmt       <- session.prepare(
-                                            """
+                                        )
+      activeAttributesRemoveStmt     <- session.prepare(
+                                          """
                                         | DELETE FROM active_attributes
                                         | WHERE id = :id
                                         |""".stripMargin
-                                          )
+                                        )
     } yield {
       onSchemaCreatedStatement = onSchemaCreatedStmt
       onSchemaNameUpdatedStatement = onSchemaNameUpdatedStmt
       updateUpdatedStatement = updateUpdatedStmt
       updateActivatedStatement = updateActivatedStmt
-      onActiveAttributeNameUpdatedStatement = onActiveAttributeNameUpdatedStmt
       onActiveAttributeCreatedStatement = onActiveAttributeCreatedStmt
       onActiveAttributeUpdatedStatement = onActiveAttributeUpdatedStmt
       onActiveAttributeRemovedStatement = onActiveAttributeRemovedStmt
@@ -288,10 +268,9 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
         .setString("id", event.id.toComposed)
         .setString("attribute_id", attr.attributeId)
         .setString("name", attr.name)
-        .setString("caption", attr.caption.orNull)
-        .setString("attribute_def_id", attr.attributeDefId)
-        .setBool("indexed", attr.index.isDefined)
-        .setBool("text_content_index", attr.index.map(_.textContentIndex).getOrElse(false))
+        .setString("caption", Json.toJson(attr.caption).toString)
+        .setString("attribute_type", Json.toJson(attr.attributeType).toString)
+        .setString("index", Json.toJson(attr.index).toString)
     )
 
   def updateSchemaName(event: SchemaEntity.SchemaNameUpdated): Seq[BoundStatement] =
@@ -305,22 +284,6 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
         .setString("updated_by_id", event.updatedBy.principalId)
     )
 
-  def updateActiveAttributeName(event: SchemaEntity.ActiveAttributeNameUpdated): Seq[BoundStatement] =
-    Seq(
-      onActiveAttributeNameUpdatedStatement
-        .bind()
-        .setString("id", event.id.toComposed)
-        .setString("attribute_id", event.attributeId)
-        .setString("name", event.name)
-        .setString("caption", event.caption.orNull),
-      updateUpdatedStatement
-        .bind()
-        .setString("id", event.id.toComposed)
-        .setString("updated_at", event.updatedAt.toString)
-        .setString("updated_by_type", event.updatedBy.principalType)
-        .setString("updated_by_id", event.updatedBy.principalId)
-    )
-
   def createActiveAttribute(event: SchemaEntity.ActiveAttributeCreated): Seq[BoundStatement] =
     Seq(
       onActiveAttributeCreatedStatement
@@ -328,11 +291,9 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
         .setString("id", event.id.toComposed)
         .setString("attribute_id", event.attributeId)
         .setString("name", event.name)
-        .setString("caption", event.caption.orNull)
-        .setString("attribute_def_id", event.attributeDefId)
-        .setBool("indexed", event.index.isDefined)
-        .setBool("text_content_index", event.index.map(_.textContentIndex).getOrElse(false))
-        .setInt("alias_no", event.index.map(_.aliasNo).getOrElse(0)),
+        .setString("caption", Json.toJson(event.caption).toString)
+        .setString("attribute_type", Json.toJson(event.attributeType).toString)
+        .setString("index", Json.toJson(event.index).toString),
       updateActivatedStatement
         .bind()
         .setString("id", event.id.toComposed)
@@ -348,10 +309,9 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
         .setString("id", event.id.toComposed)
         .setString("attribute_id", event.attributeId)
         .setString("name", event.name)
-        .setString("caption", event.caption.orNull)
-        .setBool("indexed", event.index.isDefined)
-        .setBool("text_content_index", event.index.map(_.textContentIndex).getOrElse(false))
-        .setInt("alias_no", event.index.map(_.aliasNo).getOrElse(0)),
+        .setString("caption", Json.toJson(event.caption).toString)
+        .setString("attribute_type", Json.toJson(event.attributeType).toString)
+        .setString("index", Json.toJson(event.index).toString),
       updateActivatedStatement
         .bind()
         .setString("id", event.id.toComposed)
@@ -382,10 +342,9 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
         .setString("id", event.id.toComposed)
         .setString("attribute_id", event.attributeId)
         .setString("name", event.name)
-        .setString("caption", event.caption.orNull)
-        .setString("attribute_def_id", event.attributeDefId)
-        .setBool("indexed", event.index.isDefined)
-        .setBool("text_content_index", event.index.map(_.textContentIndex).getOrElse(false)),
+        .setString("caption", Json.toJson(event.caption).toString)
+        .setString("attribute_type", Json.toJson(event.attributeType).toString)
+        .setString("index", Json.toJson(event.index).toString),
       updateUpdatedStatement
         .bind()
         .setString("id", event.id.toComposed)
@@ -401,10 +360,9 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
         .setString("id", event.id.toComposed)
         .setString("attribute_id", event.attributeId)
         .setString("name", event.name)
-        .setString("caption", event.caption.orNull)
-        .setString("attribute_def_id", event.attributeDefId)
-        .setBool("indexed", event.index.isDefined)
-        .setBool("text_content_index", event.index.map(_.textContentIndex).getOrElse(false)),
+        .setString("caption", Json.toJson(event.caption).toString)
+        .setString("attribute_type", Json.toJson(event.attributeType).toString)
+        .setString("index", Json.toJson(event.index).toString),
       updateUpdatedStatement
         .bind()
         .setString("id", event.id.toComposed)
@@ -448,7 +406,7 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
       activeAttributes      <- session
                                  .selectAll(activeAttributeStmt.bind().setString("id", composedSchemaId))
                                  .map(_.map { row =>
-                                   val attr = convertActiveAttribute(row)
+                                   val attr = convertAttribute(row)
                                    attr.attributeId -> attr
                                  }.toMap)
       preparedAttributeStmt <- session.prepare("SELECT * FROM prepared_attributes WHERE id = :id")
@@ -465,7 +423,7 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
       )
     )
 
-  def getSchemaAttribute(schemaId: SchemaId, attributeId: AttributeId): Future[Option[ActiveSchemaAttribute]] =
+  def getSchemaAttribute(schemaId: SchemaId, attributeId: AttributeId): Future[Option[Attribute]] =
     for {
       activeAttributeStmt <- session.prepare(
                                "SELECT * FROM active_attributes WHERE id = :id AND attribute_id = :attribute_id"
@@ -477,7 +435,7 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
                                    .setString("id", schemaId.toComposed)
                                    .setString("attribute_id", attributeId)
                                )
-                               .map(_.map(convertActiveAttribute))
+                               .map(_.map(convertAttribute))
     } yield activeAttribute
 
   def getSchemasById(ids: Set[ComposedSchemaId]): Future[Map[ComposedSchemaId, Schema]] =
@@ -507,46 +465,22 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
     )
   }
 
-  private def convertActiveAttribute(row: Row) = {
-    val attributeId = row.getString("attribute_id")
-    val isIndexed   = row.getBool("indexed")
-    val index       =
-      if (isIndexed)
-        Some(
-          ActiveIndexParam(
-            textContentIndex = row.getBool("text_content_index"),
-            alias = SchemaEntity.alias(attributeId, row.getInt("alias_no"))
-          )
-        )
-      else
-        None
-    ActiveSchemaAttribute(
-      attributeId = attributeId,
-      name = row.getString("name"),
-      caption = Option(row.getString("caption")),
-      attributeDefId = row.getString("attribute_def_id"),
-      index = index
-    )
-  }
-
-  private def convertPreparedAttribute(row: Row) = {
-    val isIndexed = row.getBool("indexed")
-    val index     =
-      if (isIndexed)
-        Some(
-          PreparedIndexParam(
-            textContentIndex = row.getBool("text_content_index")
-          )
-        )
-      else
-        None
-    PreparedSchemaAttribute(
+  private def convertAttribute(row: Row): Attribute =
+    Attribute(
       attributeId = row.getString("attribute_id"),
       name = row.getString("name"),
-      caption = Option(row.getString("caption")),
-      attributeDefId = row.getString("attribute_def_id"),
-      index = index
+      caption = Json.parse(row.getString("caption")).as[Caption],
+      attributeType = Json.parse(row.getString("attribute_type")).as[AttributeType],
+      index = Json.parse(row.getString("index")).asOpt[AttributeIndex]
     )
-  }
+
+  private def convertPreparedAttribute(row: Row): PreparedAttribute =
+    PreparedAttribute(
+      attributeId = row.getString("attribute_id"),
+      name = row.getString("name"),
+      caption = Json.parse(row.getString("caption")).as[Caption],
+      attributeType = Json.parse(row.getString("attribute_type")).as[AttributeType],
+      index = Json.parse(row.getString("index")).asOpt[PreparedAttributeIndex]
+    )
 
 }

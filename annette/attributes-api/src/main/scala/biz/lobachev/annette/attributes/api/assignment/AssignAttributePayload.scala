@@ -21,7 +21,7 @@ import play.api.libs.json.Json
 
 case class AssignAttributePayload(
   id: AttributeAssignmentId,
-  attribute: Attribute,
+  attribute: AttributeValue,
   updatedBy: AnnettePrincipal
 )
 

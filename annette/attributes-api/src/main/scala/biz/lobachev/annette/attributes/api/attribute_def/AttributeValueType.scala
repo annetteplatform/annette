@@ -18,8 +18,8 @@ package biz.lobachev.annette.attributes.api.attribute_def
 
 import play.api.libs.json.Json
 
-object AttributeType extends Enumeration {
-  type AttributeType = Value
+object AttributeValueType extends Enumeration {
+  type AttributeValueType = Value
 
   val String         = Value("String")
   val Boolean        = Value("Boolean")
@@ -28,6 +28,7 @@ object AttributeType extends Enumeration {
   val OffsetDateTime = Value("OffsetDateTime")
   val LocalTime      = Value("LocalTime")
   val LocalDate      = Value("LocalDate")
+  val JSON           = Value("JSON")
 
   implicit val format = Json.formatEnum(this)
 }

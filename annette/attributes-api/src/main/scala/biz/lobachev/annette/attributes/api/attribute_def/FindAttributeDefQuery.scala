@@ -23,7 +23,7 @@ case class FindAttributeDefQuery(
   offset: Int = 0,
   size: Int,
   filter: Option[String] = None,
-  attributeTypes: Option[Set[AttributeType.AttributeType]] = None,
+  attributeTypes: Option[Set[AttributeValueType.AttributeValueType]] = None,
   subType: Option[String] = None,
   sortBy: Option[SortBy] = None
 )

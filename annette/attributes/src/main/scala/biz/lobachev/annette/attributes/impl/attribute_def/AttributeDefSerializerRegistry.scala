@@ -21,23 +21,24 @@ import biz.lobachev.annette.core.model.AnnettePrincipal
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
 object AttributeDefSerializerRegistry extends JsonSerializerRegistry {
-  override def serializers = List(
-    JsonSerializer[AttributeDefState],
-    JsonSerializer[FindAttributeDefQuery],
-    JsonSerializer[AttributeDef],
-    JsonSerializer[AnnettePrincipal],
-    JsonSerializer[AttributeType.AttributeType],
-    JsonSerializer[DeleteAttributeDefPayload],
-    JsonSerializer[UpdateAttributeDefPayload],
-    JsonSerializer[CreateAttributeDefPayload],
-    JsonSerializer[AttributeDefEntity.Success.type],
-    JsonSerializer[AttributeDefEntity.SuccessAttributeDef],
-    JsonSerializer[AttributeDefEntity.AttributeDefAlreadyExist.type],
-    JsonSerializer[AttributeDefEntity.AttributeDefNotFound.type],
-    JsonSerializer[AttributeDefEntity.AttributeDefHasUsages.type],
-    JsonSerializer[AttributeDefEntity.NotApplicable],
-    JsonSerializer[AttributeDefEntity.AttributeDefCreated],
-    JsonSerializer[AttributeDefEntity.AttributeDefUpdated],
-    JsonSerializer[AttributeDefEntity.AttributeDefDeleted]
-  )
+  override def serializers =
+    List(
+      JsonSerializer[AttributeDefState],
+      JsonSerializer[FindAttributeDefQuery],
+      JsonSerializer[AttributeDef],
+      JsonSerializer[AnnettePrincipal],
+      JsonSerializer[AttributeValueType.AttributeValueType],
+      JsonSerializer[DeleteAttributeDefPayload],
+      JsonSerializer[UpdateAttributeDefPayload],
+      JsonSerializer[CreateAttributeDefPayload],
+      JsonSerializer[AttributeDefEntity.Success.type],
+      JsonSerializer[AttributeDefEntity.SuccessAttributeDef],
+      JsonSerializer[AttributeDefEntity.AttributeDefAlreadyExist.type],
+      JsonSerializer[AttributeDefEntity.AttributeDefNotFound.type],
+      JsonSerializer[AttributeDefEntity.AttributeDefHasUsages.type],
+      JsonSerializer[AttributeDefEntity.NotApplicable],
+      JsonSerializer[AttributeDefEntity.AttributeDefCreated],
+      JsonSerializer[AttributeDefEntity.AttributeDefUpdated],
+      JsonSerializer[AttributeDefEntity.AttributeDefDeleted]
+    )
 }

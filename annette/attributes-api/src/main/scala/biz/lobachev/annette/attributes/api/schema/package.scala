@@ -19,4 +19,6 @@ package biz.lobachev.annette.attributes.api
 package object schema {
   type ComposedSchemaId          = String
   type ComposedSchemaAttributeId = String
+
+  type AnalyzerId = String
 }

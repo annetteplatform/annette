@@ -69,7 +69,7 @@ object AttributeDefEntity {
     id: AttributeDefId,
     name: String,
     caption: String,
-    attributeType: AttributeType.AttributeType,
+    attributeType: AttributeValueType.AttributeValueType,
     attributeId: AttributeId,
     subType: Option[String] = None,
     allowedValues: Map[String, String] = Map.empty,
@@ -135,12 +135,12 @@ final case class AttributeDefEntity(maybeState: Option[AttributeDefState] = None
   def createAttributeDef(cmd: CreateAttributeDef): ReplyEffect[Event, AttributeDefEntity] = {
     val payload = cmd.payload
     maybeState match {
-      case Some(_)                                                                                 => Effect.reply(cmd.replyTo)(AttributeDefAlreadyExist)
-      case None if payload.attributeType != AttributeType.String && payload.subType.isDefined      =>
+      case Some(_)                                                                                      => Effect.reply(cmd.replyTo)(AttributeDefAlreadyExist)
+      case None if payload.attributeType != AttributeValueType.String && payload.subType.isDefined      =>
         Effect.reply(cmd.replyTo)(NotApplicable("subType"))
-      case None if payload.attributeType != AttributeType.String && payload.allowedValues.nonEmpty =>
+      case None if payload.attributeType != AttributeValueType.String && payload.allowedValues.nonEmpty =>
         Effect.reply(cmd.replyTo)(NotApplicable("allowedValues"))
-      case _                                                                                       =>
+      case _                                                                                            =>
         val event = cmd.payload.transformInto[AttributeDefCreated]
         Effect
           .persist(event)
@@ -151,12 +151,12 @@ final case class AttributeDefEntity(maybeState: Option[AttributeDefState] = None
   def updateAttributeDef(cmd: UpdateAttributeDef): ReplyEffect[Event, AttributeDefEntity] = {
     val payload = cmd.payload
     maybeState match {
-      case None                                                                                         => Effect.reply(cmd.replyTo)(AttributeDefNotFound)
-      case Some(state) if state.attributeType != AttributeType.String && payload.subType.isDefined      =>
+      case None                                                                                              => Effect.reply(cmd.replyTo)(AttributeDefNotFound)
+      case Some(state) if state.attributeType != AttributeValueType.String && payload.subType.isDefined      =>
         Effect.reply(cmd.replyTo)(NotApplicable("subType"))
-      case Some(state) if state.attributeType != AttributeType.String && payload.allowedValues.nonEmpty =>
+      case Some(state) if state.attributeType != AttributeValueType.String && payload.allowedValues.nonEmpty =>
         Effect.reply(cmd.replyTo)(NotApplicable("allowedValues"))
-      case Some(_)                                                                                      =>
+      case Some(_)                                                                                           =>
         val event = payload.transformInto[AttributeDefUpdated]
         Effect
           .persist(event)

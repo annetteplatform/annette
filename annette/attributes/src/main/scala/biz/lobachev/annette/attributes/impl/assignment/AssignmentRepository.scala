@@ -130,7 +130,7 @@ private[impl] class AssignmentRepository(session: CassandraSession)(implicit ec:
                                             | WHERE  schema_id     = :schema_id       AND
                                             |        sub_schema_id = :sub_schema_id   AND
                                             |        object_id     = :object_id       AND
-                                            |        attribute_id  = :attribute_id    
+                                            |        attribute_id  = :attribute_id
                                             |""".stripMargin
                                          )
       onAttributeUnassignedByAttrStmt <- session.prepare(
@@ -139,7 +139,7 @@ private[impl] class AssignmentRepository(session: CassandraSession)(implicit ec:
                                              | WHERE  schema_id     = :schema_id       AND
                                              |        sub_schema_id = :sub_schema_id   AND
                                              |        attribute_id  = :attribute_id    AND
-                                             |        object_id     = :object_id       
+                                             |        object_id     = :object_id
                                              |""".stripMargin
                                          )
     } yield {
@@ -266,7 +266,7 @@ private[impl] class AssignmentRepository(session: CassandraSession)(implicit ec:
     for {
       assignmentStmt <- session
                           .prepare("""
-                                     | SELECT * FROM assignments_by_obj  
+                                     | SELECT * FROM assignments_by_obj
                                      |   WHERE  schema_id     = :schema_id      AND
                                      |          sub_schema_id = :sub_schema_id AND
                                      |          object_id = :object_id AND
@@ -300,7 +300,7 @@ private[impl] class AssignmentRepository(session: CassandraSession)(implicit ec:
                             | SELECT attribute_id FROM assignments_by_attr
                             |   WHERE  schema_id     = :schema_id       AND
                             |          sub_schema_id = :sub_schema_id AND
-                            |          attribute_id = :attribute_id  
+                            |          attribute_id = :attribute_id
                             |   LIMIT 1 """.stripMargin
                         )
       assignment     <- session
@@ -333,7 +333,7 @@ private[impl] class AssignmentRepository(session: CassandraSession)(implicit ec:
         objectId = row.getString("object_id"),
         attributeId = row.getString("attribute_id")
       ),
-      attribute = Json.parse(row.getString("attribute")).as[Attribute],
+      attribute = Json.parse(row.getString("attribute")).as[AttributeValue],
       updatedAt = OffsetDateTime.parse(row.getString("updated_at")),
       updatedBy = AnnettePrincipal(
         principalType = row.getString("updated_by_type"),

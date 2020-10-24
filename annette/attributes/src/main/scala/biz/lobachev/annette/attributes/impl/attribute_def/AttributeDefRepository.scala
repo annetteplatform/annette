@@ -198,7 +198,7 @@ private[impl] class AttributeDefRepository(session: CassandraSession)(implicit e
       id = row.getString("id"),
       name = row.getString("name"),
       caption = row.getString("caption"),
-      attributeType = AttributeType.withName(row.getString("attribute_type")),
+      attributeType = AttributeValueType.withName(row.getString("attribute_type")),
       attributeId = row.getString("attribute_id"),
       subType = Option(row.getString("subtype")),
       allowedValues = allowedValues,

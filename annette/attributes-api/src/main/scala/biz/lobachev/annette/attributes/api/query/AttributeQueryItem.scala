@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.attributes.api.query
 
-import biz.lobachev.annette.attributes.api.assignment.Attribute
+import biz.lobachev.annette.attributes.api.assignment.AttributeValue
 import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 
 sealed trait AttributeQueryItem {
@@ -33,34 +33,37 @@ object NotExist {
   implicit val format: Format[NotExist] = Json.format
 }
 
-case class Equal(fieldName: AttributeField, attribute: Attribute) extends AttributeQueryItem
+case class Equal(fieldName: AttributeField, attribute: AttributeValue) extends AttributeQueryItem
 object Equal {
   implicit val format: Format[Equal] = Json.format
 }
 
-case class NotEqual(fieldName: AttributeField, attribute: Attribute) extends AttributeQueryItem
+case class NotEqual(fieldName: AttributeField, attribute: AttributeValue) extends AttributeQueryItem
 object NotEqual {
   implicit val format: Format[NotEqual] = Json.format
 }
 
-case class AnyOf(fieldName: AttributeField, attributes: Set[Attribute]) extends AttributeQueryItem
+case class AnyOf(fieldName: AttributeField, attributes: Set[AttributeValue]) extends AttributeQueryItem
 object AnyOf {
   implicit val format: Format[AnyOf] = Json.format
 }
 
 case class Range(
   fieldName: AttributeField,
-  gt: Option[Attribute] = None,
-  gte: Option[Attribute] = None,
-  lt: Option[Attribute] = None,
-  lte: Option[Attribute] = None
+  gt: Option[AttributeValue] = None,
+  gte: Option[AttributeValue] = None,
+  lt: Option[AttributeValue] = None,
+  lte: Option[AttributeValue] = None
 ) extends AttributeQueryItem
-object Range {
+object Range              {
   implicit val format: Format[Range] = Json.format
 }
 object AttributeQueryItem {
-  implicit val config = JsonConfiguration(discriminator = "type", typeNaming = JsonNaming { fullName =>
-    fullName.split("\\.").toSeq.last
-  })
+  implicit val config                             = JsonConfiguration(
+    discriminator = "type",
+    typeNaming = JsonNaming { fullName =>
+      fullName.split("\\.").toSeq.last
+    }
+  )
   implicit val format: Format[AttributeQueryItem] = Json.format
 }

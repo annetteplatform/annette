@@ -22,9 +22,10 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
-import biz.lobachev.annette.attributes.api.attribute_def.{AttributeDefId, AttributeId}
+import biz.lobachev.annette.attributes.api.attribute_def.AttributeId
 import biz.lobachev.annette.attributes.api.schema._
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.attributes.impl.schema.model.{AttributeIndexState, AttributeState, SchemaState}
+import biz.lobachev.annette.core.model.{AnnettePrincipal, Caption}
 import com.lightbend.lagom.scaladsl.persistence._
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
@@ -50,16 +51,16 @@ object SchemaEntity {
   )                                                                                            extends Command
 
   sealed trait Confirmation
-  final case object Success                                                               extends Confirmation
-  final case class SuccessSchema(schema: Schema)                                          extends Confirmation
-  final case class SuccessSchemaAttribute(schemaAttribute: Option[ActiveSchemaAttribute]) extends Confirmation
-  final case class SuccessSchemaAttributes(schemaAttributes: Seq[ActiveSchemaAttribute])  extends Confirmation
-  final case object SchemaAlreadyExist                                                    extends Confirmation
-  final case object SchemaNotFound                                                        extends Confirmation
-  final case object EmptySchema                                                           extends Confirmation
-  final case object TypeChangeNotAllowed                                                  extends Confirmation
-  final case object AttributeNotFound                                                     extends Confirmation
-  final case class AttributesHasAssignments(attributes: String)                           extends Confirmation
+  final case object Success                                                   extends Confirmation
+  final case class SuccessSchema(schema: Schema)                              extends Confirmation
+  final case class SuccessSchemaAttribute(schemaAttribute: Option[Attribute]) extends Confirmation
+  final case class SuccessSchemaAttributes(schemaAttributes: Seq[Attribute])  extends Confirmation
+  final case object SchemaAlreadyExist                                        extends Confirmation
+  final case object SchemaNotFound                                            extends Confirmation
+  final case object EmptySchema                                               extends Confirmation
+  final case object TypeChangeNotAllowed                                      extends Confirmation
+  final case object AttributeNotFound                                         extends Confirmation
+  final case class AttributesHasAssignments(attributes: String)               extends Confirmation
 
   implicit val confirmationSuccessFormat: Format[Success.type]                            = Json.format
   implicit val confirmationSuccessSchemaFormat: Format[SuccessSchema]                     = Json.format
@@ -92,7 +93,7 @@ object SchemaEntity {
   final case class SchemaCreated(
     id: SchemaId,
     name: String,
-    preparedAttributes: Set[PreparedSchemaAttribute],
+    preparedAttributes: Set[PreparedAttribute],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -102,21 +103,14 @@ object SchemaEntity {
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
-  final case class ActiveAttributeNameUpdated(
-    id: SchemaId,
-    attributeId: AttributeId,
-    name: String,
-    caption: Option[String] = None,
-    updatedBy: AnnettePrincipal,
-    updatedAt: OffsetDateTime = OffsetDateTime.now
-  ) extends Event
+
   final case class ActiveAttributeCreated(
     id: SchemaId,
     attributeId: AttributeId,
     name: String,
-    caption: Option[String] = None,
-    attributeDefId: AttributeDefId,
-    index: Option[ActiveIndexParamState] = None,
+    caption: Caption,
+    attributeType: AttributeType,
+    index: Option[AttributeIndexState] = None,
     activatedBy: AnnettePrincipal,
     activatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -124,8 +118,9 @@ object SchemaEntity {
     id: SchemaId,
     attributeId: AttributeId,
     name: String,
-    caption: Option[String] = None,
-    index: Option[ActiveIndexParamState] = None,
+    caption: Caption,
+    attributeType: AttributeType,
+    index: Option[AttributeIndexState] = None,
     activatedBy: AnnettePrincipal,
     activatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -138,8 +133,7 @@ object SchemaEntity {
   final case class IndexAttributeCreated(
     id: SchemaId,
     attributeId: AttributeId,
-    attributeDefId: AttributeDefId,
-    textContentIndex: Boolean,
+    index: AttributeIndexState,
     alias: String,
     reindexAssignments: Boolean,
     activatedBy: AnnettePrincipal,
@@ -158,9 +152,9 @@ object SchemaEntity {
     id: SchemaId,
     attributeId: AttributeId,
     name: String,
-    caption: Option[String] = None,
-    attributeDefId: AttributeDefId,
-    index: Option[PreparedIndexParam] = None,
+    caption: Caption,
+    attributeType: AttributeType,
+    index: Option[PreparedAttributeIndex] = None,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -168,9 +162,9 @@ object SchemaEntity {
     id: SchemaId,
     attributeId: AttributeId,
     name: String,
-    caption: Option[String] = None,
-    attributeDefId: AttributeDefId,
-    index: Option[PreparedIndexParam] = None,
+    caption: Caption,
+    attributeType: AttributeType,
+    index: Option[PreparedAttributeIndex] = None,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -186,18 +180,17 @@ object SchemaEntity {
     deletedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
 
-  implicit val eventSchemaCreatedFormat: Format[SchemaCreated]                           = Json.format
-  implicit val eventSchemaNameUpdatedFormat: Format[SchemaNameUpdated]                   = Json.format
-  implicit val eventActiveAttributeNameUpdatedFormat: Format[ActiveAttributeNameUpdated] = Json.format
-  implicit val eventActiveAttributeCreatedFormat: Format[ActiveAttributeCreated]         = Json.format
-  implicit val eventActiveAttributeUpdatedFormat: Format[ActiveAttributeUpdated]         = Json.format
-  implicit val eventActiveAttributeRemovedFormat: Format[ActiveAttributeRemoved]         = Json.format
-  implicit val eventIndexAttributeCreatedFormat: Format[IndexAttributeCreated]           = Json.format
-  implicit val eventIndexAttributeRemovedFormat: Format[IndexAttributeRemoved]           = Json.format
-  implicit val eventPreparedAttributeCreatedFormat: Format[PreparedAttributeCreated]     = Json.format
-  implicit val eventPreparedAttributeUpdatedFormat: Format[PreparedAttributeUpdated]     = Json.format
-  implicit val eventPreparedAttributeRemovedFormat: Format[PreparedAttributeRemoved]     = Json.format
-  implicit val eventSchemaDeletedFormat: Format[SchemaDeleted]                           = Json.format
+  implicit val eventSchemaCreatedFormat: Format[SchemaCreated]                       = Json.format
+  implicit val eventSchemaNameUpdatedFormat: Format[SchemaNameUpdated]               = Json.format
+  implicit val eventActiveAttributeCreatedFormat: Format[ActiveAttributeCreated]     = Json.format
+  implicit val eventActiveAttributeUpdatedFormat: Format[ActiveAttributeUpdated]     = Json.format
+  implicit val eventActiveAttributeRemovedFormat: Format[ActiveAttributeRemoved]     = Json.format
+  implicit val eventIndexAttributeCreatedFormat: Format[IndexAttributeCreated]       = Json.format
+  implicit val eventIndexAttributeRemovedFormat: Format[IndexAttributeRemoved]       = Json.format
+  implicit val eventPreparedAttributeCreatedFormat: Format[PreparedAttributeCreated] = Json.format
+  implicit val eventPreparedAttributeUpdatedFormat: Format[PreparedAttributeUpdated] = Json.format
+  implicit val eventPreparedAttributeRemovedFormat: Format[PreparedAttributeRemoved] = Json.format
+  implicit val eventSchemaDeletedFormat: Format[SchemaDeleted]                       = Json.format
 
   val empty = SchemaEntity()
 
@@ -253,14 +246,11 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
       case None        => Effect.reply(cmd.replyTo)(SchemaNotFound)
       case Some(state)
           if cmd.payload.preparedAttributes
-            .exists(a => state.activeAttributes.get(a.attributeId).exists(_.attributeDefId != a.attributeDefId)) =>
+            .exists(a => state.activeAttributes.get(a.attributeId).exists(_.attributeType != a.attributeType)) =>
         Effect.reply(cmd.replyTo)(TypeChangeNotAllowed)
-      case Some(state)
-          if cmd.payload.updateActiveAttributeNames.exists(a => !state.activeAttributes.isDefinedAt(a.attributeId)) =>
-        Effect.reply(cmd.replyTo)(AttributeNotFound)
       case Some(state) =>
-        val now                             = OffsetDateTime.now
-        val updateNameEvent                 =
+        val now             = OffsetDateTime.now
+        val updateNameEvent =
           if (state.name != cmd.payload.name)
             Seq(
               cmd.payload
@@ -270,23 +260,14 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
             )
           else
             Seq.empty
-        val updateActiveAttributeNameEvents = cmd.payload.updateActiveAttributeNames
-          .map(d =>
-            cmd.payload
-              .into[ActiveAttributeNameUpdated]
-              .withFieldConst(_.attributeId, d.attributeId)
-              .withFieldConst(_.name, d.name)
-              .withFieldConst(_.caption, d.caption)
-              .withFieldConst(_.updatedAt, now)
-              .transform
-          )
-          .toSeq
-        val createdIds                      = cmd.payload.preparedAttributes.map(_.attributeId) -- state.preparedAttributes.keys.toSet
-        val createPreparedAttributeEvents   = cmd.payload.preparedAttributes
+
+        val createdIds                    = cmd.payload.preparedAttributes.map(_.attributeId) -- state.preparedAttributes.keys.toSet
+        val createPreparedAttributeEvents = cmd.payload.preparedAttributes
           .filter(a => createdIds.contains(a.attributeId))
           .map(a =>
             a.into[PreparedAttributeUpdated]
               .withFieldConst(_.id, cmd.payload.id)
+              .withFieldConst(_.attributeId, a.attributeId)
               .withFieldConst(_.updatedBy, cmd.payload.updatedBy)
               .withFieldConst(_.updatedAt, now)
               .transform
@@ -320,7 +301,7 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
           .toSeq
         Effect
           .persist(
-            updateNameEvent ++ updateActiveAttributeNameEvents ++ createPreparedAttributeEvents ++
+            updateNameEvent ++ createPreparedAttributeEvents ++
               updatePreparedAttributesEvents ++ removePreparedAttributeEvents
           )
           .thenReply(cmd.replyTo)(_ => Success)
@@ -343,11 +324,7 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
             val index   = state
               .preparedAttributes(attributeId)
               .index
-              .map(
-                _.into[ActiveIndexParamState]
-                  .withFieldConst(_.aliasNo, aliasNo)
-                  .transform
-              )
+              .map(a => AttributeIndexState.from(a, aliasNo))
             state
               .preparedAttributes(attributeId)
               .into[ActiveAttributeCreated]
@@ -362,11 +339,11 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
             state
               .preparedAttributes(attributeId)
               .index
-              .map(
-                _.into[IndexAttributeCreated]
+              .map(a =>
+                a.into[IndexAttributeCreated]
                   .withFieldConst(_.id, state.id)
                   .withFieldConst(_.attributeId, attributeId)
-                  .withFieldConst(_.attributeDefId, state.preparedAttributes(attributeId).attributeId)
+                  .withFieldConst(_.index, AttributeIndexState.from(a, aliasNo))
                   .withFieldConst(_.alias, alias(attributeId, aliasNo))
                   .withFieldConst(_.reindexAssignments, cmd.attributesWithAssignment.contains(attributeId))
                   .withFieldConst(_.activatedBy, cmd.payload.activatedBy)
@@ -410,8 +387,8 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
               val index =
                 if (isIndexChanged(prepAttr.index, activeAttr.index) && prepAttr.index.isDefined)
                   Some(
-                    ActiveIndexParamState(
-                      textContentIndex = prepAttr.index.get.textContentIndex,
+                    AttributeIndexState.from(
+                      prepAttr.index.get,
                       aliasNo = activeAttr.index
                         .map(_.aliasNo + 1)
                         .getOrElse(state.usedAliases.getOrElse(prepAttr.attributeId, -1) + 1)
@@ -445,7 +422,7 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
                   .into[IndexAttributeCreated]
                   .withFieldConst(_.id, cmd.payload.id)
                   .withFieldConst(_.attributeId, prepAttr.attributeId)
-                  .withFieldConst(_.attributeDefId, prepAttr.attributeDefId)
+                  .withFieldConst(_.index, AttributeIndexState.from(prepAttr.index.get, aliasNo))
                   .withFieldConst(_.alias, alias(prepAttr.attributeId, aliasNo))
                   .withFieldConst(_.reindexAssignments, cmd.attributesWithAssignment.contains(activeAttr.attributeId))
                   .withFieldConst(_.activatedBy, cmd.payload.activatedBy)
@@ -482,7 +459,10 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
                 prepAttr.index.get
                   .into[IndexAttributeCreated]
                   .withFieldConst(_.id, cmd.payload.id)
-                  .withFieldConst(_.attributeDefId, activeAttr.attributeDefId)
+                  .withFieldConst(
+                    _.index,
+                    AttributeIndexState.from(prepAttr.index.get, activeAttr.index.get.aliasNo + 1)
+                  )
                   .withFieldConst(_.alias, alias(activeAttr.attributeId, activeAttr.index.get.aliasNo + 1))
                   .withFieldConst(_.attributeId, prepAttr.attributeId)
                   .withFieldConst(_.reindexAssignments, cmd.attributesWithAssignment.contains(activeAttr.attributeId))
@@ -564,18 +544,17 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
 
   def applyEvent(event: Event): SchemaEntity =
     event match {
-      case event: SchemaCreated              => onSchemaCreated(event)
-      case event: SchemaNameUpdated          => onSchemaNameUpdated(event)
-      case event: ActiveAttributeNameUpdated => onActiveAttributeNameUpdated(event)
-      case event: ActiveAttributeCreated     => onActiveAttributeCreated(event)
-      case event: ActiveAttributeUpdated     => onActiveAttributeUpdated(event)
-      case event: ActiveAttributeRemoved     => onActiveAttributeRemoved(event)
-      case _: IndexAttributeCreated          => this
-      case _: IndexAttributeRemoved          => this
-      case event: PreparedAttributeCreated   => onPreparedAttributeCreated(event)
-      case event: PreparedAttributeUpdated   => onPreparedAttributeUpdated(event)
-      case event: PreparedAttributeRemoved   => onPreparedAttributeRemoved(event)
-      case _: SchemaDeleted                  => onSchemaDeleted()
+      case event: SchemaCreated            => onSchemaCreated(event)
+      case event: SchemaNameUpdated        => onSchemaNameUpdated(event)
+      case event: ActiveAttributeCreated   => onActiveAttributeCreated(event)
+      case event: ActiveAttributeUpdated   => onActiveAttributeUpdated(event)
+      case event: ActiveAttributeRemoved   => onActiveAttributeRemoved(event)
+      case _: IndexAttributeCreated        => this
+      case _: IndexAttributeRemoved        => this
+      case event: PreparedAttributeCreated => onPreparedAttributeCreated(event)
+      case event: PreparedAttributeUpdated => onPreparedAttributeUpdated(event)
+      case event: PreparedAttributeRemoved => onPreparedAttributeRemoved(event)
+      case _: SchemaDeleted                => onSchemaDeleted()
     }
 
   def onSchemaCreated(event: SchemaCreated): SchemaEntity =
@@ -599,27 +578,10 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
       )
     )
 
-  def onActiveAttributeNameUpdated(event: ActiveAttributeNameUpdated): SchemaEntity =
-    SchemaEntity(
-      maybeState.map { state =>
-        val attribute = state
-          .activeAttributes(event.attributeId)
-          .copy(
-            name = event.name,
-            caption = event.caption
-          )
-        state.copy(
-          activeAttributes = state.activeAttributes + (attribute.attributeId -> attribute),
-          updatedBy = event.updatedBy,
-          updatedAt = event.updatedAt
-        )
-      }
-    )
-
   def onActiveAttributeCreated(event: ActiveAttributeCreated): SchemaEntity =
     SchemaEntity(
       maybeState.map { state =>
-        val attribute = event.transformInto[ActiveSchemaAttributeState]
+        val attribute = event.transformInto[AttributeState]
         state.copy(
           activeAttributes = state.activeAttributes + (attribute.attributeId -> attribute),
           activatedBy = Some(event.activatedBy),
@@ -633,15 +595,13 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
   def onActiveAttributeUpdated(event: ActiveAttributeUpdated): SchemaEntity =
     SchemaEntity(
       maybeState.map { state =>
-        val usedAliases    = state
+        val usedAliases = state
           .activeAttributes(event.attributeId)
           .index
           .map(ind => state.usedAliases + (event.attributeId -> ind.aliasNo))
           .getOrElse(state.usedAliases)
-        val attributeDefId = state.activeAttributes(event.attributeId).attributeDefId
-        val attribute      = event
-          .into[ActiveSchemaAttributeState]
-          .withFieldConst(_.attributeDefId, attributeDefId)
+        val attribute   = event
+          .into[AttributeState]
           .transform
         state.copy(
           activeAttributes = state.activeAttributes + (attribute.attributeId -> attribute),
@@ -676,7 +636,7 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
   def onPreparedAttributeCreated(event: PreparedAttributeCreated): SchemaEntity =
     SchemaEntity(
       maybeState.map { state =>
-        val attribute = event.transformInto[PreparedSchemaAttribute]
+        val attribute = event.transformInto[PreparedAttribute]
         state.copy(
           preparedAttributes = state.preparedAttributes + (attribute.attributeId -> attribute),
           updatedBy = event.updatedBy,
@@ -689,7 +649,7 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
     SchemaEntity(
       maybeState.map { state =>
         val attribute = event
-          .into[PreparedSchemaAttribute]
+          .into[PreparedAttribute]
           .transform
         state.copy(
           preparedAttributes = state.preparedAttributes + (attribute.attributeId -> attribute),
@@ -714,14 +674,14 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
     SchemaEntity(None)
 
   def isIndexChanged(
-    prepIndexOpt: Option[PreparedIndexParam],
-    activeIndexOpt: Option[ActiveIndexParamState]
+    prepIndexOpt: Option[PreparedAttributeIndex],
+    activeIndexOpt: Option[AttributeIndexState]
   ): Boolean =
     prepIndexOpt match {
       case Some(prepIndex) =>
         activeIndexOpt match {
           case Some(activeIndex) =>
-            prepIndex.textContentIndex != activeIndex.textContentIndex
+            AttributeIndexState.from(prepIndex, activeIndex.aliasNo) != activeIndex
           case None              => true
         }
       case None            =>
@@ -731,23 +691,18 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
         }
     }
 
-  private def isAttributeChanged(prepAttr: PreparedSchemaAttribute, activeAttr: ActiveSchemaAttributeState): Boolean =
+  private def isAttributeChanged(prepAttr: PreparedAttribute, activeAttr: AttributeState): Boolean =
     isIndexChanged(
       prepAttr.index,
       activeAttr.index
     ) || prepAttr.name != activeAttr.name || prepAttr.caption != activeAttr.caption
 
-  private def toActiveSchemaAttribute(attr: ActiveSchemaAttributeState) =
+  private def toActiveSchemaAttribute(attr: AttributeState) =
     attr
-      .into[ActiveSchemaAttribute]
+      .into[Attribute]
       .withFieldConst(
         _.index,
-        attr.index.map(ind =>
-          ind
-            .into[ActiveIndexParam]
-            .withFieldConst(_.alias, alias(attr.attributeId, ind.aliasNo))
-            .transform
-        )
+        attr.index.map(_.toAttributeIndex(attr.attributeId))
       )
       .transform
 

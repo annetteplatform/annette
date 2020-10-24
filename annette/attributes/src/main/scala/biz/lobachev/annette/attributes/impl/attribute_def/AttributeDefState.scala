@@ -18,7 +18,7 @@ package biz.lobachev.annette.attributes.impl.attribute_def
 
 import java.time.OffsetDateTime
 
-import biz.lobachev.annette.attributes.api.attribute_def.{AttributeDefId, AttributeId, AttributeType}
+import biz.lobachev.annette.attributes.api.attribute_def.{AttributeDefId, AttributeId, AttributeValueType}
 import biz.lobachev.annette.core.model.AnnettePrincipal
 import play.api.libs.json.Json
 
@@ -26,7 +26,7 @@ case class AttributeDefState(
   id: AttributeDefId,
   name: String,
   caption: String,
-  attributeType: AttributeType.AttributeType,
+  attributeType: AttributeValueType.AttributeValueType,
   attributeId: AttributeId,
   subType: Option[String] = None,
   allowedValues: Map[String, String] = Map.empty,

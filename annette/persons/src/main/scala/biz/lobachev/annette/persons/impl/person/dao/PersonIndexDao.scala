@@ -17,7 +17,6 @@
 package biz.lobachev.annette.persons.impl.person.dao
 
 import akka.Done
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeType.AttributeType
 import biz.lobachev.annette.attributes.api.query.AttributeIndexDao
 import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.persons.api.person._
@@ -38,5 +37,4 @@ trait PersonIndexDao extends AttributeIndexDao {
 
   def findPerson(query: PersonFindQuery): Future[FindResult]
 
-  def createAttribute(attributeType: AttributeType, fieldName: String, textContentIndex: Boolean): Future[Done]
 }

@@ -22,8 +22,8 @@ import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
 import biz.lobachev.annette.attributes.api.assignment._
-import biz.lobachev.annette.attributes.api.attribute_def.{AttributeDef, AttributeId, AttributeType}
-import biz.lobachev.annette.attributes.api.schema.{ActiveSchemaAttribute, SchemaAttributeId, SchemaId}
+import biz.lobachev.annette.attributes.api.attribute_def.AttributeId
+import biz.lobachev.annette.attributes.api.schema._
 import biz.lobachev.annette.core.model.AnnettePrincipal
 import com.typesafe.config.Config
 import org.slf4j.{Logger, LoggerFactory}
@@ -69,12 +69,11 @@ class AssignmentEntityService(
 
   def assignAttribute(
     payload: AssignAttributePayload,
-    schemaAttribute: ActiveSchemaAttribute,
-    attributeDef: AttributeDef
+    attribute: Attribute
   ): Future[Done] =
-    validateAssignment(payload, attributeDef) match {
+    validateAssignment(payload, attribute) match {
       case Right(_)        =>
-        val indexAlias = schemaAttribute.index.map(_.alias)
+        val indexAlias = attribute.index.map(_.alias)
         refFor(payload.id)
           .ask[AssignmentEntity.Confirmation](AssignmentEntity.AssignAttribute(payload, indexAlias, _))
           .map(convertSuccess)
@@ -83,31 +82,28 @@ class AssignmentEntityService(
 
   def validateAssignment(
     payload: AssignAttributePayload,
-    attributeDef: AttributeDef
+    attribute: Attribute
   ): Either[Throwable, Done] =
     payload.attribute match {
-      case StringAttribute(_)
-          if attributeDef.attributeType == AttributeType.String &&
-            attributeDef.allowedValues.isEmpty =>
+      case StringAttributeValue(_)
+          // TODO: add allowed values check
+          if attribute.attributeType.isInstanceOf[StringAttribute] =>
         Right(Done)
-      case StringAttribute(value)
-          if attributeDef.attributeType == AttributeType.String &&
-            attributeDef.allowedValues.isDefinedAt(value) =>
+
+      case BooleanAttributeValue(_) if attribute.attributeType.isInstanceOf[BooleanAttribute.type]               => Right(Done)
+      case LongAttributeValue(_) if attribute.attributeType.isInstanceOf[LongAttribute.type]                     => Right(Done)
+      case DoubleAttributeValue(_) if attribute.attributeType.isInstanceOf[DoubleAttribute.type]                 => Right(Done)
+      case OffsetDateTimeAttributeValue(_) if attribute.attributeType.isInstanceOf[OffsetDateTimeAttribute.type] =>
         Right(Done)
-      case StringAttribute(_) if attributeDef.attributeType == AttributeType.String                 =>
-        Left(ValueNotAllowed())
-      case BooleanAttribute(_) if attributeDef.attributeType == AttributeType.Boolean               => Right(Done)
-      case LongAttribute(_) if attributeDef.attributeType == AttributeType.Long                     => Right(Done)
-      case DoubleAttribute(_) if attributeDef.attributeType == AttributeType.Double                 => Right(Done)
-      case OffsetDateTimeAttribute(_) if attributeDef.attributeType == AttributeType.OffsetDateTime => Right(Done)
-      case LocalDateAttribute(_) if attributeDef.attributeType == AttributeType.LocalDate           => Right(Done)
-      case LocalTimeAttribute(_) if attributeDef.attributeType == AttributeType.LocalTime           => Right(Done)
-      case _                                                                                        => Left(InvalidAttributeType())
+      case LocalDateAttributeValue(_) if attribute.attributeType.isInstanceOf[LocalDateAttribute.type]           => Right(Done)
+      case LocalTimeAttributeValue(_) if attribute.attributeType.isInstanceOf[LocalTimeAttribute.type]           => Right(Done)
+      case JSONAttributeValue(_) if attribute.attributeType.isInstanceOf[JSONAttribute.type]                     => Right(Done)
+      case _                                                                                                     => Left(InvalidAttributeType())
 
     }
 
-  def unassignAttribute(payload: UnassignAttributePayload, schemaAttribute: ActiveSchemaAttribute): Future[Done] = {
-    val indexAlias = schemaAttribute.index.map(_.alias)
+  def unassignAttribute(payload: UnassignAttributePayload, attribute: Attribute): Future[Done] = {
+    val indexAlias = attribute.index.map(_.alias)
     refFor(payload.id)
       .ask[AssignmentEntity.Confirmation](AssignmentEntity.UnassignAttribute(payload, indexAlias, _))
       .map(convertSuccess)

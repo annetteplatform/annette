@@ -145,10 +145,8 @@ class AttributeServiceImpl(
                                readSide = true
                              )
                              .map(_.getOrElse(throw AttributeNotFound()))
-        // get attribute def
-        attributeDef    <- attributeDefEntityService.getAttributeDefById(schemaAttribute.attributeDefId, true)
         // assign attribute
-        result          <- assignmentEntityService.assignAttribute(payload, schemaAttribute, attributeDef)
+        result          <- assignmentEntityService.assignAttribute(payload, schemaAttribute)
       } yield result
     }
 

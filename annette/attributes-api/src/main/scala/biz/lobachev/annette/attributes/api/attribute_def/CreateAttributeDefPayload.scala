@@ -23,7 +23,7 @@ case class CreateAttributeDefPayload(
   id: AttributeDefId,
   name: String,
   caption: String,
-  attributeType: AttributeType.AttributeType,
+  attributeType: AttributeValueType.AttributeValueType,
   attributeId: AttributeId,
   subType: Option[String] = None,
   allowedValues: Map[String, String] = Map.empty,

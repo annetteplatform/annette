@@ -25,9 +25,9 @@ import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffec
 import com.lightbend.lagom.scaladsl.persistence._
 import play.api.libs.json._
 import org.slf4j.LoggerFactory
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.{AnnettePrincipal, Caption}
 import biz.lobachev.annette.application.api.application._
-import biz.lobachev.annette.application.api.translation.{Caption, TranslationId}
+import biz.lobachev.annette.application.api.translation.TranslationId
 import biz.lobachev.annette.application.impl.application.model.ApplicationState
 import io.scalaland.chimney.dsl._
 
