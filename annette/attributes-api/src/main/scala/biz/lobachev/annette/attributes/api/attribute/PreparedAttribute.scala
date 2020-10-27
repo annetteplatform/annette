@@ -1,6 +1,5 @@
-package biz.lobachev.annette.attributes.api.schema
+package biz.lobachev.annette.attributes.api.attribute
 
-import biz.lobachev.annette.attributes.api.attribute.{AttributeId, AttributeType}
 import biz.lobachev.annette.core.model.Caption
 import play.api.libs.json.Json
 

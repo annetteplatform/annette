@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.attributes.api.schema
 
+import biz.lobachev.annette.attributes.api.attribute.PreparedAttribute
 import biz.lobachev.annette.core.model.AnnettePrincipal
 import play.api.libs.json.Json
 

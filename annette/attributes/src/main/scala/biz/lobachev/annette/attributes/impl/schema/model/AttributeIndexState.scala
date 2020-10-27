@@ -11,6 +11,16 @@ import biz.lobachev.annette.attributes.api.attribute.{
   LocalTimeIndex,
   LongIndex,
   OffsetDateTimeIndex,
+  PreparedAttributeIndex,
+  PreparedBooleanIndex,
+  PreparedDoubleIndex,
+  PreparedJSONIndex,
+  PreparedKeywordIndex,
+  PreparedLocalDateIndex,
+  PreparedLocalTimeIndex,
+  PreparedLongIndex,
+  PreparedOffsetDateTimeIndex,
+  PreparedTextIndex,
   TextIndex
 }
 import biz.lobachev.annette.attributes.api.schema._
@@ -35,7 +45,7 @@ case class TextIndexState(
   override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[TextIndex]
-      .withFieldConst(_.ext, SchemaEntity.alias(id, attributeId, this.aliasNo))
+      .withFieldConst(_.fieldName, SchemaEntity.alias(id, attributeId, this.aliasNo))
       .transform
 }
 
@@ -43,7 +53,7 @@ case class KeywordIndexState(aliasNo: Int) extends AttributeIndexState {
   override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[KeywordIndex]
-      .withFieldConst(_.ext, SchemaEntity.alias(id, attributeId, this.aliasNo))
+      .withFieldConst(_.fieldName, SchemaEntity.alias(id, attributeId, this.aliasNo))
       .transform
 }
 
@@ -51,7 +61,7 @@ case class BooleanIndexState(aliasNo: Int) extends AttributeIndexState {
   override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[BooleanIndex]
-      .withFieldConst(_.ext, SchemaEntity.alias(id, attributeId, this.aliasNo))
+      .withFieldConst(_.fieldName, SchemaEntity.alias(id, attributeId, this.aliasNo))
       .transform
 }
 
@@ -59,7 +69,7 @@ case class LongIndexState(aliasNo: Int) extends AttributeIndexState {
   override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[LongIndex]
-      .withFieldConst(_.ext, SchemaEntity.alias(id, attributeId, this.aliasNo))
+      .withFieldConst(_.fieldName, SchemaEntity.alias(id, attributeId, this.aliasNo))
       .transform
 }
 
@@ -67,7 +77,7 @@ case class DoubleIndexState(aliasNo: Int) extends AttributeIndexState {
   override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[DoubleIndex]
-      .withFieldConst(_.ext, SchemaEntity.alias(id, attributeId, this.aliasNo))
+      .withFieldConst(_.fieldName, SchemaEntity.alias(id, attributeId, this.aliasNo))
       .transform
 }
 
@@ -75,7 +85,7 @@ case class OffsetDateTimeIndexState(aliasNo: Int) extends AttributeIndexState {
   override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[OffsetDateTimeIndex]
-      .withFieldConst(_.ext, SchemaEntity.alias(id, attributeId, this.aliasNo))
+      .withFieldConst(_.fieldName, SchemaEntity.alias(id, attributeId, this.aliasNo))
       .transform
 }
 
@@ -83,7 +93,7 @@ case class LocalTimeIndexState(aliasNo: Int) extends AttributeIndexState {
   override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[LocalTimeIndex]
-      .withFieldConst(_.ext, SchemaEntity.alias(id, attributeId, this.aliasNo))
+      .withFieldConst(_.fieldName, SchemaEntity.alias(id, attributeId, this.aliasNo))
       .transform
 }
 
@@ -91,7 +101,7 @@ case class LocalDateIndexState(aliasNo: Int) extends AttributeIndexState {
   override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[LocalDateIndex]
-      .withFieldConst(_.ext, SchemaEntity.alias(id, attributeId, this.aliasNo))
+      .withFieldConst(_.fieldName, SchemaEntity.alias(id, attributeId, this.aliasNo))
       .transform
 }
 
@@ -99,7 +109,7 @@ case class JSONIndexState(aliasNo: Int) extends AttributeIndexState {
   override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[JSONIndex]
-      .withFieldConst(_.ext, SchemaEntity.alias(id, attributeId, this.aliasNo))
+      .withFieldConst(_.fieldName, SchemaEntity.alias(id, attributeId, this.aliasNo))
       .transform
 }
 
@@ -143,17 +153,9 @@ object AttributeIndexState {
   implicit val config = JsonConfiguration(
     discriminator = "type",
     typeNaming = JsonNaming { fullName =>
-      fullName.split("\\.").toSeq.last match {
-        case "TextIndexState"           => "text"
-        case "KeywordIndexState"        => "keyword"
-        case "BooleanIndexState"        => "boolean"
-        case "LongIndexState"           => "long"
-        case "DoubleIndexState"         => "double"
-        case "OffsetDateTimeIndexState" => "offsetDateTime"
-        case "LocalTimeIndexState"      => "localTime"
-        case "LocalDateIndexState"      => "localDate"
-        case "JSONIndexState"           => "json"
-      }
+      AttributeIndex.toTypeName(
+        fullName.split("\\.").toSeq.last.replaceAll("State", "")
+      )
     }
   )
   implicit val format = Json.format[AttributeIndexState]

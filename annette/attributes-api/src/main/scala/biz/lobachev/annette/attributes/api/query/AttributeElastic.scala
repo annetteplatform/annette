@@ -21,18 +21,7 @@ import java.time.{LocalDate, LocalDateTime}
 
 import akka.Done
 import biz.lobachev.annette.attributes.api.assignment._
-import biz.lobachev.annette.attributes.api.attribute.{
-  AttributeIndex,
-  BooleanIndex,
-  DoubleIndex,
-  KeywordIndex,
-  LocalDateIndex,
-  LocalTimeIndex,
-  LongIndex,
-  OffsetDateTimeIndex,
-  TextIndex
-}
-import biz.lobachev.annette.attributes.api.schema.LocalDateIndex
+import biz.lobachev.annette.attributes.api.attribute._
 import biz.lobachev.annette.core.elastic.AbstractElasticIndexDao
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
@@ -51,7 +40,7 @@ trait AttributeElastic extends AttributeIndexDao {
   def createAttribute(index: AttributeIndex): Future[Done] =
     createAttributeInt(index).flatMap {
       case success: RequestSuccess[PutMappingResponse]                                    =>
-        log.debug("createAttribute {} index: {} success: {}", index.ext, index.toString, success)
+        log.debug("createAttribute {} index: {} success: {}", index.fieldName, index.toString, success)
         Future.successful(Done)
       case failure: RequestFailure if failure.error.`type` == "index_not_found_exception" =>
         log.debug("createAttribute: Index not found. Creating... ")
@@ -63,14 +52,14 @@ trait AttributeElastic extends AttributeIndexDao {
             case success: RequestSuccess[PutMappingResponse] =>
               log.debug(
                 "createAttribute second iteration {} index: {} success: {}",
-                index.ext,
+                index.fieldName,
                 index.toString,
                 success
               )
             case failure: RequestFailure                     =>
               log.error(
                 "createAttribute second iteration {} index: {} failed: {}",
-                index.ext,
+                index.fieldName,
                 index.toString,
                 failure
               )
@@ -78,7 +67,7 @@ trait AttributeElastic extends AttributeIndexDao {
           Done
         }
       case failure: RequestFailure                                                        =>
-        log.error("createAttribute {} index: {} failed: {}", index.ext, index.toString, failure)
+        log.error("createAttribute {} index: {} failed: {}", index.fieldName, index.toString, failure)
         Future.successful(Done)
     }
 
@@ -87,19 +76,19 @@ trait AttributeElastic extends AttributeIndexDao {
   ): Future[Response[PutMappingResponse]] = {
     val field: FieldDefinition = index match {
       case index: TextIndex if index.keyword =>
-        textField(index.ext)
+        textField(index.fieldName)
           .fielddata(index.fielddata)
           .fields(keywordField("keyword"))
       case index: TextIndex                  =>
-        textField(index.ext)
+        textField(index.fieldName)
           .fielddata(index.fielddata)
-      case _: KeywordIndex                   => keywordField(index.ext)
-      case _: BooleanIndex                   => booleanField(index.ext)
-      case _: LongIndex                      => longField(index.ext)
-      case _: DoubleIndex                    => doubleField(index.ext)
-      case _: OffsetDateTimeIndex            => dateField(index.ext)
-      case _: LocalDateIndex                 => dateField(index.ext)
-      case _: LocalTimeIndex                 => dateField(index.ext)
+      case _: KeywordIndex                   => keywordField(index.fieldName)
+      case _: BooleanIndex                   => booleanField(index.fieldName)
+      case _: LongIndex                      => longField(index.fieldName)
+      case _: DoubleIndex                    => doubleField(index.fieldName)
+      case _: OffsetDateTimeIndex            => dateField(index.fieldName)
+      case _: LocalDateIndex                 => dateField(index.fieldName)
+      case _: LocalTimeIndex                 => dateField(index.fieldName)
     }
     elasticClient
       .execute(

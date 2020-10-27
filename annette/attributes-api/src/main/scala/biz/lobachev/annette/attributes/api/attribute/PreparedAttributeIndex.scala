@@ -1,5 +1,6 @@
-package biz.lobachev.annette.attributes.api.schema
+package biz.lobachev.annette.attributes.api.attribute
 
+import biz.lobachev.annette.attributes.api.schema.AnalyzerId
 import play.api.libs.json.{Json, JsonConfiguration, JsonNaming}
 
 sealed trait PreparedAttributeIndex {}
@@ -51,17 +52,9 @@ object PreparedAttributeIndex {
   implicit val config = JsonConfiguration(
     discriminator = "type",
     typeNaming = JsonNaming { fullName =>
-      fullName.split("\\.").toSeq.last match {
-        case "PreparedTextIndex"           => "text"
-        case "PreparedKeywordIndex"        => "keyword"
-        case "PreparedBooleanIndex"        => "boolean"
-        case "PreparedLongIndex"           => "long"
-        case "PreparedDoubleIndex"         => "double"
-        case "PreparedOffsetDateTimeIndex" => "OffsetDateTime"
-        case "PreparedLocalTimeIndex"      => "LocalTime"
-        case "PreparedLocalDateIndex"      => "LocalDate"
-        case "PreparedJSONIndex"           => "json"
-      }
+      AttributeIndex.toTypeName(
+        fullName.split("\\.").toSeq.last.replaceAll("Prepared", "")
+      )
     }
   )
   implicit val format = Json.format[PreparedAttributeIndex]

@@ -22,7 +22,13 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
-import biz.lobachev.annette.attributes.api.attribute.{Attribute, AttributeId, AttributeType}
+import biz.lobachev.annette.attributes.api.attribute.{
+  Attribute,
+  AttributeId,
+  AttributeType,
+  PreparedAttribute,
+  PreparedAttributeIndex
+}
 import biz.lobachev.annette.attributes.api.schema._
 import biz.lobachev.annette.attributes.impl.schema.model.{AttributeIndexState, AttributeState, SchemaState}
 import biz.lobachev.annette.core.model.{AnnettePrincipal, Caption}

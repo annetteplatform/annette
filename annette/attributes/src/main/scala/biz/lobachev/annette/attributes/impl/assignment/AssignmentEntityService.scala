@@ -84,7 +84,7 @@ class AssignmentEntityService(
   ): Future[Done] =
     validateAssignment(payload, attribute) match {
       case Right(_)        =>
-        val indexAlias = attribute.index.map(_.ext)
+        val indexAlias = attribute.index.map(_.fieldName)
         refFor(payload.id)
           .ask[AssignmentEntity.Confirmation](AssignmentEntity.AssignAttribute(payload, indexAlias, _))
           .map(convertSuccess)
@@ -114,7 +114,7 @@ class AssignmentEntityService(
     }
 
   def unassignAttribute(payload: UnassignAttributePayload, attribute: Attribute): Future[Done] = {
-    val indexAlias = attribute.index.map(_.ext)
+    val indexAlias = attribute.index.map(_.fieldName)
     refFor(payload.id)
       .ask[AssignmentEntity.Confirmation](AssignmentEntity.UnassignAttribute(payload, indexAlias, _))
       .map(convertSuccess)

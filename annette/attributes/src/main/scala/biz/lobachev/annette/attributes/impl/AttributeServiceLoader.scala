@@ -20,7 +20,6 @@ import akka.cluster.sharding.typed.scaladsl.Entity
 import akka.stream.Materializer
 import biz.lobachev.annette.attributes.api._
 import biz.lobachev.annette.attributes.impl.assignment._
-import biz.lobachev.annette.attributes.impl.attribute_def._
 import biz.lobachev.annette.attributes.impl.index.{IndexEntity, IndexEntityService, IndexSerializerRegistry}
 import biz.lobachev.annette.attributes.impl.schema._
 import biz.lobachev.annette.attributes.impl.schema.model.SchemaSerializerRegistry
@@ -74,16 +73,6 @@ trait AttributeComponents
 
   override lazy val jsonSerializerRegistry = AttributesSerializerRegistry
 
-  lazy val wiredAttributeDefElastic       = wire[AttributeDefElasticIndexDao]
-  lazy val wiredAttributeDefRepository    = wire[AttributeDefRepository]
-  readSide.register(wire[AttributeDefEntityEventProcessor])
-  lazy val wiredAttributeDefEntityService = wire[AttributeDefEntityService]
-  clusterSharding.init(
-    Entity(AttributeDefEntity.typeKey) { entityContext =>
-      AttributeDefEntity(entityContext)
-    }
-  )
-
   lazy val wiredSchemaCasRepository     = wire[SchemaCasRepository]
   lazy val wiredSchemaElasticRepository = wire[SchemaElasticIndexDao]
   readSide.register(wire[SchemaCasEventProcessor])
@@ -121,6 +110,7 @@ abstract class AttributeServiceApplication(context: LagomApplicationContext)
 
 object AttributesSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: immutable.Seq[JsonSerializer[_]] =
-    AttributeDefSerializerRegistry.serializers ++ SchemaSerializerRegistry.serializers ++
-      AssignmentSerializerRegistry.serializers ++ IndexSerializerRegistry.serializers
+    SchemaSerializerRegistry.serializers ++
+      AssignmentSerializerRegistry.serializers ++
+      IndexSerializerRegistry.serializers
 }

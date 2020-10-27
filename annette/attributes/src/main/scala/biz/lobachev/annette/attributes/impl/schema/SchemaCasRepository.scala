@@ -20,7 +20,14 @@ import java.time.OffsetDateTime
 
 import akka.Done
 import biz.lobachev.annette.attributes.api.attribute
-import biz.lobachev.annette.attributes.api.attribute.{Attribute, AttributeId, AttributeIndex, AttributeType}
+import biz.lobachev.annette.attributes.api.attribute.{
+  Attribute,
+  AttributeId,
+  AttributeIndex,
+  AttributeType,
+  PreparedAttribute,
+  PreparedAttributeIndex
+}
 import biz.lobachev.annette.attributes.api.schema._
 import biz.lobachev.annette.core.model.{AnnettePrincipal, Caption}
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
@@ -476,7 +483,7 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
     )
 
   private def convertPreparedAttribute(row: Row): PreparedAttribute =
-    PreparedAttribute(
+    attribute.PreparedAttribute(
       attributeId = row.getString("attribute_id"),
       name = row.getString("name"),
       caption = Json.parse(row.getString("caption")).as[Caption],
