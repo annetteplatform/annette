@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.attributes.impl.attribute_def
 
-import biz.lobachev.annette.attributes.api.attribute_def._
+import biz.lobachev.annette.attributes.api.attribute._
 import biz.lobachev.annette.core.model.AnnettePrincipal
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 

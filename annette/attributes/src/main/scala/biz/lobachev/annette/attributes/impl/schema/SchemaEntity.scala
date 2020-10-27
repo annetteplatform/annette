@@ -22,7 +22,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeId
+import biz.lobachev.annette.attributes.api.attribute.{Attribute, AttributeId, AttributeType}
 import biz.lobachev.annette.attributes.api.schema._
 import biz.lobachev.annette.attributes.impl.schema.model.{AttributeIndexState, AttributeState, SchemaState}
 import biz.lobachev.annette.core.model.{AnnettePrincipal, Caption}
@@ -212,7 +212,10 @@ object SchemaEntity {
 
   implicit val entityFormat: Format[SchemaEntity] = Json.format
 
-  def alias(attributeId: AttributeId, aliasNo: Int) = s"${attributeId}_${aliasNo}"
+  def alias(id: SchemaId, attributeId: AttributeId, aliasNo: Int) = {
+    val schemaId = id.sub.map(sub => s"${id.id}_${sub}").getOrElse(id.id)
+    s"attr_${schemaId}_${attributeId}_${aliasNo}"
+  }
 
 }
 
@@ -344,7 +347,7 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
                   .withFieldConst(_.id, state.id)
                   .withFieldConst(_.attributeId, attributeId)
                   .withFieldConst(_.index, AttributeIndexState.from(a, aliasNo))
-                  .withFieldConst(_.alias, alias(attributeId, aliasNo))
+                  .withFieldConst(_.alias, alias(state.id, attributeId, aliasNo))
                   .withFieldConst(_.reindexAssignments, cmd.attributesWithAssignment.contains(attributeId))
                   .withFieldConst(_.activatedBy, cmd.payload.activatedBy)
                   .withFieldConst(_.activatedAt, now)
@@ -371,7 +374,7 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
                     .into[IndexAttributeRemoved]
                     .withFieldConst(_.id, state.id)
                     .withFieldConst(_.attributeId, attributeId)
-                    .withFieldConst(_.alias, alias(attributeId, attr.aliasNo))
+                    .withFieldConst(_.alias, alias(state.id, attributeId, attr.aliasNo))
                     .withFieldConst(_.removeAssignments, cmd.attributesWithAssignment.contains(attributeId))
                     .withFieldConst(_.activatedBy, cmd.payload.activatedBy)
                     .withFieldConst(_.activatedAt, now)
@@ -423,7 +426,7 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
                   .withFieldConst(_.id, cmd.payload.id)
                   .withFieldConst(_.attributeId, prepAttr.attributeId)
                   .withFieldConst(_.index, AttributeIndexState.from(prepAttr.index.get, aliasNo))
-                  .withFieldConst(_.alias, alias(prepAttr.attributeId, aliasNo))
+                  .withFieldConst(_.alias, alias(cmd.payload.id, prepAttr.attributeId, aliasNo))
                   .withFieldConst(_.reindexAssignments, cmd.attributesWithAssignment.contains(activeAttr.attributeId))
                   .withFieldConst(_.activatedBy, cmd.payload.activatedBy)
                   .withFieldConst(_.activatedAt, now)
@@ -437,7 +440,7 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
                   .into[IndexAttributeRemoved]
                   .withFieldConst(_.id, cmd.payload.id)
                   .withFieldConst(_.attributeId, prepAttr.attributeId)
-                  .withFieldConst(_.alias, alias(activeAttr.attributeId, activeAttr.index.get.aliasNo))
+                  .withFieldConst(_.alias, alias(cmd.payload.id, activeAttr.attributeId, activeAttr.index.get.aliasNo))
                   .withFieldConst(_.removeAssignments, cmd.attributesWithAssignment.contains(activeAttr.attributeId))
                   .withFieldConst(_.activatedBy, cmd.payload.activatedBy)
                   .withFieldConst(_.activatedAt, now)
@@ -450,7 +453,7 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
                 prepAttr.index.get
                   .into[IndexAttributeRemoved]
                   .withFieldConst(_.id, cmd.payload.id)
-                  .withFieldConst(_.alias, alias(activeAttr.attributeId, activeAttr.index.get.aliasNo))
+                  .withFieldConst(_.alias, alias(cmd.payload.id, activeAttr.attributeId, activeAttr.index.get.aliasNo))
                   .withFieldConst(_.attributeId, prepAttr.attributeId)
                   .withFieldConst(_.removeAssignments, cmd.attributesWithAssignment.contains(activeAttr.attributeId))
                   .withFieldConst(_.activatedBy, cmd.payload.activatedBy)
@@ -463,7 +466,10 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
                     _.index,
                     AttributeIndexState.from(prepAttr.index.get, activeAttr.index.get.aliasNo + 1)
                   )
-                  .withFieldConst(_.alias, alias(activeAttr.attributeId, activeAttr.index.get.aliasNo + 1))
+                  .withFieldConst(
+                    _.alias,
+                    alias(cmd.payload.id, activeAttr.attributeId, activeAttr.index.get.aliasNo + 1)
+                  )
                   .withFieldConst(_.attributeId, prepAttr.attributeId)
                   .withFieldConst(_.reindexAssignments, cmd.attributesWithAssignment.contains(activeAttr.attributeId))
                   .withFieldConst(_.activatedBy, cmd.payload.activatedBy)
@@ -493,7 +499,7 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
             IndexAttributeRemoved(
               id = state.id,
               attributeId = attr.attributeId,
-              alias = alias(attr.attributeId, attr.index.get.aliasNo),
+              alias = alias(state.id, attr.attributeId, attr.index.get.aliasNo),
               removeAssignments = false,
               activatedBy = cmd.payload.deletedBy,
               activatedAt = now
@@ -516,7 +522,7 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
       case None        => Effect.reply(cmd.replyTo)(SchemaNotFound)
       case Some(state) =>
         val activeAttributes = state.activeAttributes.values.map { attr =>
-          val newAttr = toActiveSchemaAttribute(attr)
+          val newAttr = toActiveSchemaAttribute(state.id, attr)
           newAttr.attributeId -> newAttr
         }.toMap
         val schema           = state
@@ -530,7 +536,8 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
     maybeState match {
       case None        => Effect.reply(cmd.replyTo)(SchemaNotFound)
       case Some(state) =>
-        val maybeAttribute = state.activeAttributes.get(cmd.attributeId).map(toActiveSchemaAttribute)
+        val maybeAttribute =
+          state.activeAttributes.get(cmd.attributeId).map(attrId => toActiveSchemaAttribute(state.id, attrId))
         Effect.reply(cmd.replyTo)(SuccessSchemaAttribute(maybeAttribute))
     }
 
@@ -538,7 +545,7 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
     maybeState match {
       case None        => Effect.reply(cmd.replyTo)(SchemaNotFound)
       case Some(state) =>
-        val attributes = state.activeAttributes.values.map(toActiveSchemaAttribute).toSeq
+        val attributes = state.activeAttributes.values.map(attrId => toActiveSchemaAttribute(state.id, attrId)).toSeq
         Effect.reply(cmd.replyTo)(SuccessSchemaAttributes(attributes))
     }
 
@@ -697,12 +704,12 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
       activeAttr.index
     ) || prepAttr.name != activeAttr.name || prepAttr.caption != activeAttr.caption
 
-  private def toActiveSchemaAttribute(attr: AttributeState) =
+  private def toActiveSchemaAttribute(id: SchemaId, attr: AttributeState) =
     attr
       .into[Attribute]
       .withFieldConst(
         _.index,
-        attr.index.map(_.toAttributeIndex(attr.attributeId))
+        attr.index.map(_.toAttributeIndex(id, attr.attributeId))
       )
       .transform
 

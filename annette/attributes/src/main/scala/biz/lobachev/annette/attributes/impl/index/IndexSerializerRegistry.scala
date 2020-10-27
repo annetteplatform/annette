@@ -17,7 +17,7 @@
 package biz.lobachev.annette.attributes.impl.index
 
 import biz.lobachev.annette.attributes.api.assignment.{AttributeAssignmentId, AttributeValue}
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeValueType
+import biz.lobachev.annette.attributes.api.attribute.AttributeValueType
 import biz.lobachev.annette.attributes.api.schema.SchemaAttributeId
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 

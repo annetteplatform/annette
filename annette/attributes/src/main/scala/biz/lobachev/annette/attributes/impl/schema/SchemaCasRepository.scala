@@ -19,7 +19,8 @@ package biz.lobachev.annette.attributes.impl.schema
 import java.time.OffsetDateTime
 
 import akka.Done
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeId
+import biz.lobachev.annette.attributes.api.attribute
+import biz.lobachev.annette.attributes.api.attribute.{Attribute, AttributeId, AttributeIndex, AttributeType}
 import biz.lobachev.annette.attributes.api.schema._
 import biz.lobachev.annette.core.model.{AnnettePrincipal, Caption}
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
@@ -72,7 +73,7 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
                |          name               text,
                |          caption            text,
                |          attribute_type     text,
-               |          index              text,
+               |          index_type              text,
                |          PRIMARY KEY (id, attribute_id)
                |)
                |""".stripMargin
@@ -85,7 +86,7 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
                |          name               text,
                |          caption            text,
                |          attribute_type     text,
-               |          index              text,
+               |          index_type              text,
                |          PRIMARY KEY (id, attribute_id)
                |)
                |""".stripMargin
@@ -151,8 +152,8 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
                                           |   attribute_id       ,
                                           |   name               ,
                                           |   caption            ,
-                                          |   attribute_type   ,
-                                          |   index
+                                          |   attribute_type     ,
+                                          |   index_type
                                           | )
                                           | VALUES (
                                           |   :id                 ,
@@ -160,7 +161,7 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
                                           |   :name               ,
                                           |   :caption            ,
                                           |   :attribute_type     ,
-                                          |   :index
+                                          |   :index_type
                                           | )
                                           |""".stripMargin
                                         )
@@ -169,8 +170,8 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
                                           | UPDATE active_attributes SET
                                           |    name               = :name               ,
                                           |    caption            = :caption            ,
-                                          |    attribute_type     = :attribute_type   ,
-                                          |    index              = :index
+                                          |    attribute_type     = :attribute_type     ,
+                                          |    index_type              = :index_type
                                           | WHERE id = :id AND attribute_id = :attribute_id
                                           |""".stripMargin
                                         )
@@ -189,7 +190,7 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
                                             |   name               ,
                                             |   caption            ,
                                             |   attribute_type     ,
-                                            |   index
+                                            |   index_type
                                             | )
                                             | VALUES (
                                             |   :id                 ,
@@ -197,7 +198,7 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
                                             |   :name               ,
                                             |   :caption            ,
                                             |   :attribute_type     ,
-                                            |   :index
+                                            |   :index_type
                                             | )
                                             |""".stripMargin
                                         )
@@ -206,8 +207,8 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
                                             | UPDATE prepared_attributes SET
                                             |    name               = :name               ,
                                             |    caption            = :caption            ,
-                                            |    attribute_type   = :attribute_type   ,
-                                            |    index              = :index
+                                            |    attribute_type   = :attribute_type       ,
+                                            |    index_type              = :index_type
                                             | WHERE id = :id AND attribute_id = :attribute_id
                                             |""".stripMargin
                                         )
@@ -270,7 +271,7 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
         .setString("name", attr.name)
         .setString("caption", Json.toJson(attr.caption).toString)
         .setString("attribute_type", Json.toJson(attr.attributeType).toString)
-        .setString("index", Json.toJson(attr.index).toString)
+        .setString("index_type", Json.toJson(attr.index).toString)
     )
 
   def updateSchemaName(event: SchemaEntity.SchemaNameUpdated): Seq[BoundStatement] =
@@ -293,7 +294,7 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
         .setString("name", event.name)
         .setString("caption", Json.toJson(event.caption).toString)
         .setString("attribute_type", Json.toJson(event.attributeType).toString)
-        .setString("index", Json.toJson(event.index).toString),
+        .setString("index_type", Json.toJson(event.index).toString),
       updateActivatedStatement
         .bind()
         .setString("id", event.id.toComposed)
@@ -311,7 +312,7 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
         .setString("name", event.name)
         .setString("caption", Json.toJson(event.caption).toString)
         .setString("attribute_type", Json.toJson(event.attributeType).toString)
-        .setString("index", Json.toJson(event.index).toString),
+        .setString("index_type", Json.toJson(event.index).toString),
       updateActivatedStatement
         .bind()
         .setString("id", event.id.toComposed)
@@ -344,7 +345,7 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
         .setString("name", event.name)
         .setString("caption", Json.toJson(event.caption).toString)
         .setString("attribute_type", Json.toJson(event.attributeType).toString)
-        .setString("index", Json.toJson(event.index).toString),
+        .setString("index_type", Json.toJson(event.index).toString),
       updateUpdatedStatement
         .bind()
         .setString("id", event.id.toComposed)
@@ -362,7 +363,7 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
         .setString("name", event.name)
         .setString("caption", Json.toJson(event.caption).toString)
         .setString("attribute_type", Json.toJson(event.attributeType).toString)
-        .setString("index", Json.toJson(event.index).toString),
+        .setString("index_type", Json.toJson(event.index).toString),
       updateUpdatedStatement
         .bind()
         .setString("id", event.id.toComposed)
@@ -466,12 +467,12 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
   }
 
   private def convertAttribute(row: Row): Attribute =
-    Attribute(
+    attribute.Attribute(
       attributeId = row.getString("attribute_id"),
       name = row.getString("name"),
       caption = Json.parse(row.getString("caption")).as[Caption],
       attributeType = Json.parse(row.getString("attribute_type")).as[AttributeType],
-      index = Json.parse(row.getString("index")).asOpt[AttributeIndex]
+      index = Json.parse(row.getString("index_type")).asOpt[AttributeIndex]
     )
 
   private def convertPreparedAttribute(row: Row): PreparedAttribute =
@@ -480,7 +481,7 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
       name = row.getString("name"),
       caption = Json.parse(row.getString("caption")).as[Caption],
       attributeType = Json.parse(row.getString("attribute_type")).as[AttributeType],
-      index = Json.parse(row.getString("index")).asOpt[PreparedAttributeIndex]
+      index = Json.parse(row.getString("index_type")).asOpt[PreparedAttributeIndex]
     )
 
 }

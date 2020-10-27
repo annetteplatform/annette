@@ -14,25 +14,21 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.attributes.api.attribute_def
+package biz.lobachev.annette.attributes.api.attribute
 
-import java.time.OffsetDateTime
-
-import biz.lobachev.annette.core.model.AnnettePrincipal
 import play.api.libs.json.Json
 
-case class AttributeDef(
-  id: AttributeDefId,
-  name: String,
-  caption: String,
-  attributeType: AttributeValueType.AttributeValueType,
-  attributeId: AttributeId,
-  subType: Option[String] = None,
-  allowedValues: Map[String, String] = Map.empty,
-  updatedBy: AnnettePrincipal,
-  updatedAt: OffsetDateTime = OffsetDateTime.now
-)
+object AttributeValueType extends Enumeration {
+  type AttributeValueType = Value
 
-object AttributeDef {
-  implicit val format = Json.format[AttributeDef]
+  val String         = Value("String")
+  val Boolean        = Value("Boolean")
+  val Long           = Value("Long")
+  val Double         = Value("Double")
+  val OffsetDateTime = Value("OffsetDateTime")
+  val LocalTime      = Value("LocalTime")
+  val LocalDate      = Value("LocalDate")
+  val JSON           = Value("JSON")
+
+  implicit val format = Json.formatEnum(this)
 }

@@ -1,6 +1,18 @@
 package biz.lobachev.annette.attributes.impl.schema.model
 
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeId
+import biz.lobachev.annette.attributes.api.attribute.{
+  AttributeId,
+  AttributeIndex,
+  BooleanIndex,
+  DoubleIndex,
+  JSONIndex,
+  KeywordIndex,
+  LocalDateIndex,
+  LocalTimeIndex,
+  LongIndex,
+  OffsetDateTimeIndex,
+  TextIndex
+}
 import biz.lobachev.annette.attributes.api.schema._
 import biz.lobachev.annette.attributes.impl.schema.SchemaEntity
 import io.scalaland.chimney.dsl._
@@ -9,7 +21,7 @@ import play.api.libs.json.{Json, JsonConfiguration, JsonNaming}
 sealed trait AttributeIndexState {
   val aliasNo: Int
 
-  def toAttributeIndex(attributeId: AttributeId): AttributeIndex
+  def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex
 }
 
 case class TextIndexState(
@@ -20,74 +32,74 @@ case class TextIndexState(
   searchAnalyzer: Option[AnalyzerId] = None,
   searchQuoteAnalyzer: Option[AnalyzerId] = None
 ) extends AttributeIndexState {
-  override def toAttributeIndex(attributeId: AttributeId): AttributeIndex =
+  override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[TextIndex]
-      .withFieldConst(_.alias, SchemaEntity.alias(attributeId, this.aliasNo))
+      .withFieldConst(_.ext, SchemaEntity.alias(id, attributeId, this.aliasNo))
       .transform
 }
 
 case class KeywordIndexState(aliasNo: Int) extends AttributeIndexState {
-  override def toAttributeIndex(attributeId: AttributeId): AttributeIndex =
+  override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[KeywordIndex]
-      .withFieldConst(_.alias, SchemaEntity.alias(attributeId, this.aliasNo))
+      .withFieldConst(_.ext, SchemaEntity.alias(id, attributeId, this.aliasNo))
       .transform
 }
 
 case class BooleanIndexState(aliasNo: Int) extends AttributeIndexState {
-  override def toAttributeIndex(attributeId: AttributeId): AttributeIndex =
+  override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[BooleanIndex]
-      .withFieldConst(_.alias, SchemaEntity.alias(attributeId, this.aliasNo))
+      .withFieldConst(_.ext, SchemaEntity.alias(id, attributeId, this.aliasNo))
       .transform
 }
 
 case class LongIndexState(aliasNo: Int) extends AttributeIndexState {
-  override def toAttributeIndex(attributeId: AttributeId): AttributeIndex =
+  override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[LongIndex]
-      .withFieldConst(_.alias, SchemaEntity.alias(attributeId, this.aliasNo))
+      .withFieldConst(_.ext, SchemaEntity.alias(id, attributeId, this.aliasNo))
       .transform
 }
 
 case class DoubleIndexState(aliasNo: Int) extends AttributeIndexState {
-  override def toAttributeIndex(attributeId: AttributeId): AttributeIndex =
+  override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[DoubleIndex]
-      .withFieldConst(_.alias, SchemaEntity.alias(attributeId, this.aliasNo))
+      .withFieldConst(_.ext, SchemaEntity.alias(id, attributeId, this.aliasNo))
       .transform
 }
 
 case class OffsetDateTimeIndexState(aliasNo: Int) extends AttributeIndexState {
-  override def toAttributeIndex(attributeId: AttributeId): AttributeIndex =
+  override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[OffsetDateTimeIndex]
-      .withFieldConst(_.alias, SchemaEntity.alias(attributeId, this.aliasNo))
+      .withFieldConst(_.ext, SchemaEntity.alias(id, attributeId, this.aliasNo))
       .transform
 }
 
 case class LocalTimeIndexState(aliasNo: Int) extends AttributeIndexState {
-  override def toAttributeIndex(attributeId: AttributeId): AttributeIndex =
+  override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[LocalTimeIndex]
-      .withFieldConst(_.alias, SchemaEntity.alias(attributeId, this.aliasNo))
+      .withFieldConst(_.ext, SchemaEntity.alias(id, attributeId, this.aliasNo))
       .transform
 }
 
 case class LocalDateIndexState(aliasNo: Int) extends AttributeIndexState {
-  override def toAttributeIndex(attributeId: AttributeId): AttributeIndex =
+  override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[LocalDateIndex]
-      .withFieldConst(_.alias, SchemaEntity.alias(attributeId, this.aliasNo))
+      .withFieldConst(_.ext, SchemaEntity.alias(id, attributeId, this.aliasNo))
       .transform
 }
 
 case class JSONIndexState(aliasNo: Int) extends AttributeIndexState {
-  override def toAttributeIndex(attributeId: AttributeId): AttributeIndex =
+  override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[JSONIndex]
-      .withFieldConst(_.alias, SchemaEntity.alias(attributeId, this.aliasNo))
+      .withFieldConst(_.ext, SchemaEntity.alias(id, attributeId, this.aliasNo))
       .transform
 }
 

@@ -20,7 +20,7 @@ import akka.util.Timeout
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.attributes.api.AttributeService
 import biz.lobachev.annette.attributes.api.assignment._
-import biz.lobachev.annette.attributes.api.attribute_def._
+import biz.lobachev.annette.attributes.api.attribute._
 import biz.lobachev.annette.attributes.api.index._
 import biz.lobachev.annette.attributes.api.schema._
 import biz.lobachev.annette.attributes.impl.assignment.AssignmentEntityService

@@ -18,7 +18,7 @@ package biz.lobachev.annette.attributes.impl.attribute_def
 
 import java.time.OffsetDateTime
 
-import biz.lobachev.annette.attributes.api.attribute_def.{AttributeDefId, AttributeId, AttributeValueType}
+import biz.lobachev.annette.attributes.api.attribute.{AttributeDefId, AttributeId, AttributeValueType}
 import biz.lobachev.annette.core.model.AnnettePrincipal
 import play.api.libs.json.Json
 

@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.attributes.impl.attribute_def
 
-import biz.lobachev.annette.attributes.api.attribute_def._
+import biz.lobachev.annette.attributes.api.attribute._
 import biz.lobachev.annette.core.elastic.{AbstractElasticIndexDao, ElasticSettings, FindResult}
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._

@@ -18,7 +18,7 @@ package biz.lobachev.annette.attributes.api.query
 
 import akka.Done
 import biz.lobachev.annette.attributes.api.assignment._
-import biz.lobachev.annette.attributes.api.schema.AttributeIndex
+import biz.lobachev.annette.attributes.api.attribute.AttributeIndex
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.requests.indexes.PutMappingResponse
 import com.sksamuel.elastic4s.requests.searches.queries.{Query, RangeQuery}
@@ -29,10 +29,9 @@ trait AttributeIndexDao {
 
   // *************************** Attribute API ***************************
 
-  def createAttribute(fieldName: String, index: AttributeIndex): Future[Done]
+  def createAttribute(index: AttributeIndex): Future[Done]
 
   def createAttributeInt(
-    fieldName: String,
     index: AttributeIndex
   ): Future[Response[PutMappingResponse]]
 

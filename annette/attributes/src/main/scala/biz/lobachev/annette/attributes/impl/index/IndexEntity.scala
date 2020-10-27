@@ -21,8 +21,8 @@ import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.attributes.api.assignment.{AttributeValue, ObjectId}
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeValueType
-import biz.lobachev.annette.attributes.api.schema.{AttributeIndex, SchemaAttributeId}
+import biz.lobachev.annette.attributes.api.attribute.AttributeIndex
+import biz.lobachev.annette.attributes.api.schema.SchemaAttributeId
 import com.lightbend.lagom.scaladsl.persistence._
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
@@ -34,9 +34,7 @@ object IndexEntity {
   sealed trait Command extends CommandSerializable
   final case class CreateIndexAttribute(
     id: SchemaAttributeId,
-    attributeType: AttributeValueType.AttributeValueType,
     index: AttributeIndex,
-    fieldName: String,
     replyTo: ActorRef[Confirmation]
   )                    extends Command
   final case class RemoveIndexAttribute(id: SchemaAttributeId, fieldName: String, replyTo: ActorRef[Confirmation])
@@ -71,9 +69,7 @@ object IndexEntity {
 
   final case class IndexAttributeCreated(
     id: SchemaAttributeId,
-    attributeType: AttributeValueType.AttributeValueType,
-    index: AttributeIndex,
-    fieldName: String
+    index: AttributeIndex
   )                                                                                                       extends Event
   final case class IndexAttributeRemoved(id: SchemaAttributeId, fieldName: String)                        extends Event
   final case class IndexAttributeAssigned(

@@ -34,7 +34,7 @@ class AttributeServiceSubscriber(attributeService: AttributeService, indexDao: P
 
   attributeService.indexTopic.subscribe.atLeastOnce(Flow[IndexEvent].mapAsync(1) {
     case event: IndexAttributeCreated if event.id.schemaId == PERSON_SCHEMA_ID    =>
-      indexDao.createAttribute(event.fieldName, event.index)
+      indexDao.createAttribute(event.index)
     case event: IndexAttributeAssigned if event.id.schemaId == PERSON_SCHEMA_ID   =>
       indexDao.assignAttribute(event.objectId, event.fieldName, event.attribute)
     case event: IndexAttributeUnassigned if event.id.schemaId == PERSON_SCHEMA_ID =>

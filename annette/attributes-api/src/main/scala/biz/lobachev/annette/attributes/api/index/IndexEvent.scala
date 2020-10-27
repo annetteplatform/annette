@@ -17,7 +17,8 @@
 package biz.lobachev.annette.attributes.api.index
 
 import biz.lobachev.annette.attributes.api.assignment.{AttributeValue, ObjectId}
-import biz.lobachev.annette.attributes.api.schema.{AttributeIndex, SchemaAttributeId}
+import biz.lobachev.annette.attributes.api.attribute.AttributeIndex
+import biz.lobachev.annette.attributes.api.schema.SchemaAttributeId
 import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 
 sealed trait IndexEvent {
@@ -26,8 +27,7 @@ sealed trait IndexEvent {
 
 final case class IndexAttributeCreated(
   id: SchemaAttributeId,
-  index: AttributeIndex,
-  fieldName: String
+  index: AttributeIndex
 ) extends IndexEvent
 
 object IndexAttributeCreated {

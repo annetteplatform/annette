@@ -20,7 +20,7 @@ import java.time.OffsetDateTime
 
 import akka.Done
 import biz.lobachev.annette.attributes.api.assignment._
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeId
+import biz.lobachev.annette.attributes.api.attribute.AttributeId
 import biz.lobachev.annette.attributes.api.schema.{SchemaAttributeId, SchemaId}
 import biz.lobachev.annette.core.model.AnnettePrincipal
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}

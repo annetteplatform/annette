@@ -57,9 +57,9 @@ object PreparedAttributeIndex {
         case "PreparedBooleanIndex"        => "boolean"
         case "PreparedLongIndex"           => "long"
         case "PreparedDoubleIndex"         => "double"
-        case "PreparedOffsetDateTimeIndex" => "offsetDateTime"
-        case "PreparedLocalTimeIndex"      => "localTime"
-        case "PreparedLocalDateIndex"      => "localDate"
+        case "PreparedOffsetDateTimeIndex" => "OffsetDateTime"
+        case "PreparedLocalTimeIndex"      => "LocalTime"
+        case "PreparedLocalDateIndex"      => "LocalDate"
         case "PreparedJSONIndex"           => "json"
       }
     }

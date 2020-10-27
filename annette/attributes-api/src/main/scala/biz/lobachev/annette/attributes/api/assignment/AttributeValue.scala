@@ -18,7 +18,7 @@ package biz.lobachev.annette.attributes.api.assignment
 
 import java.time.{LocalDate, LocalTime, OffsetDateTime}
 
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeValueType
+import biz.lobachev.annette.attributes.api.attribute.AttributeValueType
 import play.api.libs.json._
 
 sealed trait AttributeValue

@@ -22,7 +22,18 @@ import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
 import biz.lobachev.annette.attributes.api.assignment._
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeId
+import biz.lobachev.annette.attributes.api.attribute.{
+  Attribute,
+  AttributeId,
+  BooleanAttribute,
+  DoubleAttribute,
+  JSONAttribute,
+  LocalDateAttribute,
+  LocalTimeAttribute,
+  LongAttribute,
+  OffsetDateTimeAttribute,
+  StringAttribute
+}
 import biz.lobachev.annette.attributes.api.schema._
 import biz.lobachev.annette.core.model.AnnettePrincipal
 import com.typesafe.config.Config
@@ -73,7 +84,7 @@ class AssignmentEntityService(
   ): Future[Done] =
     validateAssignment(payload, attribute) match {
       case Right(_)        =>
-        val indexAlias = attribute.index.map(_.alias)
+        val indexAlias = attribute.index.map(_.ext)
         refFor(payload.id)
           .ask[AssignmentEntity.Confirmation](AssignmentEntity.AssignAttribute(payload, indexAlias, _))
           .map(convertSuccess)
@@ -103,7 +114,7 @@ class AssignmentEntityService(
     }
 
   def unassignAttribute(payload: UnassignAttributePayload, attribute: Attribute): Future[Done] = {
-    val indexAlias = attribute.index.map(_.alias)
+    val indexAlias = attribute.index.map(_.ext)
     refFor(payload.id)
       .ask[AssignmentEntity.Confirmation](AssignmentEntity.UnassignAttribute(payload, indexAlias, _))
       .map(convertSuccess)

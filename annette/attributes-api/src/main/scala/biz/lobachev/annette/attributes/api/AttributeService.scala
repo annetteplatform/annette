@@ -18,7 +18,7 @@ package biz.lobachev.annette.attributes.api
 
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.attributes.api.assignment._
-import biz.lobachev.annette.attributes.api.attribute_def._
+import biz.lobachev.annette.attributes.api.attribute._
 import biz.lobachev.annette.attributes.api.index.IndexEvent
 import biz.lobachev.annette.attributes.api.schema._
 import biz.lobachev.annette.core.elastic.FindResult
@@ -101,9 +101,9 @@ trait AttributeService extends Service {
           .addProperty(
             KafkaProperties.partitionKeyStrategy,
             PartitionKeyStrategy[IndexEvent](_.id.toComposed)
-          )         
+          )
       )
-      .withAutoAcl(true)  
+      .withAutoAcl(true)
     // @formatter:on
   }
 }

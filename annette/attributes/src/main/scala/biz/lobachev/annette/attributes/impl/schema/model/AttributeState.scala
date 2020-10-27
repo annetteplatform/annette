@@ -1,7 +1,6 @@
 package biz.lobachev.annette.attributes.impl.schema.model
 
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeId
-import biz.lobachev.annette.attributes.api.schema.{AttributeType}
+import biz.lobachev.annette.attributes.api.attribute.{AttributeId, AttributeType}
 import biz.lobachev.annette.core.model.Caption
 import play.api.libs.json.Json
 

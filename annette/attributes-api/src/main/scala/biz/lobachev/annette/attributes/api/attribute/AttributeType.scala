@@ -1,6 +1,5 @@
-package biz.lobachev.annette.attributes.api.schema
+package biz.lobachev.annette.attributes.api.attribute
 
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeValueType
 import play.api.libs.json.{Json, JsonConfiguration, JsonNaming}
 
 sealed trait AttributeType {}

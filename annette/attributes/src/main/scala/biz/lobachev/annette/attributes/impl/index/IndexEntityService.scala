@@ -22,8 +22,8 @@ import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
 import biz.lobachev.annette.attributes.api.assignment.{AttributeValue, ObjectId}
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeValueType
-import biz.lobachev.annette.attributes.api.schema.{AttributeIndex, SchemaAttributeId}
+import biz.lobachev.annette.attributes.api.attribute.AttributeIndex
+import biz.lobachev.annette.attributes.api.schema.SchemaAttributeId
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 
@@ -55,13 +55,11 @@ class IndexEntityService(
 
   def createIndexAttribute(
     id: SchemaAttributeId,
-    attributeType: AttributeValueType.AttributeValueType,
-    index: AttributeIndex,
-    fieldName: String
+    index: AttributeIndex
   ): Future[Done] =
     refFor(id.toComposed)
       .ask[IndexEntity.Confirmation](
-        IndexEntity.CreateIndexAttribute(id, attributeType, index, fieldName, _)
+        IndexEntity.CreateIndexAttribute(id, index, _)
       )
       .map(convertSuccess)
 

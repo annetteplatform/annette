@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.attributes.api.schema
 
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeId
+import biz.lobachev.annette.attributes.api.attribute.AttributeId
 import play.api.libs.json.{Format, Json}
 
 case class SchemaAttributeId(
@@ -37,12 +37,12 @@ object SchemaAttributeId {
     val splited = id.split(SEPARATOR)
     if (splited.length < 2 || splited.length > 3) throw InvalidComposedId()
     try {
-      val schemaId = splited(0)
-      val (subSchemaId, attributeId) = if (splited.length == 3) {
-        (Some(splited(1)), splited(2))
-      } else {
-        (None, splited(1))
-      }
+      val schemaId                   = splited(0)
+      val (subSchemaId, attributeId) =
+        if (splited.length == 3)
+          (Some(splited(1)), splited(2))
+        else
+          (None, splited(1))
       SchemaAttributeId(schemaId, subSchemaId, attributeId)
     } catch {
       case _: Throwable => throw InvalidComposedId()
