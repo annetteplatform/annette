@@ -67,7 +67,7 @@ trait OrgStructureService {
   def updateOrgRole(payload: UpdateOrgRolePayload): Future[Done]
   def deleteOrgRole(payload: DeleteOrgRolePayload): Future[Done]
   def getOrgRoleById(id: OrgRoleId, fromReadSide: Boolean): Future[OrgRole]
-  def getOrgRolesById(ids: Set[OrgRoleId], fromReadSide: Boolean): Future[Set[OrgRole]]
+  def getOrgRolesById(ids: Set[OrgRoleId], fromReadSide: Boolean): Future[Map[OrgRoleId, OrgRole]]
   def findOrgRoles(query: OrgRoleFindQuery): Future[FindResult]
 
 }

@@ -18,6 +18,7 @@ package biz.lobachev.annette.gateway.api.org_structure
 
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.gateway.api.org_structure.Permissions._
+import biz.lobachev.annette.gateway.api.org_structure.dto.{DeleteOrgRoleDto, OrgRoleDto}
 import biz.lobachev.annette.gateway.core.authentication.{AuthenticatedAction, AuthenticatedRequest}
 import biz.lobachev.annette.gateway.core.authorization.{AuthorizationFailedException, Authorizer}
 import biz.lobachev.annette.org_structure.api.OrgStructureService
@@ -28,6 +29,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}
 
 import scala.concurrent.{ExecutionContext, Future}
+import io.scalaland.chimney.dsl._
 
 @Singleton
 class OrgStructureController @Inject() (
@@ -338,9 +340,12 @@ class OrgStructureController @Inject() (
   // org role methods
 
   def createOrgRole =
-    authenticated.async(parse.json[CreateOrgRolePayload]) { implicit request =>
+    authenticated.async(parse.json[OrgRoleDto]) { implicit request =>
       authorizer.performCheckAny(MAINTAIN_ALL_ORG_ROLES) {
         val payload = request.body
+          .into[CreateOrgRolePayload]
+          .withFieldConst(_.createdBy, request.subject.principals.head)
+          .transform
         for {
           _    <- orgStructureService.createOrgRole(payload)
           role <- orgStructureService.getOrgRoleById(payload.id, false)
@@ -349,9 +354,12 @@ class OrgStructureController @Inject() (
     }
 
   def updateOrgRole =
-    authenticated.async(parse.json[UpdateOrgRolePayload]) { implicit request =>
+    authenticated.async(parse.json[OrgRoleDto]) { implicit request =>
       authorizer.performCheckAny(MAINTAIN_ALL_ORG_ROLES) {
         val payload = request.body
+          .into[UpdateOrgRolePayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
         for {
           _    <- orgStructureService.updateOrgRole(payload)
           role <- orgStructureService.getOrgRoleById(payload.id, false)
@@ -360,9 +368,12 @@ class OrgStructureController @Inject() (
     }
 
   def deleteOrgRole =
-    authenticated.async(parse.json[DeleteOrgRolePayload]) { implicit request =>
+    authenticated.async(parse.json[DeleteOrgRoleDto]) { implicit request =>
       authorizer.performCheckAny(MAINTAIN_ALL_ORG_ROLES) {
         val payload = request.body
+          .into[DeleteOrgRolePayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
         for {
           _ <- orgStructureService.deleteOrgRole(payload)
         } yield Ok("")

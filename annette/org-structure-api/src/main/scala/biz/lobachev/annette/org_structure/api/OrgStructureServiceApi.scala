@@ -66,7 +66,7 @@ trait OrgStructureServiceApi extends Service {
   def updateOrgRole: ServiceCall[UpdateOrgRolePayload, Done]
   def deleteOrgRole: ServiceCall[DeleteOrgRolePayload, Done]
   def getOrgRoleById(id: OrgRoleId, fromReadSide: Boolean): ServiceCall[NotUsed, OrgRole]
-  def getOrgRolesById(fromReadSide: Boolean): ServiceCall[Set[OrgRoleId], Set[OrgRole]]
+  def getOrgRolesById(fromReadSide: Boolean): ServiceCall[Set[OrgRoleId], Map[OrgRoleId, OrgRole]]
   def findOrgRoles: ServiceCall[OrgRoleFindQuery, FindResult]
 
   final override def descriptor = {

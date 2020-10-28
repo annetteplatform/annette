@@ -133,7 +133,7 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
   def getOrgRoleById(id: OrgRoleId, fromReadSide: Boolean): Future[OrgRole] =
     api.getOrgRoleById(id, fromReadSide).invoke()
 
-  def getOrgRolesById(ids: Set[OrgRoleId], fromReadSide: Boolean): Future[Set[OrgRole]] =
+  def getOrgRolesById(ids: Set[OrgRoleId], fromReadSide: Boolean): Future[Map[OrgRoleId, OrgRole]] =
     api.getOrgRolesById(fromReadSide).invoke(ids)
 
   def findOrgRoles(query: OrgRoleFindQuery): Future[FindResult] =

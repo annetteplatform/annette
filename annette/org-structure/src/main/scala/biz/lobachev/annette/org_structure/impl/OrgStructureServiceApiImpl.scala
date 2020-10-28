@@ -195,7 +195,7 @@ class OrgStructureServiceApiImpl(
       orgRoleEntityService.getOrgRoleById(id, fromReadSide)
     }
 
-  override def getOrgRolesById(fromReadSide: Boolean): ServiceCall[Set[OrgRoleId], Set[OrgRole]] =
+  override def getOrgRolesById(fromReadSide: Boolean): ServiceCall[Set[OrgRoleId], Map[OrgRoleId, OrgRole]] =
     ServiceCall { ids =>
       orgRoleEntityService.getOrgRolesById(ids, fromReadSide)
     }

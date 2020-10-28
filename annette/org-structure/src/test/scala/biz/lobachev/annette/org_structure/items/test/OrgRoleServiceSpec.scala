@@ -37,7 +37,7 @@ class OrgRoleServiceSpec extends AbstractOrgItemsServiceSpec with OrgRoleTestDat
       for {
         _     <- Future.traverse(createPayloads)(entity => client.createOrgRole.invoke(entity))
         found <- client.getOrgRolesById(false).invoke(createPayloads.map(_.id).toSet)
-      } yield found shouldBe found.map(f => convertToOrgRole(createPayloadMap(f.id), f.updatedAt))
+      } yield found shouldBe found.values.map(f => convertToOrgRole(createPayloadMap(f.id), f.updatedAt))
     }
 
     "getOrgRole for existing entity (read side)" in {
@@ -61,7 +61,7 @@ class OrgRoleServiceSpec extends AbstractOrgItemsServiceSpec with OrgRoleTestDat
           found <- client.getOrgRolesById(true).invoke(createPayloads.map(_.id).toSet)
         } yield {
 
-          val r = found shouldBe found.map(f => convertToOrgRole(createPayloadMap(f.id), f.updatedAt))
+          val r = found shouldBe found.values.map(f => convertToOrgRole(createPayloadMap(f.id), f.updatedAt))
           println("success")
           r
         }
