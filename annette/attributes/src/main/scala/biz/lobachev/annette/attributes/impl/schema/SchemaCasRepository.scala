@@ -301,7 +301,10 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
         .setString("name", event.name)
         .setString("caption", Json.toJson(event.caption).toString)
         .setString("attribute_type", Json.toJson(event.attributeType).toString)
-        .setString("index_type", Json.toJson(event.index).toString),
+        .setString(
+          "index_type",
+          Json.toJson(event.index.map(_.toAttributeIndex(event.id, event.attributeId))).toString
+        ),
       updateActivatedStatement
         .bind()
         .setString("id", event.id.toComposed)
@@ -319,7 +322,10 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
         .setString("name", event.name)
         .setString("caption", Json.toJson(event.caption).toString)
         .setString("attribute_type", Json.toJson(event.attributeType).toString)
-        .setString("index_type", Json.toJson(event.index).toString),
+        .setString(
+          "index_type",
+          Json.toJson(event.index.map(_.toAttributeIndex(event.id, event.attributeId))).toString
+        ),
       updateActivatedStatement
         .bind()
         .setString("id", event.id.toComposed)

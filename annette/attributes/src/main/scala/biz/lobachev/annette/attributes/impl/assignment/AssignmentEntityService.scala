@@ -84,9 +84,9 @@ class AssignmentEntityService(
   ): Future[Done] =
     validateAssignment(payload, attribute) match {
       case Right(_)        =>
-        val indexAlias = attribute.index.map(_.fieldName)
+        val indexFieldName = attribute.index.map(_.fieldName)
         refFor(payload.id)
-          .ask[AssignmentEntity.Confirmation](AssignmentEntity.AssignAttribute(payload, indexAlias, _))
+          .ask[AssignmentEntity.Confirmation](AssignmentEntity.AssignAttribute(payload, indexFieldName, _))
           .map(convertSuccess)
       case Left(throwable) => Future.failed(throwable)
     }

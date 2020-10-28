@@ -18,7 +18,6 @@ package biz.lobachev.annette.attributes.impl.schema
 
 import akka.Done
 import biz.lobachev.annette.attributes.api.schema.SchemaAttributeId
-import biz.lobachev.annette.attributes.impl.AttributeUtil
 import biz.lobachev.annette.attributes.impl.assignment.AssignmentEntityService
 import biz.lobachev.annette.attributes.impl.index.IndexEntityService
 import com.datastax.driver.core.BoundStatement
@@ -56,31 +55,28 @@ private[impl] class SchemaIndexEventProcessor(
            )
     } yield {
       if (event.reindexAssignments)
-        reindexAttributes(id, SchemaEntity.alias(event.id, event.attributeId, event.index.aliasNo))
+        reindexAttributes(id, event.fieldName)
       Seq()
     }
   }
 
   def onIndexAttributeRemoved(event: SchemaEntity.IndexAttributeRemoved): Future[Seq[BoundStatement]] = {
-    val id        = SchemaAttributeId(event.id.id, event.id.sub, event.attributeId)
-    val fieldName = AttributeUtil.fieldName(event.id.id, event.id.sub, event.alias)
+    val id = SchemaAttributeId(event.id.id, event.id.sub, event.attributeId)
     for {
       _ <- if (event.removeAssignments)
-             unassignAttributes(id, fieldName)
+             unassignAttributes(id, event.fieldName)
            else Future.unit
       _ <- indexEntityService.removeIndexAttribute(
              id = id,
-             fieldName = fieldName
+             fieldName = event.fieldName
            )
     } yield Seq()
-
   }
 
   // TODO: reindex all attributes
   private def reindexAttributes(id: SchemaAttributeId, fieldName: String): Future[Done] =
     for {
       assignments <- assignmentEntityService.getAttributeAssignments(id)
-      _            = assignments.foreach(println)
       _           <- Future.traverse(assignments.values) { assignment =>
                        indexEntityService.assignIndexAttribute(id, assignment.id.objectId, assignment.attribute, fieldName)
                      }

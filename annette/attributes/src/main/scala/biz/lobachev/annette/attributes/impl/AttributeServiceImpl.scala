@@ -110,6 +110,7 @@ class AttributeServiceImpl(
                                readSide = true
                              )
                              .map(_.getOrElse(throw AttributeNotFound()))
+        _                = println(schemaAttribute)
         // assign attribute
         result          <- assignmentEntityService.assignAttribute(payload, schemaAttribute)
       } yield result

@@ -68,15 +68,15 @@ object AttributeValue {
   implicit val config = JsonConfiguration(
     discriminator = "type",
     typeNaming = JsonNaming { fullName =>
-      fullName.split("\\.").toSeq.last match {
-        case "StringAttribute"         => AttributeValueType.String.toString
-        case "BooleanAttribute"        => AttributeValueType.Boolean.toString
-        case "LongAttribute"           => AttributeValueType.Long.toString
-        case "DoubleAttribute"         => AttributeValueType.Double.toString
-        case "OffsetDateTimeAttribute" => AttributeValueType.OffsetDateTime.toString
-        case "LocalTimeAttribute"      => AttributeValueType.LocalTime.toString
-        case "LocalDateAttribute"      => AttributeValueType.LocalDate.toString
-        case "JSONAttribute"           => AttributeValueType.JSON.toString
+      fullName.split("\\.").toSeq.last.replaceAll("AttributeValue", "") match {
+        case "String"         => AttributeValueType.String.toString
+        case "Boolean"        => AttributeValueType.Boolean.toString
+        case "Long"           => AttributeValueType.Long.toString
+        case "Double"         => AttributeValueType.Double.toString
+        case "OffsetDateTime" => AttributeValueType.OffsetDateTime.toString
+        case "LocalTime"      => AttributeValueType.LocalTime.toString
+        case "LocalDate"      => AttributeValueType.LocalDate.toString
+        case "JSON"           => AttributeValueType.JSON.toString
       }
     }
   )

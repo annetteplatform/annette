@@ -45,7 +45,7 @@ case class TextIndexState(
   override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[TextIndex]
-      .withFieldConst(_.fieldName, SchemaEntity.alias(id, attributeId, this.aliasNo))
+      .withFieldConst(_.fieldName, SchemaEntity.buildFieldName(id, attributeId, this.aliasNo))
       .transform
 }
 
@@ -53,7 +53,7 @@ case class KeywordIndexState(aliasNo: Int) extends AttributeIndexState {
   override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[KeywordIndex]
-      .withFieldConst(_.fieldName, SchemaEntity.alias(id, attributeId, this.aliasNo))
+      .withFieldConst(_.fieldName, SchemaEntity.buildFieldName(id, attributeId, this.aliasNo))
       .transform
 }
 
@@ -61,7 +61,7 @@ case class BooleanIndexState(aliasNo: Int) extends AttributeIndexState {
   override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[BooleanIndex]
-      .withFieldConst(_.fieldName, SchemaEntity.alias(id, attributeId, this.aliasNo))
+      .withFieldConst(_.fieldName, SchemaEntity.buildFieldName(id, attributeId, this.aliasNo))
       .transform
 }
 
@@ -69,7 +69,7 @@ case class LongIndexState(aliasNo: Int) extends AttributeIndexState {
   override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[LongIndex]
-      .withFieldConst(_.fieldName, SchemaEntity.alias(id, attributeId, this.aliasNo))
+      .withFieldConst(_.fieldName, SchemaEntity.buildFieldName(id, attributeId, this.aliasNo))
       .transform
 }
 
@@ -77,7 +77,7 @@ case class DoubleIndexState(aliasNo: Int) extends AttributeIndexState {
   override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[DoubleIndex]
-      .withFieldConst(_.fieldName, SchemaEntity.alias(id, attributeId, this.aliasNo))
+      .withFieldConst(_.fieldName, SchemaEntity.buildFieldName(id, attributeId, this.aliasNo))
       .transform
 }
 
@@ -85,7 +85,7 @@ case class OffsetDateTimeIndexState(aliasNo: Int) extends AttributeIndexState {
   override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[OffsetDateTimeIndex]
-      .withFieldConst(_.fieldName, SchemaEntity.alias(id, attributeId, this.aliasNo))
+      .withFieldConst(_.fieldName, SchemaEntity.buildFieldName(id, attributeId, this.aliasNo))
       .transform
 }
 
@@ -93,7 +93,7 @@ case class LocalTimeIndexState(aliasNo: Int) extends AttributeIndexState {
   override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[LocalTimeIndex]
-      .withFieldConst(_.fieldName, SchemaEntity.alias(id, attributeId, this.aliasNo))
+      .withFieldConst(_.fieldName, SchemaEntity.buildFieldName(id, attributeId, this.aliasNo))
       .transform
 }
 
@@ -101,7 +101,7 @@ case class LocalDateIndexState(aliasNo: Int) extends AttributeIndexState {
   override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[LocalDateIndex]
-      .withFieldConst(_.fieldName, SchemaEntity.alias(id, attributeId, this.aliasNo))
+      .withFieldConst(_.fieldName, SchemaEntity.buildFieldName(id, attributeId, this.aliasNo))
       .transform
 }
 
@@ -109,7 +109,7 @@ case class JSONIndexState(aliasNo: Int) extends AttributeIndexState {
   override def toAttributeIndex(id: SchemaId, attributeId: AttributeId): AttributeIndex =
     this
       .into[JSONIndex]
-      .withFieldConst(_.fieldName, SchemaEntity.alias(id, attributeId, this.aliasNo))
+      .withFieldConst(_.fieldName, SchemaEntity.buildFieldName(id, attributeId, this.aliasNo))
       .transform
 }
 

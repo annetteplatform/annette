@@ -140,7 +140,7 @@ object SchemaEntity {
     id: SchemaId,
     attributeId: AttributeId,
     index: AttributeIndexState,
-    alias: String,
+    fieldName: String,
     reindexAssignments: Boolean,
     activatedBy: AnnettePrincipal,
     activatedAt: OffsetDateTime = OffsetDateTime.now
@@ -149,7 +149,7 @@ object SchemaEntity {
   final case class IndexAttributeRemoved(
     id: SchemaId,
     attributeId: AttributeId,
-    alias: String,
+    fieldName: String,
     removeAssignments: Boolean,
     activatedBy: AnnettePrincipal,
     activatedAt: OffsetDateTime = OffsetDateTime.now
@@ -218,9 +218,9 @@ object SchemaEntity {
 
   implicit val entityFormat: Format[SchemaEntity] = Json.format
 
-  def alias(id: SchemaId, attributeId: AttributeId, aliasNo: Int) = {
-    val schemaId = id.sub.map(sub => s"${id.id}_${sub}").getOrElse(id.id)
-    s"attr_${schemaId}_${attributeId}_${aliasNo}"
+  def buildFieldName(id: SchemaId, attributeId: AttributeId, aliasNo: Int) = {
+    val schemaId = id.sub.map(sub => s"${id.id}_$sub").getOrElse(id.id)
+    s"attr_${schemaId}_${attributeId}_$aliasNo"
   }
 
 }
@@ -353,7 +353,7 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
                   .withFieldConst(_.id, state.id)
                   .withFieldConst(_.attributeId, attributeId)
                   .withFieldConst(_.index, AttributeIndexState.from(a, aliasNo))
-                  .withFieldConst(_.alias, alias(state.id, attributeId, aliasNo))
+                  .withFieldConst(_.fieldName, buildFieldName(state.id, attributeId, aliasNo))
                   .withFieldConst(_.reindexAssignments, cmd.attributesWithAssignment.contains(attributeId))
                   .withFieldConst(_.activatedBy, cmd.payload.activatedBy)
                   .withFieldConst(_.activatedAt, now)
@@ -380,7 +380,7 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
                     .into[IndexAttributeRemoved]
                     .withFieldConst(_.id, state.id)
                     .withFieldConst(_.attributeId, attributeId)
-                    .withFieldConst(_.alias, alias(state.id, attributeId, attr.aliasNo))
+                    .withFieldConst(_.fieldName, buildFieldName(state.id, attributeId, attr.aliasNo))
                     .withFieldConst(_.removeAssignments, cmd.attributesWithAssignment.contains(attributeId))
                     .withFieldConst(_.activatedBy, cmd.payload.activatedBy)
                     .withFieldConst(_.activatedAt, now)
@@ -432,7 +432,7 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
                   .withFieldConst(_.id, cmd.payload.id)
                   .withFieldConst(_.attributeId, prepAttr.attributeId)
                   .withFieldConst(_.index, AttributeIndexState.from(prepAttr.index.get, aliasNo))
-                  .withFieldConst(_.alias, alias(cmd.payload.id, prepAttr.attributeId, aliasNo))
+                  .withFieldConst(_.fieldName, buildFieldName(cmd.payload.id, prepAttr.attributeId, aliasNo))
                   .withFieldConst(_.reindexAssignments, cmd.attributesWithAssignment.contains(activeAttr.attributeId))
                   .withFieldConst(_.activatedBy, cmd.payload.activatedBy)
                   .withFieldConst(_.activatedAt, now)
@@ -446,7 +446,10 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
                   .into[IndexAttributeRemoved]
                   .withFieldConst(_.id, cmd.payload.id)
                   .withFieldConst(_.attributeId, prepAttr.attributeId)
-                  .withFieldConst(_.alias, alias(cmd.payload.id, activeAttr.attributeId, activeAttr.index.get.aliasNo))
+                  .withFieldConst(
+                    _.fieldName,
+                    buildFieldName(cmd.payload.id, activeAttr.attributeId, activeAttr.index.get.aliasNo)
+                  )
                   .withFieldConst(_.removeAssignments, cmd.attributesWithAssignment.contains(activeAttr.attributeId))
                   .withFieldConst(_.activatedBy, cmd.payload.activatedBy)
                   .withFieldConst(_.activatedAt, now)
@@ -459,7 +462,10 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
                 prepAttr.index.get
                   .into[IndexAttributeRemoved]
                   .withFieldConst(_.id, cmd.payload.id)
-                  .withFieldConst(_.alias, alias(cmd.payload.id, activeAttr.attributeId, activeAttr.index.get.aliasNo))
+                  .withFieldConst(
+                    _.fieldName,
+                    buildFieldName(cmd.payload.id, activeAttr.attributeId, activeAttr.index.get.aliasNo)
+                  )
                   .withFieldConst(_.attributeId, prepAttr.attributeId)
                   .withFieldConst(_.removeAssignments, cmd.attributesWithAssignment.contains(activeAttr.attributeId))
                   .withFieldConst(_.activatedBy, cmd.payload.activatedBy)
@@ -473,8 +479,8 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
                     AttributeIndexState.from(prepAttr.index.get, activeAttr.index.get.aliasNo + 1)
                   )
                   .withFieldConst(
-                    _.alias,
-                    alias(cmd.payload.id, activeAttr.attributeId, activeAttr.index.get.aliasNo + 1)
+                    _.fieldName,
+                    buildFieldName(cmd.payload.id, activeAttr.attributeId, activeAttr.index.get.aliasNo + 1)
                   )
                   .withFieldConst(_.attributeId, prepAttr.attributeId)
                   .withFieldConst(_.reindexAssignments, cmd.attributesWithAssignment.contains(activeAttr.attributeId))
@@ -505,7 +511,7 @@ final case class SchemaEntity(maybeState: Option[SchemaState] = None) {
             IndexAttributeRemoved(
               id = state.id,
               attributeId = attr.attributeId,
-              alias = alias(state.id, attr.attributeId, attr.index.get.aliasNo),
+              fieldName = buildFieldName(state.id, attr.attributeId, attr.index.get.aliasNo),
               removeAssignments = false,
               activatedBy = cmd.payload.deletedBy,
               activatedAt = now
