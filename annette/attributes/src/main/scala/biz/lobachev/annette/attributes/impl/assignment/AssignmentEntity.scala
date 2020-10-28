@@ -35,16 +35,16 @@ object AssignmentEntity {
   sealed trait Command                                                                       extends CommandSerializable
   final case class AssignAttribute(
     payload: AssignAttributePayload,
-    indexAlias: Option[String],
+    indexFieldName: Option[String],
     replyTo: ActorRef[Confirmation]
   )                                                                                          extends Command
   final case class UnassignAttribute(
     payload: UnassignAttributePayload,
-    indexAlias: Option[String],
+    indexFieldName: Option[String],
     replyTo: ActorRef[Confirmation]
   )                                                                                          extends Command
   final case class GetAssignment(id: AttributeAssignmentId, replyTo: ActorRef[Confirmation]) extends Command
-  final case class ReindexAssignment(id: AttributeAssignmentId, indexAlias: String, replyTo: ActorRef[Confirmation])
+  final case class ReindexAssignment(id: AttributeAssignmentId, indexFieldName: String, replyTo: ActorRef[Confirmation])
       extends Command
 
   sealed trait Confirmation
@@ -70,21 +70,21 @@ object AssignmentEntity {
 
   final case class AttributeAssigned(
     id: AttributeAssignmentId,
-    attribute: Attribute,
-    indexAlias: Option[String],
+    attribute: AttributeValue,
+    indexFieldName: Option[String],
     updatedAt: OffsetDateTime = OffsetDateTime.now(),
     updatedBy: AnnettePrincipal
   ) extends Event
   final case class AttributeUnassigned(
     id: AttributeAssignmentId,
-    indexAlias: Option[String],
+    indexFieldName: Option[String],
     updatedAt: OffsetDateTime = OffsetDateTime.now(),
     updatedBy: AnnettePrincipal
   ) extends Event
   final case class AssignmentReindexed(
     id: AttributeAssignmentId,
-    attribute: Attribute,
-    indexAlias: String,
+    attribute: AttributeValue,
+    indexFieldName: String,
     updatedAt: OffsetDateTime = OffsetDateTime.now(),
     updatedBy: AnnettePrincipal
   ) extends Event
@@ -131,7 +131,7 @@ final case class AssignmentEntity(maybeState: Option[AttributeAssignmentState] =
   def assignAttribute(cmd: AssignAttribute): ReplyEffect[Event, AssignmentEntity] = {
     val event = cmd.payload
       .into[AttributeAssigned]
-      .withFieldConst(_.indexAlias, cmd.indexAlias)
+      .withFieldConst(_.indexFieldName, cmd.indexFieldName)
       .transform
     Effect
       .persist(event)
@@ -141,7 +141,7 @@ final case class AssignmentEntity(maybeState: Option[AttributeAssignmentState] =
   def unassignAttribute(cmd: UnassignAttribute): ReplyEffect[Event, AssignmentEntity] = {
     val event = cmd.payload
       .into[AttributeUnassigned]
-      .withFieldConst(_.indexAlias, cmd.indexAlias)
+      .withFieldConst(_.indexFieldName, cmd.indexFieldName)
       .transform
     Effect
       .persist(event)
@@ -161,7 +161,7 @@ final case class AssignmentEntity(maybeState: Option[AttributeAssignmentState] =
       case Some(state) =>
         val event = state
           .into[AssignmentReindexed]
-          .withFieldConst(_.indexAlias, cmd.indexAlias)
+          .withFieldConst(_.indexFieldName, cmd.indexFieldName)
           .transform
         Effect
           .persist(event)

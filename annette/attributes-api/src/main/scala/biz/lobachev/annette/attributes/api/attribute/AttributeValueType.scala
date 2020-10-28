@@ -14,19 +14,21 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.attributes.impl.schema
+package biz.lobachev.annette.attributes.api.attribute
 
-import biz.lobachev.annette.attributes.api.attribute_def.{AttributeDefId, AttributeId}
 import play.api.libs.json.Json
 
-case class ActiveSchemaAttributeState(
-  attributeId: AttributeId,
-  name: String,
-  caption: Option[String] = None,
-  attributeDefId: AttributeDefId,
-  index: Option[ActiveIndexParamState] = None
-)
+object AttributeValueType extends Enumeration {
+  type AttributeValueType = Value
 
-object ActiveSchemaAttributeState {
-  implicit val format = Json.format[ActiveSchemaAttributeState]
+  val String         = Value("String")
+  val Boolean        = Value("Boolean")
+  val Long           = Value("Long")
+  val Double         = Value("Double")
+  val OffsetDateTime = Value("OffsetDateTime")
+  val LocalTime      = Value("LocalTime")
+  val LocalDate      = Value("LocalDate")
+  val JSON           = Value("JSON")
+
+  implicit val format = Json.formatEnum(this)
 }

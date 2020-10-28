@@ -16,8 +16,8 @@
 
 package biz.lobachev.annette.application.api.application
 
-import biz.lobachev.annette.application.api.translation.{Caption, TranslationId}
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.application.api.translation.TranslationId
+import biz.lobachev.annette.core.model.{AnnettePrincipal, Caption}
 import play.api.libs.json.{Format, Json}
 
 case class UpdateApplicationPayload(

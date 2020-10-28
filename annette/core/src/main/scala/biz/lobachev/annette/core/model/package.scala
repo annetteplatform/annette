@@ -23,4 +23,6 @@ package object model {
 
   type LanguageId   = String
   type PermissionId = String
+
+  type TranslationId = String
 }

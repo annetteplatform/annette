@@ -21,8 +21,7 @@ import java.time.{LocalDate, LocalDateTime}
 
 import akka.Done
 import biz.lobachev.annette.attributes.api.assignment._
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeType
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeType.AttributeType
+import biz.lobachev.annette.attributes.api.attribute._
 import biz.lobachev.annette.core.elastic.AbstractElasticIndexDao
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
@@ -38,53 +37,58 @@ trait AttributeElastic extends AttributeIndexDao {
 
   // *************************** Attribute API ***************************
 
-  def createAttribute(attributeType: AttributeType, fieldName: String, textContentIndex: Boolean): Future[Done] =
-    createAttributeInt(attributeType, fieldName, textContentIndex).flatMap {
+  def createAttribute(index: AttributeIndex): Future[Done] =
+    createAttributeInt(index).flatMap {
       case success: RequestSuccess[PutMappingResponse]                                    =>
-        log.debug("createAttribute {} type: {} success: {}", fieldName, attributeType.toString, success)
+        log.debug("createAttribute {} index: {} success: {}", index.fieldName, index.toString, success)
         Future.successful(Done)
       case failure: RequestFailure if failure.error.`type` == "index_not_found_exception" =>
         log.debug("createAttribute: Index not found. Creating... ")
         for {
           _   <- createEntityIndex()
-          res <- createAttributeInt(attributeType, fieldName, textContentIndex)
+          res <- createAttributeInt(index)
         } yield {
           res match {
             case success: RequestSuccess[PutMappingResponse] =>
               log.debug(
-                "createAttribute second iteration {} type: {} success: {}",
-                fieldName,
-                attributeType.toString,
+                "createAttribute second iteration {} index: {} success: {}",
+                index.fieldName,
+                index.toString,
                 success
               )
             case failure: RequestFailure                     =>
               log.error(
-                "createAttribute second iteration {} type: {} failed: {}",
-                fieldName,
-                attributeType.toString,
+                "createAttribute second iteration {} index: {} failed: {}",
+                index.fieldName,
+                index.toString,
                 failure
               )
           }
           Done
         }
       case failure: RequestFailure                                                        =>
-        log.error("createAttribute {} type: {} failed: {}", fieldName, attributeType.toString, failure)
+        log.error("createAttribute {} index: {} failed: {}", index.fieldName, index.toString, failure)
         Future.successful(Done)
     }
 
   def createAttributeInt(
-    attributeType: AttributeType,
-    fieldName: String,
-    textContentIndex: Boolean
+    index: AttributeIndex
   ): Future[Response[PutMappingResponse]] = {
-    val field: FieldDefinition = attributeType match {
-      case AttributeType.String if textContentIndex => textField(fieldName).fielddata(true)
-      case AttributeType.String                     => keywordField(fieldName)
-      case AttributeType.Long                       => longField(fieldName)
-      case AttributeType.Double                     => doubleField(fieldName)
-      case AttributeType.OffsetDateTime             => dateField(fieldName)
-      case AttributeType.LocalDate                  => dateField(fieldName)
-      case AttributeType.LocalTime                  => dateField(fieldName)
+    val field: FieldDefinition = index match {
+      case index: TextIndex if index.keyword =>
+        textField(index.fieldName)
+          .fielddata(index.fielddata)
+          .fields(keywordField("keyword"))
+      case index: TextIndex                  =>
+        textField(index.fieldName)
+          .fielddata(index.fielddata)
+      case _: KeywordIndex                   => keywordField(index.fieldName)
+      case _: BooleanIndex                   => booleanField(index.fieldName)
+      case _: LongIndex                      => longField(index.fieldName)
+      case _: DoubleIndex                    => doubleField(index.fieldName)
+      case _: OffsetDateTimeIndex            => dateField(index.fieldName)
+      case _: LocalDateIndex                 => dateField(index.fieldName)
+      case _: LocalTimeIndex                 => dateField(index.fieldName)
     }
     elasticClient
       .execute(
@@ -93,15 +97,17 @@ trait AttributeElastic extends AttributeIndexDao {
 
   }
 
-  def assignAttribute(id: ObjectId, fieldName: String, attribute: Attribute): Future[Done] = {
+  def assignAttribute(id: ObjectId, fieldName: String, attribute: AttributeValue): Future[Done] = {
     val value: AnyRef = attribute match {
-      case StringAttribute(value)         => value
-      case BooleanAttribute(value)        => Boolean.box(value)
-      case LongAttribute(value)           => Long.box(value)
-      case DoubleAttribute(value)         => Double.box(value)
-      case OffsetDateTimeAttribute(value) => value
-      case LocalDateAttribute(value)      => value
-      case LocalTimeAttribute(value)      => LocalDateTime.of(LocalDate.of(2000, 1, 1), value)
+      case StringAttributeValue(value)         => value
+      case BooleanAttributeValue(value)        => Boolean.box(value)
+      case LongAttributeValue(value)           => Long.box(value)
+      case DoubleAttributeValue(value)         => Double.box(value)
+      case OffsetDateTimeAttributeValue(value) => value
+      case LocalDateAttributeValue(value)      => value
+      case LocalTimeAttributeValue(value)      => LocalDateTime.of(LocalDate.of(2000, 1, 1), value)
+      // TODO: change this
+      case JSONAttributeValue(value)           => value
     }
     elasticClient.execute {
       updateById(indexName, id)
@@ -139,66 +145,68 @@ trait AttributeElastic extends AttributeIndexDao {
       }.toSeq
     }.getOrElse(Seq.empty)
 
-  def attributeValue(attribute: Attribute): Any =
+  def attributeValue(attribute: AttributeValue): Any =
     attribute match {
-      case StringAttribute(value)         => value
-      case BooleanAttribute(value)        => Boolean.box(value)
-      case LongAttribute(value)           => Long.box(value)
-      case DoubleAttribute(value)         => Double.box(value)
-      case OffsetDateTimeAttribute(value) => value
-      case LocalDateAttribute(value)      => value
-      case LocalTimeAttribute(value)      => LocalDateTime.of(LOCAL_TIME_DATE, value)
+      case StringAttributeValue(value)         => value
+      case BooleanAttributeValue(value)        => Boolean.box(value)
+      case LongAttributeValue(value)           => Long.box(value)
+      case DoubleAttributeValue(value)         => Double.box(value)
+      case OffsetDateTimeAttributeValue(value) => value
+      case LocalDateAttributeValue(value)      => value
+      case LocalTimeAttributeValue(value)      => LocalDateTime.of(LOCAL_TIME_DATE, value)
+      // TODO: change this
+      case JSONAttributeValue(value)           => value
     }
 
-  def rangeCond(q: RangeQuery, cond: String, attr: Attribute) =
+  def rangeCond(q: RangeQuery, cond: String, attr: AttributeValue) =
     cond match {
       case "gt"  =>
         attr match {
-          case StringAttribute(value)         => q.gt(value)
-          case LongAttribute(value)           => q.gt(value)
-          case DoubleAttribute(value)         => q.gt(value)
-          case OffsetDateTimeAttribute(value) => q.gt(value.toString)
-          case LocalDateAttribute(value)      => q.gt(ElasticDateMath(value.format(DateTimeFormatter.ISO_LOCAL_DATE)))
-          case LocalTimeAttribute(value)      =>
+          case StringAttributeValue(value)         => q.gt(value)
+          case LongAttributeValue(value)           => q.gt(value)
+          case DoubleAttributeValue(value)         => q.gt(value)
+          case OffsetDateTimeAttributeValue(value) => q.gt(value.toString)
+          case LocalDateAttributeValue(value)      => q.gt(ElasticDateMath(value.format(DateTimeFormatter.ISO_LOCAL_DATE)))
+          case LocalTimeAttributeValue(value)      =>
             q.gt(
               ElasticDateMath(
                 LocalDateTime.of(LOCAL_TIME_DATE, value).format(DateTimeFormatter.ISO_LOCAL_DATE)
               )
             )
-          case _                              => q
+          case _                                   => q
         }
       case "gte" =>
         attr match {
-          case StringAttribute(value)         => q.gte(value)
-          case LongAttribute(value)           => q.gte(value)
-          case DoubleAttribute(value)         => q.gte(value)
-          case OffsetDateTimeAttribute(value) => q.gte(value.toString)
-          case LocalDateAttribute(value)      => q.gte(ElasticDateMath(value.format(DateTimeFormatter.ISO_LOCAL_DATE)))
-          case LocalTimeAttribute(value)      =>
+          case StringAttributeValue(value)         => q.gte(value)
+          case LongAttributeValue(value)           => q.gte(value)
+          case DoubleAttributeValue(value)         => q.gte(value)
+          case OffsetDateTimeAttributeValue(value) => q.gte(value.toString)
+          case LocalDateAttributeValue(value)      => q.gte(ElasticDateMath(value.format(DateTimeFormatter.ISO_LOCAL_DATE)))
+          case LocalTimeAttributeValue(value)      =>
             q.gte(ElasticDateMath(LocalDateTime.of(LOCAL_TIME_DATE, value).format(DateTimeFormatter.ISO_LOCAL_DATE)))
-          case _                              => q
+          case _                                   => q
         }
       case "lt"  =>
         attr match {
-          case StringAttribute(value)         => q.lt(value)
-          case LongAttribute(value)           => q.lt(value)
-          case DoubleAttribute(value)         => q.lt(value)
-          case OffsetDateTimeAttribute(value) => q.lt(value.toString)
-          case LocalDateAttribute(value)      => q.lt(ElasticDateMath(value.format(DateTimeFormatter.ISO_LOCAL_DATE)))
-          case LocalTimeAttribute(value)      =>
+          case StringAttributeValue(value)         => q.lt(value)
+          case LongAttributeValue(value)           => q.lt(value)
+          case DoubleAttributeValue(value)         => q.lt(value)
+          case OffsetDateTimeAttributeValue(value) => q.lt(value.toString)
+          case LocalDateAttributeValue(value)      => q.lt(ElasticDateMath(value.format(DateTimeFormatter.ISO_LOCAL_DATE)))
+          case LocalTimeAttributeValue(value)      =>
             q.lt(ElasticDateMath(LocalDateTime.of(LOCAL_TIME_DATE, value).format(DateTimeFormatter.ISO_LOCAL_DATE)))
-          case _                              => q
+          case _                                   => q
         }
       case "lte" =>
         attr match {
-          case StringAttribute(value)         => q.lte(value)
-          case LongAttribute(value)           => q.lte(value)
-          case DoubleAttribute(value)         => q.lte(value)
-          case OffsetDateTimeAttribute(value) => q.lte(value.toString)
-          case LocalDateAttribute(value)      => q.lte(ElasticDateMath(value.format(DateTimeFormatter.ISO_LOCAL_DATE)))
-          case LocalTimeAttribute(value)      =>
+          case StringAttributeValue(value)         => q.lte(value)
+          case LongAttributeValue(value)           => q.lte(value)
+          case DoubleAttributeValue(value)         => q.lte(value)
+          case OffsetDateTimeAttributeValue(value) => q.lte(value.toString)
+          case LocalDateAttributeValue(value)      => q.lte(ElasticDateMath(value.format(DateTimeFormatter.ISO_LOCAL_DATE)))
+          case LocalTimeAttributeValue(value)      =>
             q.lte(ElasticDateMath(LocalDateTime.of(LOCAL_TIME_DATE, value).format(DateTimeFormatter.ISO_LOCAL_DATE)))
-          case _                              => q
+          case _                                   => q
         }
     }
 

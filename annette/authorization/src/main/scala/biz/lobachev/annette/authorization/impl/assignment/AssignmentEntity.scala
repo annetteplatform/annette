@@ -93,7 +93,9 @@ object AssignmentEntity {
     principal: AnnettePrincipal,
     permission: Permission,
     source: AuthSource
-  ): String = s"${principal.code} ${permission.code} ${source.code}"
+  ): String =
+    // TODO: review assignment id calculation (replace whitespace with another symbol)
+    s"${principal.code} ${permission.code} ${source.code}"
 
 }
 

@@ -16,8 +16,8 @@
 
 package biz.lobachev.annette.attributes.impl.assignment
 
+import akka.Done
 import biz.lobachev.annette.attributes.api.schema.SchemaAttributeId
-import biz.lobachev.annette.attributes.impl.AttributeUtil
 import biz.lobachev.annette.attributes.impl.index.IndexEntityService
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
@@ -46,21 +46,29 @@ private[impl] class AssignmentIndexEventProcessor(
 
   def onAttributeAssigned(event: AssignmentEntity.AttributeAssigned): Future[Seq[BoundStatement]] =
     for {
-      _ <- indexEntityService.assignIndexAttribute(
-             id = SchemaAttributeId(event.id.schemaId, event.id.subSchemaId, event.id.attributeId),
-             objectId = event.id.objectId,
-             attribute = event.attribute,
-             fieldName = AttributeUtil.fieldName(event.id.schemaId, event.id.subSchemaId, event.indexAlias.get)
-           )
+      _ <- event.indexFieldName
+             .map(indexFieldName =>
+               indexEntityService.assignIndexAttribute(
+                 id = SchemaAttributeId(event.id.schemaId, event.id.subSchemaId, event.id.attributeId),
+                 objectId = event.id.objectId,
+                 attribute = event.attribute,
+                 fieldName = indexFieldName
+               )
+             )
+             .getOrElse(Future.successful(Done))
     } yield Seq()
 
   def onAttributeUnassigned(event: AssignmentEntity.AttributeUnassigned): Future[Seq[BoundStatement]] =
     for {
-      _ <- indexEntityService.unassignIndexAttribute(
-             id = SchemaAttributeId(event.id.schemaId, event.id.subSchemaId, event.id.attributeId),
-             objectId = event.id.objectId,
-             fieldName = AttributeUtil.fieldName(event.id.schemaId, event.id.subSchemaId, event.indexAlias.get)
-           )
+      _ <- event.indexFieldName
+             .map(indexFieldName =>
+               indexEntityService.unassignIndexAttribute(
+                 id = SchemaAttributeId(event.id.schemaId, event.id.subSchemaId, event.id.attributeId),
+                 objectId = event.id.objectId,
+                 fieldName = indexFieldName
+               )
+             )
+             .getOrElse(Future.successful(Done))
     } yield Seq()
 
 }

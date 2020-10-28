@@ -21,7 +21,7 @@ import java.util.concurrent.TimeUnit
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeId
+import biz.lobachev.annette.attributes.api.attribute.{Attribute, AttributeId}
 import biz.lobachev.annette.attributes.api.schema._
 import biz.lobachev.annette.core.elastic.FindResult
 import com.typesafe.config.Config
@@ -77,7 +77,7 @@ class SchemaEntityService(
       case _ => throw new RuntimeException("Match fail")
     }
 
-  private def convertSuccessSchemaAttribute(confirmation: SchemaEntity.Confirmation): Option[ActiveSchemaAttribute] =
+  private def convertSuccessSchemaAttribute(confirmation: SchemaEntity.Confirmation): Option[Attribute] =
     confirmation match {
       case SchemaEntity.SuccessSchemaAttribute(schemaAttribute) => schemaAttribute
       case SchemaEntity.SchemaAlreadyExist                      => throw SchemaAlreadyExist()
@@ -89,7 +89,7 @@ class SchemaEntityService(
       case _                                                    => throw new RuntimeException("Match fail")
     }
 
-  private def convertSuccessSchemaAttributes(confirmation: SchemaEntity.Confirmation): Seq[ActiveSchemaAttribute] =
+  private def convertSuccessSchemaAttributes(confirmation: SchemaEntity.Confirmation): Seq[Attribute] =
     confirmation match {
       case SchemaEntity.SuccessSchemaAttributes(attributes)  => attributes
       case SchemaEntity.SchemaAlreadyExist                   => throw SchemaAlreadyExist()
@@ -125,7 +125,7 @@ class SchemaEntityService(
     schemaId: SchemaId,
     attributeId: AttributeId,
     readSide: Boolean
-  ): Future[Option[ActiveSchemaAttribute]] =
+  ): Future[Option[Attribute]] =
     if (readSide)
       casRepository.getSchemaAttribute(schemaId, attributeId)
     else
@@ -135,7 +135,7 @@ class SchemaEntityService(
 
   def getSchemaAttributes(
     schemaId: SchemaId
-  ): Future[Seq[ActiveSchemaAttribute]] =
+  ): Future[Seq[Attribute]] =
     refFor(schemaId)
       .ask[SchemaEntity.Confirmation](SchemaEntity.GetSchemaAttributes(_))
       .map(convertSuccessSchemaAttributes)

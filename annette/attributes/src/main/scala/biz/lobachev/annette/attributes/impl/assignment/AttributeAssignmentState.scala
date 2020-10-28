@@ -18,13 +18,13 @@ package biz.lobachev.annette.attributes.impl.assignment
 
 import java.time.OffsetDateTime
 
-import biz.lobachev.annette.attributes.api.assignment.{Attribute, AttributeAssignmentId}
+import biz.lobachev.annette.attributes.api.assignment.{AttributeAssignmentId, AttributeValue}
 import biz.lobachev.annette.core.model.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class AttributeAssignmentState(
   id: AttributeAssignmentId,
-  attribute: Attribute,
+  attribute: AttributeValue,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 )

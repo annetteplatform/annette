@@ -14,20 +14,9 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.attributes.api.attribute_def
+package biz.lobachev.annette.attributes.api
 
-import play.api.libs.json.Json
+package object attribute {
+  type AttributeId = String
 
-object AttributeType extends Enumeration {
-  type AttributeType = Value
-
-  val String         = Value("String")
-  val Boolean        = Value("Boolean")
-  val Long           = Value("Long")
-  val Double         = Value("Double")
-  val OffsetDateTime = Value("OffsetDateTime")
-  val LocalTime      = Value("LocalTime")
-  val LocalDate      = Value("LocalDate")
-
-  implicit val format = Json.formatEnum(this)
 }

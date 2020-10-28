@@ -23,7 +23,7 @@ import play.api.libs.json.Json
 
 case class AttributeAssignment(
   id: AttributeAssignmentId,
-  attribute: Attribute,
+  attribute: AttributeValue,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 )

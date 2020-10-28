@@ -16,21 +16,22 @@
 
 package biz.lobachev.annette.attributes.impl.index
 
-import biz.lobachev.annette.attributes.api.assignment.{Attribute, AttributeAssignmentId}
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeType
+import biz.lobachev.annette.attributes.api.assignment.{AttributeAssignmentId, AttributeValue}
+import biz.lobachev.annette.attributes.api.attribute.AttributeValueType
 import biz.lobachev.annette.attributes.api.schema.SchemaAttributeId
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
 object IndexSerializerRegistry extends JsonSerializerRegistry {
-  override def serializers = List(
-    JsonSerializer[AttributeAssignmentId],
-    JsonSerializer[Attribute],
-    JsonSerializer[SchemaAttributeId],
-    JsonSerializer[AttributeType.AttributeType],
-    JsonSerializer[IndexEntity.Success.type],
-    JsonSerializer[IndexEntity.IndexAttributeCreated],
-    JsonSerializer[IndexEntity.IndexAttributeRemoved],
-    JsonSerializer[IndexEntity.IndexAttributeAssigned],
-    JsonSerializer[IndexEntity.IndexAttributeUnassigned],
-  )
+  override def serializers =
+    List(
+      JsonSerializer[AttributeAssignmentId],
+      JsonSerializer[AttributeValue],
+      JsonSerializer[SchemaAttributeId],
+      JsonSerializer[AttributeValueType.AttributeValueType],
+      JsonSerializer[IndexEntity.Success.type],
+      JsonSerializer[IndexEntity.IndexAttributeCreated],
+      JsonSerializer[IndexEntity.IndexAttributeRemoved],
+      JsonSerializer[IndexEntity.IndexAttributeAssigned],
+      JsonSerializer[IndexEntity.IndexAttributeUnassigned]
+    )
 }

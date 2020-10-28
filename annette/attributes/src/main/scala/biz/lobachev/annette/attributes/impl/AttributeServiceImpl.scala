@@ -20,11 +20,9 @@ import akka.util.Timeout
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.attributes.api.AttributeService
 import biz.lobachev.annette.attributes.api.assignment._
-import biz.lobachev.annette.attributes.api.attribute_def._
 import biz.lobachev.annette.attributes.api.index._
 import biz.lobachev.annette.attributes.api.schema._
 import biz.lobachev.annette.attributes.impl.assignment.AssignmentEntityService
-import biz.lobachev.annette.attributes.impl.attribute_def.AttributeDefEntityService
 import biz.lobachev.annette.attributes.impl.index.IndexEntity
 import biz.lobachev.annette.attributes.impl.schema.SchemaEntityService
 import biz.lobachev.annette.core.elastic.FindResult
@@ -41,7 +39,6 @@ import scala.concurrent.duration._
 import scala.util.Try
 
 class AttributeServiceImpl(
-  attributeDefEntityService: AttributeDefEntityService,
   schemaEntityService: SchemaEntityService,
   assignmentEntityService: AssignmentEntityService,
   persistentEntityRegistry: PersistentEntityRegistry,
@@ -52,38 +49,6 @@ class AttributeServiceImpl(
   implicit val timeout = Try(config.getDuration("annette.timeout")).getOrElse(Timeout(60.seconds))
 
   val log = LoggerFactory.getLogger(this.getClass)
-
-  override def createAttributeDef: ServiceCall[CreateAttributeDefPayload, Done] =
-    ServiceCall { payload =>
-      attributeDefEntityService.createAttributeDef(payload)
-    }
-
-  override def updateAttributeDef: ServiceCall[UpdateAttributeDefPayload, Done] =
-    ServiceCall { payload =>
-      attributeDefEntityService.updateAttributeDef(payload)
-    }
-
-  override def deleteAttributeDef: ServiceCall[DeleteAttributeDefPayload, Done] =
-    ServiceCall { payload =>
-      attributeDefEntityService.deleteAttributeDef(payload)
-    }
-
-  override def getAttributeDefById(id: AttributeDefId, fromReadSide: Boolean): ServiceCall[NotUsed, AttributeDef] =
-    ServiceCall { _ =>
-      attributeDefEntityService.getAttributeDefById(id, fromReadSide)
-    }
-
-  override def getAttributeDefsById(
-    fromReadSide: Boolean
-  ): ServiceCall[Set[AttributeDefId], Map[AttributeDefId, AttributeDef]] =
-    ServiceCall { ids =>
-      attributeDefEntityService.getAttributeDefsById(ids, fromReadSide)
-    }
-
-  override def findAttributeDefs: ServiceCall[FindAttributeDefQuery, FindResult] =
-    ServiceCall { query =>
-      attributeDefEntityService.findAttributeDefs(query)
-    }
 
   override def createSchema: ServiceCall[CreateSchemaPayload, Done] =
     ServiceCall { payload =>
@@ -145,10 +110,9 @@ class AttributeServiceImpl(
                                readSide = true
                              )
                              .map(_.getOrElse(throw AttributeNotFound()))
-        // get attribute def
-        attributeDef    <- attributeDefEntityService.getAttributeDefById(schemaAttribute.attributeDefId, true)
+        _                = println(schemaAttribute)
         // assign attribute
-        result          <- assignmentEntityService.assignAttribute(payload, schemaAttribute, attributeDef)
+        result          <- assignmentEntityService.assignAttribute(payload, schemaAttribute)
       } yield result
     }
 

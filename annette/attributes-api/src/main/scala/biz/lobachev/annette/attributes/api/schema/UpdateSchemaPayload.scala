@@ -16,14 +16,14 @@
 
 package biz.lobachev.annette.attributes.api.schema
 
+import biz.lobachev.annette.attributes.api.attribute.PreparedAttribute
 import biz.lobachev.annette.core.model.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class UpdateSchemaPayload(
   id: SchemaId,
   name: String,
-  updateActiveAttributeNames: Set[ActiveAttributeNameUpdate] = Set.empty,
-  preparedAttributes: Set[PreparedSchemaAttribute] = Set.empty,
+  preparedAttributes: Set[PreparedAttribute] = Set.empty,
   updatedBy: AnnettePrincipal
 )
 

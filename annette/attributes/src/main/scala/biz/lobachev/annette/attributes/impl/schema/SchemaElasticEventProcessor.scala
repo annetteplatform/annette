@@ -39,7 +39,6 @@ private[impl] class SchemaElasticEventProcessor(
       .setGlobalPrepare(globalPrepare)
       .setEventHandler[SchemaEntity.SchemaCreated](e => createSchema(e.event))
       .setEventHandler[SchemaEntity.SchemaNameUpdated](e => updateSchemaName(e.event))
-      .setEventHandler[SchemaEntity.ActiveAttributeNameUpdated](e => updateActiveAttributeName(e.event))
       .setEventHandler[SchemaEntity.ActiveAttributeCreated](e => createActiveAttribute(e.event))
       .setEventHandler[SchemaEntity.ActiveAttributeUpdated](e => updateActiveAttribute(e.event))
       .setEventHandler[SchemaEntity.ActiveAttributeRemoved](e => removeActiveAttribute(e.event))
@@ -64,11 +63,6 @@ private[impl] class SchemaElasticEventProcessor(
   def updateSchemaName(event: SchemaEntity.SchemaNameUpdated): Future[Seq[BoundStatement]] =
     elasticRepository
       .updateSchemaName(event)
-      .map(_ => Seq.empty)
-
-  def updateActiveAttributeName(event: SchemaEntity.ActiveAttributeNameUpdated): Future[Seq[BoundStatement]] =
-    elasticRepository
-      .updateActiveAttributeName(event)
       .map(_ => Seq.empty)
 
   def createActiveAttribute(event: SchemaEntity.ActiveAttributeCreated): Future[Seq[BoundStatement]] =

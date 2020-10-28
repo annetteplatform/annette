@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.attributes.api.assignment
 
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeId
+import biz.lobachev.annette.attributes.api.attribute.AttributeId
 import biz.lobachev.annette.attributes.api.schema.{InvalidComposedId, SchemaId}
 import play.api.libs.json.Json
 

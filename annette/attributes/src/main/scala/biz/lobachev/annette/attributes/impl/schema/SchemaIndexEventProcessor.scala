@@ -18,9 +18,7 @@ package biz.lobachev.annette.attributes.impl.schema
 
 import akka.Done
 import biz.lobachev.annette.attributes.api.schema.SchemaAttributeId
-import biz.lobachev.annette.attributes.impl.AttributeUtil
 import biz.lobachev.annette.attributes.impl.assignment.AssignmentEntityService
-import biz.lobachev.annette.attributes.impl.attribute_def.AttributeDefEntityService
 import biz.lobachev.annette.attributes.impl.index.IndexEntityService
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
@@ -31,7 +29,6 @@ import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class SchemaIndexEventProcessor(
   readSide: CassandraReadSide,
-  attributeDefEntityService: AttributeDefEntityService,
   assignmentEntityService: AssignmentEntityService,
   indexEntityService: IndexEntityService
 )(implicit
@@ -50,45 +47,36 @@ private[impl] class SchemaIndexEventProcessor(
   def aggregateTags: Set[AggregateEventTag[SchemaEntity.Event]] = SchemaEntity.Event.Tag.allTags
 
   def onIndexAttributeCreated(event: SchemaEntity.IndexAttributeCreated): Future[Seq[BoundStatement]] = {
-    val id        = SchemaAttributeId(event.id.id, event.id.sub, event.attributeId)
-    val fieldName = AttributeUtil.fieldName(event.id.id, event.id.sub, event.alias)
+    val id = SchemaAttributeId(event.id.id, event.id.sub, event.attributeId)
     for {
-      attributeType <- attributeDefEntityService
-                         .getAttributeDefById(event.attributeId, true)
-                         .map(_.attributeType)
-      _             <- indexEntityService.createIndexAttribute(
-                         id = id,
-                         attributeType = attributeType,
-                         textContentIndex = event.textContentIndex,
-                         fieldName = fieldName
-                       )
+      _ <- indexEntityService.createIndexAttribute(
+             id = id,
+             index = event.index.toAttributeIndex(event.id, event.attributeId)
+           )
     } yield {
       if (event.reindexAssignments)
-        reindexAttributes(id, fieldName)
+        reindexAttributes(id, event.fieldName)
       Seq()
     }
   }
 
   def onIndexAttributeRemoved(event: SchemaEntity.IndexAttributeRemoved): Future[Seq[BoundStatement]] = {
-    val id        = SchemaAttributeId(event.id.id, event.id.sub, event.attributeId)
-    val fieldName = AttributeUtil.fieldName(event.id.id, event.id.sub, event.alias)
+    val id = SchemaAttributeId(event.id.id, event.id.sub, event.attributeId)
     for {
       _ <- if (event.removeAssignments)
-             unassignAttributes(id, fieldName)
+             unassignAttributes(id, event.fieldName)
            else Future.unit
       _ <- indexEntityService.removeIndexAttribute(
              id = id,
-             fieldName = fieldName
+             fieldName = event.fieldName
            )
     } yield Seq()
-
   }
 
   // TODO: reindex all attributes
   private def reindexAttributes(id: SchemaAttributeId, fieldName: String): Future[Done] =
     for {
       assignments <- assignmentEntityService.getAttributeAssignments(id)
-      _            = assignments.foreach(println)
       _           <- Future.traverse(assignments.values) { assignment =>
                        indexEntityService.assignIndexAttribute(id, assignment.id.objectId, assignment.attribute, fieldName)
                      }

@@ -22,9 +22,8 @@ import biz.lobachev.annette.application.api.application.{
   DeleteApplicationPayload,
   UpdateApplicationPayload
 }
-import biz.lobachev.annette.application.api.translation.Caption
 import biz.lobachev.annette.application.impl.application.ApplicationEntity
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.{AnnettePrincipal, Caption}
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
 object ApplicationSerializerRegistry extends JsonSerializerRegistry {

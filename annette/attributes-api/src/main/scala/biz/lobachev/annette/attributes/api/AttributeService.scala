@@ -18,7 +18,6 @@ package biz.lobachev.annette.attributes.api
 
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.attributes.api.assignment._
-import biz.lobachev.annette.attributes.api.attribute_def._
 import biz.lobachev.annette.attributes.api.index.IndexEvent
 import biz.lobachev.annette.attributes.api.schema._
 import biz.lobachev.annette.core.elastic.FindResult
@@ -35,15 +34,6 @@ trait AttributeService extends Service {
     val config = ConfigFactory.load()
     config.getString("annette.kafka.indexTopic")
   }
-
-  def createAttributeDef: ServiceCall[CreateAttributeDefPayload, Done]
-  def updateAttributeDef: ServiceCall[UpdateAttributeDefPayload, Done]
-  def deleteAttributeDef: ServiceCall[DeleteAttributeDefPayload, Done]
-  def getAttributeDefById(id: AttributeDefId, fromReadSide: Boolean = true): ServiceCall[NotUsed, AttributeDef]
-  def getAttributeDefsById(
-    fromReadSide: Boolean = true
-  ): ServiceCall[Set[AttributeDefId], Map[AttributeDefId, AttributeDef]]
-  def findAttributeDefs: ServiceCall[FindAttributeDefQuery, FindResult]
 
   def createSchema: ServiceCall[CreateSchemaPayload, Done]
   def updateSchema: ServiceCall[UpdateSchemaPayload, Done]
@@ -73,13 +63,6 @@ trait AttributeService extends Service {
     // @formatter:off
     named("attributes")
       .withCalls(
-        pathCall("/api/attributes/v1/createAttributeDef",                    createAttributeDef),
-        pathCall("/api/attributes/v1/updateAttributeDef",                    updateAttributeDef),
-        pathCall("/api/attributes/v1/deleteAttributeDef",                    deleteAttributeDef),
-        pathCall("/api/attributes/v1/getAttributeDefById/:id/:fromReadSide", getAttributeDefById _),
-        pathCall("/api/attributes/v1/getAttributeDefsById/:fromReadSide",    getAttributeDefsById _),
-        pathCall("/api/attributes/v1/findAttributeDefs",                     findAttributeDefs ),
-
         pathCall("/api/attributes/v1/createSchema",                    createSchema),
         pathCall("/api/attributes/v1/updateSchema",                    updateSchema),
         pathCall("/api/attributes/v1/activateSchema",                  activateSchema),
@@ -101,9 +84,9 @@ trait AttributeService extends Service {
           .addProperty(
             KafkaProperties.partitionKeyStrategy,
             PartitionKeyStrategy[IndexEvent](_.id.toComposed)
-          )         
+          )
       )
-      .withAutoAcl(true)  
+      .withAutoAcl(true)
     // @formatter:on
   }
 }

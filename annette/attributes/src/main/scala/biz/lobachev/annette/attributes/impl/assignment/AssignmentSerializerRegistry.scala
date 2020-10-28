@@ -26,7 +26,7 @@ object AssignmentSerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[AttributeAssignmentState],
       JsonSerializer[AttributeAssignment],
       JsonSerializer[AttributeAssignmentId],
-      JsonSerializer[Attribute],
+      JsonSerializer[AttributeValue],
       JsonSerializer[AnnettePrincipal],
       JsonSerializer[UnassignAttributePayload],
       JsonSerializer[AssignAttributePayload],

@@ -18,7 +18,7 @@ package biz.lobachev.annette.attributes.api.query
 
 import akka.Done
 import biz.lobachev.annette.attributes.api.assignment._
-import biz.lobachev.annette.attributes.api.attribute_def.AttributeType.AttributeType
+import biz.lobachev.annette.attributes.api.attribute.AttributeIndex
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.requests.indexes.PutMappingResponse
 import com.sksamuel.elastic4s.requests.searches.queries.{Query, RangeQuery}
@@ -29,15 +29,13 @@ trait AttributeIndexDao {
 
   // *************************** Attribute API ***************************
 
-  def createAttribute(attributeType: AttributeType, fieldName: String, textContentIndex: Boolean): Future[Done]
+  def createAttribute(index: AttributeIndex): Future[Done]
 
   def createAttributeInt(
-    attributeType: AttributeType,
-    fieldName: String,
-    textContentIndex: Boolean
+    index: AttributeIndex
   ): Future[Response[PutMappingResponse]]
 
-  def assignAttribute(id: ObjectId, fieldName: String, attribute: Attribute): Future[Done]
+  def assignAttribute(id: ObjectId, fieldName: String, attribute: AttributeValue): Future[Done]
 
   def unassignAttribute(id: ObjectId, fieldName: String): Future[Done]
 
@@ -45,7 +43,7 @@ trait AttributeIndexDao {
 
   def buildAttributeQuery(maybeQuery: Option[AttributeQuery]): Seq[Query]
 
-  def attributeValue(attribute: Attribute): Any
+  def attributeValue(attribute: AttributeValue): Any
 
-  def rangeCond(q: RangeQuery, cond: String, attr: Attribute): RangeQuery
+  def rangeCond(q: RangeQuery, cond: String, attr: AttributeValue): RangeQuery
 }

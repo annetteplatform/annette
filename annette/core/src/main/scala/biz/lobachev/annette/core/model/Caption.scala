@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.application.api.translation
+package biz.lobachev.annette.core.model
 
 import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 
