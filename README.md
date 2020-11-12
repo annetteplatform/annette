@@ -23,13 +23,25 @@ This helps Annette users to communicate, collaborate and make them more producti
 
 The technological features:
 
-* High performance - provided by implementation of [Reactive Manifesto](https://www.reactivemanifesto.org/) principles.
-* High scalability - provided by [Akka](https://akka.io/) clustering technologies and [Kubernetes](https://kubernetes.io/) 
+* High performance provided by implementation of [Reactive Manifesto](https://www.reactivemanifesto.org/) principles.
+* High scalability provided by [Akka](https://akka.io/) clustering technologies and [Kubernetes](https://kubernetes.io/) 
   production-grade container orchestration.  
-* Cloud native - allows deploying Annette applications in on-premise, private cloud or public cloud environments.   
+* Cloud native allows deploying Annette applications in on-premise, private cloud or public cloud environments. 
+* Enterprise-wide platform
+* Extendable architecture based on microservices
+* Support of unlimited number frontend applications
+* Support of unlimited number API Gateways for serving frontend applications and external integration services
+* Distributed cluster architecture of microservices and API Gateways
+* External & internal authentication
+* External & internal authorization
+* Embedded Elastic Search integration
+  
 
 Business features:
-
+* High performance that provides quick response and high user satisfaction (customer, employees, business partners)
+* High scalability that allows you to optimize costs and scale computing resources in accordance with the needs
+* Low time-to-market due to rapid development and implementation of new services
+* Low total cost of ownership
 * A unified ecosystem that combines various applications on the Annette platform into a single business environment 
   through Single Sign On and shared data.
 * Powerful authorization system implements a fine-grained role based access control (RBAC) and allows flexible permission
