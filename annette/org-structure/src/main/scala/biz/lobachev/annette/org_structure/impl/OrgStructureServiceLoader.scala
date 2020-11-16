@@ -21,6 +21,14 @@ import biz.lobachev.annette.attributes.api.AttributeService
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.core.elastic.ElasticModule
 import biz.lobachev.annette.org_structure.api.OrgStructureServiceApi
+import biz.lobachev.annette.org_structure.impl.category.{
+  CategoryDbEventProcessor,
+  CategoryEntity,
+  CategoryEntityService,
+  CategoryIndexEventProcessor
+}
+import biz.lobachev.annette.org_structure.impl.category.dao.{CategoryCassandraDbDao, CategoryElasticIndexDao}
+import biz.lobachev.annette.org_structure.impl.category.model.CategorySerializerRegistry
 import biz.lobachev.annette.org_structure.impl.hierarchy._
 import biz.lobachev.annette.org_structure.impl.hierarchy.dao.{HierarchyCassandraDbDao, HierarchyElasticIndexDao}
 import biz.lobachev.annette.org_structure.impl.hierarchy.model.HierarchySerializerRegistry
@@ -90,6 +98,17 @@ abstract class OrgStructureServiceApplication(context: LagomApplicationContext)
     }
   )
 
+  lazy val categoryElastic       = wire[CategoryElasticIndexDao]
+  lazy val categoryEntityService = wire[CategoryEntityService]
+  lazy val categoryRepository    = wire[CategoryCassandraDbDao]
+  readSide.register(wire[CategoryDbEventProcessor])
+  readSide.register(wire[CategoryIndexEventProcessor])
+  clusterSharding.init(
+    Entity(CategoryEntity.typeKey) { entityContext =>
+      CategoryEntity(entityContext)
+    }
+  )
+
   lazy val attributeService = serviceClient.implement[AttributeService]
   wire[AttributeServiceSubscriber]
 
@@ -98,5 +117,6 @@ abstract class OrgStructureServiceApplication(context: LagomApplicationContext)
 object OrgStructureSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: immutable.Seq[JsonSerializer[_]] =
     HierarchySerializerRegistry.serializers ++
-      OrgRoleSerializerRegistry.serializers
+      OrgRoleSerializerRegistry.serializers ++
+      CategorySerializerRegistry.serializers
 }

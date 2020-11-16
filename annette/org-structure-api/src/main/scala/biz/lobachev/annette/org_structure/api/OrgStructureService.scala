@@ -19,6 +19,14 @@ package biz.lobachev.annette.org_structure.api
 import akka.Done
 import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
+import biz.lobachev.annette.org_structure.api.category.{
+  Category,
+  CategoryFindQuery,
+  CategoryId,
+  CreateCategoryPayload,
+  DeleteCategoryPayload,
+  UpdateCategoryPayload
+}
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.{OrgRoleId, _}
 
@@ -42,6 +50,7 @@ trait OrgStructureService {
   def deletePosition(payload: DeletePositionPayload): Future[Done]
   def updateName(payload: UpdateNamePayload): Future[Done]
   def updateShortName(payload: UpdateShortNamePayload): Future[Done]
+  def assignCategory(payload: AssignCategoryPayload): Future[Done]
   def changePositionLimit(payload: ChangePositionLimitPayload): Future[Done]
   def assignPerson(payload: AssignPersonPayload): Future[Done]
   def unassignPerson(payload: UnassignPersonPayload): Future[Done]
@@ -69,5 +78,15 @@ trait OrgStructureService {
   def getOrgRoleById(id: OrgRoleId, fromReadSide: Boolean): Future[OrgRole]
   def getOrgRolesById(ids: Set[OrgRoleId], fromReadSide: Boolean): Future[Map[OrgRoleId, OrgRole]]
   def findOrgRoles(query: OrgRoleFindQuery): Future[FindResult]
+
+  // category methods
+
+  def createCategory(payload: CreateCategoryPayload): Future[Done]
+  def createOrUpdateCategory(payload: CreateCategoryPayload): Future[Done]
+  def updateCategory(payload: UpdateCategoryPayload): Future[Done]
+  def deleteCategory(payload: DeleteCategoryPayload): Future[Done]
+  def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category]
+  def getCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean): Future[Map[CategoryId, Category]]
+  def findCategories(query: CategoryFindQuery): Future[FindResult]
 
 }

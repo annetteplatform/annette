@@ -19,6 +19,7 @@ package biz.lobachev.annette.org_structure.api.hierarchy
 import java.time.OffsetDateTime
 
 import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
+import biz.lobachev.annette.org_structure.api.category.CategoryId
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 
@@ -27,8 +28,7 @@ sealed trait HierarchyItem {
   val parentId: OrgItemId
   val name: String
   val shortName: String
-  val createdAt: OffsetDateTime
-  val createdBy: AnnettePrincipal
+  val categoryId: CategoryId
   val updatedAt: OffsetDateTime
   val updatedBy: AnnettePrincipal
 }
@@ -41,8 +41,7 @@ case class HierarchyPosition(
   limit: Int = 1,
   persons: Set[PersonId] = Set.empty,
   orgRoles: Set[OrgRoleId] = Set.empty,
-  createdAt: OffsetDateTime = OffsetDateTime.now(),
-  createdBy: AnnettePrincipal,
+  categoryId: CategoryId,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) extends HierarchyItem
@@ -58,8 +57,7 @@ case class HierarchyUnit(
   shortName: String,
   children: Seq[OrgItemId] = Seq.empty,
   chief: Option[OrgItemId] = None,
-  createdAt: OffsetDateTime = OffsetDateTime.now(),
-  createdBy: AnnettePrincipal,
+  categoryId: CategoryId,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) extends HierarchyItem
@@ -69,8 +67,11 @@ object HierarchyUnit {
 }
 
 object HierarchyItem {
-  implicit val config = JsonConfiguration(discriminator = "type", typeNaming = JsonNaming { fullName =>
-    fullName.split("\\.").toSeq.last
-  })
+  implicit val config                        = JsonConfiguration(
+    discriminator = "type",
+    typeNaming = JsonNaming { fullName =>
+      fullName.split("\\.").toSeq.last
+    }
+  )
   implicit val format: Format[HierarchyItem] = Json.format
 }

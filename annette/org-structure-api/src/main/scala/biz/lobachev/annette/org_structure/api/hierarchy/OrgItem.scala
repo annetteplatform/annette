@@ -19,6 +19,7 @@ package biz.lobachev.annette.org_structure.api.hierarchy
 import java.time.OffsetDateTime
 
 import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
+import biz.lobachev.annette.org_structure.api.category.CategoryId
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import play.api.libs.json.{Json, JsonConfiguration, JsonNaming}
 
@@ -29,6 +30,7 @@ sealed trait OrgItem {
   val name: String
   val shortName: String
   val level: Int
+  val categoryId: CategoryId
   val updatedAt: OffsetDateTime
   val updatedBy: AnnettePrincipal
 }
@@ -42,6 +44,7 @@ case class OrgUnit(
   children: Seq[OrgItemId],
   chief: Option[OrgItemId],
   level: Int,
+  categoryId: CategoryId,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) extends OrgItem
@@ -60,6 +63,7 @@ case class OrgPosition(
   limit: Int,
   orgRoles: Set[OrgRoleId] = Set.empty,
   level: Int,
+  categoryId: CategoryId,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) extends OrgItem

@@ -17,6 +17,7 @@
 package biz.lobachev.annette.org_structure.api.hierarchy
 
 import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.org_structure.api.category.CategoryId
 import play.api.libs.json.Json
 
 case class CreatePositionPayload(
@@ -26,6 +27,7 @@ case class CreatePositionPayload(
   name: String,
   shortName: String,
   limit: Int = 1,
+  categoryId: CategoryId,
   order: Option[Int] = None,
   createdBy: AnnettePrincipal
 )

@@ -16,13 +16,13 @@
 
 package biz.lobachev.annette.org_structure.api.hierarchy
 
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
 import play.api.libs.json.Json
 
 case class AssignPersonPayload(
   orgId: OrgItemId,
   positionId: OrgItemId,
-  personId: OrgItemId,
+  personId: PersonId,
   updatedBy: AnnettePrincipal
 )
 

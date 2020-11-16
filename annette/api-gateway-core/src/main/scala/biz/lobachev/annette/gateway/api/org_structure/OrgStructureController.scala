@@ -18,10 +18,17 @@ package biz.lobachev.annette.gateway.api.org_structure
 
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.gateway.api.org_structure.Permissions._
-import biz.lobachev.annette.gateway.api.org_structure.dto.{DeleteOrgRoleDto, OrgRoleDto}
+import biz.lobachev.annette.gateway.api.org_structure.dto._
 import biz.lobachev.annette.gateway.core.authentication.{AuthenticatedAction, AuthenticatedRequest}
 import biz.lobachev.annette.gateway.core.authorization.{AuthorizationFailedException, Authorizer}
 import biz.lobachev.annette.org_structure.api.OrgStructureService
+import biz.lobachev.annette.org_structure.api.category.{
+  CategoryFindQuery,
+  CategoryId,
+  CreateCategoryPayload,
+  DeleteCategoryPayload,
+  UpdateCategoryPayload
+}
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role._
 import javax.inject.{Inject, Singleton}
@@ -41,8 +48,11 @@ class OrgStructureController @Inject() (
 ) extends AbstractController(cc) {
 
   def createOrganization =
-    authenticated.async(parse.json[CreateOrganizationPayload]) { implicit request =>
+    authenticated.async(parse.json[CreateOrganizationPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[CreateOrganizationPayload]
+        .withFieldConst(_.createdBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainOrg(payload.orgId)) {
         for {
           _      <- orgStructureService.createOrganization(payload)
@@ -52,8 +62,11 @@ class OrgStructureController @Inject() (
     }
 
   def deleteOrganization =
-    authenticated.async(parse.json[DeleteOrganizationPayload]) { implicit request =>
+    authenticated.async(parse.json[DeleteOrganizationPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[DeleteOrganizationPayload]
+        .withFieldConst(_.deletedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainOrg(payload.orgId)) {
         for {
           _ <- orgStructureService.deleteOrganization(payload)
@@ -80,8 +93,11 @@ class OrgStructureController @Inject() (
     }
 
   def createUnit =
-    authenticated.async(parse.json[CreateUnitPayload]) { implicit request =>
+    authenticated.async(parse.json[CreateUnitPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[CreateUnitPayload]
+        .withFieldConst(_.createdBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainOrg(payload.orgId)) {
         for {
           _      <- orgStructureService.createUnit(payload)
@@ -91,8 +107,11 @@ class OrgStructureController @Inject() (
     }
 
   def deleteUnit =
-    authenticated.async(parse.json[DeleteUnitPayload]) { implicit request =>
+    authenticated.async(parse.json[DeleteUnitPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[DeleteUnitPayload]
+        .withFieldConst(_.deletedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainOrg(payload.orgId)) {
         for {
           unit   <- orgStructureService.getOrgItemById(payload.orgId, payload.unitId)
@@ -102,9 +121,26 @@ class OrgStructureController @Inject() (
       }
     }
 
-  def assignChief =
-    authenticated.async(parse.json[AssignChiefPayload]) { implicit request =>
+  def assignCategory =
+    authenticated.async(parse.json[AssignCategoryPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[AssignCategoryPayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
+      authorizer.performCheck(canMaintainOrg(payload.orgId)) {
+        for {
+          _      <- orgStructureService.assignCategory(payload)
+          result <- orgStructureService.getOrgItemById(payload.orgId, payload.itemId)
+        } yield Ok(Json.toJson(result))
+      }
+    }
+
+  def assignChief =
+    authenticated.async(parse.json[AssignChiefPayloadDto]) { implicit request =>
+      val payload = request.body
+        .into[AssignChiefPayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainOrg(payload.orgId)) {
         for {
           _      <- orgStructureService.assignChief(payload)
@@ -114,8 +150,11 @@ class OrgStructureController @Inject() (
     }
 
   def unassignChief =
-    authenticated.async(parse.json[UnassignChiefPayload]) { implicit request =>
+    authenticated.async(parse.json[UnassignChiefPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[UnassignChiefPayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainOrg(payload.orgId)) {
         for {
           _      <- orgStructureService.unassignChief(payload)
@@ -125,8 +164,11 @@ class OrgStructureController @Inject() (
     }
 
   def createPosition =
-    authenticated.async(parse.json[CreatePositionPayload]) { implicit request =>
+    authenticated.async(parse.json[CreatePositionPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[CreatePositionPayload]
+        .withFieldConst(_.createdBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainOrg(payload.orgId)) {
         for {
           _      <- orgStructureService.createPosition(payload)
@@ -136,8 +178,11 @@ class OrgStructureController @Inject() (
     }
 
   def deletePosition =
-    authenticated.async(parse.json[DeletePositionPayload]) { implicit request =>
+    authenticated.async(parse.json[DeletePositionPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[DeletePositionPayload]
+        .withFieldConst(_.deletedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainOrg(payload.orgId)) {
         for {
           position <- orgStructureService.getOrgItemById(payload.orgId, payload.positionId)
@@ -148,8 +193,11 @@ class OrgStructureController @Inject() (
     }
 
   def updateName =
-    authenticated.async(parse.json[UpdateNamePayload]) { implicit request =>
+    authenticated.async(parse.json[UpdateNamePayloadDto]) { implicit request =>
       val payload = request.body
+        .into[UpdateNamePayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainOrg(payload.orgId)) {
         for {
           _      <- orgStructureService.updateName(payload)
@@ -159,8 +207,11 @@ class OrgStructureController @Inject() (
     }
 
   def updateShortName =
-    authenticated.async(parse.json[UpdateShortNamePayload]) { implicit request =>
+    authenticated.async(parse.json[UpdateShortNamePayloadDto]) { implicit request =>
       val payload = request.body
+        .into[UpdateShortNamePayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainOrg(payload.orgId)) {
         for {
           _      <- orgStructureService.updateShortName(payload)
@@ -170,8 +221,11 @@ class OrgStructureController @Inject() (
     }
 
   def changePositionLimit =
-    authenticated.async(parse.json[ChangePositionLimitPayload]) { implicit request =>
+    authenticated.async(parse.json[ChangePositionLimitPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[ChangePositionLimitPayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainOrg(payload.orgId)) {
         for {
           _      <- orgStructureService.changePositionLimit(payload)
@@ -181,8 +235,11 @@ class OrgStructureController @Inject() (
     }
 
   def assignPerson =
-    authenticated.async(parse.json[AssignPersonPayload]) { implicit request =>
+    authenticated.async(parse.json[AssignPersonPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[AssignPersonPayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainOrg(payload.orgId)) {
         for {
           _      <- orgStructureService.assignPerson(payload)
@@ -192,8 +249,11 @@ class OrgStructureController @Inject() (
     }
 
   def unassignPerson =
-    authenticated.async(parse.json[UnassignPersonPayload]) { implicit request =>
+    authenticated.async(parse.json[UnassignPersonPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[UnassignPersonPayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainOrg(payload.orgId)) {
         for {
           _      <- orgStructureService.unassignPerson(payload)
@@ -203,8 +263,11 @@ class OrgStructureController @Inject() (
     }
 
   def assignOrgRole =
-    authenticated.async(parse.json[AssignOrgRolePayload]) { implicit request =>
+    authenticated.async(parse.json[AssignOrgRolePayloadDto]) { implicit request =>
       val payload = request.body
+        .into[AssignOrgRolePayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainOrg(payload.orgId)) {
         for {
           _      <- orgStructureService.assignOrgRole(payload)
@@ -214,8 +277,11 @@ class OrgStructureController @Inject() (
     }
 
   def unassignOrgRole =
-    authenticated.async(parse.json[UnassignOrgRolePayload]) { implicit request =>
+    authenticated.async(parse.json[UnassignOrgRolePayloadDto]) { implicit request =>
       val payload = request.body
+        .into[UnassignOrgRolePayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainOrg(payload.orgId)) {
         for {
           _      <- orgStructureService.unassignOrgRole(payload)
@@ -288,8 +354,11 @@ class OrgStructureController @Inject() (
     }
 
   def moveItem =
-    authenticated.async(parse.json[MoveItemPayload]) { implicit request =>
+    authenticated.async(parse.json[MoveItemPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[MoveItemPayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainOrg(payload.orgId)) {
         for {
           _ <- orgStructureService.moveItem(payload)
@@ -298,8 +367,11 @@ class OrgStructureController @Inject() (
     }
 
   def changeItemOrder =
-    authenticated.async(parse.json[ChangeItemOrderPayload]) { implicit request =>
+    authenticated.async(parse.json[ChangeItemOrderPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[ChangeItemOrderPayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheck(canMaintainOrg(payload.orgId)) {
         for {
           item   <- orgStructureService.getOrgItemById(payload.orgId, payload.orgItemId)
@@ -405,6 +477,78 @@ class OrgStructureController @Inject() (
       authorizer.performCheckAny(VIEW_ALL_ORG_ROLES, MAINTAIN_ALL_ORG_ROLES) {
         for {
           result <- orgStructureService.findOrgRoles(query)
+        } yield Ok(Json.toJson(result))
+      }
+    }
+
+  // category methods
+
+  def createCategory =
+    authenticated.async(parse.json[CategoryDto]) { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_CATEGORIES) {
+        val payload = request.body
+          .into[CreateCategoryPayload]
+          .withFieldConst(_.createdBy, request.subject.principals.head)
+          .transform
+        for {
+          _    <- orgStructureService.createCategory(payload)
+          role <- orgStructureService.getCategoryById(payload.id, false)
+        } yield Ok(Json.toJson(role))
+      }
+    }
+
+  def updateCategory =
+    authenticated.async(parse.json[CategoryDto]) { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_CATEGORIES) {
+        val payload = request.body
+          .into[UpdateCategoryPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _    <- orgStructureService.updateCategory(payload)
+          role <- orgStructureService.getCategoryById(payload.id, false)
+        } yield Ok(Json.toJson(role))
+      }
+    }
+
+  def deleteCategory =
+    authenticated.async(parse.json[DeleteCategoryDto]) { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_CATEGORIES) {
+        val payload = request.body
+          .into[DeleteCategoryPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _ <- orgStructureService.deleteCategory(payload)
+        } yield Ok("")
+      }
+    }
+
+  def getCategoryById(id: CategoryId, fromReadSide: Boolean) =
+    authenticated.async { implicit request =>
+      authorizer.performCheckAny(VIEW_ALL_CATEGORIES, MAINTAIN_ALL_CATEGORIES) {
+        for {
+          role <- orgStructureService.getCategoryById(id, fromReadSide)
+        } yield Ok(Json.toJson(role))
+      }
+    }
+
+  def getCategoriesById(fromReadSide: Boolean) =
+    authenticated.async(parse.json[Set[CategoryId]]) { implicit request =>
+      val ids = request.body
+      authorizer.performCheckAny(VIEW_ALL_CATEGORIES, MAINTAIN_ALL_CATEGORIES) {
+        for {
+          roles <- orgStructureService.getCategoriesById(ids, fromReadSide)
+        } yield Ok(Json.toJson(roles))
+      }
+    }
+
+  def findCategories =
+    authenticated.async(parse.json[CategoryFindQuery]) { implicit request =>
+      val query = request.body
+      authorizer.performCheckAny(VIEW_ALL_ORG_ROLES, MAINTAIN_ALL_ORG_ROLES) {
+        for {
+          result <- orgStructureService.findCategories(query)
         } yield Ok(Json.toJson(result))
       }
     }

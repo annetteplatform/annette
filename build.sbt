@@ -22,10 +22,10 @@ ThisBuild / scmInfo := Some(
 )
 ThisBuild / developers := List(
   Developer(
-    id    = "valerylobachev",
-    name  = "Valery Lobachev",
+    id = "valerylobachev",
+    name = "Valery Lobachev",
     email = "valery@lobachev.biz",
-    url   = url("https://lobachev.biz/")
+    url = url("https://lobachev.biz/")
   )
 )
 
@@ -42,7 +42,6 @@ ThisBuild / homepage := Some(url("https://github.com/annetteplatform/annette"))
 //}
 //ThisBuild / publishMavenStyle := true
 
-
 // Use external Kafka
 lagomKafkaEnabled in ThisBuild := false
 // Use external Cassandra
@@ -52,7 +51,7 @@ lagomCassandraEnabled in ThisBuild := false
 def annetteSettings: Seq[Setting[_]] =
   Seq(
     organizationName := "Valery Lobachev",
-    startYear := Some(2013),
+    startYear := Some(2013)
   )
 
 def confDirSettings: Seq[Setting[_]] =
@@ -282,7 +281,8 @@ def orgStructureProject(pr: Project) =
         lagomScaladslKafkaBroker,
         lagomScaladslTestKit,
         Dependencies.macwire,
-        Dependencies.chimney
+        Dependencies.chimney,
+        Dependencies.pureConfig
       ) ++ Dependencies.tests
     )
     .settings(lagomForkedTestSettings: _*)

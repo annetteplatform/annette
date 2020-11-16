@@ -12,8 +12,8 @@ object Dependencies {
     val jwtPlayJson             = "4.3.0"
     val akkaKubernetesDiscovery = "1.0.8"
     val logstashEncoder         = "6.4"
-    val chimney                 = "0.5.3"
-    val pureConfig              = "0.13.0"
+    val chimney                 = "0.6.1"
+    val pureConfig              = "0.14.0"
   }
 
   val macwire = "com.softwaremill.macwire" %% "macros" % Version.macwire % "provided"

@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.org_structure.api.hierarchy
 
+import biz.lobachev.annette.org_structure.api.category.CategoryId
 import play.api.libs.json._
 
 case class OrganizationTree(
@@ -34,7 +35,8 @@ sealed trait OrgTreeItem {
 final case class UnitTreeItem(
   id: OrgItemId,
   children: Seq[OrgTreeItem],
-  chief: Option[OrgItemId]
+  chief: Option[OrgItemId],
+  categoryId: CategoryId
 ) extends OrgTreeItem
 
 object UnitTreeItem {
@@ -43,15 +45,19 @@ object UnitTreeItem {
 
 final case class PositionTreeItem(
   id: OrgItemId,
-  persons: Set[OrgItemId]
+  persons: Set[OrgItemId],
+  categoryId: CategoryId
 ) extends OrgTreeItem
 
 object PositionTreeItem {
   implicit val format: Format[PositionTreeItem] = Json.format
 }
-object OrgTreeItem {
-  implicit val config = JsonConfiguration(discriminator = "type", typeNaming = JsonNaming { fullName =>
-    fullName.split("\\.").toSeq.last
-  })
+object OrgTreeItem      {
+  implicit val config                      = JsonConfiguration(
+    discriminator = "type",
+    typeNaming = JsonNaming { fullName =>
+      fullName.split("\\.").toSeq.last
+    }
+  )
   implicit val format: Format[OrgTreeItem] = Json.format
 }

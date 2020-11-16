@@ -83,3 +83,7 @@ object IncorrectMoveItemArguments extends AnnetteTransportExceptionCompanion {
   val ErrorCode   = TransportErrorCode.BadRequest
   val MessageCode = "annette.orgStructureService.hierarchy.incorrectMoveItemArguments"
 }
+object IncorrectCategory          extends AnnetteTransportExceptionCompanion {
+  val ErrorCode   = TransportErrorCode.BadRequest
+  val MessageCode = "annette.orgStructureService.hierarchy.invalidCategory"
+}
