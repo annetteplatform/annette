@@ -43,7 +43,7 @@ trait OrgStructureLoader {
           for {
             _ <- loadOrganization(org, config.createdBy)
             _ <- loadChildren(org.children, org.id, org.id, config.createdBy)
-//            _ <- loadChiefs(org, org.id, config.createdBy)
+            _ <- loadChiefs(org, org.id, config.createdBy)
           } yield ()
         }
       }

@@ -23,20 +23,32 @@ import akka.{Done, NotUsed}
 import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
 import biz.lobachev.annette.org_structure.api.OrgStructureServiceApi
+import biz.lobachev.annette.org_structure.api.category.{
+  Category,
+  CategoryFindQuery,
+  CategoryId,
+  CreateCategoryPayload,
+  DeleteCategoryPayload,
+  UpdateCategoryPayload
+}
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role._
+import biz.lobachev.annette.org_structure.impl.category.CategoryEntityService
 import biz.lobachev.annette.org_structure.impl.hierarchy.HierarchyEntityService
 import biz.lobachev.annette.org_structure.impl.role.OrgRoleEntityService
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.typesafe.config.Config
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.Try
 
 class OrgStructureServiceApiImpl(
   hierarchyEntityService: HierarchyEntityService,
   orgRoleEntityService: OrgRoleEntityService,
-  config: Config
+  categoryEntityService: CategoryEntityService,
+  config: Config,
+  implicit val ec: ExecutionContext
 ) extends OrgStructureServiceApi {
   implicit val timeout =
     Try(config.getDuration("annette.timeout"))
@@ -45,9 +57,14 @@ class OrgStructureServiceApiImpl(
 
   // ****************************** Hierarchy methods ******************************
 
-  override def createOrganization: ServiceCall[CreateOrganizationPayload, Done] = { payload =>
-    hierarchyEntityService.createOrganization(payload)
-  }
+  override def createOrganization: ServiceCall[CreateOrganizationPayload, Done] =
+    ServiceCall { payload =>
+      for {
+        category <- categoryEntityService.getCategoryById(payload.categoryId)
+        result   <- if (category.forOrganization) hierarchyEntityService.createOrganization(payload)
+                    else Future.failed(IncorrectCategory())
+      } yield result
+    }
 
   override def deleteOrganization: ServiceCall[DeleteOrganizationPayload, Done] = { payload =>
     hierarchyEntityService.deleteOrganization(payload)
@@ -63,7 +80,11 @@ class OrgStructureServiceApiImpl(
 
   override def createUnit: ServiceCall[CreateUnitPayload, Done] =
     ServiceCall { payload =>
-      hierarchyEntityService.createUnit(payload)
+      for {
+        category <- categoryEntityService.getCategoryById(payload.categoryId)
+        result   <- if (category.forUnit) hierarchyEntityService.createUnit(payload)
+                    else Future.failed(IncorrectCategory())
+      } yield result
     }
 
   override def deleteUnit: ServiceCall[DeleteUnitPayload, Done] =
@@ -83,7 +104,11 @@ class OrgStructureServiceApiImpl(
 
   override def createPosition: ServiceCall[CreatePositionPayload, Done] =
     ServiceCall { payload =>
-      hierarchyEntityService.createPosition(payload)
+      for {
+        category <- categoryEntityService.getCategoryById(payload.categoryId)
+        result   <- if (category.forPosition) hierarchyEntityService.createPosition(payload)
+                    else Future.failed(IncorrectCategory())
+      } yield result
     }
 
   override def deletePosition: ServiceCall[DeletePositionPayload, Done] =
@@ -99,6 +124,14 @@ class OrgStructureServiceApiImpl(
   override def updateShortName: ServiceCall[UpdateShortNamePayload, Done] =
     ServiceCall { payload =>
       hierarchyEntityService.updateShortName(payload)
+    }
+
+  override def assignCategory: ServiceCall[AssignCategoryPayload, Done] =
+    ServiceCall { payload =>
+      for {
+        category <- categoryEntityService.getCategoryById(payload.categoryId)
+        result   <- hierarchyEntityService.assignCategory(payload, category)
+      } yield result
     }
 
   def changePositionLimit: ServiceCall[ChangePositionLimitPayload, Done] =
@@ -203,6 +236,38 @@ class OrgStructureServiceApiImpl(
   override def findOrgRoles: ServiceCall[OrgRoleFindQuery, FindResult] =
     ServiceCall { query =>
       orgRoleEntityService.findOrgRoles(query)
+    }
+
+  // ****************************** Category methods ******************************
+
+  override def createCategory: ServiceCall[CreateCategoryPayload, Done] =
+    ServiceCall { payload =>
+      categoryEntityService.createCategory(payload)
+    }
+
+  override def updateCategory: ServiceCall[UpdateCategoryPayload, Done] =
+    ServiceCall { payload =>
+      categoryEntityService.updateCategory(payload)
+    }
+
+  override def deleteCategory: ServiceCall[DeleteCategoryPayload, Done] =
+    ServiceCall { payload =>
+      categoryEntityService.deleteCategory(payload)
+    }
+
+  override def getCategoryById(id: CategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, Category] =
+    ServiceCall { _ =>
+      categoryEntityService.getCategoryById(id, fromReadSide)
+    }
+
+  override def getCategoriesById(fromReadSide: Boolean): ServiceCall[Set[CategoryId], Map[CategoryId, Category]] =
+    ServiceCall { ids =>
+      categoryEntityService.getCategoriesById(ids, fromReadSide)
+    }
+
+  override def findCategories: ServiceCall[CategoryFindQuery, FindResult] =
+    ServiceCall { query =>
+      categoryEntityService.findCategories(query)
     }
 
 }

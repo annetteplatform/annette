@@ -3,6 +3,7 @@
   "name": "Annette Software",
   "short-name": "Annette Software",
   "type": "U",
+  "category-id": "ORG",
   "chief": "ANSOFT-CEO",
   "children": [
     {
@@ -10,6 +11,7 @@
       "name": "Chief Executive Officer",
       "short-name": "CEO",
       "type": "P",
+      "category-id": "POSITION",
       "limit": 1,
       "person": "P0001"
     },
@@ -18,6 +20,7 @@
       "name": "Chief Accountant",
       "short-name": "Chief Accountant",
       "type": "P",
+      "category-id": "POSITION",
       "limit": 1,
       "person": "P0002"
     },
@@ -26,6 +29,7 @@
       "name": "Sales & Marketing Department",
       "short-name": "S&M Dept.",
       "type": "U",
+      "category-id": "UNIT",
       "chief": "ANSOFT-SM-HEAD",
       "children": [
         {
@@ -33,6 +37,7 @@
           "name": "Head of Sales & Marketing Dept.",
           "short-name": "Head of S&M Dept.",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0003"
         },
@@ -41,6 +46,7 @@
           "name": "Sales Manager",
           "short-name": "Sales Manager",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0004"
         }
@@ -51,6 +57,7 @@
       "name": "Development Department",
       "short-name": "DevelopmentDept.",
       "type": "U",
+      "category-id": "UNIT",
       "chief": "ANSOFT-DEV-CTO",
       "children": [
         {
@@ -58,6 +65,7 @@
           "name": "Chief Technical Officer",
           "short-name": "CTO",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0005"
         },
@@ -66,6 +74,7 @@
           "name": "Project Manager",
           "short-name": "PM",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0006"
         },
@@ -74,6 +83,7 @@
           "name": "Project Manager",
           "short-name": "PM",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0007"
         },
@@ -82,6 +92,7 @@
           "name": "Senior Backend Developer",
           "short-name": "Sen. Backend Dev.",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0008"
         },
@@ -90,6 +101,7 @@
           "name": "Senior Backend Developer",
           "short-name": "Sen. Backend Dev.",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0009"
         },
@@ -98,6 +110,7 @@
           "name": "Backend Developer",
           "short-name": "Backend Dev.",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0010"
         },
@@ -106,6 +119,7 @@
           "name": "Backend Developer",
           "short-name": "Backend Dev.",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0011"
         },
@@ -114,6 +128,7 @@
           "name": "Backend Developer",
           "short-name": "Backend Dev.",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0012"
         },
@@ -122,6 +137,7 @@
           "name": "Senior Frontend Developer",
           "short-name": "Sen. Frontend Dev.",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0013"
         },
@@ -130,6 +146,7 @@
           "name": "Senior Frontend Developer",
           "short-name": "Sen. Frontend Dev.",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0014"
         },
@@ -138,6 +155,7 @@
           "name": "Frontend Developer",
           "short-name": "Frontend Dev.",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0015"
         },
@@ -146,6 +164,7 @@
           "name": "Frontend Developer",
           "short-name": "Frontend Dev.",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0016"
         },
@@ -154,6 +173,7 @@
           "name": "Frontend Developer",
           "short-name": "Frontend Dev.",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0017"
         },
@@ -162,6 +182,7 @@
           "name": "Mobile Developer",
           "short-name": "Mobile Dev.",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0018"
         },
@@ -170,6 +191,7 @@
           "name": "Mobile Developer",
           "short-name": "Mobile Dev.",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0019"
         },
@@ -178,6 +200,7 @@
           "name": "Designer",
           "short-name": "Designer",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0020"
         },
@@ -186,6 +209,7 @@
           "name": "Designer",
           "short-name": "Designer",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0021"
         },
@@ -194,6 +218,7 @@
           "name": "DevOps Engineer",
           "short-name": "DevOps Engineer",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0022"
         },
@@ -202,6 +227,7 @@
           "name": "DevOps Engineer",
           "short-name": "DevOps Engineer",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0023"
         }

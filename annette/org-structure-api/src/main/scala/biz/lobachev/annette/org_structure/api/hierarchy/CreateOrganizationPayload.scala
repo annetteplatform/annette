@@ -17,12 +17,14 @@
 package biz.lobachev.annette.org_structure.api.hierarchy
 
 import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.org_structure.api.category.CategoryId
 import play.api.libs.json.Json
 
 case class CreateOrganizationPayload(
   orgId: OrgItemId,
   name: String,
   shortName: String,
+  categoryId: CategoryId,
   createdBy: AnnettePrincipal
 )
 

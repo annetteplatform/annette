@@ -19,6 +19,15 @@ package biz.lobachev.annette.org_structure.api
 import akka.Done
 import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
+import biz.lobachev.annette.org_structure.api.category.{
+  Category,
+  CategoryAlreadyExist,
+  CategoryFindQuery,
+  CategoryId,
+  CreateCategoryPayload,
+  DeleteCategoryPayload,
+  UpdateCategoryPayload
+}
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.{OrgRoleId, _}
 import io.scalaland.chimney.dsl._
@@ -65,6 +74,9 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
 
   def updateShortName(payload: UpdateShortNamePayload): Future[Done] =
     api.updateShortName.invoke(payload)
+
+  def assignCategory(payload: AssignCategoryPayload): Future[Done] =
+    api.assignCategory.invoke(payload)
 
   def changePositionLimit(payload: ChangePositionLimitPayload): Future[Done] =
     api.changePositionLimit.invoke(payload)
@@ -138,5 +150,36 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
 
   def findOrgRoles(query: OrgRoleFindQuery): Future[FindResult] =
     api.findOrgRoles.invoke(query)
+
+  // org role methods
+
+  def createCategory(payload: CreateCategoryPayload): Future[Done] =
+    api.createCategory.invoke(payload)
+
+  def updateCategory(payload: UpdateCategoryPayload): Future[Done] =
+    api.updateCategory.invoke(payload)
+
+  def createOrUpdateCategory(payload: CreateCategoryPayload): Future[Done] =
+    createCategory(payload).recoverWith {
+      case CategoryAlreadyExist(_) =>
+        val updatePayload = payload
+          .into[UpdateCategoryPayload]
+          .withFieldComputed(_.updatedBy, _.createdBy)
+          .transform
+        updateCategory(updatePayload)
+      case th                      => Future.failed(th)
+    }
+
+  def deleteCategory(payload: DeleteCategoryPayload): Future[Done] =
+    api.deleteCategory.invoke(payload)
+
+  def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category] =
+    api.getCategoryById(id, fromReadSide).invoke()
+
+  def getCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean): Future[Map[CategoryId, Category]] =
+    api.getCategoriesById(fromReadSide).invoke(ids)
+
+  def findCategories(query: CategoryFindQuery): Future[FindResult] =
+    api.findCategories.invoke(query)
 
 }

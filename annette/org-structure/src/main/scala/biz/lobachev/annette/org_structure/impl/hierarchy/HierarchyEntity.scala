@@ -23,6 +23,7 @@ import akka.cluster.sharding.typed.scaladsl._
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
+import biz.lobachev.annette.org_structure.api.category.{Category, CategoryId}
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import biz.lobachev.annette.org_structure.impl.hierarchy.model.HierarchyState
@@ -42,6 +43,11 @@ object HierarchyEntity {
       extends Command
   final case class CreateUnit(payload: CreateUnitPayload, replyTo: ActorRef[Confirmation])           extends Command
   final case class DeleteUnit(payload: DeleteUnitPayload, replyTo: ActorRef[Confirmation])           extends Command
+  final case class AssignCategory(
+    payload: AssignCategoryPayload,
+    category: Category,
+    replyTo: ActorRef[Confirmation]
+  )                                                                                                  extends Command
   final case class AssignChief(payload: AssignChiefPayload, replyTo: ActorRef[Confirmation])         extends Command
   final case class UnassignChief(payload: UnassignChiefPayload, replyTo: ActorRef[Confirmation])     extends Command
   final case class CreatePosition(payload: CreatePositionPayload, replyTo: ActorRef[Confirmation])   extends Command
@@ -91,6 +97,7 @@ object HierarchyEntity {
   final case object PersonNotAssigned                                          extends Confirmation
   final case object IncorrectOrder                                             extends Confirmation
   final case object IncorrectMoveItemArguments                                 extends Confirmation
+  final case object IncorrectCategory                                          extends Confirmation
 
   implicit val confirmationSuccessOrganizationFormat: Format[SuccessOrganization]                    = Json.format
   implicit val confirmationSuccessOrganizationTreeFormat: Format[SuccessOrganizationTree]            = Json.format
@@ -116,6 +123,7 @@ object HierarchyEntity {
   implicit val confirmationPersonNotAssignedFormat: Format[PersonNotAssigned.type]                   = Json.format
   implicit val confirmationIncorrectOrderFormat: Format[IncorrectOrder.type]                         = Json.format
   implicit val confirmationIncorrectMoveItemArgumentsFormat: Format[IncorrectMoveItemArguments.type] = Json.format
+  implicit val confirmationInvalidCategoryFormat: Format[IncorrectCategory.type]                     = Json.format
 
   implicit val confirmationFormat: Format[Confirmation] = Json.format[Confirmation]
 
@@ -131,6 +139,7 @@ object HierarchyEntity {
     orgId: OrgItemId,
     name: String,
     shortName: String,
+    categoryId: CategoryId,
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -147,6 +156,7 @@ object HierarchyEntity {
     shortName: String,
     order: Option[Int],
     rootPath: Seq[OrgItemId],
+    categoryId: CategoryId,
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -156,6 +166,13 @@ object HierarchyEntity {
     unitId: OrgItemId,
     deletedBy: AnnettePrincipal,
     deletedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+  final case class CategoryAssigned(
+    orgId: OrgItemId,
+    itemId: OrgItemId,
+    categoryId: CategoryId,
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
   final case class ChiefAssigned(
     orgId: OrgItemId,
@@ -180,6 +197,7 @@ object HierarchyEntity {
     order: Option[Int],
     rootPath: Seq[OrgItemId],
     limit: Int,
+    categoryId: CategoryId,
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -266,6 +284,7 @@ object HierarchyEntity {
   implicit val organizationDeletedFormat: Format[OrganizationDeleted]   = Json.format
   implicit val unitCreatedFormat: Format[UnitCreated]                   = Json.format
   implicit val unitDeletedFormat: Format[UnitDeleted]                   = Json.format
+  implicit val categoryAssignedFormat: Format[CategoryAssigned]         = Json.format
   implicit val chiefAssignedFormat: Format[ChiefAssigned]               = Json.format
   implicit val chiefUnassignedFormat: Format[ChiefUnassigned]           = Json.format
   implicit val positionCreatedFormat: Format[PositionCreated]           = Json.format
@@ -316,6 +335,7 @@ final case class HierarchyEntity(
       case cmd: UpdateShortName     => updateShortName(cmd)
       case cmd: CreateUnit          => createUnit(cmd)
       case cmd: DeleteUnit          => deleteUnit(cmd)
+      case cmd: AssignCategory      => assignCategory(cmd)
       case cmd: AssignChief         => assignChief(cmd)
       case cmd: UnassignChief       => unassignChief(cmd)
       case cmd: CreatePosition      => createPosition(cmd)
@@ -413,7 +433,38 @@ final case class HierarchyEntity(
     }
   }
 
-  def assignChief(cmd: AssignChief): ReplyEffect[Event, HierarchyEntity] =
+  def assignCategory(cmd: AssignCategory): ReplyEffect[Event, HierarchyEntity] =
+    maybeState match {
+      case None                                                           => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case Some(state) if state.units.isDefinedAt(cmd.payload.itemId)     =>
+        val unit = state.units(cmd.payload.itemId)
+        if (
+          (unit.parentId == ROOT && cmd.category.forOrganization) ||
+          (unit.parentId != ROOT && cmd.category.forUnit)
+        ) {
+          val event = cmd.payload
+            .into[CategoryAssigned]
+            .transform
+          Effect
+            .persist(event)
+            .thenReply(cmd.replyTo)(_ => Success)
+        } else
+          Effect.reply(cmd.replyTo)(IncorrectCategory)
+
+      case Some(state) if state.positions.isDefinedAt(cmd.payload.itemId) =>
+        if (cmd.category.forPosition) {
+          val event = cmd.payload
+            .into[CategoryAssigned]
+            .transform
+          Effect
+            .persist(event)
+            .thenReply(cmd.replyTo)(_ => Success)
+        } else
+          Effect.reply(cmd.replyTo)(IncorrectCategory)
+      case _                                                              =>
+        Effect.reply(cmd.replyTo)(ItemNotFound)
+    }
+  def assignChief(cmd: AssignChief): ReplyEffect[Event, HierarchyEntity]       =
     maybeState match {
       case None                                                             => Effect.reply(cmd.replyTo)(OrganizationNotFound)
       case Some(state) if !state.units.isDefinedAt(cmd.payload.unitId)      => Effect.reply(cmd.replyTo)(ItemNotFound)
@@ -783,6 +834,7 @@ final case class HierarchyEntity(
       case event: ShortNameUpdated     => onShortNameUpdated(event)
       case event: UnitCreated          => onUnitCreated(event)
       case event: UnitDeleted          => onUnitDeleted(event)
+      case event: CategoryAssigned     => onCategoryAssigned(event)
       case event: ChiefAssigned        => onChiefAssigned(event)
       case event: ChiefUnassigned      => onChiefUnassigned(event)
       case event: PositionCreated      => onPositionCreated(event)
@@ -803,8 +855,7 @@ final case class HierarchyEntity(
       parentId = ROOT,
       name = event.name,
       shortName = event.shortName,
-      createdAt = event.createdAt,
-      createdBy = event.createdBy,
+      categoryId = event.categoryId,
       updatedAt = event.createdAt,
       updatedBy = event.createdBy
     )
@@ -834,8 +885,7 @@ final case class HierarchyEntity(
           parentId = event.parentId,
           name = event.name,
           shortName = event.shortName,
-          createdAt = event.createdAt,
-          createdBy = event.createdBy,
+          categoryId = event.categoryId,
           updatedAt = event.createdAt,
           updatedBy = event.createdBy
         )
@@ -875,6 +925,37 @@ final case class HierarchyEntity(
           units = state.units + (updatedParent.id -> updatedParent) - event.unitId,
           updatedAt = event.deletedAt,
           updatedBy = event.deletedBy
+        )
+      }
+    )
+
+  def onCategoryAssigned(event: CategoryAssigned): HierarchyEntity =
+    HierarchyEntity(
+      maybeState.map { state =>
+        val updatedUnit     = state.units
+          .get(event.itemId)
+          .map(
+            _.copy(
+              categoryId = event.categoryId,
+              updatedAt = event.updatedAt,
+              updatedBy = event.updatedBy
+            )
+          )
+        val updatedPosition = state.positions
+          .get(event.itemId)
+          .map(
+            _.copy(
+              categoryId = event.categoryId,
+              updatedAt = event.updatedAt,
+              updatedBy = event.updatedBy
+            )
+          )
+        state.copy(
+          units = updatedUnit.map(unit => state.units + (unit.id -> unit)).getOrElse(state.units),
+          positions =
+            updatedPosition.map(position => state.positions + (position.id -> position)).getOrElse(state.positions),
+          updatedAt = event.updatedAt,
+          updatedBy = event.updatedBy
         )
       }
     )
@@ -933,8 +1014,7 @@ final case class HierarchyEntity(
           name = event.name,
           shortName = event.shortName,
           limit = event.limit,
-          createdAt = event.createdAt,
-          createdBy = event.createdBy,
+          categoryId = event.categoryId,
           updatedAt = event.createdAt,
           updatedBy = event.createdBy
         )

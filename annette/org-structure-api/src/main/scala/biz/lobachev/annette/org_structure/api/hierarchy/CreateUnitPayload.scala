@@ -17,6 +17,7 @@
 package biz.lobachev.annette.org_structure.api.hierarchy
 
 import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.org_structure.api.category.CategoryId
 import play.api.libs.json.Json
 
 case class CreateUnitPayload(
@@ -25,6 +26,7 @@ case class CreateUnitPayload(
   unitId: OrgItemId,
   name: String,
   shortName: String,
+  categoryId: CategoryId,
   order: Option[Int],
   createdBy: AnnettePrincipal
 )

@@ -40,7 +40,8 @@ final case class HierarchyState(
         UnitTreeItem(
           unit.id,
           unit.children.map(getOrgTreeItem),
-          unit.chief
+          unit.chief,
+          unit.categoryId
         )
       }
       .getOrElse {
@@ -49,7 +50,8 @@ final case class HierarchyState(
           .map { position =>
             PositionTreeItem(
               position.id,
-              position.persons
+              position.persons,
+              position.categoryId
             )
           }
           .get

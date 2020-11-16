@@ -23,6 +23,7 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
 import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
+import biz.lobachev.annette.org_structure.api.category.Category
 import biz.lobachev.annette.org_structure.api.hierarchy.{OrgItem, _}
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import biz.lobachev.annette.org_structure.impl.hierarchy.dao.{HierarchyDbDao, HierarchyIndexDao}
@@ -68,6 +69,7 @@ class HierarchyEntityService(
       case HierarchyEntity.PersonNotAssigned          => throw PersonNotAssigned()
       case HierarchyEntity.IncorrectOrder             => throw IncorrectOrder()
       case HierarchyEntity.IncorrectMoveItemArguments => throw IncorrectMoveItemArguments()
+      case HierarchyEntity.IncorrectCategory          => throw IncorrectCategory()
       case _                                          => throw new RuntimeException("Match fail")
     }
 
@@ -135,6 +137,11 @@ class HierarchyEntityService(
   def updateShortName(payload: UpdateShortNamePayload): Future[Done] =
     refFor(payload.orgId)
       .ask[HierarchyEntity.Confirmation](HierarchyEntity.UpdateShortName(payload, _))
+      .map(successToResult)
+
+  def assignCategory(payload: AssignCategoryPayload, category: Category): Future[Done] =
+    refFor(payload.orgId)
+      .ask[HierarchyEntity.Confirmation](HierarchyEntity.AssignCategory(payload, category, _))
       .map(successToResult)
 
   def assignPerson(payload: AssignPersonPayload): Future[Done] =

@@ -53,11 +53,13 @@ object HierarchySerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[HierarchyEntity.PersonNotAssigned.type],
       JsonSerializer[HierarchyEntity.IncorrectOrder.type],
       JsonSerializer[HierarchyEntity.IncorrectMoveItemArguments.type],
+      JsonSerializer[HierarchyEntity.IncorrectCategory.type],
       // events
       JsonSerializer[HierarchyEntity.OrganizationCreated],
       JsonSerializer[HierarchyEntity.OrganizationDeleted],
       JsonSerializer[HierarchyEntity.UnitCreated],
       JsonSerializer[HierarchyEntity.UnitDeleted],
+      JsonSerializer[HierarchyEntity.CategoryAssigned],
       JsonSerializer[HierarchyEntity.ChiefAssigned],
       JsonSerializer[HierarchyEntity.ChiefUnassigned],
       JsonSerializer[HierarchyEntity.PositionCreated],

@@ -3,6 +3,7 @@
   "name": "Annette Retail",
   "short-name": "Annette Retail",
   "type": "U",
+  "category-id": "ORG",
   "chief": "AR-0002",
   "children": [
     {
@@ -10,6 +11,7 @@
       "name": "Chief Executive Officer",
       "short-name": "CEO",
       "type": "P",
+      "category-id": "POSITION",
       "limit": 1,
       "person": "P0030"
     },
@@ -18,6 +20,7 @@
       "name": "Administration",
       "short-name": "Administration",
       "type": "U",
+      "category-id": "UNIT",
       "chief": "AR-0004",
       "children": [
         {
@@ -25,6 +28,7 @@
           "name": "Head of Administration",
           "short-name": "Admin Head",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0032"
         },
@@ -33,6 +37,7 @@
           "name": "Assistant",
           "short-name": "Assistant ",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0033"
         },
@@ -41,6 +46,7 @@
           "name": "Assistant",
           "short-name": "Assistant",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0034"
         }
@@ -51,6 +57,7 @@
       "name": "Finance Department",
       "short-name": "Finance Dept.",
       "type": "U",
+      "category-id": "UNIT",
       "chief": "AR-0008",
       "children": [
         {
@@ -58,6 +65,7 @@
           "name": "Chief Financial Officer",
           "short-name": "CFO",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0036"
         },
@@ -66,6 +74,7 @@
           "name": "CFO Assistant",
           "short-name": "CFO Assistant",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0037"
         },
@@ -74,6 +83,7 @@
           "name": "CFO Assistant",
           "short-name": "CFO Assistant",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0038"
         },
@@ -82,6 +92,7 @@
           "name": "Accounting Department",
           "short-name": "Accounting Dept.",
           "type": "U",
+          "category-id": "UNIT",
           "chief": "AR-0012",
           "children": [
             {
@@ -89,6 +100,7 @@
               "name": "Chief Accountant",
               "short-name": "Chief Accountant",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0040"
             },
@@ -97,6 +109,7 @@
               "name": "Lead accountant",
               "short-name": "Lead accountant",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0041"
             },
@@ -105,6 +118,7 @@
               "name": "Lead accountant",
               "short-name": "Lead accountant",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0042"
             },
@@ -113,6 +127,7 @@
               "name": "Accountant",
               "short-name": "Accountant",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0043"
             },
@@ -121,6 +136,7 @@
               "name": "Accountant",
               "short-name": "Accountant",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0044"
             },
@@ -129,6 +145,7 @@
               "name": "Accountant",
               "short-name": "Accountant",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0045"
             },
@@ -137,6 +154,7 @@
               "name": "Accountant",
               "short-name": "Accountant",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0046"
             },
@@ -145,6 +163,7 @@
               "name": "Accountant",
               "short-name": "Accountant",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0047"
             }
@@ -155,6 +174,7 @@
           "name": "Management Accounting Department",
           "short-name": "MA Dept.",
           "type": "U",
+          "category-id": "UNIT",
           "chief": "AR-0021",
           "children": [
             {
@@ -162,6 +182,7 @@
               "name": "Chief Management Accountant",
               "short-name": "CManA",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0049"
             },
@@ -170,6 +191,7 @@
               "name": "Managerial Accountant",
               "short-name": "Man. Accountant",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0050"
             },
@@ -178,6 +200,7 @@
               "name": "Managerial Accountant",
               "short-name": "Man. Accountant",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0051"
             },
@@ -186,6 +209,7 @@
               "name": "Managerial Accountant",
               "short-name": "Man. Accountant",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0052"
             }
@@ -196,6 +220,7 @@
           "name": "Treasure",
           "short-name": "Treasure",
           "type": "U",
+          "category-id": "UNIT",
           "chief": "AR-0026",
           "children": [
             {
@@ -203,6 +228,7 @@
               "name": "Chief Treasurer Officer",
               "short-name": "CTrO",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0054"
             },
@@ -211,6 +237,7 @@
               "name": "Treasure Officer",
               "short-name": "Treasure Officer",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0055"
             },
@@ -219,6 +246,7 @@
               "name": "Treasure Officer",
               "short-name": "Treasure Officer",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0056"
             },
@@ -227,6 +255,7 @@
               "name": "Treasure Officer",
               "short-name": "Treasure Officer",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0057"
             }
@@ -237,6 +266,7 @@
           "name": "Analysis and Reporting Department",
           "short-name": "A&R Dept.",
           "type": "U",
+          "category-id": "UNIT",
           "chief": "AR-0031",
           "children": [
             {
@@ -244,6 +274,7 @@
               "name": "Head of A&R Department",
               "short-name": "Head of A&R Dept.",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0059"
             },
@@ -252,6 +283,7 @@
               "name": "Analyst",
               "short-name": "Analyst",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0060"
             },
@@ -260,6 +292,7 @@
               "name": "Analyst",
               "short-name": "Analyst",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0061"
             },
@@ -268,6 +301,7 @@
               "name": "Analyst",
               "short-name": "Analyst",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0062"
             }
@@ -280,6 +314,7 @@
       "name": "IT Department",
       "short-name": "IT Dept.",
       "type": "U",
+      "category-id": "UNIT",
       "chief": "AR-0036",
       "children": [
         {
@@ -287,6 +322,7 @@
           "name": "Chief IT Officer",
           "short-name": "CIO",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0064"
         },
@@ -295,6 +331,7 @@
           "name": "CIO Assistant",
           "short-name": "CIO Assistant",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0065"
         },
@@ -303,6 +340,7 @@
           "name": "Project Unit",
           "short-name": "Project Unit",
           "type": "U",
+          "category-id": "UNIT",
           "chief": "AR-0039",
           "children": [
             {
@@ -310,6 +348,7 @@
               "name": "Head of Project Unit",
               "short-name": "Head of Project Unit",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0067"
             },
@@ -318,6 +357,7 @@
               "name": "Project Manager",
               "short-name": "PM",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0068"
             },
@@ -326,6 +366,7 @@
               "name": "Project Manager",
               "short-name": "PM",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0069"
             },
@@ -334,6 +375,7 @@
               "name": "Project Manager",
               "short-name": "PM",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0070"
             },
@@ -342,6 +384,7 @@
               "name": "Project Administrator",
               "short-name": "PA",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0071"
             },
@@ -350,6 +393,7 @@
               "name": "Project Administrator",
               "short-name": "PA",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0072"
             },
@@ -358,6 +402,7 @@
               "name": "Project Administrator",
               "short-name": "PA",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0073"
             },
@@ -366,6 +411,7 @@
               "name": "Project Administrator",
               "short-name": "PA",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0074"
             }
@@ -376,6 +422,7 @@
           "name": "Infrastructure Department",
           "short-name": "Infrastructure Dept.",
           "type": "U",
+          "category-id": "UNIT",
           "chief": "AR-0048",
           "children": [
             {
@@ -383,6 +430,7 @@
               "name": "Head of Infrastructure",
               "short-name": "Head of Infrastructure",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0076"
             },
@@ -391,6 +439,7 @@
               "name": "Hardware Engineer",
               "short-name": "Hardware Engineer",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0077"
             },
@@ -399,6 +448,7 @@
               "name": "Hardware Engineer",
               "short-name": "Hardware Engineer",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0078"
             },
@@ -407,6 +457,7 @@
               "name": "Hardware Engineer",
               "short-name": "Hardware Engineer",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0079"
             },
@@ -415,6 +466,7 @@
               "name": "Network Engineer",
               "short-name": "Network Engineer",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0080"
             },
@@ -423,6 +475,7 @@
               "name": "Network Engineer",
               "short-name": "Network Engineer",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0081"
             },
@@ -431,6 +484,7 @@
               "name": "Network Engineer",
               "short-name": "Network Engineer",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0082"
             },
@@ -439,6 +493,7 @@
               "name": "System Administrator",
               "short-name": "System Administrator",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0083"
             },
@@ -447,6 +502,7 @@
               "name": "System Administrator",
               "short-name": "System Administrator",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0084"
             },
@@ -455,6 +511,7 @@
               "name": "System Administrator",
               "short-name": "System Administrator",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0085"
             },
@@ -463,6 +520,7 @@
               "name": "Data Base Administrator",
               "short-name": "DBA",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0086"
             },
@@ -471,6 +529,7 @@
               "name": "Data Base Administrator",
               "short-name": "DBA",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0087"
             }
@@ -483,6 +542,7 @@
       "name": "Marketing Department",
       "short-name": "Marketing Dept.",
       "type": "U",
+      "category-id": "UNIT",
       "chief": "AR-0061",
       "children": [
         {
@@ -490,6 +550,7 @@
           "name": "Chief Marketing Officer",
           "short-name": "CMA",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0089"
         },
@@ -498,6 +559,7 @@
           "name": "CMA Assistant",
           "short-name": "CMA Assistant",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0090"
         },
@@ -506,6 +568,7 @@
           "name": "Brand Manager",
           "short-name": "Brand Manager",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0091"
         },
@@ -514,6 +577,7 @@
           "name": "Brand Manager",
           "short-name": "Brand Manager",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0092"
         },
@@ -522,6 +586,7 @@
           "name": "Brand Manager",
           "short-name": "Brand Manager",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0093"
         },
@@ -530,6 +595,7 @@
           "name": "Brand Manager",
           "short-name": "Brand Manager",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0094"
         },
@@ -538,6 +604,7 @@
           "name": "Advertising Manager",
           "short-name": "Advertising Manager",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0095"
         },
@@ -546,6 +613,7 @@
           "name": "Advertising Manager",
           "short-name": "Advertising Manager",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0096"
         }
@@ -556,6 +624,7 @@
       "name": "Human Resource Department",
       "short-name": "HR Dept.",
       "type": "U",
+      "category-id": "UNIT",
       "chief": "AR-0070",
       "children": [
         {
@@ -563,6 +632,7 @@
           "name": "Chief Human Resources Officer",
           "short-name": "CHRO",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0098"
         },
@@ -571,6 +641,7 @@
           "name": "CHRO Assostant",
           "short-name": "CHRO Assostant",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0099"
         },
@@ -579,6 +650,7 @@
           "name": "Human Resurces Officer",
           "short-name": "HR Officer",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0100"
         },
@@ -587,6 +659,7 @@
           "name": "Human Resurces Officer",
           "short-name": "HR Officer",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0101"
         },
@@ -595,6 +668,7 @@
           "name": "Human Resurces Officer",
           "short-name": "HR Officer",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0102"
         },
@@ -603,6 +677,7 @@
           "name": "Human Resurces Officer",
           "short-name": "HR Officer",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0103"
         }
@@ -613,6 +688,7 @@
       "name": "Operation Department",
       "short-name": "Operation Dept.",
       "type": "U",
+      "category-id": "UNIT",
       "chief": "AR-0077",
       "children": [
         {
@@ -620,6 +696,7 @@
           "name": "Chief Operation Officer",
           "short-name": "COO",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0105"
         },
@@ -628,6 +705,7 @@
           "name": "COO Assistant",
           "short-name": "COO Assistant",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0106"
         },
@@ -636,6 +714,7 @@
           "name": "COO Assistant",
           "short-name": "COO Assistant",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0107"
         },
@@ -644,6 +723,7 @@
           "name": "COO Assistant",
           "short-name": "COO Assistant",
           "type": "P",
+          "category-id": "POSITION",
           "limit": 1,
           "person": "P0108"
         },
@@ -652,6 +732,7 @@
           "name": "Purchase Department",
           "short-name": "Purchase Dept",
           "type": "U",
+          "category-id": "UNIT",
           "chief": "AR-0082",
           "children": [
             {
@@ -659,6 +740,7 @@
               "name": "Head of Purchase Department",
               "short-name": "Head of Purchase Dept.",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0110"
             },
@@ -667,6 +749,7 @@
               "name": "Purchaser",
               "short-name": "Purchaser",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0111"
             },
@@ -675,6 +758,7 @@
               "name": "Purchaser",
               "short-name": "Purchaser",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0112"
             },
@@ -683,6 +767,7 @@
               "name": "Purchaser",
               "short-name": "Purchaser",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0113"
             },
@@ -691,6 +776,7 @@
               "name": "Purchaser",
               "short-name": "Purchaser",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0114"
             },
@@ -699,6 +785,7 @@
               "name": "Purchaser",
               "short-name": "Purchaser",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0115"
             }
@@ -709,6 +796,7 @@
           "name": "Warehouse Department",
           "short-name": "Warehouse Dept.",
           "type": "U",
+          "category-id": "UNIT",
           "chief": "AR-0089",
           "children": [
             {
@@ -716,6 +804,7 @@
               "name": "Head of Warehouse Department",
               "short-name": "Head of Warehouse Dept.",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0117"
             },
@@ -724,6 +813,7 @@
               "name": "Warehouse Head Assistant",
               "short-name": "Warehouse Head Assistant",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0118"
             },
@@ -732,6 +822,7 @@
               "name": "Warehouse Head Assistant",
               "short-name": "Warehouse Head Assistant",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0119"
             },
@@ -740,6 +831,7 @@
               "name": "North Warehouse",
               "short-name": "North WH",
               "type": "U",
+              "category-id": "UNIT",
               "chief": "AR-0093",
               "children": [
                 {
@@ -747,6 +839,7 @@
                   "name": "Head of North WH",
                   "short-name": "Head of North WH",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0121"
                 },
@@ -755,6 +848,7 @@
                   "name": "Warehouse Clerk",
                   "short-name": "Warehouse Clerk",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0122"
                 },
@@ -763,6 +857,7 @@
                   "name": "Warehouse Clerk",
                   "short-name": "Warehouse Clerk",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0123"
                 },
@@ -771,6 +866,7 @@
                   "name": "Stockman",
                   "short-name": "Stockman",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0124"
                 },
@@ -779,6 +875,7 @@
                   "name": "Stockman",
                   "short-name": "Stockman",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0125"
                 },
@@ -787,6 +884,7 @@
                   "name": "Stockman",
                   "short-name": "Stockman",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0126"
                 },
@@ -795,6 +893,7 @@
                   "name": "Stockman",
                   "short-name": "Stockman",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0127"
                 }
@@ -805,6 +904,7 @@
               "name": "East Warehouse",
               "short-name": "East WH",
               "type": "U",
+              "category-id": "UNIT",
               "chief": "AR-0101",
               "children": [
                 {
@@ -812,6 +912,7 @@
                   "name": "Head of East WH",
                   "short-name": "Head of East WH",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0129"
                 },
@@ -820,6 +921,7 @@
                   "name": "Warehouse Clerk",
                   "short-name": "Warehouse Clerk",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0130"
                 },
@@ -828,6 +930,7 @@
                   "name": "Warehouse Clerk",
                   "short-name": "Warehouse Clerk",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0131"
                 },
@@ -836,6 +939,7 @@
                   "name": "Stockman",
                   "short-name": "Stockman",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0132"
                 },
@@ -844,6 +948,7 @@
                   "name": "Stockman",
                   "short-name": "Stockman",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0133"
                 },
@@ -852,6 +957,7 @@
                   "name": "Stockman",
                   "short-name": "Stockman",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0134"
                 },
@@ -860,6 +966,7 @@
                   "name": "Stockman",
                   "short-name": "Stockman",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0135"
                 }
@@ -870,6 +977,7 @@
               "name": "South Warehouse",
               "short-name": "South WH",
               "type": "U",
+              "category-id": "UNIT",
               "chief": "AR-0109",
               "children": [
                 {
@@ -877,6 +985,7 @@
                   "name": "Head of South WH",
                   "short-name": "Head of South WH",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0137"
                 },
@@ -885,6 +994,7 @@
                   "name": "Warehouse Clerk",
                   "short-name": "Warehouse Clerk",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0138"
                 },
@@ -893,6 +1003,7 @@
                   "name": "Warehouse Clerk",
                   "short-name": "Warehouse Clerk",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0139"
                 },
@@ -901,6 +1012,7 @@
                   "name": "Stockman",
                   "short-name": "Stockman",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0140"
                 },
@@ -909,6 +1021,7 @@
                   "name": "Stockman",
                   "short-name": "Stockman",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0141"
                 },
@@ -917,6 +1030,7 @@
                   "name": "Stockman",
                   "short-name": "Stockman",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0142"
                 },
@@ -925,6 +1039,7 @@
                   "name": "Stockman",
                   "short-name": "Stockman",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0143"
                 }
@@ -935,6 +1050,7 @@
               "name": "West Warehouse",
               "short-name": "West WH",
               "type": "U",
+              "category-id": "UNIT",
               "chief": "AR-0117",
               "children": [
                 {
@@ -942,6 +1058,7 @@
                   "name": "Head of West WH",
                   "short-name": "Head of West WH",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0145"
                 },
@@ -950,6 +1067,7 @@
                   "name": "Warehouse Clerk",
                   "short-name": "Warehouse Clerk",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0146"
                 },
@@ -958,6 +1076,7 @@
                   "name": "Warehouse Clerk",
                   "short-name": "Warehouse Clerk",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0147"
                 },
@@ -966,6 +1085,7 @@
                   "name": "Stockman",
                   "short-name": "Stockman",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0148"
                 },
@@ -974,6 +1094,7 @@
                   "name": "Stockman",
                   "short-name": "Stockman",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0149"
                 },
@@ -982,6 +1103,7 @@
                   "name": "Stockman",
                   "short-name": "Stockman",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0150"
                 },
@@ -990,6 +1112,7 @@
                   "name": "Stockman",
                   "short-name": "Stockman",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0151"
                 }
@@ -1002,6 +1125,7 @@
           "name": "Retail Department",
           "short-name": "Retail Dept.",
           "type": "U",
+          "category-id": "UNIT",
           "chief": "AR-0125",
           "children": [
             {
@@ -1009,6 +1133,7 @@
               "name": "Head of Retail Department",
               "short-name": "Head of Retail Dept.",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0153"
             },
@@ -1017,6 +1142,7 @@
               "name": "Retail Head Assistant",
               "short-name": "Retail Head Assistant",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0154"
             },
@@ -1025,6 +1151,7 @@
               "name": "Retail Head Assistant",
               "short-name": "Retail Head Assistant",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0155"
             },
@@ -1033,6 +1160,7 @@
               "name": "Retail Head Assistant",
               "short-name": "Retail Head Assistant",
               "type": "P",
+              "category-id": "POSITION",
               "limit": 1,
               "person": "P0156"
             },
@@ -1041,6 +1169,7 @@
               "name": "North Region",
               "short-name": "North Region",
               "type": "U",
+              "category-id": "UNIT",
               "chief": "AR-0130",
               "children": [
                 {
@@ -1048,6 +1177,7 @@
                   "name": "North Region Head",
                   "short-name": "North Region Head",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0158"
                 },
@@ -1056,6 +1186,7 @@
                   "name": "Region Head Assistant",
                   "short-name": "Region Head Assistant",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0159"
                 },
@@ -1064,6 +1195,7 @@
                   "name": "Region Head Assistant",
                   "short-name": "Region Head Assistant",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0160"
                 },
@@ -1072,6 +1204,7 @@
                   "name": "Store N1",
                   "short-name": "Store N1",
                   "type": "U",
+                  "category-id": "UNIT",
                   "chief": "AR-0134",
                   "children": [
                     {
@@ -1079,6 +1212,7 @@
                       "name": "Store Manager",
                       "short-name": "Store Manager",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0162"
                     },
@@ -1087,6 +1221,7 @@
                       "name": "Store Manager Assistant",
                       "short-name": "Store Manager Assistant",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0163"
                     },
@@ -1095,6 +1230,7 @@
                       "name": "Sales",
                       "short-name": "Sales",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0137",
                       "children": [
                         {
@@ -1102,6 +1238,7 @@
                           "name": "Chief Salesman",
                           "short-name": "Chief Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0165"
                         },
@@ -1110,6 +1247,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0166"
                         },
@@ -1118,6 +1256,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0167"
                         },
@@ -1126,6 +1265,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0168"
                         },
@@ -1134,6 +1274,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0169"
                         }
@@ -1144,6 +1285,7 @@
                       "name": "Cashiers",
                       "short-name": "Cashiers",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0143",
                       "children": [
                         {
@@ -1151,6 +1293,7 @@
                           "name": "Chief Cashier",
                           "short-name": "Chief Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0171"
                         },
@@ -1159,6 +1302,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0172"
                         },
@@ -1167,6 +1311,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0173"
                         }
@@ -1177,6 +1322,7 @@
                       "name": "Service",
                       "short-name": "Service",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0174"
                     },
@@ -1185,6 +1331,7 @@
                       "name": "Service Head",
                       "short-name": "Service Head",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0148",
                       "children": [
                         {
@@ -1192,6 +1339,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0176"
                         },
@@ -1200,6 +1348,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0177"
                         }
@@ -1210,6 +1359,7 @@
                       "name": "Stock",
                       "short-name": "Stock",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0151",
                       "children": [
                         {
@@ -1217,6 +1367,7 @@
                           "name": "Chief Stockkeeper",
                           "short-name": "Chief Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0179"
                         },
@@ -1225,6 +1376,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0180"
                         },
@@ -1233,6 +1385,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0181"
                         }
@@ -1245,6 +1398,7 @@
                   "name": "Store N2",
                   "short-name": "Store N2",
                   "type": "U",
+                  "category-id": "UNIT",
                   "chief": "AR-0155",
                   "children": [
                     {
@@ -1252,6 +1406,7 @@
                       "name": "Store Manager",
                       "short-name": "Store Manager",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0183"
                     },
@@ -1260,6 +1415,7 @@
                       "name": "Store Manager Assistant",
                       "short-name": "Store Manager Assistant",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0184"
                     },
@@ -1268,6 +1424,7 @@
                       "name": "Sales",
                       "short-name": "Sales",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0158",
                       "children": [
                         {
@@ -1275,6 +1432,7 @@
                           "name": "Chief Salesman",
                           "short-name": "Chief Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0186"
                         },
@@ -1283,6 +1441,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0187"
                         },
@@ -1291,6 +1450,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0188"
                         },
@@ -1299,6 +1459,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0189"
                         },
@@ -1307,6 +1468,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0190"
                         }
@@ -1317,6 +1479,7 @@
                       "name": "Cashiers",
                       "short-name": "Cashiers",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0164",
                       "children": [
                         {
@@ -1324,6 +1487,7 @@
                           "name": "Chief Cashier",
                           "short-name": "Chief Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0192"
                         },
@@ -1332,6 +1496,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0193"
                         },
@@ -1340,6 +1505,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0194"
                         }
@@ -1350,6 +1516,7 @@
                       "name": "Service",
                       "short-name": "Service",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0195"
                     },
@@ -1358,6 +1525,7 @@
                       "name": "Service Head",
                       "short-name": "Service Head",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0169",
                       "children": [
                         {
@@ -1365,6 +1533,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0197"
                         },
@@ -1373,6 +1542,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0198"
                         }
@@ -1383,6 +1553,7 @@
                       "name": "Stock",
                       "short-name": "Stock",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0172",
                       "children": [
                         {
@@ -1390,6 +1561,7 @@
                           "name": "Chief Stockkeeper",
                           "short-name": "Chief Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0200"
                         },
@@ -1398,6 +1570,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0201"
                         },
@@ -1406,6 +1579,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0202"
                         }
@@ -1418,6 +1592,7 @@
                   "name": "Store N3",
                   "short-name": "Store N3",
                   "type": "U",
+                  "category-id": "UNIT",
                   "chief": "AR-0176",
                   "children": [
                     {
@@ -1425,6 +1600,7 @@
                       "name": "Store Manager",
                       "short-name": "Store Manager",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0204"
                     },
@@ -1433,6 +1609,7 @@
                       "name": "Store Manager Assistant",
                       "short-name": "Store Manager Assistant",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0205"
                     },
@@ -1441,6 +1618,7 @@
                       "name": "Sales",
                       "short-name": "Sales",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0179",
                       "children": [
                         {
@@ -1448,6 +1626,7 @@
                           "name": "Chief Salesman",
                           "short-name": "Chief Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0207"
                         },
@@ -1456,6 +1635,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0208"
                         },
@@ -1464,6 +1644,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0209"
                         },
@@ -1472,6 +1653,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0210"
                         },
@@ -1480,6 +1662,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0211"
                         }
@@ -1490,6 +1673,7 @@
                       "name": "Cashiers",
                       "short-name": "Cashiers",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0185",
                       "children": [
                         {
@@ -1497,6 +1681,7 @@
                           "name": "Chief Cashier",
                           "short-name": "Chief Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0213"
                         },
@@ -1505,6 +1690,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0214"
                         },
@@ -1513,6 +1699,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0215"
                         }
@@ -1523,6 +1710,7 @@
                       "name": "Service",
                       "short-name": "Service",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0216"
                     },
@@ -1531,6 +1719,7 @@
                       "name": "Service Head",
                       "short-name": "Service Head",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0190",
                       "children": [
                         {
@@ -1538,6 +1727,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0218"
                         },
@@ -1546,6 +1736,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0219"
                         }
@@ -1556,6 +1747,7 @@
                       "name": "Stock",
                       "short-name": "Stock",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0193",
                       "children": [
                         {
@@ -1563,6 +1755,7 @@
                           "name": "Chief Stockkeeper",
                           "short-name": "Chief Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0221"
                         },
@@ -1571,6 +1764,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0222"
                         },
@@ -1579,6 +1773,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0223"
                         }
@@ -1593,6 +1788,7 @@
               "name": "East Region",
               "short-name": "East Region",
               "type": "U",
+              "category-id": "UNIT",
               "chief": "AR-0197",
               "children": [
                 {
@@ -1600,6 +1796,7 @@
                   "name": "East Region Head",
                   "short-name": "East Region Head",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0225"
                 },
@@ -1608,6 +1805,7 @@
                   "name": "Region Head Assistant",
                   "short-name": "Region Head Assistant",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0226"
                 },
@@ -1616,6 +1814,7 @@
                   "name": "Region Head Assistant",
                   "short-name": "Region Head Assistant",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0227"
                 },
@@ -1624,6 +1823,7 @@
                   "name": "Store E1",
                   "short-name": "Store E1",
                   "type": "U",
+                  "category-id": "UNIT",
                   "chief": "AR-0201",
                   "children": [
                     {
@@ -1631,6 +1831,7 @@
                       "name": "Store Manager",
                       "short-name": "Store Manager",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0229"
                     },
@@ -1639,6 +1840,7 @@
                       "name": "Store Manager Assistant",
                       "short-name": "Store Manager Assistant",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0230"
                     },
@@ -1647,6 +1849,7 @@
                       "name": "Sales",
                       "short-name": "Sales",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0204",
                       "children": [
                         {
@@ -1654,6 +1857,7 @@
                           "name": "Chief Salesman",
                           "short-name": "Chief Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0232"
                         },
@@ -1662,6 +1866,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0233"
                         },
@@ -1670,6 +1875,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0234"
                         },
@@ -1678,6 +1884,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0235"
                         },
@@ -1686,6 +1893,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0236"
                         }
@@ -1696,6 +1904,7 @@
                       "name": "Cashiers",
                       "short-name": "Cashiers",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0210",
                       "children": [
                         {
@@ -1703,6 +1912,7 @@
                           "name": "Chief Cashier",
                           "short-name": "Chief Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0238"
                         },
@@ -1711,6 +1921,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0239"
                         },
@@ -1719,6 +1930,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0240"
                         }
@@ -1729,6 +1941,7 @@
                       "name": "Service",
                       "short-name": "Service",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0241"
                     },
@@ -1737,6 +1950,7 @@
                       "name": "Service Head",
                       "short-name": "Service Head",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0215",
                       "children": [
                         {
@@ -1744,6 +1958,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0243"
                         },
@@ -1752,6 +1967,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0244"
                         }
@@ -1762,6 +1978,7 @@
                       "name": "Stock",
                       "short-name": "Stock",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0218",
                       "children": [
                         {
@@ -1769,6 +1986,7 @@
                           "name": "Chief Stockkeeper",
                           "short-name": "Chief Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0246"
                         },
@@ -1777,6 +1995,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0247"
                         },
@@ -1785,6 +2004,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0248"
                         }
@@ -1797,6 +2017,7 @@
                   "name": "Store E2",
                   "short-name": "Store E2",
                   "type": "U",
+                  "category-id": "UNIT",
                   "chief": "AR-0222",
                   "children": [
                     {
@@ -1804,6 +2025,7 @@
                       "name": "Store Manager",
                       "short-name": "Store Manager",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0250"
                     },
@@ -1812,6 +2034,7 @@
                       "name": "Store Manager Assistant",
                       "short-name": "Store Manager Assistant",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0251"
                     },
@@ -1820,6 +2043,7 @@
                       "name": "Sales",
                       "short-name": "Sales",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0225",
                       "children": [
                         {
@@ -1827,6 +2051,7 @@
                           "name": "Chief Salesman",
                           "short-name": "Chief Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0253"
                         },
@@ -1835,6 +2060,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0254"
                         },
@@ -1843,6 +2069,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0255"
                         },
@@ -1851,6 +2078,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0256"
                         },
@@ -1859,6 +2087,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0257"
                         }
@@ -1869,6 +2098,7 @@
                       "name": "Cashiers",
                       "short-name": "Cashiers",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0231",
                       "children": [
                         {
@@ -1876,6 +2106,7 @@
                           "name": "Chief Cashier",
                           "short-name": "Chief Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0259"
                         },
@@ -1884,6 +2115,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0260"
                         },
@@ -1892,6 +2124,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0261"
                         }
@@ -1902,6 +2135,7 @@
                       "name": "Service",
                       "short-name": "Service",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0262"
                     },
@@ -1910,6 +2144,7 @@
                       "name": "Service Head",
                       "short-name": "Service Head",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0236",
                       "children": [
                         {
@@ -1917,6 +2152,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0264"
                         },
@@ -1925,6 +2161,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0265"
                         }
@@ -1935,6 +2172,7 @@
                       "name": "Stock",
                       "short-name": "Stock",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0239",
                       "children": [
                         {
@@ -1942,6 +2180,7 @@
                           "name": "Chief Stockkeeper",
                           "short-name": "Chief Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0267"
                         },
@@ -1950,6 +2189,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0268"
                         },
@@ -1958,6 +2198,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0269"
                         }
@@ -1970,6 +2211,7 @@
                   "name": "Store E3",
                   "short-name": "Store E3",
                   "type": "U",
+                  "category-id": "UNIT",
                   "chief": "AR-0243",
                   "children": [
                     {
@@ -1977,6 +2219,7 @@
                       "name": "Store Manager",
                       "short-name": "Store Manager",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0271"
                     },
@@ -1985,6 +2228,7 @@
                       "name": "Store Manager Assistant",
                       "short-name": "Store Manager Assistant",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0272"
                     },
@@ -1993,6 +2237,7 @@
                       "name": "Sales",
                       "short-name": "Sales",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0246",
                       "children": [
                         {
@@ -2000,6 +2245,7 @@
                           "name": "Chief Salesman",
                           "short-name": "Chief Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0274"
                         },
@@ -2008,6 +2254,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0275"
                         },
@@ -2016,6 +2263,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0276"
                         },
@@ -2024,6 +2272,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0277"
                         },
@@ -2032,6 +2281,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0278"
                         }
@@ -2042,6 +2292,7 @@
                       "name": "Cashiers",
                       "short-name": "Cashiers",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0252",
                       "children": [
                         {
@@ -2049,6 +2300,7 @@
                           "name": "Chief Cashier",
                           "short-name": "Chief Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0280"
                         },
@@ -2057,6 +2309,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0281"
                         },
@@ -2065,6 +2318,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0282"
                         }
@@ -2075,6 +2329,7 @@
                       "name": "Service",
                       "short-name": "Service",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0283"
                     },
@@ -2083,6 +2338,7 @@
                       "name": "Service Head",
                       "short-name": "Service Head",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0257",
                       "children": [
                         {
@@ -2090,6 +2346,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0285"
                         },
@@ -2098,6 +2355,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0286"
                         }
@@ -2108,6 +2366,7 @@
                       "name": "Stock",
                       "short-name": "Stock",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0260",
                       "children": [
                         {
@@ -2115,6 +2374,7 @@
                           "name": "Chief Stockkeeper",
                           "short-name": "Chief Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0288"
                         },
@@ -2123,6 +2383,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0289"
                         },
@@ -2131,6 +2392,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0290"
                         }
@@ -2145,6 +2407,7 @@
               "name": "South Region",
               "short-name": "South Region",
               "type": "U",
+              "category-id": "UNIT",
               "chief": "AR-0264",
               "children": [
                 {
@@ -2152,6 +2415,7 @@
                   "name": "South Region Head",
                   "short-name": "South Region Head",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0292"
                 },
@@ -2160,6 +2424,7 @@
                   "name": "Region Head Assistant",
                   "short-name": "Region Head Assistant",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0293"
                 },
@@ -2168,6 +2433,7 @@
                   "name": "Region Head Assistant",
                   "short-name": "Region Head Assistant",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0294"
                 },
@@ -2176,6 +2442,7 @@
                   "name": "Store S1",
                   "short-name": "Store S1",
                   "type": "U",
+                  "category-id": "UNIT",
                   "chief": "AR-0268",
                   "children": [
                     {
@@ -2183,6 +2450,7 @@
                       "name": "Store Manager",
                       "short-name": "Store Manager",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0296"
                     },
@@ -2191,6 +2459,7 @@
                       "name": "Store Manager Assistant",
                       "short-name": "Store Manager Assistant",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0297"
                     },
@@ -2199,6 +2468,7 @@
                       "name": "Sales",
                       "short-name": "Sales",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0271",
                       "children": [
                         {
@@ -2206,6 +2476,7 @@
                           "name": "Chief Salesman",
                           "short-name": "Chief Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0299"
                         },
@@ -2214,6 +2485,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0300"
                         },
@@ -2222,6 +2494,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0301"
                         },
@@ -2230,6 +2503,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0302"
                         },
@@ -2238,6 +2512,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0303"
                         }
@@ -2248,6 +2523,7 @@
                       "name": "Cashiers",
                       "short-name": "Cashiers",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0277",
                       "children": [
                         {
@@ -2255,6 +2531,7 @@
                           "name": "Chief Cashier",
                           "short-name": "Chief Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0305"
                         },
@@ -2263,6 +2540,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0306"
                         },
@@ -2271,6 +2549,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0307"
                         }
@@ -2281,6 +2560,7 @@
                       "name": "Service",
                       "short-name": "Service",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0308"
                     },
@@ -2289,6 +2569,7 @@
                       "name": "Service Head",
                       "short-name": "Service Head",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0282",
                       "children": [
                         {
@@ -2296,6 +2577,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0310"
                         },
@@ -2304,6 +2586,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0311"
                         }
@@ -2314,6 +2597,7 @@
                       "name": "Stock",
                       "short-name": "Stock",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0285",
                       "children": [
                         {
@@ -2321,6 +2605,7 @@
                           "name": "Chief Stockkeeper",
                           "short-name": "Chief Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0313"
                         },
@@ -2329,6 +2614,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0314"
                         },
@@ -2337,6 +2623,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0315"
                         }
@@ -2349,6 +2636,7 @@
                   "name": "Store S2",
                   "short-name": "Store S2",
                   "type": "U",
+                  "category-id": "UNIT",
                   "chief": "AR-0289",
                   "children": [
                     {
@@ -2356,6 +2644,7 @@
                       "name": "Store Manager",
                       "short-name": "Store Manager",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0317"
                     },
@@ -2364,6 +2653,7 @@
                       "name": "Store Manager Assistant",
                       "short-name": "Store Manager Assistant",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0318"
                     },
@@ -2372,6 +2662,7 @@
                       "name": "Sales",
                       "short-name": "Sales",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0292",
                       "children": [
                         {
@@ -2379,6 +2670,7 @@
                           "name": "Chief Salesman",
                           "short-name": "Chief Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0320"
                         },
@@ -2387,6 +2679,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0321"
                         },
@@ -2395,6 +2688,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0322"
                         },
@@ -2403,6 +2697,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0323"
                         },
@@ -2411,6 +2706,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0324"
                         }
@@ -2421,6 +2717,7 @@
                       "name": "Cashiers",
                       "short-name": "Cashiers",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0298",
                       "children": [
                         {
@@ -2428,6 +2725,7 @@
                           "name": "Chief Cashier",
                           "short-name": "Chief Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0326"
                         },
@@ -2436,6 +2734,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0327"
                         },
@@ -2444,6 +2743,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0328"
                         }
@@ -2454,6 +2754,7 @@
                       "name": "Service",
                       "short-name": "Service",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0329"
                     },
@@ -2462,6 +2763,7 @@
                       "name": "Service Head",
                       "short-name": "Service Head",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0303",
                       "children": [
                         {
@@ -2469,6 +2771,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0331"
                         },
@@ -2477,6 +2780,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0332"
                         }
@@ -2487,6 +2791,7 @@
                       "name": "Stock",
                       "short-name": "Stock",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0306",
                       "children": [
                         {
@@ -2494,6 +2799,7 @@
                           "name": "Chief Stockkeeper",
                           "short-name": "Chief Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0334"
                         },
@@ -2502,6 +2808,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0335"
                         },
@@ -2510,6 +2817,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0336"
                         }
@@ -2522,6 +2830,7 @@
                   "name": "Store S3",
                   "short-name": "Store S3",
                   "type": "U",
+                  "category-id": "UNIT",
                   "chief": "AR-0310",
                   "children": [
                     {
@@ -2529,6 +2838,7 @@
                       "name": "Store Manager",
                       "short-name": "Store Manager",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0338"
                     },
@@ -2537,6 +2847,7 @@
                       "name": "Store Manager Assistant",
                       "short-name": "Store Manager Assistant",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0339"
                     },
@@ -2545,6 +2856,7 @@
                       "name": "Sales",
                       "short-name": "Sales",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0313",
                       "children": [
                         {
@@ -2552,6 +2864,7 @@
                           "name": "Chief Salesman",
                           "short-name": "Chief Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0341"
                         },
@@ -2560,6 +2873,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0342"
                         },
@@ -2568,6 +2882,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0343"
                         },
@@ -2576,6 +2891,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0344"
                         },
@@ -2584,6 +2900,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0345"
                         }
@@ -2594,6 +2911,7 @@
                       "name": "Cashiers",
                       "short-name": "Cashiers",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0319",
                       "children": [
                         {
@@ -2601,6 +2919,7 @@
                           "name": "Chief Cashier",
                           "short-name": "Chief Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0347"
                         },
@@ -2609,6 +2928,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0348"
                         },
@@ -2617,6 +2937,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0349"
                         }
@@ -2627,6 +2948,7 @@
                       "name": "Service",
                       "short-name": "Service",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0350"
                     },
@@ -2635,6 +2957,7 @@
                       "name": "Service Head",
                       "short-name": "Service Head",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0324",
                       "children": [
                         {
@@ -2642,6 +2965,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0352"
                         },
@@ -2650,6 +2974,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0353"
                         }
@@ -2660,6 +2985,7 @@
                       "name": "Stock",
                       "short-name": "Stock",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0327",
                       "children": [
                         {
@@ -2667,6 +2993,7 @@
                           "name": "Chief Stockkeeper",
                           "short-name": "Chief Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0355"
                         },
@@ -2675,6 +3002,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0356"
                         },
@@ -2683,6 +3011,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0357"
                         }
@@ -2697,6 +3026,7 @@
               "name": "West Region",
               "short-name": "West Region",
               "type": "U",
+              "category-id": "UNIT",
               "chief": "AR-0331",
               "children": [
                 {
@@ -2704,6 +3034,7 @@
                   "name": "West Region Head",
                   "short-name": "West Region Head",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0359"
                 },
@@ -2712,6 +3043,7 @@
                   "name": "Region Head Assistant",
                   "short-name": "Region Head Assistant",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0360"
                 },
@@ -2720,6 +3052,7 @@
                   "name": "Region Head Assistant",
                   "short-name": "Region Head Assistant",
                   "type": "P",
+                  "category-id": "POSITION",
                   "limit": 1,
                   "person": "P0361"
                 },
@@ -2728,6 +3061,7 @@
                   "name": "Store W1",
                   "short-name": "Store W1",
                   "type": "U",
+                  "category-id": "UNIT",
                   "chief": "AR-0335",
                   "children": [
                     {
@@ -2735,6 +3069,7 @@
                       "name": "Store Manager",
                       "short-name": "Store Manager",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0363"
                     },
@@ -2743,6 +3078,7 @@
                       "name": "Store Manager Assistant",
                       "short-name": "Store Manager Assistant",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0364"
                     },
@@ -2751,6 +3087,7 @@
                       "name": "Sales",
                       "short-name": "Sales",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0338",
                       "children": [
                         {
@@ -2758,6 +3095,7 @@
                           "name": "Chief Salesman",
                           "short-name": "Chief Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0366"
                         },
@@ -2766,6 +3104,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0367"
                         },
@@ -2774,6 +3113,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0368"
                         },
@@ -2782,6 +3122,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0369"
                         },
@@ -2790,6 +3131,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0370"
                         }
@@ -2800,6 +3142,7 @@
                       "name": "Cashiers",
                       "short-name": "Cashiers",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0344",
                       "children": [
                         {
@@ -2807,6 +3150,7 @@
                           "name": "Chief Cashier",
                           "short-name": "Chief Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0372"
                         },
@@ -2815,6 +3159,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0373"
                         },
@@ -2823,6 +3168,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0374"
                         }
@@ -2833,6 +3179,7 @@
                       "name": "Service",
                       "short-name": "Service",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0375"
                     },
@@ -2841,6 +3188,7 @@
                       "name": "Service Head",
                       "short-name": "Service Head",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0349",
                       "children": [
                         {
@@ -2848,6 +3196,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0377"
                         },
@@ -2856,6 +3205,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0378"
                         }
@@ -2866,6 +3216,7 @@
                       "name": "Stock",
                       "short-name": "Stock",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0352",
                       "children": [
                         {
@@ -2873,6 +3224,7 @@
                           "name": "Chief Stockkeeper",
                           "short-name": "Chief Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0380"
                         },
@@ -2881,6 +3233,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0381"
                         },
@@ -2889,6 +3242,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0382"
                         }
@@ -2901,6 +3255,7 @@
                   "name": "Store W2",
                   "short-name": "Store W2",
                   "type": "U",
+                  "category-id": "UNIT",
                   "chief": "AR-0356",
                   "children": [
                     {
@@ -2908,6 +3263,7 @@
                       "name": "Store Manager",
                       "short-name": "Store Manager",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0384"
                     },
@@ -2916,6 +3272,7 @@
                       "name": "Store Manager Assistant",
                       "short-name": "Store Manager Assistant",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0385"
                     },
@@ -2924,6 +3281,7 @@
                       "name": "Sales",
                       "short-name": "Sales",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0359",
                       "children": [
                         {
@@ -2931,6 +3289,7 @@
                           "name": "Chief Salesman",
                           "short-name": "Chief Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0387"
                         },
@@ -2939,6 +3298,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0388"
                         },
@@ -2947,6 +3307,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0389"
                         },
@@ -2955,6 +3316,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0390"
                         },
@@ -2963,6 +3325,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0391"
                         }
@@ -2973,6 +3336,7 @@
                       "name": "Cashiers",
                       "short-name": "Cashiers",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0365",
                       "children": [
                         {
@@ -2980,6 +3344,7 @@
                           "name": "Chief Cashier",
                           "short-name": "Chief Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0393"
                         },
@@ -2988,6 +3353,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0394"
                         },
@@ -2996,6 +3362,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0395"
                         }
@@ -3006,6 +3373,7 @@
                       "name": "Service",
                       "short-name": "Service",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0396"
                     },
@@ -3014,6 +3382,7 @@
                       "name": "Service Head",
                       "short-name": "Service Head",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0370",
                       "children": [
                         {
@@ -3021,6 +3390,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0398"
                         },
@@ -3029,6 +3399,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0399"
                         }
@@ -3039,6 +3410,7 @@
                       "name": "Stock",
                       "short-name": "Stock",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0373",
                       "children": [
                         {
@@ -3046,6 +3418,7 @@
                           "name": "Chief Stockkeeper",
                           "short-name": "Chief Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0401"
                         },
@@ -3054,6 +3427,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0402"
                         },
@@ -3062,6 +3436,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0403"
                         }
@@ -3074,6 +3449,7 @@
                   "name": "Store W3",
                   "short-name": "Store W3",
                   "type": "U",
+                  "category-id": "UNIT",
                   "chief": "AR-0377",
                   "children": [
                     {
@@ -3081,6 +3457,7 @@
                       "name": "Store Manager",
                       "short-name": "Store Manager",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0405"
                     },
@@ -3089,6 +3466,7 @@
                       "name": "Store Manager Assistant",
                       "short-name": "Store Manager Assistant",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0406"
                     },
@@ -3097,6 +3475,7 @@
                       "name": "Sales",
                       "short-name": "Sales",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0380",
                       "children": [
                         {
@@ -3104,6 +3483,7 @@
                           "name": "Chief Salesman",
                           "short-name": "Chief Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0408"
                         },
@@ -3112,6 +3492,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0409"
                         },
@@ -3120,6 +3501,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0410"
                         },
@@ -3128,6 +3510,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0411"
                         },
@@ -3136,6 +3519,7 @@
                           "name": "Salesman",
                           "short-name": "Salesman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0412"
                         }
@@ -3146,6 +3530,7 @@
                       "name": "Cashiers",
                       "short-name": "Cashiers",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0386",
                       "children": [
                         {
@@ -3153,6 +3538,7 @@
                           "name": "Chief Cashier",
                           "short-name": "Chief Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0414"
                         },
@@ -3161,6 +3547,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0415"
                         },
@@ -3169,6 +3556,7 @@
                           "name": "Cashier",
                           "short-name": "Cashier",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0416"
                         }
@@ -3179,6 +3567,7 @@
                       "name": "Service",
                       "short-name": "Service",
                       "type": "P",
+                      "category-id": "POSITION",
                       "limit": 1,
                       "person": "P0417"
                     },
@@ -3187,6 +3576,7 @@
                       "name": "Service Head",
                       "short-name": "Service Head",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0391",
                       "children": [
                         {
@@ -3194,6 +3584,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0419"
                         },
@@ -3202,6 +3593,7 @@
                           "name": "Serviceman",
                           "short-name": "Serviceman",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0420"
                         }
@@ -3212,6 +3604,7 @@
                       "name": "Stock",
                       "short-name": "Stock",
                       "type": "U",
+                      "category-id": "UNIT",
                       "chief": "AR-0394",
                       "children": [
                         {
@@ -3219,6 +3612,7 @@
                           "name": "Chief Stockkeeper",
                           "short-name": "Chief Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0422"
                         },
@@ -3227,6 +3621,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0423"
                         },
@@ -3235,6 +3630,7 @@
                           "name": "Stockkeeper",
                           "short-name": "Stockkeeper",
                           "type": "P",
+                          "category-id": "POSITION",
                           "limit": 1,
                           "person": "P0424"
                         }

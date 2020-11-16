@@ -30,6 +30,7 @@ class InitOrgStructure(
   val actorSystem: ActorSystem,
   implicit val executionContext: ExecutionContext
 ) extends OrgRoleLoader
+    with CategoryLoader
     with OrgStructureLoader {
   final protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 
@@ -47,6 +48,8 @@ class InitOrgStructure(
         config =>
           for {
             _ <- if (config.enableOrgRoles) loadOrgRoles(config)
+                 else Future.successful(Done)
+            _ <- if (config.enableCategories) loadCategories(config)
                  else Future.successful(Done)
             _ <- if (config.enableOrgRoles) loadOrgStructure(config)
                  else Future.successful(Done)

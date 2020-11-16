@@ -20,6 +20,14 @@ import akka.{Done, NotUsed}
 import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
 import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
+import biz.lobachev.annette.org_structure.api.category.{
+  Category,
+  CategoryFindQuery,
+  CategoryId,
+  CreateCategoryPayload,
+  DeleteCategoryPayload,
+  UpdateCategoryPayload
+}
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.{OrgRoleId, _}
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
@@ -42,6 +50,7 @@ trait OrgStructureServiceApi extends Service {
   def deletePosition: ServiceCall[DeletePositionPayload, Done]
   def updateName: ServiceCall[UpdateNamePayload, Done]
   def updateShortName: ServiceCall[UpdateShortNamePayload, Done]
+  def assignCategory: ServiceCall[AssignCategoryPayload, Done]
   def changePositionLimit: ServiceCall[ChangePositionLimitPayload, Done]
   def assignPerson: ServiceCall[AssignPersonPayload, Done]
   def unassignPerson: ServiceCall[UnassignPersonPayload, Done]
@@ -69,6 +78,17 @@ trait OrgStructureServiceApi extends Service {
   def getOrgRolesById(fromReadSide: Boolean): ServiceCall[Set[OrgRoleId], Map[OrgRoleId, OrgRole]]
   def findOrgRoles: ServiceCall[OrgRoleFindQuery, FindResult]
 
+  // org item category
+
+  def createCategory: ServiceCall[CreateCategoryPayload, Done]
+  def updateCategory: ServiceCall[UpdateCategoryPayload, Done]
+  def deleteCategory: ServiceCall[DeleteCategoryPayload, Done]
+  def getCategoryById(id: CategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, Category]
+  def getCategoriesById(
+    fromReadSide: Boolean
+  ): ServiceCall[Set[CategoryId], Map[CategoryId, Category]]
+  def findCategories: ServiceCall[CategoryFindQuery, FindResult]
+
   final override def descriptor = {
     import Service._
     // @formatter:off
@@ -92,8 +112,9 @@ trait OrgStructureServiceApi extends Service {
         pathCall("/api/org-structure/v1/moveItem",                           moveItem),
         pathCall("/api/org-structure/v1/changeItemOrder",                    changeItemOrder),
 
-        pathCall("/api/org-structure/v1/updateName",                      updateName ),
+        pathCall("/api/org-structure/v1/updateName",                     updateName ),
         pathCall("/api/org-structure/v1/updateShortName",                updateShortName ),
+        pathCall("/api/org-structure/v1/assignCategory",                 assignCategory),
         pathCall("/api/org-structure/v1/getOrgItemById/:orgId/:id",      getOrgItemById _),
         pathCall("/api/org-structure/v1/getOrgItemByIdFromReadSide/:id", getOrgItemByIdFromReadSide _),
         pathCall("/api/org-structure/v1/getOrgItemsById/:orgId",         getOrgItemsById _ ),
@@ -108,6 +129,14 @@ trait OrgStructureServiceApi extends Service {
         pathCall("/api/org-structure/v1/getOrgRoleById/:id/:readSide", getOrgRoleById _),
         pathCall("/api/org-structure/v1/getOrgRolesById/:readSide",    getOrgRolesById _) ,
         pathCall("/api/org-structure/v1/findOrgRoles",                 findOrgRoles),
+
+        pathCall("/api/org-structure/v1/createCategory",                 createCategory),
+        pathCall("/api/org-structure/v1/updateCategory",                 updateCategory),
+        pathCall("/api/org-structure/v1/deleteCategory",                 deleteCategory),
+        pathCall("/api/org-structure/v1/getCategoryById/:id/:readSide",  getCategoryById _),
+        pathCall("/api/org-structure/v1/getCategoriesById/:readSide",    getCategoriesById _) ,
+        pathCall("/api/org-structure/v1/findCategories",                 findCategories),
+
       )
       .withExceptionSerializer(new AnnetteTransportExceptionSerializer())
       .withAutoAcl(true)

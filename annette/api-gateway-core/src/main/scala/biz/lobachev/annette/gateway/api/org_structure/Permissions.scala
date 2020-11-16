@@ -30,4 +30,7 @@ object Permissions {
   final val VIEW_ALL_ORG_ROLES     = Permission("annette.orgStructure.orgRole.view.all")
   final val MAINTAIN_ALL_ORG_ROLES = Permission("annette.orgStructure.orgRole.maintain.all")
 
+  final val VIEW_ALL_CATEGORIES     = Permission("annette.orgStructure.category.view.all")
+  final val MAINTAIN_ALL_CATEGORIES = Permission("annette.orgStructure.category.maintain.all")
+
 }

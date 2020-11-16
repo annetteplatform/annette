@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.init.org_structure
 import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.org_structure.api.category.CategoryId
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import pureconfig.generic.FieldCoproductHint
 
@@ -24,6 +25,8 @@ case class InitOrgStructureConfig(
   persons: Seq[PersonConfig] = Seq.empty,
   enableOrgRoles: Boolean = true,
   orgRoles: Seq[OrgRoleConfig] = Seq.empty,
+  enableCategories: Boolean = true,
+  categories: Seq[CategoryConfig] = Seq.empty,
   enableOrgStructure: Boolean = true,
   orgStructure: Seq[UnitConfig] = Seq.empty,
   createdBy: AnnettePrincipal
@@ -45,6 +48,14 @@ case class OrgRoleConfig(
   description: String = ""
 )
 
+case class CategoryConfig(
+  id: OrgRoleId,
+  name: String,
+  forOrganization: Boolean = false,
+  forUnit: Boolean = false,
+  forPosition: Boolean = false
+)
+
 sealed trait OrgItemConfig
 
 object OrgItemConfig {
@@ -62,6 +73,7 @@ case class PositionConfig(
   name: String,
   shortName: String,
   limit: Int = 1,
+  categoryId: CategoryId,
   person: Option[String] = None
 ) extends OrgItemConfig
 
@@ -70,5 +82,6 @@ case class UnitConfig(
   name: String,
   shortName: String,
   chief: Option[String] = None,
-  children: Seq[OrgItemConfig] = Seq.empty
+  children: Seq[OrgItemConfig] = Seq.empty,
+  categoryId: CategoryId
 ) extends OrgItemConfig
