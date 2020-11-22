@@ -21,8 +21,6 @@ import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import pureconfig.generic.FieldCoproductHint
 
 case class InitOrgStructureConfig(
-  enablePersons: Boolean = true,
-  persons: Seq[PersonConfig] = Seq.empty,
   enableOrgRoles: Boolean = true,
   orgRoles: Seq[OrgRoleConfig] = Seq.empty,
   enableCategories: Boolean = true,
@@ -30,16 +28,6 @@ case class InitOrgStructureConfig(
   enableOrgStructure: Boolean = true,
   orgStructure: Seq[UnitConfig] = Seq.empty,
   createdBy: AnnettePrincipal
-)
-
-case class PersonConfig(
-  id: String,
-  firstname: String,
-  lastname: String,
-  gender: String,
-  orgRoles: Option[String] = None,
-  email: Option[String] = None,
-  phone: Option[String] = None
 )
 
 case class OrgRoleConfig(

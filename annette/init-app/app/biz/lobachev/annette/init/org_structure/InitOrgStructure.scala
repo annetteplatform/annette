@@ -30,7 +30,7 @@ class InitOrgStructure(
   val actorSystem: ActorSystem,
   implicit val executionContext: ExecutionContext
 ) extends OrgRoleLoader
-    with CategoryLoader
+    with OrgCategoryLoader
     with OrgStructureLoader {
   final protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 

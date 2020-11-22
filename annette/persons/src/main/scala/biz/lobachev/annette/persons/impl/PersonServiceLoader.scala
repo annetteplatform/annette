@@ -21,6 +21,14 @@ import biz.lobachev.annette.attributes.api.AttributeService
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.core.elastic.ElasticModule
 import biz.lobachev.annette.persons.api.PersonServiceApi
+import biz.lobachev.annette.persons.impl.category.{
+  CategoryDbEventProcessor,
+  CategoryEntity,
+  CategoryEntityService,
+  CategoryIndexEventProcessor
+}
+import biz.lobachev.annette.persons.impl.category.dao.{CategoryCassandraDbDao, CategoryElasticIndexDao}
+import biz.lobachev.annette.persons.impl.category.model.CategorySerializerRegistry
 import biz.lobachev.annette.persons.impl.person._
 import biz.lobachev.annette.persons.impl.person.dao.{PersonCassandraDbDao, PersonElasticIndexDao}
 import biz.lobachev.annette.persons.impl.person.model.PersonSerializerRegistry
@@ -69,10 +77,20 @@ abstract class PersonServiceApplication(context: LagomApplicationContext)
   lazy val personRepository     = wire[PersonCassandraDbDao]
   readSide.register(wire[PersonDbEventProcessor])
   readSide.register(wire[PersonIndexEventProcessor])
-
   clusterSharding.init(
     Entity(PersonEntity.typeKey) { entityContext =>
       PersonEntity(entityContext)
+    }
+  )
+
+  lazy val categoryElastic       = wire[CategoryElasticIndexDao]
+  lazy val categoryEntityService = wire[CategoryEntityService]
+  lazy val categoryRepository    = wire[CategoryCassandraDbDao]
+  readSide.register(wire[CategoryDbEventProcessor])
+  readSide.register(wire[CategoryIndexEventProcessor])
+  clusterSharding.init(
+    Entity(CategoryEntity.typeKey) { entityContext =>
+      CategoryEntity(entityContext)
     }
   )
 
@@ -82,5 +100,6 @@ abstract class PersonServiceApplication(context: LagomApplicationContext)
 }
 
 object PersonRepositorySerializerRegistry extends JsonSerializerRegistry {
-  override def serializers: immutable.Seq[JsonSerializer[_]] = PersonSerializerRegistry.serializers
+  override def serializers: immutable.Seq[JsonSerializer[_]] =
+    PersonSerializerRegistry.serializers ++ CategorySerializerRegistry.serializers
 }

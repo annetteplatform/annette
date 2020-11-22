@@ -44,6 +44,7 @@ private[impl] class PersonCassandraDbDao(session: CassandraSession)(implicit ec:
                |          lastname text,
                |          firstname text,
                |          middlename text,
+               |          category_id text,
                |          phone text,
                |          email text,
                |          updated_at text,
@@ -59,10 +60,10 @@ private[impl] class PersonCassandraDbDao(session: CassandraSession)(implicit ec:
     for {
       insertPersonStmt <- session.prepare(
                             """
-                              | INSERT INTO persons (id, lastname, firstname, middlename, phone, email,
+                              | INSERT INTO persons (id, lastname, firstname, middlename, category_id, phone, email,
                               |     updated_at, updated_by_type, updated_by_id
                               |     )
-                              |   VALUES (:id, :lastname, :firstname, :middlename, :phone, :email,
+                              |   VALUES (:id, :lastname, :firstname, :middlename, :category_id, :phone, :email,
                               |     :updated_at, :updated_by_type, :updated_by_id
                               |     )
                               |""".stripMargin
@@ -73,6 +74,7 @@ private[impl] class PersonCassandraDbDao(session: CassandraSession)(implicit ec:
                               |   lastname = :lastname,
                               |   firstname = :firstname,
                               |   middlename = :middlename,
+                              |   category_id = :category_id,
                               |   phone = :phone,
                               |   email = :email,
                               |   updated_at = :updated_at,
@@ -83,7 +85,7 @@ private[impl] class PersonCassandraDbDao(session: CassandraSession)(implicit ec:
                           )
       deletePersonStmt <- session.prepare(
                             """
-                              | DELETE FROM persons 
+                              | DELETE FROM persons
                               |  WHERE id = :id
                               |""".stripMargin
                           )
@@ -101,6 +103,7 @@ private[impl] class PersonCassandraDbDao(session: CassandraSession)(implicit ec:
       .setString("lastname", event.lastname)
       .setString("firstname", event.firstname)
       .setString("middlename", event.middlename.orNull)
+      .setString("category_id", event.categoryId)
       .setString("phone", event.phone.orNull)
       .setString("email", event.email.orNull)
       .setString("updated_at", event.createdAt.toString)
@@ -114,6 +117,7 @@ private[impl] class PersonCassandraDbDao(session: CassandraSession)(implicit ec:
       .setString("lastname", event.lastname)
       .setString("firstname", event.firstname)
       .setString("middlename", event.middlename.orNull)
+      .setString("category_id", event.categoryId)
       .setString("phone", event.phone.orNull)
       .setString("email", event.email.orNull)
       .setString("updated_at", event.updatedAt.toString)
@@ -143,6 +147,7 @@ private[impl] class PersonCassandraDbDao(session: CassandraSession)(implicit ec:
       lastname = row.getString("lastname"),
       firstname = row.getString("firstname"),
       middlename = Option(row.getString("middlename")),
+      categoryId = row.getString("category_id"),
       phone = Option(row.getString("phone")),
       email = Option(row.getString("email")),
       updatedAt = OffsetDateTime.parse(row.getString("updated_at")),

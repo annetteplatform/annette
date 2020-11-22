@@ -17,8 +17,12 @@
 package biz.lobachev.annette.init.persons
 
 import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.org_structure.api.role.OrgRoleId
+import biz.lobachev.annette.persons.api.category.PersonCategoryId
 
 case class InitPersonsConfig(
+  enableCategories: Boolean = true,
+  categories: Seq[PersonCategoryConfig] = Seq.empty,
   enablePersons: Boolean = true,
   persons: Seq[PersonConfig] = Seq.empty,
   createdBy: AnnettePrincipal
@@ -28,8 +32,14 @@ case class PersonConfig(
   id: String,
   firstname: String,
   lastname: String,
+  categoryId: PersonCategoryId,
   gender: String,
   orgRoles: Option[String] = None,
   email: Option[String] = None,
   phone: Option[String] = None
+)
+
+case class PersonCategoryConfig(
+  id: OrgRoleId,
+  name: String
 )

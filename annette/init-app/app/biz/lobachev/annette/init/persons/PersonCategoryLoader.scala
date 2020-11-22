@@ -14,28 +14,28 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.init.org_structure
+package biz.lobachev.annette.init.persons
 
 import akka.Done
 import akka.actor.ActorSystem
 import biz.lobachev.annette.core.model.AnnettePrincipal
-import biz.lobachev.annette.org_structure.api.OrgStructureService
-import biz.lobachev.annette.org_structure.api.category.CreateCategoryPayload
-import io.scalaland.chimney.dsl._
+import biz.lobachev.annette.persons.api.PersonService
+import biz.lobachev.annette.persons.api.category.CreateCategoryPayload
 import org.slf4j.Logger
+import io.scalaland.chimney.dsl._
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
-trait CategoryLoader {
+trait PersonCategoryLoader {
 
   protected val log: Logger
-  val orgStructureService: OrgStructureService
+  val personService: PersonService
   val actorSystem: ActorSystem
   implicit val executionContext: ExecutionContext
 
   def loadCategories(
-    config: InitOrgStructureConfig,
+    config: InitPersonsConfig,
     promise: Promise[Done] = Promise(),
     iteration: Int = 100
   ): Future[Done] = {
@@ -52,7 +52,7 @@ trait CategoryLoader {
     future.failed.foreach {
       case th: IllegalStateException =>
         log.warn(
-          "Failed to load categories. Retrying after delay. Failure reason: {}",
+          "Failed to load person categories. Retrying after delay. Failure reason: {}",
           th.getMessage
         )
         if (iteration > 0)
@@ -69,27 +69,27 @@ trait CategoryLoader {
     promise.future
   }
 
-  private def loadCategory(category: CategoryConfig, principal: AnnettePrincipal): Future[Unit] = {
+  private def loadCategory(category: PersonCategoryConfig, principal: AnnettePrincipal): Future[Unit] = {
     val payload = category
       .into[CreateCategoryPayload]
       .withFieldConst(_.createdBy, principal)
       .transform
-    orgStructureService
+    personService
       .createOrUpdateCategory(payload)
       .map { _ =>
-        log.debug("Category loaded: {}", category.id)
+        log.debug("Person category loaded: {}", category.id)
         ()
       }
       .recoverWith {
         case th: IllegalStateException => Future.failed(th)
         case th                        =>
-          log.error("Load category {} failed", category.id, th)
+          log.error("Load person category {} failed", category.id, th)
           Future.failed(th)
       }
   }
 
   private def closeFailed(promise: Promise[Done], th: Throwable) = {
-    val message   = "Failed to load categories"
+    val message   = "Failed to load person categories"
     log.error(message, th)
     val exception = new RuntimeException(message, th)
     promise.failure(exception)

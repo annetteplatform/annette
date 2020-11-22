@@ -4,6 +4,7 @@ import java.time.OffsetDateTime
 
 import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonPrincipal}
 import biz.lobachev.annette.core.test.generator.RandomGenerator
+import biz.lobachev.annette.persons.api.category.PersonCategoryId
 import biz.lobachev.annette.persons.api.person._
 import io.scalaland.chimney.dsl._
 
@@ -16,6 +17,7 @@ trait PersonTestData extends RandomGenerator {
     firstname: String = generateWord(),
     lastname: String = generateWord(),
     middlename: Option[String] = Some(generateWord()),
+    categoryId: PersonCategoryId = "PERSON",
     phone: String = s"+7${Random.nextInt(10)}",
     email: Option[String] = None,
     createdBy: AnnettePrincipal = PersonPrincipal(generateWord())
@@ -25,6 +27,7 @@ trait PersonTestData extends RandomGenerator {
       lastname,
       firstname,
       middlename,
+      categoryId,
       Some(phone),
       Some(email.getOrElse(s"$firstname.$lastname@${generateWord().toLowerCase}.@${generateWord(2).toLowerCase}")),
       createdBy
@@ -35,6 +38,7 @@ trait PersonTestData extends RandomGenerator {
     firstname: String = generateWord(),
     lastname: String = generateWord(),
     middlename: Option[String] = Some(generateWord()),
+    categoryId: PersonCategoryId = "PERSON",
     phone: String = s"+7${Random.nextInt(10)}",
     email: Option[String] = None,
     updatedBy: AnnettePrincipal = PersonPrincipal(generateWord())
@@ -44,6 +48,7 @@ trait PersonTestData extends RandomGenerator {
       lastname,
       firstname,
       middlename,
+      categoryId,
       Some(phone),
       Some(email.getOrElse(s"$firstname.$lastname@${generateWord().toLowerCase}.@${generateWord(2).toLowerCase}")),
       updatedBy

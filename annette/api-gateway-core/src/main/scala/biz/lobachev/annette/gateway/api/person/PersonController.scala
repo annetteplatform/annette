@@ -23,6 +23,13 @@ import biz.lobachev.annette.gateway.core.authentication.{AuthenticatedAction, Au
 import biz.lobachev.annette.gateway.core.authorization.Authorizer
 import biz.lobachev.annette.org_structure.api.OrgStructureService
 import biz.lobachev.annette.persons.api.PersonService
+import biz.lobachev.annette.persons.api.category.{
+  CreateCategoryPayload,
+  DeleteCategoryPayload,
+  PersonCategoryFindQuery,
+  PersonCategoryId,
+  UpdateCategoryPayload
+}
 import biz.lobachev.annette.persons.api.person.{
   CreatePersonPayload,
   DeletePersonPayload,
@@ -123,6 +130,78 @@ class PersonController @Inject() (
       for {
         person <- personService.getPersonById(id, true)
       } yield Ok(Json.toJson(person))
+    }
+
+  // category methods
+
+  def createCategory =
+    authenticated.async(parse.json[PersonCategoryDto]) { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_PERSON_CATEGORIES) {
+        val payload = request.body
+          .into[CreateCategoryPayload]
+          .withFieldConst(_.createdBy, request.subject.principals.head)
+          .transform
+        for {
+          _    <- personService.createCategory(payload)
+          role <- personService.getCategoryById(payload.id, false)
+        } yield Ok(Json.toJson(role))
+      }
+    }
+
+  def updateCategory =
+    authenticated.async(parse.json[PersonCategoryDto]) { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_PERSON_CATEGORIES) {
+        val payload = request.body
+          .into[UpdateCategoryPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _    <- personService.updateCategory(payload)
+          role <- personService.getCategoryById(payload.id, false)
+        } yield Ok(Json.toJson(role))
+      }
+    }
+
+  def deleteCategory =
+    authenticated.async(parse.json[DeletePersonCategoryDto]) { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_PERSON_CATEGORIES) {
+        val payload = request.body
+          .into[DeleteCategoryPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _ <- personService.deleteCategory(payload)
+        } yield Ok("")
+      }
+    }
+
+  def getCategoryById(id: PersonCategoryId, fromReadSide: Boolean) =
+    authenticated.async { implicit request =>
+      authorizer.performCheckAny(VIEW_ALL_PERSON_CATEGORIES, MAINTAIN_ALL_PERSON_CATEGORIES) {
+        for {
+          role <- personService.getCategoryById(id, fromReadSide)
+        } yield Ok(Json.toJson(role))
+      }
+    }
+
+  def getCategoriesById(fromReadSide: Boolean) =
+    authenticated.async(parse.json[Set[PersonCategoryId]]) { implicit request =>
+      val ids = request.body
+      authorizer.performCheckAny(VIEW_ALL_PERSON_CATEGORIES, MAINTAIN_ALL_PERSON_CATEGORIES) {
+        for {
+          roles <- personService.getCategoriesById(ids, fromReadSide)
+        } yield Ok(Json.toJson(roles))
+      }
+    }
+
+  def findCategories =
+    authenticated.async(parse.json[PersonCategoryFindQuery]) { implicit request =>
+      val query = request.body
+      authorizer.performCheckAny(VIEW_ALL_PERSON_CATEGORIES, MAINTAIN_ALL_PERSON_CATEGORIES) {
+        for {
+          result <- personService.findCategories(query)
+        } yield Ok(Json.toJson(result))
+      }
     }
 
   private def canMaintainPerson[A](personId: PersonId)(implicit request: AuthenticatedRequest[A]): Future[Boolean] =

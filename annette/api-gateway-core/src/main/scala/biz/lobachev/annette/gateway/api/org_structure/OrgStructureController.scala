@@ -484,8 +484,8 @@ class OrgStructureController @Inject() (
   // category methods
 
   def createCategory =
-    authenticated.async(parse.json[CategoryDto]) { implicit request =>
-      authorizer.performCheckAny(MAINTAIN_ALL_CATEGORIES) {
+    authenticated.async(parse.json[OrgCategoryDto]) { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_ORG_CATEGORIES) {
         val payload = request.body
           .into[CreateCategoryPayload]
           .withFieldConst(_.createdBy, request.subject.principals.head)
@@ -498,8 +498,8 @@ class OrgStructureController @Inject() (
     }
 
   def updateCategory =
-    authenticated.async(parse.json[CategoryDto]) { implicit request =>
-      authorizer.performCheckAny(MAINTAIN_ALL_CATEGORIES) {
+    authenticated.async(parse.json[OrgCategoryDto]) { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_ORG_CATEGORIES) {
         val payload = request.body
           .into[UpdateCategoryPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -512,8 +512,8 @@ class OrgStructureController @Inject() (
     }
 
   def deleteCategory =
-    authenticated.async(parse.json[DeleteCategoryDto]) { implicit request =>
-      authorizer.performCheckAny(MAINTAIN_ALL_CATEGORIES) {
+    authenticated.async(parse.json[DeleteOrgCategoryDto]) { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_ORG_CATEGORIES) {
         val payload = request.body
           .into[DeleteCategoryPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -526,7 +526,7 @@ class OrgStructureController @Inject() (
 
   def getCategoryById(id: OrgCategoryId, fromReadSide: Boolean) =
     authenticated.async { implicit request =>
-      authorizer.performCheckAny(VIEW_ALL_CATEGORIES, MAINTAIN_ALL_CATEGORIES) {
+      authorizer.performCheckAny(VIEW_ALL_ORG_CATEGORIES, MAINTAIN_ALL_ORG_CATEGORIES) {
         for {
           role <- orgStructureService.getCategoryById(id, fromReadSide)
         } yield Ok(Json.toJson(role))
@@ -536,7 +536,7 @@ class OrgStructureController @Inject() (
   def getCategoriesById(fromReadSide: Boolean) =
     authenticated.async(parse.json[Set[OrgCategoryId]]) { implicit request =>
       val ids = request.body
-      authorizer.performCheckAny(VIEW_ALL_CATEGORIES, MAINTAIN_ALL_CATEGORIES) {
+      authorizer.performCheckAny(VIEW_ALL_ORG_CATEGORIES, MAINTAIN_ALL_ORG_CATEGORIES) {
         for {
           roles <- orgStructureService.getCategoriesById(ids, fromReadSide)
         } yield Ok(Json.toJson(roles))
@@ -546,7 +546,7 @@ class OrgStructureController @Inject() (
   def findCategories =
     authenticated.async(parse.json[OrgCategoryFindQuery]) { implicit request =>
       val query = request.body
-      authorizer.performCheckAny(VIEW_ALL_ORG_ROLES, MAINTAIN_ALL_ORG_ROLES) {
+      authorizer.performCheckAny(VIEW_ALL_ORG_CATEGORIES, MAINTAIN_ALL_ORG_CATEGORIES) {
         for {
           result <- orgStructureService.findCategories(query)
         } yield Ok(Json.toJson(result))
