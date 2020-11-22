@@ -19,30 +19,30 @@ package biz.lobachev.annette.init.org_structure
 import akka.Done
 import akka.actor.ActorSystem
 import biz.lobachev.annette.core.model.AnnettePrincipal
-import biz.lobachev.annette.persons.api.PersonService
+import biz.lobachev.annette.org_structure.api.OrgStructureService
+import biz.lobachev.annette.org_structure.api.category.CreateCategoryPayload
 import io.scalaland.chimney.dsl._
-import biz.lobachev.annette.persons.api.person.CreatePersonPayload
 import org.slf4j.Logger
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
-trait PersonLoader {
+trait OrgCategoryLoader {
 
   protected val log: Logger
-  val personService: PersonService
+  val orgStructureService: OrgStructureService
   val actorSystem: ActorSystem
   implicit val executionContext: ExecutionContext
 
-  def loadPersons(
+  def loadCategories(
     config: InitOrgStructureConfig,
     promise: Promise[Done] = Promise(),
     iteration: Int = 100
   ): Future[Done] = {
 
-    val future = config.persons
-      .foldLeft(Future.successful(())) { (f, person) =>
-        f.flatMap(_ => loadPerson(person, config.createdBy))
+    val future = config.categories
+      .foldLeft(Future.successful(())) { (f, category) =>
+        f.flatMap(_ => loadCategory(category, config.createdBy))
       }
 
     future.foreach { _ =>
@@ -52,12 +52,12 @@ trait PersonLoader {
     future.failed.foreach {
       case th: IllegalStateException =>
         log.warn(
-          "Failed to load persons. Retrying after delay. Failure reason: {}",
+          "Failed to load org. categories. Retrying after delay. Failure reason: {}",
           th.getMessage
         )
         if (iteration > 0)
           actorSystem.scheduler.scheduleOnce(10.seconds)({
-            loadPersons(config, promise, iteration - 1)
+            loadCategories(config, promise, iteration - 1)
             ()
           })
         else
@@ -69,28 +69,27 @@ trait PersonLoader {
     promise.future
   }
 
-  private def loadPerson(person: PersonConfig, principal: AnnettePrincipal): Future[Unit] = {
-    val payload = person
-      .into[CreatePersonPayload]
-      .withFieldConst(_.middlename, None)
+  private def loadCategory(category: CategoryConfig, principal: AnnettePrincipal): Future[Unit] = {
+    val payload = category
+      .into[CreateCategoryPayload]
       .withFieldConst(_.createdBy, principal)
       .transform
-    personService
-      .createOrUpdatePerson(payload)
+    orgStructureService
+      .createOrUpdateCategory(payload)
       .map { _ =>
-        log.debug("Person loaded: {} {} {}", person.id, person.firstname, person.lastname)
+        log.debug("Org. category loaded: {}", category.id)
         ()
       }
       .recoverWith {
         case th: IllegalStateException => Future.failed(th)
         case th                        =>
-          log.error("Load person {} failed", person.id, th)
+          log.error("Load org. category {} failed", category.id, th)
           Future.failed(th)
       }
   }
 
   private def closeFailed(promise: Promise[Done], th: Throwable) = {
-    val message   = "Failed to load persons"
+    val message   = "Failed to load org. categories"
     log.error(message, th)
     val exception = new RuntimeException(message, th)
     promise.failure(exception)

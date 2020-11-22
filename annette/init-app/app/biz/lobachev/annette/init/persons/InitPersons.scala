@@ -29,7 +29,8 @@ class InitPersons(
   val personService: PersonService,
   val actorSystem: ActorSystem,
   implicit val executionContext: ExecutionContext
-) extends PersonLoader {
+) extends PersonLoader
+    with PersonCategoryLoader {
   final protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 
   def run(): Future[Done] =
@@ -45,6 +46,8 @@ class InitPersons(
         },
         config =>
           for {
+            _ <- if (config.enableCategories) loadCategories(config)
+                 else Future.successful(Done)
             _ <- if (config.enablePersons) loadPersons(config)
                  else Future.successful(Done)
           } yield Done

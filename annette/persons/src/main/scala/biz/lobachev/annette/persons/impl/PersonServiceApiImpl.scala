@@ -20,11 +20,16 @@ import akka.{Done, NotUsed}
 import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.persons.api.PersonServiceApi
+import biz.lobachev.annette.persons.api.category._
 import biz.lobachev.annette.persons.api.person._
+import biz.lobachev.annette.persons.impl.category.CategoryEntityService
 import biz.lobachev.annette.persons.impl.person.PersonEntityService
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 
-class PersonServiceApiImpl(personEntityService: PersonEntityService) extends PersonServiceApi {
+class PersonServiceApiImpl(
+  personEntityService: PersonEntityService,
+  categoryEntityService: CategoryEntityService
+) extends PersonServiceApi {
 
   override def createPerson: ServiceCall[CreatePersonPayload, Done] =
     ServiceCall { payload =>
@@ -54,6 +59,40 @@ class PersonServiceApiImpl(personEntityService: PersonEntityService) extends Per
   override def findPersons: ServiceCall[PersonFindQuery, FindResult] =
     ServiceCall { query =>
       personEntityService.findPersons(query)
+    }
+
+  // ****************************** Category methods ******************************
+
+  override def createCategory: ServiceCall[CreateCategoryPayload, Done] =
+    ServiceCall { payload =>
+      categoryEntityService.createCategory(payload)
+    }
+
+  override def updateCategory: ServiceCall[UpdateCategoryPayload, Done] =
+    ServiceCall { payload =>
+      categoryEntityService.updateCategory(payload)
+    }
+
+  override def deleteCategory: ServiceCall[DeleteCategoryPayload, Done] =
+    ServiceCall { payload =>
+      categoryEntityService.deleteCategory(payload)
+    }
+
+  override def getCategoryById(id: PersonCategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, PersonCategory] =
+    ServiceCall { _ =>
+      categoryEntityService.getCategoryById(id, fromReadSide)
+    }
+
+  override def getCategoriesById(
+    fromReadSide: Boolean
+  ): ServiceCall[Set[PersonCategoryId], Map[PersonCategoryId, PersonCategory]] =
+    ServiceCall { ids =>
+      categoryEntityService.getCategoriesById(ids, fromReadSide)
+    }
+
+  override def findCategories: ServiceCall[PersonCategoryFindQuery, FindResult] =
+    ServiceCall { query =>
+      categoryEntityService.findCategories(query)
     }
 
 }

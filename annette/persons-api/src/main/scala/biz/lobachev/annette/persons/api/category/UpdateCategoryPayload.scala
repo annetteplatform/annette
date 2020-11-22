@@ -14,23 +14,17 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.api.person
+package biz.lobachev.annette.persons.api.category
 
-import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
-import biz.lobachev.annette.persons.api.category.PersonCategoryId
+import biz.lobachev.annette.core.model.AnnettePrincipal
 import play.api.libs.json.Json
 
-case class UpdatePersonPayload(
-  id: PersonId,               // person id
-  lastname: String,           // last name of the person
-  firstname: String,          // first name
-  middlename: Option[String], // middle name
-  categoryId: PersonCategoryId,
-  phone: Option[String],      // phone
-  email: Option[String],      // email
+case class UpdateCategoryPayload(
+  id: PersonCategoryId,
+  name: String,
   updatedBy: AnnettePrincipal
 )
 
-object UpdatePersonPayload {
-  implicit val format = Json.format[UpdatePersonPayload]
+object UpdateCategoryPayload {
+  implicit val format = Json.format[UpdateCategoryPayload]
 }

@@ -39,7 +39,7 @@ class PersonElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Ela
 
   override val log = LoggerFactory.getLogger(this.getClass)
 
-  override def indexSuffix = "persons"
+  override def indexSuffix = "persons-person"
 
   // *************************** Index API ***************************
 
@@ -51,6 +51,7 @@ class PersonElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Ela
           textField("lastname").fielddata(true).analyzer("name_analyzer").searchAnalyzer("name_search"),
           textField("firstname").fielddata(true).analyzer("name_analyzer").searchAnalyzer("name_search"),
           textField("middlename").fielddata(true).analyzer("name_analyzer").searchAnalyzer("name_search"),
+          keywordField("categoryId"),
           keywordField("phone"),
           keywordField("email"), //.analyzer("ngram_name_analyzer").searchAnalyzer("standard"),
           dateField("updatedAt")
@@ -91,6 +92,7 @@ class PersonElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Ela
           "lastname"   -> event.lastname,
           "firstname"  -> event.firstname,
           "middlename" -> event.middlename,
+          "categoryId" -> event.categoryId,
           "phone"      -> event.phone,
           "email"      -> event.email,
           "updatedAt"  -> event.createdAt
@@ -106,6 +108,7 @@ class PersonElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Ela
           "lastname"   -> event.lastname,
           "firstname"  -> event.firstname,
           "middlename" -> event.middlename,
+          "categoryId" -> event.categoryId,
           "phone"      -> event.phone,
           "email"      -> event.email,
           "updatedAt"  -> event.updatedAt
@@ -135,10 +138,11 @@ class PersonElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Ela
       Seq("lastname" -> 3.0, "firstname" -> 2.0, "middlename" -> 1.0, "email" -> 3.0, "phone" -> 1.0)
     )
     val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
+    val categoryQuery          = query.categories.map(chiefs => termsSetQuery("categoryId", chiefs, script("1"))).toSeq
     val attributeQuery         = buildAttributeQuery(query.attributes)
 
     val searchRequest = search(indexName)
-      .bool(must(filterQuery ++ fieldQuery ++ fieldQuery ++ attributeQuery))
+      .bool(must(filterQuery ++ fieldQuery ++ fieldQuery ++ categoryQuery ++ attributeQuery))
       .from(query.offset)
       .size(query.size)
       .sortBy(sortBy)

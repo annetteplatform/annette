@@ -151,7 +151,7 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
   def findOrgRoles(query: OrgRoleFindQuery): Future[FindResult] =
     api.findOrgRoles.invoke(query)
 
-  // org role methods
+  // org category methods
 
   def createCategory(payload: CreateCategoryPayload): Future[Done] =
     api.createCategory.invoke(payload)

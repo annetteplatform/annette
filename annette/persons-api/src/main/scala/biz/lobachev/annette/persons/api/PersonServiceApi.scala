@@ -20,6 +20,14 @@ import akka.{Done, NotUsed}
 import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
 import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.persons.api.category.{
+  CreateCategoryPayload,
+  DeleteCategoryPayload,
+  PersonCategory,
+  PersonCategoryFindQuery,
+  PersonCategoryId,
+  UpdateCategoryPayload
+}
 import biz.lobachev.annette.persons.api.person._
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 
@@ -73,6 +81,17 @@ trait PersonServiceApi extends Service {
    */
   def findPersons: ServiceCall[PersonFindQuery, FindResult]
 
+  // org item category
+
+  def createCategory: ServiceCall[CreateCategoryPayload, Done]
+  def updateCategory: ServiceCall[UpdateCategoryPayload, Done]
+  def deleteCategory: ServiceCall[DeleteCategoryPayload, Done]
+  def getCategoryById(id: PersonCategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, PersonCategory]
+  def getCategoriesById(
+    fromReadSide: Boolean
+  ): ServiceCall[Set[PersonCategoryId], Map[PersonCategoryId, PersonCategory]]
+  def findCategories: ServiceCall[PersonCategoryFindQuery, FindResult]
+
   final override def descriptor = {
     import Service._
     // @formatter:off
@@ -84,6 +103,13 @@ trait PersonServiceApi extends Service {
         pathCall("/api/persons/v1/getPersonById/:id/:fromReadSide",  getPersonById _),
         pathCall("/api/persons/v1/getPersonsById/:fromReadSide",     getPersonsById _),
         pathCall("/api/persons/v1/findPersons",                      findPersons),
+
+        pathCall("/api/persons/v1/createCategory",                 createCategory),
+        pathCall("/api/persons/v1/updateCategory",                 updateCategory),
+        pathCall("/api/persons/v1/deleteCategory",                 deleteCategory),
+        pathCall("/api/persons/v1/getCategoryById/:id/:readSide",  getCategoryById _),
+        pathCall("/api/persons/v1/getCategoriesById/:readSide",    getCategoriesById _) ,
+        pathCall("/api/persons/v1/findCategories",                 findCategories),
       )
       .withExceptionSerializer(new AnnetteTransportExceptionSerializer())
       .withAutoAcl(true)

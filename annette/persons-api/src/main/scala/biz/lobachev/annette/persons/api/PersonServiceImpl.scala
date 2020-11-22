@@ -20,6 +20,15 @@ import akka.Done
 import io.scalaland.chimney.dsl._
 import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.persons.api.category.{
+  CreateCategoryPayload,
+  DeleteCategoryPayload,
+  PersonCategory,
+  PersonCategoryAlreadyExist,
+  PersonCategoryFindQuery,
+  PersonCategoryId,
+  UpdateCategoryPayload
+}
 import biz.lobachev.annette.persons.api.person._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -49,4 +58,39 @@ class PersonServiceImpl(api: PersonServiceApi, implicit val ec: ExecutionContext
     api.getPersonsById(fromReadSide).invoke(ids)
 
   override def findPersons(query: PersonFindQuery): Future[FindResult] = api.findPersons.invoke(query)
+
+  // org category methods
+
+  def createCategory(payload: CreateCategoryPayload): Future[Done] =
+    api.createCategory.invoke(payload)
+
+  def updateCategory(payload: UpdateCategoryPayload): Future[Done] =
+    api.updateCategory.invoke(payload)
+
+  def createOrUpdateCategory(payload: CreateCategoryPayload): Future[Done] =
+    createCategory(payload).recoverWith {
+      case PersonCategoryAlreadyExist(_) =>
+        val updatePayload = payload
+          .into[UpdateCategoryPayload]
+          .withFieldComputed(_.updatedBy, _.createdBy)
+          .transform
+        updateCategory(updatePayload)
+      case th                            => Future.failed(th)
+    }
+
+  def deleteCategory(payload: DeleteCategoryPayload): Future[Done] =
+    api.deleteCategory.invoke(payload)
+
+  def getCategoryById(id: PersonCategoryId, fromReadSide: Boolean): Future[PersonCategory] =
+    api.getCategoryById(id, fromReadSide).invoke()
+
+  def getCategoriesById(
+    ids: Set[PersonCategoryId],
+    fromReadSide: Boolean
+  ): Future[Map[PersonCategoryId, PersonCategory]] =
+    api.getCategoriesById(fromReadSide).invoke(ids)
+
+  def findCategories(query: PersonCategoryFindQuery): Future[FindResult] =
+    api.findCategories.invoke(query)
+
 }

@@ -18,6 +18,7 @@ package biz.lobachev.annette.persons.api.person
 
 import biz.lobachev.annette.attributes.api.query.AttributeQuery
 import biz.lobachev.annette.core.elastic.SortBy
+import biz.lobachev.annette.persons.api.category.PersonCategoryId
 import play.api.libs.json.{Format, Json}
 
 object PersonSortField extends Enumeration {
@@ -43,12 +44,13 @@ object PersonSortBy {
 case class PersonFindQuery(
   offset: Int = 0,
   size: Int,
-  filter: Option[String] = None,      //search by filter in person's names, email and phone
-  lastname: Option[String] = None,    //search in last name of the person
-  firstname: Option[String] = None,   //search in first name
-  middlename: Option[String] = None,  //search in middle name
-  phone: Option[String] = None,       //search in phone
-  email: Option[String] = None,       //search in email
+  filter: Option[String] = None,     //search by filter in person's names, email and phone
+  lastname: Option[String] = None,   //search in last name of the person
+  firstname: Option[String] = None,  //search in first name
+  middlename: Option[String] = None, //search in middle name
+  phone: Option[String] = None,      //search in phone
+  email: Option[String] = None,      //search in email
+  categories: Option[Set[PersonCategoryId]] = None,
   attributes: Option[AttributeQuery] = None,
   sortBy: Option[Seq[SortBy]] = None //sort results by field provided
 )
