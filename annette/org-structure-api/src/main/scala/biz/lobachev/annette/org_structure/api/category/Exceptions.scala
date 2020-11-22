@@ -19,12 +19,12 @@ package biz.lobachev.annette.org_structure.api.category
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionWithIdCompanion
 import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
 
-object CategoryNotFound extends AnnetteTransportExceptionWithIdCompanion {
+object OrgCategoryNotFound extends AnnetteTransportExceptionWithIdCompanion {
   val ErrorCode   = TransportErrorCode.NotFound
   val MessageCode = "annette.orgStructureService.category.notFound"
 }
 
-object CategoryAlreadyExist extends AnnetteTransportExceptionWithIdCompanion {
+object OrgCategoryAlreadyExist extends AnnetteTransportExceptionWithIdCompanion {
   val ErrorCode   = TransportErrorCode.BadRequest
   val MessageCode = "annette.orgStructureService.category.alreadyExist"
 }

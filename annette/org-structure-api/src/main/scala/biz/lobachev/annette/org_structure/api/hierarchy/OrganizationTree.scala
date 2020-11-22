@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.org_structure.api.hierarchy
 
-import biz.lobachev.annette.org_structure.api.category.CategoryId
+import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
 import play.api.libs.json._
 
 case class OrganizationTree(
@@ -36,7 +36,7 @@ final case class UnitTreeItem(
   id: OrgItemId,
   children: Seq[OrgTreeItem],
   chief: Option[OrgItemId],
-  categoryId: CategoryId
+  categoryId: OrgCategoryId
 ) extends OrgTreeItem
 
 object UnitTreeItem {
@@ -46,7 +46,7 @@ object UnitTreeItem {
 final case class PositionTreeItem(
   id: OrgItemId,
   persons: Set[OrgItemId],
-  categoryId: CategoryId
+  categoryId: OrgCategoryId
 ) extends OrgTreeItem
 
 object PositionTreeItem {

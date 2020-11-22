@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.init.org_structure
 import biz.lobachev.annette.core.model.AnnettePrincipal
-import biz.lobachev.annette.org_structure.api.category.CategoryId
+import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import pureconfig.generic.FieldCoproductHint
 
@@ -73,7 +73,7 @@ case class PositionConfig(
   name: String,
   shortName: String,
   limit: Int = 1,
-  categoryId: CategoryId,
+  categoryId: OrgCategoryId,
   person: Option[String] = None
 ) extends OrgItemConfig
 
@@ -83,5 +83,5 @@ case class UnitConfig(
   shortName: String,
   chief: Option[String] = None,
   children: Seq[OrgItemConfig] = Seq.empty,
-  categoryId: CategoryId
+  categoryId: OrgCategoryId
 ) extends OrgItemConfig

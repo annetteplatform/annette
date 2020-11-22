@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.gateway.api.org_structure.dto
 
-import biz.lobachev.annette.org_structure.api.category.CategoryId
+import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
 import biz.lobachev.annette.org_structure.api.hierarchy.OrgItemId
 import play.api.libs.json.Json
 
@@ -27,7 +27,7 @@ case class CreatePositionPayloadDto(
   name: String,
   shortName: String,
   limit: Int = 1,
-  categoryId: CategoryId,
+  categoryId: OrgCategoryId,
   order: Option[Int] = None
 )
 

@@ -23,7 +23,7 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
 import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
-import biz.lobachev.annette.org_structure.api.category.Category
+import biz.lobachev.annette.org_structure.api.category.OrgCategory
 import biz.lobachev.annette.org_structure.api.hierarchy.{OrgItem, _}
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import biz.lobachev.annette.org_structure.impl.hierarchy.dao.{HierarchyDbDao, HierarchyIndexDao}
@@ -139,7 +139,7 @@ class HierarchyEntityService(
       .ask[HierarchyEntity.Confirmation](HierarchyEntity.UpdateShortName(payload, _))
       .map(successToResult)
 
-  def assignCategory(payload: AssignCategoryPayload, category: Category): Future[Done] =
+  def assignCategory(payload: AssignCategoryPayload, category: OrgCategory): Future[Done] =
     refFor(payload.orgId)
       .ask[HierarchyEntity.Confirmation](HierarchyEntity.AssignCategory(payload, category, _))
       .map(successToResult)

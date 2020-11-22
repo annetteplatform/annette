@@ -20,12 +20,12 @@ import akka.Done
 import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
 import biz.lobachev.annette.org_structure.api.category.{
-  Category,
-  CategoryAlreadyExist,
-  CategoryFindQuery,
-  CategoryId,
   CreateCategoryPayload,
   DeleteCategoryPayload,
+  OrgCategory,
+  OrgCategoryAlreadyExist,
+  OrgCategoryFindQuery,
+  OrgCategoryId,
   UpdateCategoryPayload
 }
 import biz.lobachev.annette.org_structure.api.hierarchy._
@@ -161,25 +161,25 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
 
   def createOrUpdateCategory(payload: CreateCategoryPayload): Future[Done] =
     createCategory(payload).recoverWith {
-      case CategoryAlreadyExist(_) =>
+      case OrgCategoryAlreadyExist(_) =>
         val updatePayload = payload
           .into[UpdateCategoryPayload]
           .withFieldComputed(_.updatedBy, _.createdBy)
           .transform
         updateCategory(updatePayload)
-      case th                      => Future.failed(th)
+      case th                         => Future.failed(th)
     }
 
   def deleteCategory(payload: DeleteCategoryPayload): Future[Done] =
     api.deleteCategory.invoke(payload)
 
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category] =
+  def getCategoryById(id: OrgCategoryId, fromReadSide: Boolean): Future[OrgCategory] =
     api.getCategoryById(id, fromReadSide).invoke()
 
-  def getCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean): Future[Map[CategoryId, Category]] =
+  def getCategoriesById(ids: Set[OrgCategoryId], fromReadSide: Boolean): Future[Map[OrgCategoryId, OrgCategory]] =
     api.getCategoriesById(fromReadSide).invoke(ids)
 
-  def findCategories(query: CategoryFindQuery): Future[FindResult] =
+  def findCategories(query: OrgCategoryFindQuery): Future[FindResult] =
     api.findCategories.invoke(query)
 
 }

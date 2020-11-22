@@ -89,7 +89,7 @@ class CategoryElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: E
     }
       .map(processResponse("deleteCategory", event.id)(_))
 
-  def findCategories(query: CategoryFindQuery): Future[FindResult] = {
+  def findCategories(query: OrgCategoryFindQuery): Future[FindResult] = {
 
     val fieldQuery             = Seq(
       query.name.map(matchQuery("name", _))

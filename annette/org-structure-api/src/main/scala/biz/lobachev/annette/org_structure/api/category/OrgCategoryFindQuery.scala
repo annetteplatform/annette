@@ -19,7 +19,7 @@ package biz.lobachev.annette.org_structure.api.category
 import biz.lobachev.annette.core.elastic.SortBy
 import play.api.libs.json.Json
 
-case class CategoryFindQuery(
+case class OrgCategoryFindQuery(
   offset: Int = 0,
   size: Int,
   filter: Option[String] = None,
@@ -27,6 +27,6 @@ case class CategoryFindQuery(
   sortBy: Option[SortBy] = None
 )
 
-object CategoryFindQuery {
-  implicit val format = Json.format[CategoryFindQuery]
+object OrgCategoryFindQuery {
+  implicit val format = Json.format[OrgCategoryFindQuery]
 }

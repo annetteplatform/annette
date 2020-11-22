@@ -34,6 +34,6 @@ trait CategoryIndexDao {
 
   def deleteCategory(event: CategoryDeleted): Future[Unit]
 
-  def findCategories(query: CategoryFindQuery): Future[FindResult]
+  def findCategories(query: OrgCategoryFindQuery): Future[FindResult]
 
 }

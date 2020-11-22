@@ -20,7 +20,7 @@ import biz.lobachev.annette.core.model.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class CreateCategoryPayload(
-  id: CategoryId,
+  id: OrgCategoryId,
   name: String,
   forOrganization: Boolean = false,
   forUnit: Boolean = false,

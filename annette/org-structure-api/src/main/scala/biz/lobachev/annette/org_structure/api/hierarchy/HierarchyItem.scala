@@ -19,7 +19,7 @@ package biz.lobachev.annette.org_structure.api.hierarchy
 import java.time.OffsetDateTime
 
 import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
-import biz.lobachev.annette.org_structure.api.category.CategoryId
+import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 
@@ -28,7 +28,7 @@ sealed trait HierarchyItem {
   val parentId: OrgItemId
   val name: String
   val shortName: String
-  val categoryId: CategoryId
+  val categoryId: OrgCategoryId
   val updatedAt: OffsetDateTime
   val updatedBy: AnnettePrincipal
 }
@@ -41,7 +41,7 @@ case class HierarchyPosition(
   limit: Int = 1,
   persons: Set[PersonId] = Set.empty,
   orgRoles: Set[OrgRoleId] = Set.empty,
-  categoryId: CategoryId,
+  categoryId: OrgCategoryId,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) extends HierarchyItem
@@ -57,7 +57,7 @@ case class HierarchyUnit(
   shortName: String,
   children: Seq[OrgItemId] = Seq.empty,
   chief: Option[OrgItemId] = None,
-  categoryId: CategoryId,
+  categoryId: OrgCategoryId,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) extends HierarchyItem
