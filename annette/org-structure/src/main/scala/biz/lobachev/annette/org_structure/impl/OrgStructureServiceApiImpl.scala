@@ -24,11 +24,11 @@ import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
 import biz.lobachev.annette.org_structure.api.OrgStructureServiceApi
 import biz.lobachev.annette.org_structure.api.category.{
-  Category,
-  CategoryFindQuery,
-  CategoryId,
   CreateCategoryPayload,
   DeleteCategoryPayload,
+  OrgCategory,
+  OrgCategoryFindQuery,
+  OrgCategoryId,
   UpdateCategoryPayload
 }
 import biz.lobachev.annette.org_structure.api.hierarchy._
@@ -255,17 +255,19 @@ class OrgStructureServiceApiImpl(
       categoryEntityService.deleteCategory(payload)
     }
 
-  override def getCategoryById(id: CategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, Category] =
+  override def getCategoryById(id: OrgCategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, OrgCategory] =
     ServiceCall { _ =>
       categoryEntityService.getCategoryById(id, fromReadSide)
     }
 
-  override def getCategoriesById(fromReadSide: Boolean): ServiceCall[Set[CategoryId], Map[CategoryId, Category]] =
+  override def getCategoriesById(
+    fromReadSide: Boolean
+  ): ServiceCall[Set[OrgCategoryId], Map[OrgCategoryId, OrgCategory]] =
     ServiceCall { ids =>
       categoryEntityService.getCategoriesById(ids, fromReadSide)
     }
 
-  override def findCategories: ServiceCall[CategoryFindQuery, FindResult] =
+  override def findCategories: ServiceCall[OrgCategoryFindQuery, FindResult] =
     ServiceCall { query =>
       categoryEntityService.findCategories(query)
     }

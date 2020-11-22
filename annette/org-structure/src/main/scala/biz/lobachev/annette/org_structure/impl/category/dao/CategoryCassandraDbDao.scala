@@ -20,7 +20,7 @@ import java.time.OffsetDateTime
 
 import akka.Done
 import biz.lobachev.annette.core.model.AnnettePrincipal
-import biz.lobachev.annette.org_structure.api.category.{Category, CategoryId}
+import biz.lobachev.annette.org_structure.api.category.{OrgCategory, OrgCategoryId}
 import biz.lobachev.annette.org_structure.impl.category.CategoryEntity.{
   CategoryCreated,
   CategoryDeleted,
@@ -132,13 +132,13 @@ private[impl] class CategoryCassandraDbDao(session: CassandraSession)(implicit
         .setString("id", event.id)
     )
 
-  def getCategoryById(id: CategoryId): Future[Option[Category]] =
+  def getCategoryById(id: OrgCategoryId): Future[Option[OrgCategory]] =
     for {
       stmt   <- session.prepare("SELECT * FROM categories WHERE id = ?")
       result <- session.selectOne(stmt.bind(id)).map(_.map(convertCategory))
     } yield result
 
-  def getCategoriesById(ids: Set[CategoryId]): Future[Map[CategoryId, Category]] =
+  def getCategoriesById(ids: Set[OrgCategoryId]): Future[Map[OrgCategoryId, OrgCategory]] =
     for {
       stmt   <- session.prepare("SELECT * FROM categories WHERE id IN ?")
       result <- session
@@ -151,8 +151,8 @@ private[impl] class CategoryCassandraDbDao(session: CassandraSession)(implicit
                   )
     } yield result
 
-  private def convertCategory(row: Row): Category =
-    Category(
+  private def convertCategory(row: Row): OrgCategory =
+    OrgCategory(
       id = row.getString("id"),
       name = row.getString("name"),
       forOrganization = row.getBool("for_organization"),

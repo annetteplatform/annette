@@ -39,13 +39,13 @@ object CategoryEntity {
   final case class CreateCategory(payload: CreateCategoryPayload, replyTo: ActorRef[Confirmation]) extends Command
   final case class UpdateCategory(payload: UpdateCategoryPayload, replyTo: ActorRef[Confirmation]) extends Command
   final case class DeleteCategory(payload: DeleteCategoryPayload, replyTo: ActorRef[Confirmation]) extends Command
-  final case class GetCategory(id: CategoryId, replyTo: ActorRef[Confirmation])                    extends Command
+  final case class GetCategory(id: OrgCategoryId, replyTo: ActorRef[Confirmation])                 extends Command
 
   sealed trait Confirmation
-  final case object Success                          extends Confirmation
-  final case class SuccessCategory(entity: Category) extends Confirmation
-  final case object NotFound                         extends Confirmation
-  final case object AlreadyExist                     extends Confirmation
+  final case object Success                             extends Confirmation
+  final case class SuccessCategory(entity: OrgCategory) extends Confirmation
+  final case object NotFound                            extends Confirmation
+  final case object AlreadyExist                        extends Confirmation
 
   implicit val confirmationSuccessFormat: Format[Success.type]            = Json.format
   implicit val confirmationSuccessCategoryFormat: Format[SuccessCategory] = Json.format
@@ -63,7 +63,7 @@ object CategoryEntity {
   }
 
   final case class CategoryCreated(
-    id: CategoryId,
+    id: OrgCategoryId,
     name: String,
     forOrganization: Boolean = false,
     forUnit: Boolean = false,
@@ -72,7 +72,7 @@ object CategoryEntity {
     createdAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
   final case class CategoryUpdated(
-    id: CategoryId,
+    id: OrgCategoryId,
     name: String,
     forOrganization: Boolean = false,
     forUnit: Boolean = false,
@@ -81,7 +81,7 @@ object CategoryEntity {
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
   final case class CategoryDeleted(
-    id: CategoryId, // category id
+    id: OrgCategoryId, // category id
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event

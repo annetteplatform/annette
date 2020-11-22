@@ -57,6 +57,7 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
           keywordField("type"),
           keywordField("children"),
           keywordField("chief"),
+          keywordField("categoryId"),
           intField("limit"),
           keywordField("persons"),
           keywordField("orgRoles"),
@@ -70,16 +71,17 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
       indexInto(indexName)
         .id(event.orgId)
         .fields(
-          "id"        -> event.orgId,
-          "orgId"     -> event.orgId,
-          "parentId"  -> hierarchy.ROOT,
-          "rootPath"  -> Seq(event.orgId),
-          "name"      -> event.name,
-          "shortName" -> event.shortName,
-          "type"      -> ItemTypes.Unit.toString,
-          "children"  -> Seq.empty,
-          "level"     -> 0,
-          "updatedAt" -> event.createdAt
+          "id"         -> event.orgId,
+          "orgId"      -> event.orgId,
+          "parentId"   -> hierarchy.ROOT,
+          "rootPath"   -> Seq(event.orgId),
+          "name"       -> event.name,
+          "shortName"  -> event.shortName,
+          "type"       -> ItemTypes.Unit.toString,
+          "children"   -> Seq.empty,
+          "categoryId" -> event.categoryId,
+          "level"      -> 0,
+          "updatedAt"  -> event.createdAt
         )
         .refresh(RefreshPolicy.Immediate)
     }.map(processResponse("createOrganization", event.orgId)(_))
@@ -94,16 +96,17 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
       indexInto(indexName)
         .id(event.unitId)
         .fields(
-          "id"        -> event.unitId,
-          "orgId"     -> event.orgId,
-          "parentId"  -> event.parentId,
-          "rootPath"  -> event.rootPath,
-          "name"      -> event.name,
-          "shortName" -> event.shortName,
-          "type"      -> ItemTypes.Unit.toString,
-          "children"  -> Seq.empty,
-          "level"     -> (event.rootPath.length - 1),
-          "updatedAt" -> event.createdAt
+          "id"         -> event.unitId,
+          "orgId"      -> event.orgId,
+          "parentId"   -> event.parentId,
+          "rootPath"   -> event.rootPath,
+          "name"       -> event.name,
+          "shortName"  -> event.shortName,
+          "type"       -> ItemTypes.Unit.toString,
+          "children"   -> Seq.empty,
+          "categoryId" -> event.categoryId,
+          "level"      -> (event.rootPath.length - 1),
+          "updatedAt"  -> event.createdAt
         )
         .refresh(RefreshPolicy.Immediate)
     }.map(processResponse("createUnit", event.unitId)(_))
@@ -112,6 +115,13 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
     elasticClient
       .execute(deleteById(indexName, event.unitId))
       .map(processResponse("deleteUnit", event.unitId)(_))
+
+  def assignCategory(event: HierarchyEntity.CategoryAssigned): Future[Unit] =
+    elasticClient.execute {
+      updateById(indexName, event.itemId)
+        .doc("categoryId" -> event.categoryId)
+        .refresh(RefreshPolicy.Immediate)
+    }.map(processResponse("assignCategory", event.itemId)(_))
 
   def assignChief(event: HierarchyEntity.ChiefAssigned): Future[Unit] =
     elasticClient.execute {
@@ -132,16 +142,17 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
       indexInto(indexName)
         .id(event.positionId)
         .fields(
-          "id"        -> event.positionId,
-          "orgId"     -> event.orgId,
-          "parentId"  -> event.parentId,
-          "rootPath"  -> event.rootPath,
-          "name"      -> event.name,
-          "shortName" -> event.shortName,
-          "type"      -> ItemTypes.Position.toString,
-          "limit"     -> event.limit,
-          "level"     -> (event.rootPath.length - 1),
-          "updatedAt" -> event.createdAt
+          "id"         -> event.positionId,
+          "orgId"      -> event.orgId,
+          "parentId"   -> event.parentId,
+          "rootPath"   -> event.rootPath,
+          "name"       -> event.name,
+          "shortName"  -> event.shortName,
+          "type"       -> ItemTypes.Position.toString,
+          "categoryId" -> event.categoryId,
+          "limit"      -> event.limit,
+          "level"      -> (event.rootPath.length - 1),
+          "updatedAt"  -> event.createdAt
         )
         .refresh(RefreshPolicy.Immediate)
     }.map(processResponse("createPosition", event.positionId)(_))
@@ -240,6 +251,7 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
     val organizationsQuery = query.organizations.map(orgs => termsSetQuery("orgId", orgs, script("1"))).toSeq
     val parentsQuery       = query.parents.map(parents => termsSetQuery("parentId", parents, script("1"))).toSeq
     val chiefsQuery        = query.chiefs.map(chiefs => termsSetQuery("chief", chiefs, script("1"))).toSeq
+    val categoryQuery      = query.categories.map(chiefs => termsSetQuery("categoryId", chiefs, script("1"))).toSeq
     val attributeQuery     = buildAttributeQuery(query.attributes)
 
     val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
@@ -249,7 +261,7 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
         must(
           filterQuery ++ fieldQuery ++ fieldQuery ++ orgUnitsQuery ++
             personsQuery ++ orgRolesQuery ++ fromLevelQuery ++ toLevelQuery ++
-            itemTypesQuery ++ organizationsQuery ++ parentsQuery ++ chiefsQuery ++ attributeQuery
+            itemTypesQuery ++ organizationsQuery ++ parentsQuery ++ chiefsQuery ++ categoryQuery ++ attributeQuery
         )
       )
       .from(query.offset)

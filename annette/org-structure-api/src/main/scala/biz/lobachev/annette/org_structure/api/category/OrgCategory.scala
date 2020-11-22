@@ -5,8 +5,8 @@ import java.time.OffsetDateTime
 import biz.lobachev.annette.core.model.AnnettePrincipal
 import play.api.libs.json.Json
 
-case class Category(
-  id: CategoryId,
+case class OrgCategory(
+  id: OrgCategoryId,
   name: String,
   forOrganization: Boolean = false,
   forUnit: Boolean = false,
@@ -15,6 +15,6 @@ case class Category(
   updatedBy: AnnettePrincipal
 )
 
-object Category {
-  implicit val format = Json.format[Category]
+object OrgCategory {
+  implicit val format = Json.format[OrgCategory]
 }

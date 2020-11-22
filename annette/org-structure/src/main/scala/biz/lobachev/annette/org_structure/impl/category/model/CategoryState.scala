@@ -19,12 +19,12 @@ package biz.lobachev.annette.org_structure.impl.category.model
 import java.time.OffsetDateTime
 
 import biz.lobachev.annette.core.model.AnnettePrincipal
-import biz.lobachev.annette.org_structure.api.category.{Category, CategoryId}
+import biz.lobachev.annette.org_structure.api.category.{OrgCategory, OrgCategoryId}
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 
 case class CategoryState(
-  id: CategoryId,
+  id: OrgCategoryId,
   name: String,
   forOrganization: Boolean = false,
   forUnit: Boolean = false,
@@ -33,8 +33,8 @@ case class CategoryState(
   updatedBy: AnnettePrincipal
 ) {
 
-  def toCategory: Category =
-    this.into[Category].transform
+  def toCategory: OrgCategory =
+    this.into[OrgCategory].transform
 
 }
 

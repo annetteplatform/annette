@@ -20,11 +20,11 @@ import akka.Done
 import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
 import biz.lobachev.annette.org_structure.api.category.{
-  Category,
-  CategoryFindQuery,
-  CategoryId,
   CreateCategoryPayload,
   DeleteCategoryPayload,
+  OrgCategory,
+  OrgCategoryFindQuery,
+  OrgCategoryId,
   UpdateCategoryPayload
 }
 import biz.lobachev.annette.org_structure.api.hierarchy._
@@ -85,8 +85,8 @@ trait OrgStructureService {
   def createOrUpdateCategory(payload: CreateCategoryPayload): Future[Done]
   def updateCategory(payload: UpdateCategoryPayload): Future[Done]
   def deleteCategory(payload: DeleteCategoryPayload): Future[Done]
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category]
-  def getCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean): Future[Map[CategoryId, Category]]
-  def findCategories(query: CategoryFindQuery): Future[FindResult]
+  def getCategoryById(id: OrgCategoryId, fromReadSide: Boolean): Future[OrgCategory]
+  def getCategoriesById(ids: Set[OrgCategoryId], fromReadSide: Boolean): Future[Map[OrgCategoryId, OrgCategory]]
+  def findCategories(query: OrgCategoryFindQuery): Future[FindResult]
 
 }

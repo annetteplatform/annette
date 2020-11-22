@@ -16,14 +16,14 @@
 
 package biz.lobachev.annette.gateway.api.org_structure.dto
 
-import biz.lobachev.annette.org_structure.api.category.CategoryId
+import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
 import biz.lobachev.annette.org_structure.api.hierarchy.OrgItemId
 import play.api.libs.json.Json
 
 case class AssignCategoryPayloadDto(
   orgId: OrgItemId,
   itemId: OrgItemId,
-  categoryId: CategoryId
+  categoryId: OrgCategoryId
 )
 
 object AssignCategoryPayloadDto {

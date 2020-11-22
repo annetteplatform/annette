@@ -40,6 +40,8 @@ trait HierarchyIndexDao extends AttributeIndexDao {
 
   def deleteUnit(event: HierarchyEntity.UnitDeleted): Future[Unit]
 
+  def assignCategory(event: HierarchyEntity.CategoryAssigned): Future[Unit]
+
   def assignChief(event: HierarchyEntity.ChiefAssigned): Future[Unit]
 
   def unassignChief(event: HierarchyEntity.ChiefUnassigned): Future[Unit]

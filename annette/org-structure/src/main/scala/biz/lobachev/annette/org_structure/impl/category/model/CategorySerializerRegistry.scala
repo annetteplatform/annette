@@ -33,7 +33,7 @@ object CategorySerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
       // state
-      JsonSerializer[Category],
+      JsonSerializer[OrgCategory],
       JsonSerializer[CategoryState],
       JsonSerializer[CreateCategoryPayload],
       JsonSerializer[UpdateCategoryPayload],
@@ -48,7 +48,7 @@ object CategorySerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[CategoryCreated],
       JsonSerializer[CategoryUpdated],
       JsonSerializer[CategoryDeleted],
-      JsonSerializer[CategoryFindQuery],
+      JsonSerializer[OrgCategoryFindQuery],
       JsonSerializer[FindResult]
     )
 }

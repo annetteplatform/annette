@@ -21,11 +21,11 @@ import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
 import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
 import biz.lobachev.annette.org_structure.api.category.{
-  Category,
-  CategoryFindQuery,
-  CategoryId,
   CreateCategoryPayload,
   DeleteCategoryPayload,
+  OrgCategory,
+  OrgCategoryFindQuery,
+  OrgCategoryId,
   UpdateCategoryPayload
 }
 import biz.lobachev.annette.org_structure.api.hierarchy._
@@ -83,11 +83,11 @@ trait OrgStructureServiceApi extends Service {
   def createCategory: ServiceCall[CreateCategoryPayload, Done]
   def updateCategory: ServiceCall[UpdateCategoryPayload, Done]
   def deleteCategory: ServiceCall[DeleteCategoryPayload, Done]
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, Category]
+  def getCategoryById(id: OrgCategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, OrgCategory]
   def getCategoriesById(
     fromReadSide: Boolean
-  ): ServiceCall[Set[CategoryId], Map[CategoryId, Category]]
-  def findCategories: ServiceCall[CategoryFindQuery, FindResult]
+  ): ServiceCall[Set[OrgCategoryId], Map[OrgCategoryId, OrgCategory]]
+  def findCategories: ServiceCall[OrgCategoryFindQuery, FindResult]
 
   final override def descriptor = {
     import Service._

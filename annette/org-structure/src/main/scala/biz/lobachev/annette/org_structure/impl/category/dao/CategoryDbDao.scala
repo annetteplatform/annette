@@ -17,7 +17,7 @@
 package biz.lobachev.annette.org_structure.impl.category.dao
 
 import akka.Done
-import biz.lobachev.annette.org_structure.api.category.{Category, CategoryId}
+import biz.lobachev.annette.org_structure.api.category.{OrgCategory, OrgCategoryId}
 import biz.lobachev.annette.org_structure.impl.category.CategoryEntity.{
   CategoryCreated,
   CategoryDeleted,
@@ -39,8 +39,8 @@ trait CategoryDbDao {
 
   def deleteCategory(event: CategoryDeleted): List[BoundStatement]
 
-  def getCategoryById(id: CategoryId): Future[Option[Category]]
+  def getCategoryById(id: OrgCategoryId): Future[Option[OrgCategory]]
 
-  def getCategoriesById(ids: Set[CategoryId]): Future[Map[CategoryId, Category]]
+  def getCategoriesById(ids: Set[OrgCategoryId]): Future[Map[OrgCategoryId, OrgCategory]]
 
 }

@@ -23,7 +23,7 @@ import akka.cluster.sharding.typed.scaladsl._
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
-import biz.lobachev.annette.org_structure.api.category.{Category, CategoryId}
+import biz.lobachev.annette.org_structure.api.category.{OrgCategory, OrgCategoryId}
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import biz.lobachev.annette.org_structure.impl.hierarchy.model.HierarchyState
@@ -45,7 +45,7 @@ object HierarchyEntity {
   final case class DeleteUnit(payload: DeleteUnitPayload, replyTo: ActorRef[Confirmation])           extends Command
   final case class AssignCategory(
     payload: AssignCategoryPayload,
-    category: Category,
+    category: OrgCategory,
     replyTo: ActorRef[Confirmation]
   )                                                                                                  extends Command
   final case class AssignChief(payload: AssignChiefPayload, replyTo: ActorRef[Confirmation])         extends Command
@@ -139,7 +139,7 @@ object HierarchyEntity {
     orgId: OrgItemId,
     name: String,
     shortName: String,
-    categoryId: CategoryId,
+    categoryId: OrgCategoryId,
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -156,7 +156,7 @@ object HierarchyEntity {
     shortName: String,
     order: Option[Int],
     rootPath: Seq[OrgItemId],
-    categoryId: CategoryId,
+    categoryId: OrgCategoryId,
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -170,7 +170,7 @@ object HierarchyEntity {
   final case class CategoryAssigned(
     orgId: OrgItemId,
     itemId: OrgItemId,
-    categoryId: CategoryId,
+    categoryId: OrgCategoryId,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -197,7 +197,7 @@ object HierarchyEntity {
     order: Option[Int],
     rootPath: Seq[OrgItemId],
     limit: Int,
-    categoryId: CategoryId,
+    categoryId: OrgCategoryId,
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event

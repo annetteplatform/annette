@@ -30,14 +30,14 @@ class CategoryEntityService(
       .map(d => Timeout(FiniteDuration(d.toNanos, TimeUnit.NANOSECONDS)))
       .getOrElse(Timeout(60.seconds))
 
-  private def refFor(id: CategoryId): EntityRef[CategoryEntity.Command] =
+  private def refFor(id: OrgCategoryId): EntityRef[CategoryEntity.Command] =
     clusterSharding.entityRefFor(CategoryEntity.typeKey, id)
 
-  private def convertSuccess(id: CategoryId, confirmation: CategoryEntity.Confirmation): Done =
+  private def convertSuccess(id: OrgCategoryId, confirmation: CategoryEntity.Confirmation): Done =
     confirmation match {
       case CategoryEntity.Success      => Done
-      case CategoryEntity.NotFound     => throw CategoryNotFound(id)
-      case CategoryEntity.AlreadyExist => throw CategoryAlreadyExist(id)
+      case CategoryEntity.NotFound     => throw OrgCategoryNotFound(id)
+      case CategoryEntity.AlreadyExist => throw OrgCategoryAlreadyExist(id)
       case _                           => throw new RuntimeException("Match fail")
     }
 
@@ -56,27 +56,27 @@ class CategoryEntityService(
       .ask[CategoryEntity.Confirmation](CategoryEntity.DeleteCategory(payload, _))
       .map(res => convertSuccess(payload.id, res))
 
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category] =
+  def getCategoryById(id: OrgCategoryId, fromReadSide: Boolean): Future[OrgCategory] =
     if (fromReadSide) getCategoryByIdFromReadSide(id)
     else getCategoryById(id)
 
-  def getCategoryById(id: CategoryId): Future[Category] =
+  def getCategoryById(id: OrgCategoryId): Future[OrgCategory] =
     refFor(id)
       .ask[CategoryEntity.Confirmation](CategoryEntity.GetCategory(id, _))
       .map {
         case CategoryEntity.SuccessCategory(entity) => entity
-        case _                                      => throw CategoryNotFound(id)
+        case _                                      => throw OrgCategoryNotFound(id)
       }
 
-  def getCategoryByIdFromReadSide(id: CategoryId): Future[Category] =
+  def getCategoryByIdFromReadSide(id: OrgCategoryId): Future[OrgCategory] =
     for {
       maybeCategory <- dbDao.getCategoryById(id)
     } yield maybeCategory match {
       case Some(category) => category
-      case None           => throw CategoryNotFound(id)
+      case None           => throw OrgCategoryNotFound(id)
     }
 
-  def getCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean): Future[Map[CategoryId, Category]] =
+  def getCategoriesById(ids: Set[OrgCategoryId], fromReadSide: Boolean): Future[Map[OrgCategoryId, OrgCategory]] =
     if (fromReadSide) dbDao.getCategoriesById(ids)
     else
       Future
@@ -90,6 +90,6 @@ class CategoryEntityService(
         }
         .map(seq => seq.flatten.map(category => category.id -> category).toMap)
 
-  def findCategories(query: CategoryFindQuery): Future[FindResult]                                      =
+  def findCategories(query: OrgCategoryFindQuery): Future[FindResult]                                            =
     indexDao.findCategories(query)
 }

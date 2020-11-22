@@ -46,6 +46,7 @@ private[impl] class HierarchyIndexEventProcessor(
       .setEventHandler[HierarchyEntity.UnitDeleted](e => deleteUnit(e.event))
       .setEventHandler[HierarchyEntity.PositionCreated](e => createPosition(e.event))
       .setEventHandler[HierarchyEntity.PositionDeleted](e => deletePosition(e.event))
+      .setEventHandler[HierarchyEntity.CategoryAssigned](e => assignCategory(e.event))
       .setEventHandler[HierarchyEntity.ChiefAssigned](e => assignChief(e.event))
       .setEventHandler[HierarchyEntity.ChiefUnassigned](e => unassignChief(e.event))
       .setEventHandler[HierarchyEntity.PositionLimitChanged](e => changePositionLimit(e.event))
@@ -85,6 +86,11 @@ private[impl] class HierarchyIndexEventProcessor(
       children <- hierarchyEntityService.getChildren(event.orgId, event.parentId)
       _        <- indexDao.updateChildren(event.parentId, children, event.deletedAt)
       _        <- indexDao.deleteUnit(event)
+    } yield List.empty
+
+  def assignCategory(event: HierarchyEntity.CategoryAssigned): Future[Seq[BoundStatement]] =
+    for {
+      _ <- indexDao.assignCategory(event)
     } yield List.empty
 
   def assignChief(event: HierarchyEntity.ChiefAssigned): Future[Seq[BoundStatement]] =

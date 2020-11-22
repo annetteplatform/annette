@@ -23,10 +23,10 @@ import biz.lobachev.annette.gateway.core.authentication.{AuthenticatedAction, Au
 import biz.lobachev.annette.gateway.core.authorization.{AuthorizationFailedException, Authorizer}
 import biz.lobachev.annette.org_structure.api.OrgStructureService
 import biz.lobachev.annette.org_structure.api.category.{
-  CategoryFindQuery,
-  CategoryId,
   CreateCategoryPayload,
   DeleteCategoryPayload,
+  OrgCategoryFindQuery,
+  OrgCategoryId,
   UpdateCategoryPayload
 }
 import biz.lobachev.annette.org_structure.api.hierarchy._
@@ -524,7 +524,7 @@ class OrgStructureController @Inject() (
       }
     }
 
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean) =
+  def getCategoryById(id: OrgCategoryId, fromReadSide: Boolean) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(VIEW_ALL_CATEGORIES, MAINTAIN_ALL_CATEGORIES) {
         for {
@@ -534,7 +534,7 @@ class OrgStructureController @Inject() (
     }
 
   def getCategoriesById(fromReadSide: Boolean) =
-    authenticated.async(parse.json[Set[CategoryId]]) { implicit request =>
+    authenticated.async(parse.json[Set[OrgCategoryId]]) { implicit request =>
       val ids = request.body
       authorizer.performCheckAny(VIEW_ALL_CATEGORIES, MAINTAIN_ALL_CATEGORIES) {
         for {
@@ -544,7 +544,7 @@ class OrgStructureController @Inject() (
     }
 
   def findCategories =
-    authenticated.async(parse.json[CategoryFindQuery]) { implicit request =>
+    authenticated.async(parse.json[OrgCategoryFindQuery]) { implicit request =>
       val query = request.body
       authorizer.performCheckAny(VIEW_ALL_ORG_ROLES, MAINTAIN_ALL_ORG_ROLES) {
         for {
