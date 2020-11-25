@@ -265,6 +265,7 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .setString("name", event.name)
       .setString("shortname", event.shortName)
       .setString("type", ItemTypes.Unit.toString)
+      .setString("category_id", event.categoryId)
       .setList[String]("children", Seq.empty.asJava)
       .setString("chief", null)
       .setInt("lim", 0)

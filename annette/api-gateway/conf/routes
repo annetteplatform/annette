@@ -91,8 +91,14 @@ POST    /api/annette/v1/person/createPerson          biz.lobachev.annette.gatewa
 POST    /api/annette/v1/person/updatePerson          biz.lobachev.annette.gateway.api.person.PersonController.updatePerson
 POST    /api/annette/v1/person/deletePerson          biz.lobachev.annette.gateway.api.person.PersonController.deletePerson
 POST    /api/annette/v1/person/findPersons           biz.lobachev.annette.gateway.api.person.PersonController.findPersons
-GET     /api/annette/v1/person/getPersonById/:id/:fromReadSide        biz.lobachev.annette.gateway.api.person.PersonController.getPersonById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/person/getPersonsById/:fromReadSide           biz.lobachev.annette.gateway.api.person.PersonController.getPersonsById(fromReadSide: Boolean)
+GET     /api/annette/v1/person/getPersonById/:id/:fromReadSide     biz.lobachev.annette.gateway.api.person.PersonController.getPersonById(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/person/getPersonsById/:fromReadSide        biz.lobachev.annette.gateway.api.person.PersonController.getPersonsById(fromReadSide: Boolean)
+POST    /api/annette/v1/person/createCategory                      biz.lobachev.annette.gateway.api.person.PersonController.createCategory
+POST    /api/annette/v1/person/updateCategory                      biz.lobachev.annette.gateway.api.person.PersonController.updateCategory
+POST    /api/annette/v1/person/deleteCategory                      biz.lobachev.annette.gateway.api.person.PersonController.deleteCategory
+GET     /api/annette/v1/person/getCategoryById/:id/:fromReadSide   biz.lobachev.annette.gateway.api.person.PersonController.getCategoryById(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/person/getCategoriesById/:fromReadSide     biz.lobachev.annette.gateway.api.person.PersonController.getCategoriesById(fromReadSide: Boolean)
+POST    /api/annette/v1/person/findCategories                      biz.lobachev.annette.gateway.api.person.PersonController.findCategories
 GET     /api/annette/v1/person/profile       biz.lobachev.annette.gateway.api.person.PersonController.profile
 
 
