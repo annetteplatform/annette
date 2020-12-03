@@ -87,7 +87,7 @@ abstract class AbstractElasticIndexDao(elasticSettings: ElasticSettings, val ela
     } yield {
       res match {
         case _: RequestSuccess[_]    =>
-          log.debug("indexEntity Success: {}", res.toString)
+          log.trace("indexEntity Success: {}", res.toString)
         case failure: RequestFailure =>
           log.error("indexEntity Failure: {}", failure)
           throw new Exception(failure.error.toString)
@@ -106,7 +106,7 @@ abstract class AbstractElasticIndexDao(elasticSettings: ElasticSettings, val ela
         log.error("deleteEntity: failed " + failure.error)
         ()
       case results: RequestSuccess[DeleteResponse] =>
-        log.debug(s"deleteEntity: id: ${id} results: ${results.toString}")
+        log.trace(s"deleteEntity: id: ${id} results: ${results.toString}")
         ()
     }
 
@@ -119,7 +119,7 @@ abstract class AbstractElasticIndexDao(elasticSettings: ElasticSettings, val ela
         log.error("findEntity: failed " + failure.error)
         FindResult(0, Seq.empty)
       case results: RequestSuccess[SearchResponse] =>
-        log.debug(s"findEntity: results ${results.toString}")
+        log.trace(s"findEntity: results ${results.toString}")
         val total = results.result.hits.total.value
         val hits  = results.result.hits.hits.map { hit =>
           val updatedAt = hit.sourceAsMap
@@ -167,7 +167,7 @@ abstract class AbstractElasticIndexDao(elasticSettings: ElasticSettings, val ela
 
   protected def processResponse[T](method: String, id: String): PartialFunction[Response[T], Unit] = {
     case success: RequestSuccess[_] =>
-      log.debug("{}( {} ): {}", method, id, success)
+      log.trace("{}( {} ): {}", method, id, success)
     case failure: RequestFailure    =>
       log.error("{}( {} ): {}", method, id, failure)
       throw failure.error.asException
