@@ -51,7 +51,7 @@ class InitOrgStructure(
                  else Future.successful(Done)
             _ <- if (config.enableCategories) loadCategories(config)
                  else Future.successful(Done)
-            _ <- if (config.enableOrgRoles) loadOrgStructure(config)
+            _ <- if (config.enableOrgStructure) loadOrgStructure(config)
                  else Future.successful(Done)
           } yield Done
       )
