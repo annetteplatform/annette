@@ -45,6 +45,9 @@ class CategoryElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: E
         properties(
           keywordField("id"),
           textField("name").fielddata(true).analyzer("name_analyzer").searchAnalyzer("standard"),
+          booleanField("forOrganization"),
+          booleanField("forUnit"),
+          booleanField("forPosition"),
           dateField("updatedAt")
         )
       )
@@ -65,9 +68,12 @@ class CategoryElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: E
       indexInto(indexName)
         .id(event.id)
         .fields(
-          "id"        -> event.id,
-          "name"      -> event.name,
-          "updatedAt" -> event.createdAt
+          "id"              -> event.id,
+          "name"            -> event.name,
+          "forOrganization" -> event.forOrganization,
+          "forUnit"         -> event.forUnit,
+          "forPosition"     -> event.forPosition,
+          "updatedAt"       -> event.createdAt
         )
         .refresh(RefreshPolicy.Immediate)
     }.map(processResponse("createCategory", event.id)(_))
@@ -76,9 +82,12 @@ class CategoryElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: E
     elasticClient.execute {
       updateById(indexName, event.id)
         .doc(
-          "id"        -> event.id,
-          "name"      -> event.name,
-          "updatedAt" -> event.updatedAt
+          "id"              -> event.id,
+          "name"            -> event.name,
+          "forOrganization" -> event.forOrganization,
+          "forUnit"         -> event.forUnit,
+          "forPosition"     -> event.forPosition,
+          "updatedAt"       -> event.updatedAt
         )
         .refresh(RefreshPolicy.Immediate)
     }.map(processResponse("updateCategory", event.id)(_))
@@ -94,11 +103,20 @@ class CategoryElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: E
     val fieldQuery             = Seq(
       query.name.map(matchQuery("name", _))
     ).flatten
+    val forOrgQuery            = Seq(
+      query.forOrganization.map(matchQuery("forOrganization", _))
+    ).flatten
+    val forUnitQuery           = Seq(
+      query.forUnit.map(matchQuery("forUnit", _))
+    ).flatten
+    val forPositionQuery       = Seq(
+      query.forPosition.map(matchQuery("forPosition", _))
+    ).flatten
     val filterQuery            = buildFilterQuery(query.filter, Seq("name" -> 3.0, "id" -> 1.0))
     val sortBy: Seq[FieldSort] = buildSortBy(query.sortBy)
 
     val searchRequest = search(indexName)
-      .bool(must(filterQuery ++ fieldQuery)) // ++ fieldQuery))
+      .bool(must(filterQuery ++ fieldQuery ++ forOrgQuery ++ forUnitQuery ++ forPositionQuery))
       .from(query.offset)
       .size(query.size)
       .sortBy(sortBy)

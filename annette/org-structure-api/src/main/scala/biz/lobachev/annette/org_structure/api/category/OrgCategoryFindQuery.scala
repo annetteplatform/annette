@@ -24,6 +24,9 @@ case class OrgCategoryFindQuery(
   size: Int,
   filter: Option[String] = None,
   name: Option[String] = None,
+  forOrganization: Option[Boolean] = None,
+  forUnit: Option[Boolean] = None,
+  forPosition: Option[Boolean] = None,
   sortBy: Option[SortBy] = None
 )
 
