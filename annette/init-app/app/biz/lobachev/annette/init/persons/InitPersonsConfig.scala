@@ -24,14 +24,17 @@ case class InitPersonsConfig(
   enableCategories: Boolean = true,
   categories: Seq[PersonCategoryConfig] = Seq.empty,
   enablePersons: Boolean = true,
-  persons: Seq[PersonConfig] = Seq.empty,
+  persons: Seq[PersonArr] = Seq.empty,
   createdBy: AnnettePrincipal
 )
-
+case class PersonArr(
+  data: Seq[PersonConfig] = Seq.empty
+)
 case class PersonConfig(
   id: String,
   firstname: String,
   lastname: String,
+  middlename: Option[String] = None,
   categoryId: PersonCategoryId,
   gender: String,
   orgRoles: Option[String] = None,

@@ -41,6 +41,8 @@ trait PersonLoader {
   ): Future[Done] = {
 
     val future = config.persons
+      .map(_.data)
+      .flatten
       .foldLeft(Future.successful(())) { (f, person) =>
         f.flatMap(_ => loadPerson(person, config.createdBy))
       }
@@ -72,13 +74,18 @@ trait PersonLoader {
   private def loadPerson(person: PersonConfig, principal: AnnettePrincipal): Future[Unit] = {
     val payload = person
       .into[CreatePersonPayload]
-      .withFieldConst(_.middlename, None)
       .withFieldConst(_.createdBy, principal)
       .transform
     personService
       .createOrUpdatePerson(payload)
       .map { _ =>
-        log.debug("Person loaded: {} {} {}", person.id, person.firstname, person.lastname)
+        log.debug(
+          "Person loaded: {} - {}, {} {}",
+          person.id,
+          person.lastname,
+          person.firstname,
+          person.middlename.getOrElse("")
+        )
         ()
       }
       .recoverWith {
