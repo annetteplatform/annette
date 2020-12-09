@@ -26,6 +26,7 @@ import play.api.libs.json.{Json, JsonConfiguration, JsonNaming}
 sealed trait OrgItem {
   val orgId: OrgItemId
   val parentId: OrgItemId
+  val rootPath: Seq[OrgItemId]
   val id: OrgItemId
   val name: String
   val shortName: String
@@ -38,6 +39,7 @@ sealed trait OrgItem {
 case class OrgUnit(
   orgId: OrgItemId,
   parentId: OrgItemId,
+  rootPath: Seq[OrgItemId],
   id: OrgItemId,
   name: String,
   shortName: String,
@@ -56,6 +58,7 @@ object OrgUnit {
 case class OrgPosition(
   orgId: OrgItemId,
   parentId: OrgItemId,
+  rootPath: Seq[OrgItemId],
   id: OrgItemId,
   name: String,
   shortName: String,

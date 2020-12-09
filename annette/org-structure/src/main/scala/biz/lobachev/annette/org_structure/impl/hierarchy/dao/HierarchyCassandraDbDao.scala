@@ -527,12 +527,14 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
   }
 
   private def convertToOrgItem(row: Row): OrgItem = {
-    val level = row.getList[String]("root_path", classOf[String]).size() - 1
+    val rootPath = row.getList[String]("root_path", classOf[String]).asScala.toSeq
+    val level    = rootPath.length - 1
     row.getString("type") match {
       case t if t == ItemTypes.Unit.toString =>
         OrgUnit(
           orgId = row.getString("org_id"),
           parentId = row.getString("parent_id"),
+          rootPath = rootPath,
           id = row.getString("id"),
           name = row.getString("name"),
           shortName = row.getString("shortname"),
@@ -550,6 +552,7 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
         OrgPosition(
           orgId = row.getString("org_id"),
           parentId = row.getString("parent_id"),
+          rootPath = rootPath,
           id = row.getString("id"),
           name = row.getString("name"),
           shortName = row.getString("shortname"),

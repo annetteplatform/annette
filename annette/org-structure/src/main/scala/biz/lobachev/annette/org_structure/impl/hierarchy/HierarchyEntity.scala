@@ -746,18 +746,22 @@ final case class HierarchyEntity(
       case None                                               => Effect.reply(cmd.replyTo)(OrganizationNotFound)
       case Some(state) if state.positions.isDefinedAt(cmd.id) =>
         val position = state.positions(cmd.id)
+        val rootPath = state.getRootPath(cmd.id)
         val orgItem  = position
           .into[OrgPosition]
           .withFieldConst(_.orgId, state.orgId)
-          .withFieldConst(_.level, state.getRootPath(cmd.id).length - 1)
+          .withFieldConst(_.rootPath, rootPath)
+          .withFieldConst(_.level, rootPath.length - 1)
           .transform
         Effect.reply(cmd.replyTo)(SuccessOrgItem(orgItem))
       case Some(state) if state.units.isDefinedAt(cmd.id)     =>
-        val unit    = state.units(cmd.id)
-        val orgItem = unit
+        val unit     = state.units(cmd.id)
+        val rootPath = state.getRootPath(cmd.id)
+        val orgItem  = unit
           .into[OrgUnit]
           .withFieldConst(_.orgId, state.orgId)
-          .withFieldConst(_.level, state.getRootPath(cmd.id).length - 1)
+          .withFieldConst(_.rootPath, rootPath)
+          .withFieldConst(_.level, rootPath.length - 1)
           .transform
         Effect.reply(cmd.replyTo)(SuccessOrgItem(orgItem))
       case _                                                  => Effect.reply(cmd.replyTo)(ItemNotFound)
