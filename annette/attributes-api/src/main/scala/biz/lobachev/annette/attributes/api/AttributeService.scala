@@ -32,7 +32,7 @@ import scala.collection.immutable.Map
 trait AttributeService extends Service {
   final val indexTopicId: String = {
     val config = ConfigFactory.load()
-    config.getString("annette.kafka.indexTopic")
+    config.getString("annette.attributes-service.indexTopic")
   }
 
   def createSchema: ServiceCall[CreateSchemaPayload, Done]
