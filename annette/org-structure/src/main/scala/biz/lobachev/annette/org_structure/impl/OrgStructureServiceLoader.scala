@@ -45,6 +45,7 @@ import play.api.LoggerConfigurator
 import play.api.libs.ws.ahc.AhcWSComponents
 
 import scala.collection.immutable
+import scala.util.Try
 
 class OrgStructureServiceLoader extends LagomApplicationLoader {
 
@@ -109,8 +110,11 @@ abstract class OrgStructureServiceApplication(context: LagomApplicationContext)
     }
   )
 
-  lazy val attributeService = serviceClient.implement[AttributeService]
-  wire[AttributeServiceSubscriber]
+  lazy val attributeService       = serviceClient.implement[AttributeService]
+  val enableAttributeSubscription =
+    Try(config.getBoolean("annette.attributes-service.enable-subscription")).toOption.getOrElse(true)
+  if (enableAttributeSubscription)
+    wire[AttributeServiceSubscriber]
 
 }
 
