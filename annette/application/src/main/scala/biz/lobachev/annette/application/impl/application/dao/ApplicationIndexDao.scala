@@ -19,7 +19,7 @@ package biz.lobachev.annette.application.impl.application.dao
 import akka.Done
 import biz.lobachev.annette.application.api.application.FindApplicationQuery
 import biz.lobachev.annette.application.impl.application.ApplicationEntity
-import biz.lobachev.annette.core.elastic.FindResult
+import biz.lobachev.annette.core.model.elastic.FindResult
 
 import scala.concurrent.Future
 

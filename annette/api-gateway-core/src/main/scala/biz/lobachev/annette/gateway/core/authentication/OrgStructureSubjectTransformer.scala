@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.gateway.core.authentication
 
-import biz.lobachev.annette.core.model.PersonPrincipal
+import biz.lobachev.annette.core.model.auth.PersonPrincipal
 import biz.lobachev.annette.org_structure.api.OrgStructureService
 
 import scala.concurrent.{ExecutionContext, Future}

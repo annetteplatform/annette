@@ -17,7 +17,7 @@
 package biz.lobachev.annette.authorization.impl.assignment.model
 
 import biz.lobachev.annette.authorization.api.assignment.AuthSource
-import biz.lobachev.annette.core.model.{AnnettePrincipal, Permission}
+import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
 import play.api.libs.json.Json
 
 case class AssignmentState(

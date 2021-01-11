@@ -17,8 +17,8 @@
 package biz.lobachev.annette.org_structure.api.hierarchy
 
 import biz.lobachev.annette.attributes.api.query.AttributeQuery
-import biz.lobachev.annette.core.elastic.SortBy
 import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.core.model.elastic.SortBy
 import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import play.api.libs.json.{Format, Json}

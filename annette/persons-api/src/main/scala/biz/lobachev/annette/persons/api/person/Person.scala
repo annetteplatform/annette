@@ -17,8 +17,8 @@
 package biz.lobachev.annette.persons.api.person
 
 import java.time.OffsetDateTime
-
-import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
+import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.persons.api.category.PersonCategoryId
 import play.api.libs.json.Json
 

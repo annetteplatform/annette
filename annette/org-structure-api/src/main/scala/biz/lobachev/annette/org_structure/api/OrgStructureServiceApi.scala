@@ -17,9 +17,10 @@
 package biz.lobachev.annette.org_structure.api
 
 import akka.{Done, NotUsed}
-import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
-import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
+import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.category.{
   CreateCategoryPayload,
   DeleteCategoryPayload,

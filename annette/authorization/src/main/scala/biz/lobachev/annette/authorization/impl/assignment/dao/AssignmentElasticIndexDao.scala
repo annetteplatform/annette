@@ -17,11 +17,10 @@
 package biz.lobachev.annette.authorization.impl.assignment.dao
 
 import java.time.OffsetDateTime
-
 import biz.lobachev.annette.authorization.api.assignment._
 import biz.lobachev.annette.authorization.impl.assignment.AssignmentEntity
-import biz.lobachev.annette.core.elastic.{AbstractElasticIndexDao, ElasticSettings}
-import biz.lobachev.annette.core.model.{AnnettePrincipal, Permission}
+import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
+import biz.lobachev.annette.microservice_core.elastic.{AbstractElasticIndexDao, ElasticSettings}
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.requests.common.RefreshPolicy

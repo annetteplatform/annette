@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.gateway.api.authorization
 
-import biz.lobachev.annette.core.model.Permission
+import biz.lobachev.annette.core.model.auth.Permission
 
 object Permissions {
   final val VIEW_AUTHORIZATION_ROLE     = Permission("annette.authorization.role.view")

@@ -17,13 +17,12 @@
 package biz.lobachev.annette.attributes.impl.schema
 
 import java.util.concurrent.TimeUnit
-
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
 import biz.lobachev.annette.attributes.api.attribute.{Attribute, AttributeId}
 import biz.lobachev.annette.attributes.api.schema._
-import biz.lobachev.annette.core.elastic.FindResult
+import biz.lobachev.annette.core.model.elastic.FindResult
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 

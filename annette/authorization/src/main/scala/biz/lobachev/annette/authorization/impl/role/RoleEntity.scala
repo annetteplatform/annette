@@ -17,7 +17,6 @@
 package biz.lobachev.annette.authorization.impl.role
 
 import java.time.OffsetDateTime
-
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
@@ -25,7 +24,7 @@ import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffec
 import biz.lobachev.annette.authorization.api.assignment.AuthSource
 import biz.lobachev.annette.authorization.api.role._
 import biz.lobachev.annette.authorization.impl.role.model.RoleState
-import biz.lobachev.annette.core.model.{AnnettePrincipal, Permission}
+import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
 import com.lightbend.lagom.scaladsl.persistence._
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory

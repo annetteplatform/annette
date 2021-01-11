@@ -14,27 +14,15 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.core.elastic
-
-import java.time.OffsetDateTime
+package biz.lobachev.annette.core.model.elastic
 
 import play.api.libs.json.{Format, Json}
 
-case class FindResult(
-  total: Long, // total items in query
-  hits: Seq[HitResult] // results of search
+case class SortBy(
+  field: String,
+  ascending: Option[Boolean] = None
 )
 
-object FindResult {
-  implicit val format: Format[FindResult] = Json.format
-}
-
-case class HitResult(
-  id: String, //  id
-  score: Float, // store of this hit
-  updatedAt: OffsetDateTime // date/time of last update
-)
-
-object HitResult {
-  implicit val format: Format[HitResult] = Json.format
+object SortBy {
+  implicit val format: Format[SortBy] = Json.format
 }

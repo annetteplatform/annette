@@ -18,7 +18,7 @@ package biz.lobachev.annette.application.impl.translation.dao
 
 import biz.lobachev.annette.application.api.translation.FindTranslationQuery
 import biz.lobachev.annette.application.impl.translation.TranslationEntity
-import biz.lobachev.annette.core.elastic.FindResult
+import biz.lobachev.annette.core.model.elastic.FindResult
 import com.sksamuel.elastic4s.requests.indexes.CreateIndexRequest
 
 import scala.concurrent.Future

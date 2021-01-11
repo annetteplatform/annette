@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.gateway.api.org_structure
 
-import biz.lobachev.annette.core.model.Permission
+import biz.lobachev.annette.core.model.auth.Permission
 import biz.lobachev.annette.org_structure.api.hierarchy.OrgItemId
 
 object Permissions {

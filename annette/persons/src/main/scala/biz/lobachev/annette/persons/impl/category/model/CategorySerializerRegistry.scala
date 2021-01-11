@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.persons.impl.category.model
 
-import biz.lobachev.annette.core.elastic.FindResult
+import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.persons.api.category._
 import biz.lobachev.annette.persons.impl.category.CategoryEntity._
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}

@@ -17,14 +17,13 @@
 package biz.lobachev.annette.application.impl.translation
 
 import java.util.concurrent.TimeUnit
-
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
 import biz.lobachev.annette.application.api.language.LanguageId
 import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.application.impl.translation.dao.{TranslationDbDao, TranslationIndexDao}
-import biz.lobachev.annette.core.elastic.FindResult
+import biz.lobachev.annette.core.model.elastic.FindResult
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 

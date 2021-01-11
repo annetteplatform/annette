@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.gateway.core.authentication
 
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 
 case class Subject(
   principals: Seq[AnnettePrincipal],

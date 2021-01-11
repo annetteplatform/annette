@@ -1,12 +1,11 @@
 package biz.lobachev.annette.persons.impl.category
 
 import java.util.concurrent.TimeUnit
-
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.stream.Materializer
 import akka.util.Timeout
-import biz.lobachev.annette.core.elastic.FindResult
+import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.persons.api.category._
 import biz.lobachev.annette.persons.impl.category.dao.{CategoryDbDao, CategoryIndexDao}
 import com.typesafe.config.Config

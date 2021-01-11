@@ -19,8 +19,7 @@ package biz.lobachev.annette.authorization.impl.assignment.dao
 import akka.Done
 import biz.lobachev.annette.authorization.api.assignment._
 import biz.lobachev.annette.authorization.impl.assignment.AssignmentEntity
-import biz.lobachev.annette.core.model
-import biz.lobachev.annette.core.model.{AnnettePrincipal, Permission}
+import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 
@@ -56,7 +55,7 @@ private[impl] class AssignmentCassandraDbDao(session: CassandraSession)(implicit
       onPermissionAssignedStmt   <- session.prepare(
                                       """
                                       | INSERT  INTO permission_assignments (
-                                      |     principal, permission_id, arg1, arg2, arg3, source 
+                                      |     principal, permission_id, arg1, arg2, arg3, source
                                       |   )
                                       |   VALUES (
                                       |     :principal, :permission_id, :arg1, :arg2, :arg3, :source
@@ -66,11 +65,11 @@ private[impl] class AssignmentCassandraDbDao(session: CassandraSession)(implicit
       onPermissionUnassignedStmt <- session.prepare(
                                       """
                                         | DELETE FROM permission_assignments
-                                        | WHERE principal = :principal AND 
-                                        |       permission_id = :permission_id AND 
-                                        |       arg1 = :arg1 AND 
-                                        |       arg2 = :arg2 AND 
-                                        |       arg3 = :arg3 AND 
+                                        | WHERE principal = :principal AND
+                                        |       permission_id = :permission_id AND
+                                        |       arg1 = :arg1 AND
+                                        |       arg2 = :arg2 AND
+                                        |       arg3 = :arg3 AND
                                         |       source = :source
                                         |""".stripMargin
                                     )
@@ -160,7 +159,7 @@ private[impl] class AssignmentCassandraDbDao(session: CassandraSession)(implicit
     val source    = AuthSource.fromCode(row.getString("source")).getOrElse(AuthSource("", ""))
     PermissionAssignment(
       principal = principal,
-      permission = model.Permission(
+      permission = Permission(
         id = row.getString("permission_id"),
         arg1 = row.getString("arg1"),
         arg2 = row.getString("arg2"),

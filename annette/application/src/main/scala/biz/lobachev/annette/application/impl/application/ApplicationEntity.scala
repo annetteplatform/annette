@@ -17,7 +17,6 @@
 package biz.lobachev.annette.application.impl.application
 
 import java.time.OffsetDateTime
-
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
@@ -25,10 +24,11 @@ import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffec
 import com.lightbend.lagom.scaladsl.persistence._
 import play.api.libs.json._
 import org.slf4j.LoggerFactory
-import biz.lobachev.annette.core.model.{AnnettePrincipal, Caption}
 import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.api.translation.TranslationId
 import biz.lobachev.annette.application.impl.application.model.ApplicationState
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.translation.Caption
 import io.scalaland.chimney.dsl._
 
 object ApplicationEntity {

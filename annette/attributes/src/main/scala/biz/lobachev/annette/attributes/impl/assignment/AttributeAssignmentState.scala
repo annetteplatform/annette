@@ -17,9 +17,8 @@
 package biz.lobachev.annette.attributes.impl.assignment
 
 import java.time.OffsetDateTime
-
 import biz.lobachev.annette.attributes.api.assignment.{AttributeAssignmentId, AttributeValue}
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class AttributeAssignmentState(

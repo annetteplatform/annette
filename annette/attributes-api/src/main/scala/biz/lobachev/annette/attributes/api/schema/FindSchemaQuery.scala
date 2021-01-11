@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.attributes.api.schema
 
-import biz.lobachev.annette.core.elastic.SortBy
+import biz.lobachev.annette.core.model.elastic.SortBy
 import play.api.libs.json.Json
 
 case class FindSchemaQuery(

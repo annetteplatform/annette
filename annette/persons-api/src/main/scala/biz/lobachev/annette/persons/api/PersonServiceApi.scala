@@ -17,9 +17,9 @@
 package biz.lobachev.annette.persons.api
 
 import akka.{Done, NotUsed}
-import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
 import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.persons.api.category.{
   CreateCategoryPayload,
   DeleteCategoryPayload,

@@ -16,7 +16,8 @@
 
 package biz.lobachev.annette.org_structure.impl.category.dao
 
-import biz.lobachev.annette.core.elastic.{AbstractElasticIndexDao, ElasticSettings, FindResult}
+import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.microservice_core.elastic.{AbstractElasticIndexDao, ElasticSettings}
 import biz.lobachev.annette.org_structure.api.category._
 import biz.lobachev.annette.org_structure.impl.category.CategoryEntity
 import biz.lobachev.annette.org_structure.impl.category.CategoryEntity.CategoryDeleted

@@ -14,15 +14,20 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.core.elastic
+package biz.lobachev.annette.core.model.auth
 
-import play.api.libs.json.{Format, Json}
+import biz.lobachev.annette.core.model.PermissionId
+import play.api.libs.json.Json
 
-case class SortBy(
-  field: String,
-  ascending: Option[Boolean] = None
-)
+case class Permission(
+  id: PermissionId,
+  arg1: String = "",
+  arg2: String = "",
+  arg3: String = ""
+) {
+  def code: String = s"$id~$arg1~$arg2~$arg3"
+}
 
-object SortBy {
-  implicit val format: Format[SortBy] = Json.format
+object Permission {
+  implicit val format = Json.format[Permission]
 }

@@ -16,7 +16,8 @@
 
 package biz.lobachev.annette.gateway.core.authorization
 
-import biz.lobachev.annette.core.model.{Permission, PermissionId}
+import biz.lobachev.annette.core.model.PermissionId
+import biz.lobachev.annette.core.model.auth.Permission
 import biz.lobachev.annette.gateway.core.authentication.AuthenticatedRequest
 
 import scala.concurrent.{ExecutionContext, Future}

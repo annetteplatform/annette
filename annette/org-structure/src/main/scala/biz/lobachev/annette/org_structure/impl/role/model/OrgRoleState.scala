@@ -16,9 +16,9 @@
 
 package biz.lobachev.annette.org_structure.impl.role.model
 
-import java.time.OffsetDateTime
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import java.time.OffsetDateTime
 import biz.lobachev.annette.org_structure.api.role.{OrgRole, OrgRoleId}
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json

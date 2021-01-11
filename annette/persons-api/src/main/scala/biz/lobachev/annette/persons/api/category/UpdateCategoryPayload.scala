@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.persons.api.category
 
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class UpdateCategoryPayload(

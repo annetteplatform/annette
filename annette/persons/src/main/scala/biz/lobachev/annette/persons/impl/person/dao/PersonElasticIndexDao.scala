@@ -17,7 +17,8 @@
 package biz.lobachev.annette.persons.impl.person.dao
 
 import biz.lobachev.annette.attributes.api.query.AttributeElastic
-import biz.lobachev.annette.core.elastic.{AbstractElasticIndexDao, ElasticSettings, FindResult}
+import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.microservice_core.elastic.{AbstractElasticIndexDao, ElasticSettings}
 import biz.lobachev.annette.persons.api.person._
 import biz.lobachev.annette.persons.impl.person.PersonEntity
 import biz.lobachev.annette.persons.impl.person.PersonEntity.PersonDeleted

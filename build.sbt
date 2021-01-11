@@ -190,7 +190,7 @@ def initAppProject(pr: Project) =
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
     .dependsOn(
-      `microservice-core`,
+      `api-gateway-core`,
       `application-api`,
       `authorization-api`,
       `org-structure-api`,

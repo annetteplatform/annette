@@ -17,7 +17,6 @@
 package biz.lobachev.annette.application.impl.translation
 
 import java.time.OffsetDateTime
-
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
@@ -25,7 +24,7 @@ import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffec
 import biz.lobachev.annette.application.api.language.LanguageId
 import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.application.impl.translation.model.TranslationState
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.lightbend.lagom.scaladsl.persistence._
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory

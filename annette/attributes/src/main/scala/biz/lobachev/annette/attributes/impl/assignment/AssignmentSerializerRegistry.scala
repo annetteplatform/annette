@@ -17,7 +17,7 @@
 package biz.lobachev.annette.attributes.impl.assignment
 
 import biz.lobachev.annette.attributes.api.assignment._
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
 object AssignmentSerializerRegistry extends JsonSerializerRegistry {

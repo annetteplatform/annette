@@ -17,10 +17,9 @@
 package biz.lobachev.annette.org_structure.impl.hierarchy.dao
 
 import java.time.OffsetDateTime
-
 import akka.Done
 import biz.lobachev.annette.attributes.api.query.AttributeIndexDao
-import biz.lobachev.annette.core.elastic.FindResult
+import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.org_structure.api.hierarchy.{OrgItemFindQuery, OrgItemId}
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import biz.lobachev.annette.org_structure.impl.hierarchy.HierarchyEntity

@@ -18,7 +18,8 @@ package biz.lobachev.annette.application.impl.application.dao
 
 import biz.lobachev.annette.application.api.application.FindApplicationQuery
 import biz.lobachev.annette.application.impl.application.ApplicationEntity
-import biz.lobachev.annette.core.elastic.{AbstractElasticIndexDao, ElasticSettings, FindResult}
+import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.microservice_core.elastic.{AbstractElasticIndexDao, ElasticSettings}
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.requests.common.RefreshPolicy

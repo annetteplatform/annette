@@ -19,7 +19,6 @@ package biz.lobachev.annette.gateway.api
 import biz.lobachev.annette.application.api.{ApplicationServiceApi, ApplicationServiceImpl}
 import biz.lobachev.annette.authorization.api.{AuthorizationServiceApi, AuthorizationServiceImpl}
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
-import biz.lobachev.annette.core.exception.AnnetteErrorHandler
 import biz.lobachev.annette.gateway.api.application.ApplicationController
 import biz.lobachev.annette.gateway.api.auth.KeycloakController
 import biz.lobachev.annette.gateway.api.authorization.AuthorizationController
@@ -34,6 +33,7 @@ import biz.lobachev.annette.gateway.core.authentication.{
   OrgStructureSubjectTransformer
 }
 import biz.lobachev.annette.gateway.core.authorization.{AuthorizationServiceAuthorizer, ConfigurationAuthorizer}
+import biz.lobachev.annette.gateway.core.exception.ApiGatewayErrorHandler
 import biz.lobachev.annette.org_structure.api.{OrgStructureServiceApi, OrgStructureServiceImpl}
 import biz.lobachev.annette.persons.api.{PersonServiceApi, PersonServiceImpl}
 import com.lightbend.lagom.scaladsl.api.{LagomConfigComponent, ServiceAcl, ServiceInfo}
@@ -73,7 +73,7 @@ abstract class ServiceGateway(context: Context)
   )
   implicit override lazy val executionContext: ExecutionContext = actorSystem.dispatcher
 
-  override lazy val httpErrorHandler: AnnetteErrorHandler = wire[AnnetteErrorHandler]
+  override lazy val httpErrorHandler: ApiGatewayErrorHandler = wire[ApiGatewayErrorHandler]
 
   override lazy val router = {
     val prefix = "/"

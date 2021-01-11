@@ -17,12 +17,11 @@
 package biz.lobachev.annette.application.impl.application.dao
 
 import java.time.OffsetDateTime
-
 import akka.Done
 import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.impl.application.ApplicationEntity
-import biz.lobachev.annette.core.model
-import biz.lobachev.annette.core.model.{AnnettePrincipal, Caption, TextCaption, TranslationCaption}
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.translation.{Caption, TextCaption, TranslationCaption}
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 import org.slf4j.LoggerFactory
@@ -239,7 +238,7 @@ private[impl] class ApplicationCassandraDbDao(session: CassandraSession)(implici
   def convertApplication(row: Row): Application = {
     val caption: Caption = Option(row.getString("caption_text"))
       .map(t => TextCaption(t))
-      .getOrElse(model.TranslationCaption(row.getString("caption_translation_id")))
+      .getOrElse(TranslationCaption(row.getString("caption_translation_id")))
     Application(
       id = row.getString("id"),
       name = row.getString("name"),

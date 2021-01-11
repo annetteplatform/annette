@@ -17,7 +17,6 @@
 package biz.lobachev.annette.application.impl
 
 import java.util.concurrent.TimeUnit
-
 import akka.util.Timeout
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.application.api._
@@ -27,7 +26,7 @@ import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.application.impl.application._
 import biz.lobachev.annette.application.impl.language._
 import biz.lobachev.annette.application.impl.translation._
-import biz.lobachev.annette.core.elastic.FindResult
+import biz.lobachev.annette.core.model.elastic.FindResult
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory

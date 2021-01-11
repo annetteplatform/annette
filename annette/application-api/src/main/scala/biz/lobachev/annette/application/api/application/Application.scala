@@ -17,9 +17,9 @@
 package biz.lobachev.annette.application.api.application
 
 import java.time.OffsetDateTime
-
 import biz.lobachev.annette.application.api.translation.TranslationId
-import biz.lobachev.annette.core.model.{AnnettePrincipal, Caption}
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.translation.Caption
 import play.api.libs.json.{Format, Json}
 
 case class Application(

@@ -17,8 +17,7 @@
 package biz.lobachev.annette.authorization.api.role
 
 import java.time.OffsetDateTime
-
-import biz.lobachev.annette.core.model.{AnnettePrincipal, Permission}
+import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
 import play.api.libs.json.Json
 
 case class AuthRole(

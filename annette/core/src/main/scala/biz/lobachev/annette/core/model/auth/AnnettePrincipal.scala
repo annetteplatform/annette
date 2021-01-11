@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.core.model
-
-import java.security.Principal
+package biz.lobachev.annette.core.model.auth
 
 import play.api.libs.json.Json
+
+import java.security.Principal
 
 case class AnnettePrincipal(principalType: String, principalId: String) extends Principal {
   override def getName: String = code

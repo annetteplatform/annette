@@ -16,10 +16,9 @@
 
 package biz.lobachev.annette.authorization.impl.assignment.model
 import java.time.OffsetDateTime
-
 import biz.lobachev.annette.authorization.api.assignment._
 import biz.lobachev.annette.authorization.impl.assignment.AssignmentEntity
-import biz.lobachev.annette.core.model.{AnnettePrincipal, Permission}
+import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
 object AssignmentSerializerRegistry extends JsonSerializerRegistry {

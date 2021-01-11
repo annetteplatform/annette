@@ -14,19 +14,14 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.core.model
+package biz.lobachev.annette.microservice_core.elastic
 
-import play.api.libs.json.Json
+import com.softwaremill.macwire._
+import com.typesafe.config.Config
 
-case class Permission(
-  id: PermissionId,
-  arg1: String = "",
-  arg2: String = "",
-  arg3: String = ""
-) {
-  def code: String = s"$id~$arg1~$arg2~$arg3"
-}
+class ElasticModule(val config: Config) {
 
-object Permission {
-  implicit val format = Json.format[Permission]
+  lazy val elasticSettings = wire[ElasticSettings]
+  lazy val elasticClient   = wireWith(ElasticProvider.create _)
+
 }

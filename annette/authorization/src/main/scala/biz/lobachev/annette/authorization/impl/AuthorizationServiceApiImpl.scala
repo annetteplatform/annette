@@ -17,7 +17,6 @@
 package biz.lobachev.annette.authorization.impl
 
 import java.util.concurrent.TimeUnit
-
 import akka.util.Timeout
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.authorization.api.AuthorizationServiceApi
@@ -25,8 +24,8 @@ import biz.lobachev.annette.authorization.api.assignment._
 import biz.lobachev.annette.authorization.api.role._
 import biz.lobachev.annette.authorization.impl.assignment.AssignmentEntityService
 import biz.lobachev.annette.authorization.impl.role.RoleEntityService
-import biz.lobachev.annette.core.elastic.FindResult
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.elastic.FindResult
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.typesafe.config.Config
 

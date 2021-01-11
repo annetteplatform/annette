@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.org_structure.api.hierarchy
 
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class UpdateNamePayload(

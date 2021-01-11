@@ -18,7 +18,7 @@ package biz.lobachev.annette.init.org_structure
 
 import akka.Done
 import akka.actor.ActorSystem
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.OrgStructureService
 import biz.lobachev.annette.org_structure.api.category.CreateCategoryPayload
 import io.scalaland.chimney.dsl._

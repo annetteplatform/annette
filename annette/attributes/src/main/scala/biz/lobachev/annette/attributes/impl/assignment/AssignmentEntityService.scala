@@ -17,7 +17,6 @@
 package biz.lobachev.annette.attributes.impl.assignment
 
 import java.util.concurrent.TimeUnit
-
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
@@ -35,7 +34,7 @@ import biz.lobachev.annette.attributes.api.attribute.{
   StringAttribute
 }
 import biz.lobachev.annette.attributes.api.schema._
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.typesafe.config.Config
 import org.slf4j.{Logger, LoggerFactory}
 

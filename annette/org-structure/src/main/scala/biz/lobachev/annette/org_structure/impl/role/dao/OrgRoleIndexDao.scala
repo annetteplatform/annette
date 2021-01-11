@@ -17,7 +17,7 @@
 package biz.lobachev.annette.org_structure.impl.role.dao
 
 import akka.Done
-import biz.lobachev.annette.core.elastic.FindResult
+import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.org_structure.api.role._
 import biz.lobachev.annette.org_structure.impl.role.OrgRoleEntity
 import biz.lobachev.annette.org_structure.impl.role.OrgRoleEntity.OrgRoleDeleted

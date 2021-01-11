@@ -20,8 +20,8 @@ import akka.{Done, NotUsed}
 import biz.lobachev.annette.attributes.api.assignment._
 import biz.lobachev.annette.attributes.api.index.IndexEvent
 import biz.lobachev.annette.attributes.api.schema._
-import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
+import biz.lobachev.annette.core.model.elastic.FindResult
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.api.broker.kafka.{KafkaProperties, PartitionKeyStrategy}
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}

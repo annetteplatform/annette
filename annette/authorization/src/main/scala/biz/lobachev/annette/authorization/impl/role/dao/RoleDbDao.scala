@@ -19,7 +19,7 @@ package biz.lobachev.annette.authorization.impl.role.dao
 import akka.Done
 import biz.lobachev.annette.authorization.api.role._
 import biz.lobachev.annette.authorization.impl.role.RoleEntity
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.datastax.driver.core.BoundStatement
 
 import scala.concurrent.Future

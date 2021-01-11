@@ -17,12 +17,11 @@
 package biz.lobachev.annette.persons.impl.person
 
 import java.util.concurrent.TimeUnit
-
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
-import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.persons.api.person._
 import biz.lobachev.annette.persons.impl.person.PersonEntity._
 import biz.lobachev.annette.persons.impl.person.dao.{PersonDbDao, PersonIndexDao}

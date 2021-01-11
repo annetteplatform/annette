@@ -15,7 +15,7 @@
  */
 
 package biz.lobachev.annette.org_structure.impl.hierarchy.model
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.impl.hierarchy.HierarchyEntity
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}

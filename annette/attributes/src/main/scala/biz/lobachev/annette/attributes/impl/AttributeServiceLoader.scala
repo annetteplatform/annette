@@ -24,7 +24,7 @@ import biz.lobachev.annette.attributes.impl.index.{IndexEntity, IndexEntityServi
 import biz.lobachev.annette.attributes.impl.schema._
 import biz.lobachev.annette.attributes.impl.schema.model.SchemaSerializerRegistry
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
-import biz.lobachev.annette.core.elastic.ElasticModule
+import biz.lobachev.annette.microservice_core.elastic.ElasticModule
 import com.lightbend.lagom.scaladsl.api.LagomConfigComponent
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents

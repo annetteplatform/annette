@@ -17,12 +17,11 @@
 package biz.lobachev.annette.application.impl.translation.dao
 
 import java.time.OffsetDateTime
-
 import akka.Done
 import biz.lobachev.annette.application.api.language.LanguageId
 import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.application.impl.translation.TranslationEntity
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 import org.slf4j.LoggerFactory
@@ -46,7 +45,7 @@ private[impl] class TranslationCassandraDbDao(session: CassandraSession)(implici
                                         |CREATE TABLE IF NOT EXISTS translation_jsons (
                                         |      id                text ,
                                         |      language_id       text ,
-                                        |      json              text ,  
+                                        |      json              text ,
                                         |      updated_at        text,
                                         |      updated_by_type   text,
                                         |      updated_by_id     text,
@@ -81,7 +80,7 @@ private[impl] class TranslationCassandraDbDao(session: CassandraSession)(implici
       deleteTranslationStmt     <- session.prepare(
                                      """
                                    | DELETE FROM translation_jsons
-                                   | WHERE id = :id  
+                                   | WHERE id = :id
                                    |""".stripMargin
                                    )
 

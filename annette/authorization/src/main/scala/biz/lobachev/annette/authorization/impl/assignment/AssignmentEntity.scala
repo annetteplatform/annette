@@ -17,14 +17,13 @@
 package biz.lobachev.annette.authorization.impl.assignment
 
 import java.time.OffsetDateTime
-
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.authorization.api.assignment._
 import biz.lobachev.annette.authorization.impl.assignment.model.AssignmentState
-import biz.lobachev.annette.core.model.{AnnettePrincipal, Permission}
+import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
 import com.lightbend.lagom.scaladsl.persistence._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json._

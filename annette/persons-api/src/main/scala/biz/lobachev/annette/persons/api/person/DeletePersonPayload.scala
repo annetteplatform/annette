@@ -16,7 +16,8 @@
 
 package biz.lobachev.annette.persons.api.person
 
-import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
+import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class DeletePersonPayload(

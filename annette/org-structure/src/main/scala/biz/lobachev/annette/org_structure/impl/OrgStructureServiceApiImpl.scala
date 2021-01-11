@@ -17,11 +17,11 @@
 package biz.lobachev.annette.org_structure.impl
 
 import java.util.concurrent.TimeUnit
-
 import akka.util.Timeout
 import akka.{Done, NotUsed}
-import biz.lobachev.annette.core.elastic.FindResult
-import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
+import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.OrgStructureServiceApi
 import biz.lobachev.annette.org_structure.api.category.{
   CreateCategoryPayload,

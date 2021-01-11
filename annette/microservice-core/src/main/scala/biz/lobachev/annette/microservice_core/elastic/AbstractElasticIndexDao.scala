@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.core.elastic
+package biz.lobachev.annette.microservice_core.elastic
 
 import java.time.OffsetDateTime
-
 import akka.Done
+import biz.lobachev.annette.core.model.elastic.{FindResult, HitResult, SortBy}
 import com.sksamuel.elastic4s.ElasticDsl.{deleteById, indexExists, _}
 import com.sksamuel.elastic4s.requests.delete.DeleteResponse
 import com.sksamuel.elastic4s.requests.indexes.admin.IndexExistsResponse
