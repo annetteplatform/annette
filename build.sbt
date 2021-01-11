@@ -78,6 +78,11 @@ lazy val root = (project in file("."))
     `microservice-core`,
     `api-gateway-core`,
     `api-gateway`,
+    // API gateways
+    `application-api-gateway`,
+    `authorization-api-gateway`,
+    `org-structure-api-gateway`,
+    `persons-api-gateway`,
     // microservices API
     `application-api`,
     `attributes-api`,
@@ -145,7 +150,6 @@ lazy val `api-gateway-core` = (project in file("annette/api-gateway-core"))
   .settings(annetteSettings: _*)
   .dependsOn(
     `core`,
-    `application-api`,
     `authorization-api`,
     `org-structure-api`,
     `persons-api`
@@ -167,7 +171,11 @@ lazy val `api-gateway` = (project in file("annette/api-gateway"))
   .settings(annetteSettings: _*)
   .settings(dockerSettings: _*)
   .dependsOn(
-    `api-gateway-core`
+    `api-gateway-core`,
+    `application-api-gateway`,
+    `authorization-api-gateway`,
+    `org-structure-api-gateway`,
+    `persons-api-gateway`
   )
 
 def initAppProject(pr: Project) =
@@ -224,6 +232,25 @@ def applicationProject(pr: Project) =
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
     .dependsOn(`application-api`)
+
+lazy val `application-api-gateway` = (project in file("annette/application-api-gateway"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslServer % Optional,
+      ws,
+      Dependencies.macwire,
+      Dependencies.playJsonExt,
+      Dependencies.jwt,
+      Dependencies.pureConfig,
+      Dependencies.chimney
+    ) ++
+      Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(
+    `api-gateway-core`,
+    `application-api`
+  )
 
 lazy val `attributes-api` = (project in file("annette/attributes-api"))
   .settings(
@@ -282,6 +309,25 @@ def authorizationProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`authorization-api`)
 
+lazy val `authorization-api-gateway` = (project in file("annette/authorization-api-gateway"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslServer % Optional,
+      ws,
+      Dependencies.macwire,
+      Dependencies.playJsonExt,
+      Dependencies.jwt,
+      Dependencies.pureConfig,
+      Dependencies.chimney
+    ) ++
+      Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(
+    `api-gateway-core`,
+    `authorization-api`
+  )
+
 lazy val `org-structure-api` = (project in file("annette/org-structure-api"))
   .settings(
     libraryDependencies ++= Seq(
@@ -311,6 +357,25 @@ def orgStructureProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`org-structure-api`, `attributes-api`)
 
+lazy val `org-structure-api-gateway` = (project in file("annette/org-structure-api-gateway"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslServer % Optional,
+      ws,
+      Dependencies.macwire,
+      Dependencies.playJsonExt,
+      Dependencies.jwt,
+      Dependencies.pureConfig,
+      Dependencies.chimney
+    ) ++
+      Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(
+    `api-gateway-core`,
+    `org-structure-api`
+  )
+
 lazy val `persons-api` = (project in file("annette/persons-api"))
   .settings(
     libraryDependencies ++= Seq(
@@ -338,6 +403,25 @@ def personsProject(pr: Project) =
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
     .dependsOn(`persons-api`, `attributes-api`)
+
+lazy val `persons-api-gateway` = (project in file("annette/persons-api-gateway"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslServer % Optional,
+      ws,
+      Dependencies.macwire,
+      Dependencies.playJsonExt,
+      Dependencies.jwt,
+      Dependencies.pureConfig,
+      Dependencies.chimney
+    ) ++
+      Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(
+    `api-gateway-core`,
+    `persons-api`
+  )
 
 lazy val `init-app`      = initAppProject(project in file("annette/init-app"))
 lazy val `application`   = applicationProject(project in file("annette/application"))
