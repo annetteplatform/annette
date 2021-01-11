@@ -75,6 +75,7 @@ lazy val root = (project in file("."))
   .settings(annetteSettings: _*)
   .aggregate(
     `core`,
+    `microservice-core`,
     `api-gateway-core`,
     `api-gateway`,
     // microservices API
@@ -108,6 +109,25 @@ lazy val `core` = (project in file("annette/core"))
       ++ Dependencies.lagomAkkaDiscovery
   )
   .settings(annetteSettings: _*)
+
+lazy val `microservice-core` = (project in file("annette/microservice-core"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      lagomScaladslPersistenceCassandra,
+      lagomScaladslServer % Optional,
+      lagomScaladslTestKit,
+      Dependencies.playJsonExt,
+      Dependencies.logstashEncoder,
+      Dependencies.macwire
+    ) ++ Dependencies.tests
+      ++ Dependencies.elastic
+      ++ Dependencies.lagomAkkaDiscovery
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(
+    `core`
+  )
 
 lazy val `api-gateway-core` = (project in file("annette/api-gateway-core"))
   .settings(
@@ -170,7 +190,7 @@ def initAppProject(pr: Project) =
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
     .dependsOn(
-      `core`,
+      `microservice-core`,
       `application-api`,
       `authorization-api`,
       `org-structure-api`,
@@ -185,7 +205,7 @@ lazy val `application-api` = (project in file("annette/application-api"))
     ) ++ Dependencies.tests
   )
   .settings(annetteSettings: _*)
-  .dependsOn(`core`)
+  .dependsOn(`microservice-core`)
 
 def applicationProject(pr: Project) =
   pr
@@ -214,7 +234,7 @@ lazy val `attributes-api` = (project in file("annette/attributes-api"))
     ) ++ Dependencies.tests
   )
   .settings(annetteSettings: _*)
-  .dependsOn(`core`)
+  .dependsOn(`microservice-core`)
 
 def attributesProject(pr: Project) =
   pr
@@ -242,7 +262,7 @@ lazy val `authorization-api` = (project in file("annette/authorization-api"))
     )
   )
   .settings(annetteSettings: _*)
-  .dependsOn(`core`)
+  .dependsOn(`microservice-core`)
 
 def authorizationProject(pr: Project) =
   pr
@@ -270,7 +290,7 @@ lazy val `org-structure-api` = (project in file("annette/org-structure-api"))
     )
   )
   .settings(annetteSettings: _*)
-  .dependsOn(`core`, `attributes-api`)
+  .dependsOn(`microservice-core`, `attributes-api`)
 
 def orgStructureProject(pr: Project) =
   pr
@@ -299,7 +319,7 @@ lazy val `persons-api` = (project in file("annette/persons-api"))
     )
   )
   .settings(annetteSettings: _*)
-  .dependsOn(`core`, `attributes-api`)
+  .dependsOn(`microservice-core`, `attributes-api`)
 
 def personsProject(pr: Project) =
   pr
