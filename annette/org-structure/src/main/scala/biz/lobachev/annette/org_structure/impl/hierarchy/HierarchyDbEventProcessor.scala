@@ -16,9 +16,9 @@
 
 package biz.lobachev.annette.org_structure.impl.hierarchy
 
-import java.time.OffsetDateTime
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import java.time.OffsetDateTime
 import biz.lobachev.annette.org_structure.api.hierarchy.OrgItemId
 import biz.lobachev.annette.org_structure.impl.hierarchy.dao.HierarchyDbDao
 import com.datastax.driver.core.BoundStatement

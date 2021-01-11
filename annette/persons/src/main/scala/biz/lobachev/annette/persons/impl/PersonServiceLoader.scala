@@ -19,7 +19,7 @@ package biz.lobachev.annette.persons.impl
 import akka.cluster.sharding.typed.scaladsl.Entity
 import biz.lobachev.annette.attributes.api.AttributeService
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
-import biz.lobachev.annette.core.elastic.ElasticModule
+import biz.lobachev.annette.microservice_core.elastic.ElasticModule
 import biz.lobachev.annette.persons.api.PersonServiceApi
 import biz.lobachev.annette.persons.impl.category.{
   CategoryDbEventProcessor,

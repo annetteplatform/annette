@@ -15,7 +15,7 @@
  */
 
 package biz.lobachev.annette.gateway.core.authentication.basic
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.gateway.core.authentication.Subject
 import play.api.mvc.Headers
 

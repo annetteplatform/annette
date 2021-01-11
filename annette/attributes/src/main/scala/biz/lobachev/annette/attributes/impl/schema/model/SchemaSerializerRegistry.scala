@@ -1,11 +1,10 @@
 package biz.lobachev.annette.attributes.impl.schema.model
 
 import java.time.OffsetDateTime
-
 import biz.lobachev.annette.attributes.api.attribute.{Attribute, AttributeIndex, AttributeType}
 import biz.lobachev.annette.attributes.api.schema._
 import biz.lobachev.annette.attributes.impl.schema.SchemaEntity
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
 object SchemaSerializerRegistry extends JsonSerializerRegistry {

@@ -18,11 +18,10 @@ package biz.lobachev.annette.attributes.api.query
 
 import java.time.format.DateTimeFormatter
 import java.time.{LocalDate, LocalDateTime}
-
 import akka.Done
 import biz.lobachev.annette.attributes.api.assignment._
 import biz.lobachev.annette.attributes.api.attribute._
-import biz.lobachev.annette.core.elastic.AbstractElasticIndexDao
+import biz.lobachev.annette.microservice_core.elastic.AbstractElasticIndexDao
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.requests.common.RefreshPolicy

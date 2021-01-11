@@ -16,7 +16,8 @@
 
 package biz.lobachev.annette.gateway.core.authorization
 
-import biz.lobachev.annette.core.model.{AnnettePrincipal, Permission, PermissionId}
+import biz.lobachev.annette.core.model.PermissionId
+import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
 import biz.lobachev.annette.gateway.core.authentication.AuthenticatedRequest
 import org.slf4j.{Logger, LoggerFactory}
 import pureconfig._

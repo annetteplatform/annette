@@ -17,9 +17,9 @@
 package biz.lobachev.annette.attributes.impl.schema
 
 import java.time.OffsetDateTime
-
 import biz.lobachev.annette.attributes.api.schema.{ComposedSchemaId, FindSchemaQuery}
-import biz.lobachev.annette.core.elastic.{AbstractElasticIndexDao, ElasticSettings, FindResult}
+import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.microservice_core.elastic.{AbstractElasticIndexDao, ElasticSettings}
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.requests.common.RefreshPolicy

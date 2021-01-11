@@ -18,7 +18,7 @@ package biz.lobachev.annette.authorization.impl.role.model
 import biz.lobachev.annette.authorization.api.assignment.AuthSource
 import biz.lobachev.annette.authorization.api.role._
 import biz.lobachev.annette.authorization.impl.role.RoleEntity
-import biz.lobachev.annette.core.model.{AnnettePrincipal, Permission}
+import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
 object RoleSerializerRegistry extends JsonSerializerRegistry {

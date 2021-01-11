@@ -16,7 +16,8 @@
 
 package biz.lobachev.annette.persons.impl.category.dao
 
-import biz.lobachev.annette.core.elastic.{AbstractElasticIndexDao, ElasticSettings, FindResult}
+import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.microservice_core.elastic.{AbstractElasticIndexDao, ElasticSettings}
 import biz.lobachev.annette.persons.api.category.PersonCategoryFindQuery
 import biz.lobachev.annette.persons.impl.category.CategoryEntity
 import com.sksamuel.elastic4s.ElasticDsl._

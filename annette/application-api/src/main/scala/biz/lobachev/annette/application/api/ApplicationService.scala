@@ -20,7 +20,7 @@ import akka.Done
 import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.api.language._
 import biz.lobachev.annette.application.api.translation._
-import biz.lobachev.annette.core.elastic.FindResult
+import biz.lobachev.annette.core.model.elastic.FindResult
 
 import scala.collection.immutable.Map
 import scala.concurrent.Future

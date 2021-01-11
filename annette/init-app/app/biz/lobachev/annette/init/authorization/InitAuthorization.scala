@@ -20,7 +20,7 @@ import akka.Done
 import akka.actor.ActorSystem
 import biz.lobachev.annette.authorization.api.AuthorizationService
 import biz.lobachev.annette.authorization.api.role.{AssignPrincipalPayload, CreateRolePayload}
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import io.scalaland.chimney.dsl._
 import org.slf4j.{Logger, LoggerFactory}
 import pureconfig._

@@ -18,7 +18,7 @@ package biz.lobachev.annette.persons.impl.person.dao
 
 import akka.Done
 import biz.lobachev.annette.attributes.api.query.AttributeIndexDao
-import biz.lobachev.annette.core.elastic.FindResult
+import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.persons.api.person._
 import biz.lobachev.annette.persons.impl.person.PersonEntity
 import biz.lobachev.annette.persons.impl.person.PersonEntity.PersonDeleted

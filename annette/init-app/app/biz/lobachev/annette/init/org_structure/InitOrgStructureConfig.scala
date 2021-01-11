@@ -15,7 +15,7 @@
  */
 
 package biz.lobachev.annette.init.org_structure
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import pureconfig.generic.FieldCoproductHint

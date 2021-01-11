@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.core.model
+package biz.lobachev.annette.core.model.translation
 
+import biz.lobachev.annette.core.model.TranslationId
 import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 
 sealed trait Caption {}

@@ -17,12 +17,11 @@
 package biz.lobachev.annette.application.impl.translation.dao
 
 import java.time.OffsetDateTime
-
 import akka.Done
 import biz.lobachev.annette.application.api.language.LanguageId
 import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.application.impl.translation.TranslationEntity
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.datastax.driver.core.BoundStatement
 
 import scala.collection.immutable.{Seq, _}

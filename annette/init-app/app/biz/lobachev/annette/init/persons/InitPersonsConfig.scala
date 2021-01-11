@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.init.persons
 
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import biz.lobachev.annette.persons.api.category.PersonCategoryId
 

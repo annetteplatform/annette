@@ -17,9 +17,8 @@
 package biz.lobachev.annette.org_structure.impl.category.dao
 
 import java.time.OffsetDateTime
-
 import akka.Done
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.category.{OrgCategory, OrgCategoryId}
 import biz.lobachev.annette.org_structure.impl.category.CategoryEntity.{
   CategoryCreated,

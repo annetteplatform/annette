@@ -25,7 +25,7 @@ import biz.lobachev.annette.attributes.api.schema._
 import biz.lobachev.annette.attributes.impl.assignment.AssignmentEntityService
 import biz.lobachev.annette.attributes.impl.index.IndexEntity
 import biz.lobachev.annette.attributes.impl.schema.SchemaEntityService
-import biz.lobachev.annette.core.elastic.FindResult
+import biz.lobachev.annette.core.model.elastic.FindResult
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.lightbend.lagom.scaladsl.api.broker.Topic
 import com.lightbend.lagom.scaladsl.broker.TopicProducer

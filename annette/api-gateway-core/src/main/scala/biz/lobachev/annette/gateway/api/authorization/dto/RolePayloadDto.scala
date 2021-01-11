@@ -17,20 +17,16 @@
 package biz.lobachev.annette.gateway.api.authorization.dto
 
 import biz.lobachev.annette.authorization.api.role.AuthRoleId
-import biz.lobachev.annette.core.model.Permission
+import biz.lobachev.annette.core.model.auth.Permission
 import play.api.libs.json.Json
 
 case class RolePayloadDto(
   id: AuthRoleId,
   name: String,
   description: String,
-  permissions: Set[Permission],
+  permissions: Set[Permission]
 )
-
 
 object RolePayloadDto {
   implicit val format = Json.format[RolePayloadDto]
 }
-
-
-

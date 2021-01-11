@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.core.elastic
+package biz.lobachev.annette.microservice_core.elastic
 
 import java.security.cert.X509Certificate
 

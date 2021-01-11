@@ -17,7 +17,7 @@
 package biz.lobachev.annette.application.impl.language
 
 import biz.lobachev.annette.application.api.language._
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
 object LanguageSerializerRegistry extends JsonSerializerRegistry {

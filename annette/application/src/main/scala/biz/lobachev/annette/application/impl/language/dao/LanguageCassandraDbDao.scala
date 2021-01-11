@@ -17,11 +17,10 @@
 package biz.lobachev.annette.application.impl.language.dao
 
 import java.time.OffsetDateTime
-
 import akka.Done
 import biz.lobachev.annette.application.api.language._
 import biz.lobachev.annette.application.impl.language.LanguageEntity
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 

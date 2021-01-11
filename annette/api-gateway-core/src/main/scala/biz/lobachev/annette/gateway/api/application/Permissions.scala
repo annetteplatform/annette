@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.gateway.api.application
 
-import biz.lobachev.annette.core.model.Permission
+import biz.lobachev.annette.core.model.auth.Permission
 
 object Permissions {
   final val MAINTAIN_ALL_APPLICATIONS = Permission("annette.application.application.maintain.all")

@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.authorization.api.role
 
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class DeleteRolePayload(

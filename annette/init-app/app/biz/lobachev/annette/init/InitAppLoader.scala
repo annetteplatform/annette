@@ -20,7 +20,7 @@ import akka.Done
 import biz.lobachev.annette.application.api.{ApplicationServiceApi, ApplicationServiceImpl}
 import biz.lobachev.annette.authorization.api.{AuthorizationServiceApi, AuthorizationServiceImpl}
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
-import biz.lobachev.annette.core.exception.AnnetteErrorHandler
+import biz.lobachev.annette.gateway.core.exception.ApiGatewayErrorHandler
 import biz.lobachev.annette.init.authorization.InitAuthorization
 import biz.lobachev.annette.init.org_structure.InitOrgStructure
 import biz.lobachev.annette.init.persons.InitPersons
@@ -60,7 +60,7 @@ abstract class InitApp(context: Context)
   )
   implicit override lazy val executionContext: ExecutionContext = actorSystem.dispatcher
 
-  override lazy val httpErrorHandler: AnnetteErrorHandler = wire[AnnetteErrorHandler]
+  override lazy val httpErrorHandler: ApiGatewayErrorHandler = wire[ApiGatewayErrorHandler]
 
   override lazy val router = {
     val prefix = "/"

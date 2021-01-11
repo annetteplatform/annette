@@ -17,12 +17,11 @@
 package biz.lobachev.annette.attributes.impl.assignment
 
 import java.time.OffsetDateTime
-
 import akka.Done
 import biz.lobachev.annette.attributes.api.assignment._
 import biz.lobachev.annette.attributes.api.attribute.AttributeId
 import biz.lobachev.annette.attributes.api.schema.{SchemaAttributeId, SchemaId}
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 import org.slf4j.LoggerFactory

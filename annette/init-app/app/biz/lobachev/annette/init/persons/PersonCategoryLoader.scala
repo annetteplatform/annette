@@ -18,7 +18,7 @@ package biz.lobachev.annette.init.persons
 
 import akka.Done
 import akka.actor.ActorSystem
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.persons.api.PersonService
 import biz.lobachev.annette.persons.api.category.CreateCategoryPayload
 import org.slf4j.Logger

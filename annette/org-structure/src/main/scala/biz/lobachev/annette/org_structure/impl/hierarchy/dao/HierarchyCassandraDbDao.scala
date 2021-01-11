@@ -17,9 +17,16 @@
 package biz.lobachev.annette.org_structure.impl.hierarchy.dao
 
 import java.time.OffsetDateTime
-
 import akka.Done
 import biz.lobachev.annette.core.model._
+import biz.lobachev.annette.core.model.auth.{
+  AnnettePrincipal,
+  DescendantUnitPrincipal,
+  DirectUnitPrincipal,
+  OrgPositionPrincipal,
+  OrgRolePrincipal,
+  UnitChiefPrincipal
+}
 import biz.lobachev.annette.org_structure.api.hierarchy
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId

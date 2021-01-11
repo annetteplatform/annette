@@ -22,7 +22,7 @@ import biz.lobachev.annette.application.api.language.{
   UpdateLanguagePayload
 }
 import biz.lobachev.annette.application.impl.language.LanguageEntity
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
 object LanguageSerializerRegistry extends JsonSerializerRegistry {

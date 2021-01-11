@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.gateway.core.authorization
 
-import biz.lobachev.annette.core.model.{AnnettePrincipal, Permission}
+import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
 
 case class PrincipalPermission(
   principal: AnnettePrincipal,

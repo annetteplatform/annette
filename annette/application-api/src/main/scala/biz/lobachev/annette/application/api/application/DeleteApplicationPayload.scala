@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.application.api.application
 
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
 case class DeleteApplicationPayload(

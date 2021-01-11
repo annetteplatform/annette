@@ -17,12 +17,11 @@
 package biz.lobachev.annette.org_structure.impl.role
 
 import java.time.OffsetDateTime
-
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl._
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.role._
 import biz.lobachev.annette.org_structure.impl.role.model.OrgRoleState
 import com.lightbend.lagom.scaladsl.persistence._

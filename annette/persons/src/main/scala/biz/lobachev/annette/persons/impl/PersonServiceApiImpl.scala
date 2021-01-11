@@ -17,8 +17,8 @@
 package biz.lobachev.annette.persons.impl
 
 import akka.{Done, NotUsed}
-import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.persons.api.PersonServiceApi
 import biz.lobachev.annette.persons.api.category._
 import biz.lobachev.annette.persons.api.person._

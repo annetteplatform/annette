@@ -16,13 +16,13 @@
 
 package biz.lobachev.annette.application.api.translation
 
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class CreateTranslationPayload(
-    id: TranslationId,
-    name: String,
-    createdBy: AnnettePrincipal
+  id: TranslationId,
+  name: String,
+  createdBy: AnnettePrincipal
 )
 
 object CreateTranslationPayload {

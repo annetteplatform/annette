@@ -1,8 +1,8 @@
 package biz.lobachev.annette.person.test
 
 import java.time.OffsetDateTime
-
-import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonPrincipal}
+import biz.lobachev.annette.core.model.PersonPrincipal
+import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, PersonPrincipal}
 import biz.lobachev.annette.core.test.generator.RandomGenerator
 import biz.lobachev.annette.persons.api.category.PersonCategoryId
 import biz.lobachev.annette.persons.api.person._

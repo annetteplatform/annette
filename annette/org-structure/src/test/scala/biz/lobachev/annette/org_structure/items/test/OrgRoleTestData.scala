@@ -1,8 +1,8 @@
 package biz.lobachev.annette.org_structure.items.test
 
 import java.time.OffsetDateTime
-
-import biz.lobachev.annette.core.model.{AnnettePrincipal, OrgRolePrincipal}
+import biz.lobachev.annette.core.model.OrgRolePrincipal
+import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, OrgRolePrincipal}
 import biz.lobachev.annette.core.test.generator.RandomGenerator
 import biz.lobachev.annette.org_structure.api.role._
 import io.scalaland.chimney.dsl._

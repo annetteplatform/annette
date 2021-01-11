@@ -17,12 +17,10 @@
 package biz.lobachev.annette.authorization.impl.role.dao
 
 import java.time.OffsetDateTime
-
 import akka.Done
 import biz.lobachev.annette.authorization.api.role._
 import biz.lobachev.annette.authorization.impl.role.RoleEntity
-import biz.lobachev.annette.core.model
-import biz.lobachev.annette.core.model.{AnnettePrincipal, Permission}
+import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 
@@ -51,7 +49,7 @@ private[impl] class RoleCassandraDbDao(session: CassandraSession)(implicit ec: E
                                         |          description      text,
                                         |          updated_at       text,
                                         |          updated_by_type  text,
-                                        |          updated_by_id    text          
+                                        |          updated_by_id    text
                                         |)
                                         |""".stripMargin)
       _ <- session.executeCreateTable("""
@@ -90,14 +88,14 @@ private[impl] class RoleCassandraDbDao(session: CassandraSession)(implicit ec: E
                                      """
                                 | UPDATE roles SET
                                 |     name = :name
-                                |   WHERE id = :id   
+                                |   WHERE id = :id
                                 |""".stripMargin
                                    )
       updateRoleDescriptionStmt <- session.prepare(
                                      """
                                        | UPDATE roles SET
                                        |     description = :description
-                                       |   WHERE id = :id   
+                                       |   WHERE id = :id
                                        |""".stripMargin
                                    )
       updateRoleUpdatedAtByStmt <- session.prepare(
@@ -106,13 +104,13 @@ private[impl] class RoleCassandraDbDao(session: CassandraSession)(implicit ec: E
                                        |   updated_at = :updated_at,
                                        |   updated_by_type = :updated_by_type,
                                        |   updated_by_id = :updated_by_id
-                                       |  WHERE id = :id   
+                                       |  WHERE id = :id
                                        |""".stripMargin
                                    )
       deleteRoleStmt            <- session.prepare(
                                      """
                             | DELETE FROM roles
-                            |  WHERE id = :id   
+                            |  WHERE id = :id
                             |""".stripMargin
                                    )
       addPermissionStmt         <- session.prepare(
@@ -123,8 +121,8 @@ private[impl] class RoleCassandraDbDao(session: CassandraSession)(implicit ec: E
                                    )
       removePermissionStmt      <- session.prepare(
                                      """
-                                  | DELETE FROM role_permissions 
-                                  |  WHERE role_id = :role_id AND 
+                                  | DELETE FROM role_permissions
+                                  |  WHERE role_id = :role_id AND
                                   |        permission_id = :permission_id AND
                                   |        arg1 = :arg1 AND
                                   |        arg2 = :arg2 AND
@@ -134,7 +132,7 @@ private[impl] class RoleCassandraDbDao(session: CassandraSession)(implicit ec: E
       deleteRolePermissionsStmt <- session.prepare(
                                      """
                                        | DELETE FROM role_permissions
-                                       |  WHERE role_id = :role_id   
+                                       |  WHERE role_id = :role_id
                                        |""".stripMargin
                                    )
       assignPrincipalStmt       <- session.prepare(
@@ -145,16 +143,16 @@ private[impl] class RoleCassandraDbDao(session: CassandraSession)(implicit ec: E
                                    )
       unassignPrincipalStmt     <- session.prepare(
                                      """
-                                   | DELETE FROM role_principals 
-                                   |  WHERE role_id = :role_id AND 
+                                   | DELETE FROM role_principals
+                                   |  WHERE role_id = :role_id AND
                                    |        principal_type = :principal_type AND
-                                   |        principal_id = :principal_id 
+                                   |        principal_id = :principal_id
                                    |""".stripMargin
                                    )
       deleteRolePrincipalsStmt  <- session.prepare(
                                      """
-                                      | DELETE FROM role_principals 
-                                      |  WHERE role_id = :role_id 
+                                      | DELETE FROM role_principals
+                                      |  WHERE role_id = :role_id
                                       |""".stripMargin
                                    )
     } yield {
@@ -315,7 +313,7 @@ private[impl] class RoleCassandraDbDao(session: CassandraSession)(implicit ec: E
     )
 
   private def convertPermission(row: Row): Permission =
-    model.Permission(
+    Permission(
       id = row.getString("permission_id"),
       arg1 = row.getString("arg1"),
       arg2 = row.getString("arg2"),

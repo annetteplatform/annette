@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.core.exception
+package biz.lobachev.annette.gateway.core.exception
 
+import biz.lobachev.annette.core.exception.{AnnetteException, AnnetteTransportException}
 import biz.lobachev.annette.core.message.ErrorMessage
 import com.lightbend.lagom.scaladsl.api.transport.TransportException
-import javax.inject.Singleton
 import net.logstash.logback.argument.StructuredArguments._
 import org.slf4j.LoggerFactory
 import play.api.http.HttpErrorHandler
@@ -27,12 +27,13 @@ import play.api.libs.json.Json
 import play.api.mvc.Results._
 import play.api.mvc.{RequestHeader, Result}
 
+import javax.inject.Singleton
 import scala.concurrent.Future
 import scala.util.Random
 
 @Singleton
-class AnnetteErrorHandler extends HttpErrorHandler {
-  private val log = LoggerFactory.getLogger(classOf[AnnetteErrorHandler])
+class ApiGatewayErrorHandler extends HttpErrorHandler {
+  private val log = LoggerFactory.getLogger(classOf[ApiGatewayErrorHandler])
 
   def onClientError(request: RequestHeader, statusCode: Int, message: String): Future[Result] = {
     log.error("Client error: {}/{} - {}", statusCode, message, request)

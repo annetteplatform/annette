@@ -17,7 +17,6 @@
 package biz.lobachev.annette.attributes.impl.schema
 
 import java.time.OffsetDateTime
-
 import akka.Done
 import biz.lobachev.annette.attributes.api.attribute
 import biz.lobachev.annette.attributes.api.attribute.{
@@ -29,7 +28,8 @@ import biz.lobachev.annette.attributes.api.attribute.{
   PreparedAttributeIndex
 }
 import biz.lobachev.annette.attributes.api.schema._
-import biz.lobachev.annette.core.model.{AnnettePrincipal, Caption}
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.translation.Caption
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 import org.slf4j.LoggerFactory

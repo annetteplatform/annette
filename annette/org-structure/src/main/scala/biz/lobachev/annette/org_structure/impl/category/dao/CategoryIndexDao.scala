@@ -17,7 +17,7 @@
 package biz.lobachev.annette.org_structure.impl.category.dao
 
 import akka.Done
-import biz.lobachev.annette.core.elastic.FindResult
+import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.org_structure.api.category._
 import biz.lobachev.annette.org_structure.impl.category.CategoryEntity
 import biz.lobachev.annette.org_structure.impl.category.CategoryEntity.CategoryDeleted

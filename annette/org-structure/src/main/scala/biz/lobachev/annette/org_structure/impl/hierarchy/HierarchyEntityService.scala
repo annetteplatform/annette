@@ -17,12 +17,12 @@
 package biz.lobachev.annette.org_structure.impl.hierarchy
 
 import java.util.concurrent.TimeUnit
-
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
-import biz.lobachev.annette.core.elastic.FindResult
-import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
+import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.category.OrgCategory
 import biz.lobachev.annette.org_structure.api.hierarchy.{OrgItem, _}
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId

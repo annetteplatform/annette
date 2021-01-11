@@ -17,7 +17,6 @@
 package biz.lobachev.annette.core
 
 package object model {
-  type Id          = String
   type PersonId    = String
   type AttributeId = String
 

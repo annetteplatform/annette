@@ -1,8 +1,8 @@
 package biz.lobachev.annette.persons.api.category
 
-import java.time.OffsetDateTime
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import java.time.OffsetDateTime
 import play.api.libs.json.Json
 
 case class PersonCategory(

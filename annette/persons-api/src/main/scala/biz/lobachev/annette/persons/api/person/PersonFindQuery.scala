@@ -17,7 +17,7 @@
 package biz.lobachev.annette.persons.api.person
 
 import biz.lobachev.annette.attributes.api.query.AttributeQuery
-import biz.lobachev.annette.core.elastic.SortBy
+import biz.lobachev.annette.core.model.elastic.SortBy
 import biz.lobachev.annette.persons.api.category.PersonCategoryId
 import play.api.libs.json.{Format, Json}
 

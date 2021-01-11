@@ -16,8 +16,8 @@
 
 package biz.lobachev.annette.org_structure.impl.hierarchy.model
 import java.time.OffsetDateTime
-
-import biz.lobachev.annette.core.model.{AnnettePrincipal, PersonId}
+import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import play.api.libs.json.Json

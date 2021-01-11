@@ -17,9 +17,8 @@
 package biz.lobachev.annette.org_structure.impl.role.dao
 
 import java.time.OffsetDateTime
-
 import akka.Done
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.role.{OrgRole, OrgRoleId}
 import biz.lobachev.annette.org_structure.impl.role.OrgRoleEntity.{OrgRoleCreated, OrgRoleDeleted, OrgRoleUpdated}
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}

@@ -16,9 +16,9 @@
 
 package biz.lobachev.annette.persons.impl.category.model
 
-import java.time.OffsetDateTime
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import java.time.OffsetDateTime
 import biz.lobachev.annette.persons.api.category.{PersonCategory, PersonCategoryId}
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json

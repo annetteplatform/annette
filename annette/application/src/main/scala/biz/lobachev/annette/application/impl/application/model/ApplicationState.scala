@@ -17,10 +17,10 @@
 package biz.lobachev.annette.application.impl.application.model
 
 import java.time.OffsetDateTime
-
 import biz.lobachev.annette.application.api.application.ApplicationId
 import biz.lobachev.annette.application.api.translation.TranslationId
-import biz.lobachev.annette.core.model.{AnnettePrincipal, Caption}
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.translation.Caption
 import play.api.libs.json.{Format, Json}
 
 case class ApplicationState(

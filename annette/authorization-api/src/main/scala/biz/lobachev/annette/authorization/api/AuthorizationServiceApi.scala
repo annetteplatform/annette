@@ -19,9 +19,9 @@ package biz.lobachev.annette.authorization.api
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.authorization.api.assignment._
 import biz.lobachev.annette.authorization.api.role._
-import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.elastic.FindResult
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 
 trait AuthorizationServiceApi extends Service {

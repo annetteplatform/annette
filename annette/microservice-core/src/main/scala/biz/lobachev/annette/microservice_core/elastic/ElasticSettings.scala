@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.core.elastic
+package biz.lobachev.annette.microservice_core.elastic
 
 import com.typesafe.config.Config
 
 import scala.util.Try
 
 class ElasticSettings(config: Config) {
-  val url           = Try { config.getString("elastic.url") }.toOption.getOrElse("http://localhost:9200")
-  val username      = Try { config.getString("elastic.username") }.toOption
-  val password      = Try { config.getString("elastic.password") }.toOption
-  val allowInsecure = Try { config.getBoolean("elastic.allowInsecure") }.toOption.getOrElse(false)
-  val prefix        = Try { config.getString("elastic.prefix") }.toOption.getOrElse("")
+  val url           = Try(config.getString("elastic.url")).toOption.getOrElse("http://localhost:9200")
+  val username      = Try(config.getString("elastic.username")).toOption
+  val password      = Try(config.getString("elastic.password")).toOption
+  val allowInsecure = Try(config.getBoolean("elastic.allowInsecure")).toOption.getOrElse(false)
+  val prefix        = Try(config.getString("elastic.prefix")).toOption.getOrElse("")
 
 }

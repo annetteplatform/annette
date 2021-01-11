@@ -16,7 +16,8 @@
 
 package biz.lobachev.annette.authorization.api.assignment
 
-import biz.lobachev.annette.core.model.{AnnettePrincipal, PermissionId}
+import biz.lobachev.annette.core.model.PermissionId
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class FindPermissions(

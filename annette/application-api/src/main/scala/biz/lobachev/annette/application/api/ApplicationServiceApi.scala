@@ -20,8 +20,8 @@ import akka.{Done, NotUsed}
 import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.api.language._
 import biz.lobachev.annette.application.api.translation._
-import biz.lobachev.annette.core.elastic.FindResult
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
+import biz.lobachev.annette.core.model.elastic.FindResult
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 
 import scala.collection.immutable.Map

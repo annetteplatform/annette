@@ -1,6 +1,6 @@
 package biz.lobachev.annette.attributes.api.attribute
 
-import biz.lobachev.annette.core.model.Caption
+import biz.lobachev.annette.core.model.translation.Caption
 import play.api.libs.json.Json
 
 case class PreparedAttribute(

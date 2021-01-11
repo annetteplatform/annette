@@ -16,7 +16,8 @@
 
 package biz.lobachev.annette.gateway.api.person
 
-import biz.lobachev.annette.core.model.{DescendantUnitPrincipal, DirectUnitPrincipal, PersonId, UnitChiefPrincipal}
+import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.core.model.auth.{DescendantUnitPrincipal, DirectUnitPrincipal, UnitChiefPrincipal}
 import biz.lobachev.annette.gateway.api.person.Permissions._
 import biz.lobachev.annette.gateway.api.person.dto._
 import biz.lobachev.annette.gateway.core.authentication.{AuthenticatedAction, AuthenticatedRequest}
@@ -37,6 +38,7 @@ import biz.lobachev.annette.persons.api.person.{
   UpdatePersonPayload
 }
 import io.scalaland.chimney.dsl._
+
 import javax.inject.{Inject, Singleton}
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}

@@ -16,12 +16,12 @@
 
 package biz.lobachev.annette.application.api.translation
 
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class DeleteTranslationPayload(
-    id: TranslationId,
-    deletedBy: AnnettePrincipal
+  id: TranslationId,
+  deletedBy: AnnettePrincipal
 )
 
 object DeleteTranslationPayload {

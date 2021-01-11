@@ -19,7 +19,7 @@ package biz.lobachev.annette.authorization.impl.role.dao
 import akka.Done
 import biz.lobachev.annette.authorization.api.role._
 import biz.lobachev.annette.authorization.impl.role.RoleEntity
-import biz.lobachev.annette.core.elastic.FindResult
+import biz.lobachev.annette.core.model.elastic.FindResult
 
 import scala.concurrent.Future
 

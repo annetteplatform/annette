@@ -17,9 +17,8 @@
 package biz.lobachev.annette.persons.impl.category.dao
 
 import java.time.OffsetDateTime
-
 import akka.Done
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.persons.api.category.{PersonCategory, PersonCategoryId}
 import biz.lobachev.annette.persons.impl.category.CategoryEntity
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}

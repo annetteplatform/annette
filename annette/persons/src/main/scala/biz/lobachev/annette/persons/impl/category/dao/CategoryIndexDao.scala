@@ -17,7 +17,7 @@
 package biz.lobachev.annette.persons.impl.category.dao
 
 import akka.Done
-import biz.lobachev.annette.core.elastic.FindResult
+import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.persons.api.category.PersonCategoryFindQuery
 import biz.lobachev.annette.persons.impl.category.CategoryEntity
 

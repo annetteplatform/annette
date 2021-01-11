@@ -19,8 +19,8 @@ package biz.lobachev.annette.authorization.api
 import akka.Done
 import biz.lobachev.annette.authorization.api.assignment._
 import biz.lobachev.annette.authorization.api.role._
-import biz.lobachev.annette.core.elastic.FindResult
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.elastic.FindResult
 
 import scala.concurrent.Future
 

@@ -17,7 +17,6 @@
 package biz.lobachev.annette.application.impl.translation.model
 
 import java.time.OffsetDateTime
-
 import biz.lobachev.annette.application.api.language.LanguageId
 import biz.lobachev.annette.application.api.translation.{
   TranslationBranch,
@@ -25,7 +24,7 @@ import biz.lobachev.annette.application.api.translation.{
   TranslationTexts,
   TranslationTree
 }
-import biz.lobachev.annette.core.model.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{JsObject, JsString, Json}
 
 case class TranslationState(

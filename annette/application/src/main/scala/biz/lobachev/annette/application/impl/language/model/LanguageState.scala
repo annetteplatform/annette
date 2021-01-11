@@ -17,8 +17,8 @@
 package biz.lobachev.annette.application.impl.language.model
 
 import java.time.OffsetDateTime
-
-import biz.lobachev.annette.core.model.{AnnettePrincipal, LanguageId}
+import biz.lobachev.annette.core.model.LanguageId
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class LanguageState(
