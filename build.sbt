@@ -5,7 +5,7 @@ import play.sbt.routes.RoutesKeys
 scalaVersion := "2.13.3"
 maintainer := "valery@lobachev.biz"
 
-version in ThisBuild := "0.2.0"
+version in ThisBuild := "0.2.1"
 scalaVersion in ThisBuild := "2.13.3"
 
 maintainer in ThisBuild := "valery@lobachev.biz"
@@ -34,13 +34,13 @@ ThisBuild / licenses := List("Apache-2.0" -> new URL("http://www.apache.org/lice
 ThisBuild / homepage := Some(url("https://github.com/annetteplatform/annette"))
 
 // Remove all additional repository other than Maven Central from POM
-//ThisBuild / pomIncludeRepository := { _ => false }
-//ThisBuild / publishTo := {
-//  val nexus = "https://oss.sonatype.org/"
-//  if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
-//  else Some("releases" at nexus + "service/local/staging/deploy/maven2")
-//}
-//ThisBuild / publishMavenStyle := true
+ThisBuild / pomIncludeRepository := { _ => false }
+ThisBuild / publishTo := {
+  val nexus = "https://oss.sonatype.org/"
+  if (isSnapshot.value) Some("snapshots" at nexus + "content/repositories/snapshots")
+  else Some("releases" at nexus + "service/local/staging/deploy/maven2")
+}
+ThisBuild / publishMavenStyle := true
 
 // Use external Kafka
 lagomKafkaEnabled in ThisBuild := false
@@ -225,7 +225,7 @@ def applicationProject(pr: Project) =
         lagomScaladslTestKit,
         Dependencies.macwire,
         Dependencies.chimney
-      ) ++ Dependencies.tests
+      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
     )
     .settings(lagomForkedTestSettings: _*)
     .settings(confDirSettings: _*)
@@ -273,7 +273,7 @@ def attributesProject(pr: Project) =
         lagomScaladslTestKit,
         Dependencies.macwire,
         Dependencies.chimney
-      ) ++ Dependencies.tests
+      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
     )
     .settings(lagomForkedTestSettings: _*)
     .settings(confDirSettings: _*)
@@ -301,7 +301,7 @@ def authorizationProject(pr: Project) =
         lagomScaladslTestKit,
         Dependencies.macwire,
         Dependencies.chimney
-      ) ++ Dependencies.tests
+      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
     )
     .settings(lagomForkedTestSettings: _*)
     .settings(confDirSettings: _*)
@@ -349,7 +349,7 @@ def orgStructureProject(pr: Project) =
         Dependencies.macwire,
         Dependencies.chimney,
         Dependencies.pureConfig
-      ) ++ Dependencies.tests
+      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
     )
     .settings(lagomForkedTestSettings: _*)
     .settings(confDirSettings: _*)
@@ -396,7 +396,7 @@ def personsProject(pr: Project) =
         lagomScaladslTestKit,
         Dependencies.macwire,
         Dependencies.chimney
-      ) ++ Dependencies.tests
+      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
     )
     .settings(lagomForkedTestSettings: _*)
     .settings(confDirSettings: _*)
