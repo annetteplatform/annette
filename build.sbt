@@ -5,7 +5,7 @@ import play.sbt.routes.RoutesKeys
 scalaVersion := "2.13.3"
 maintainer := "valery@lobachev.biz"
 
-version in ThisBuild := "0.2.1"
+version in ThisBuild := "0.2.2-SNAPSHOT"
 scalaVersion in ThisBuild := "2.13.3"
 
 maintainer in ThisBuild := "valery@lobachev.biz"
@@ -96,7 +96,8 @@ lazy val root = (project in file("."))
     `org-structure`,
     `persons`,
     // initialization application
-    `init-app`
+    `ignition-core`,
+    `demo-ignition`
   )
 
 lazy val `core` = (project in file("annette/core"))
@@ -178,7 +179,30 @@ lazy val `api-gateway` = (project in file("annette/api-gateway"))
     `persons-api-gateway`
   )
 
-def initAppProject(pr: Project) =
+lazy val `ignition-core` = (project in file("ignition/core"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      lagomScaladslPersistenceCassandra,
+      lagomScaladslServer % Optional,
+      lagomScaladslTestKit,
+      Dependencies.playJsonExt,
+      Dependencies.logstashEncoder,
+      Dependencies.macwire
+    ) ++ Dependencies.tests
+      ++ Dependencies.elastic
+      ++ Dependencies.lagomAkkaDiscovery
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(
+    `api-gateway-core`,
+    `application-api`,
+    `authorization-api`,
+    `org-structure-api`,
+    `persons-api`
+  )
+
+def demoIgnitionProject(pr: Project) =
   pr
     .enablePlugins(LagomPlay, LagomScala)
     .settings(
@@ -198,11 +222,7 @@ def initAppProject(pr: Project) =
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
     .dependsOn(
-      `api-gateway-core`,
-      `application-api`,
-      `authorization-api`,
-      `org-structure-api`,
-      `persons-api`
+      `ignition-core`
     )
 
 lazy val `application-api` = (project in file("annette/application-api"))
@@ -423,7 +443,7 @@ lazy val `persons-api-gateway` = (project in file("annette/persons-api-gateway")
     `persons-api`
   )
 
-lazy val `init-app`      = initAppProject(project in file("annette/init-app"))
+lazy val `demo-ignition` = demoIgnitionProject(project in file("ignition/demo"))
 lazy val `application`   = applicationProject(project in file("annette/application"))
 lazy val `attributes`    = attributesProject(project in file("annette/attributes"))
 lazy val `authorization` = authorizationProject(project in file("annette/authorization"))

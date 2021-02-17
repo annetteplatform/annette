@@ -420,7 +420,9 @@ final case class HierarchyEntity(
       case Some(state) if !state.units.isDefinedAt(cmd.payload.unitId) => Effect.reply(replyTo)(ItemNotFound)
       case Some(state) if state.units.isDefinedAt(cmd.payload.unitId)  =>
         val unit = state.units(cmd.payload.unitId)
-        if (unit.children.isEmpty) {
+        if (unit.children.nonEmpty) Effect.reply(replyTo)(UnitNotEmpty)
+        else if (unit.chief.nonEmpty) Effect.reply(replyTo)(ChiefAlreadyAssigned)
+        else {
           val event = cmd.payload
             .into[UnitDeleted]
             .withFieldConst(_.parentId, unit.parentId)
@@ -428,8 +430,7 @@ final case class HierarchyEntity(
           Effect
             .persist(event)
             .thenReply(replyTo)(_ => Success)
-        } else
-          Effect.reply(replyTo)(UnitNotEmpty)
+        }
     }
   }
 

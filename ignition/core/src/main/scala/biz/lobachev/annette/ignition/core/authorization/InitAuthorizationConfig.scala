@@ -14,12 +14,24 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.application.gateway
+package biz.lobachev.annette.ignition.core.authorization
 
-import biz.lobachev.annette.core.model.auth.Permission
+import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
 
-object Permissions {
-  final val MAINTAIN_ALL_APPLICATIONS = Permission("annette.application.application.maintain.all")
-  final val MAINTAIN_ALL_TRANSLATIONS = Permission("annette.application.translation.maintain.all")
-  final val MAINTAIN_ALL_LANGUAGES    = Permission("annette.application.language.maintain.all")
-}
+case class InitAuthorizationConfig(
+  enable: Boolean,
+  roles: Map[String, InitAuthRole],
+  assignments: Set[Assignment],
+  createdBy: AnnettePrincipal
+)
+
+case class Assignment(
+  roleId: String,
+  principalType: String,
+  principalId: String
+)
+case class InitAuthRole(
+  name: String,
+  description: String = "",
+  permissions: Set[Permission]
+)
