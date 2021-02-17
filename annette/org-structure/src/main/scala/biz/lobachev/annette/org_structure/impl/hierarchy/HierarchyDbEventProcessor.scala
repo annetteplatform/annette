@@ -49,6 +49,7 @@ private[impl] class HierarchyDbEventProcessor(
       .setEventHandler[HierarchyEntity.PositionCreated](e => createPosition(e.event))
       .setEventHandler[HierarchyEntity.PositionDeleted](e => deletePosition(e.event))
       .setEventHandler[HierarchyEntity.ChiefAssigned](e => assignChief(e.event))
+      .setEventHandler[HierarchyEntity.CategoryAssigned](e => assignCategory(e.event))
       .setEventHandler[HierarchyEntity.ChiefUnassigned](e => unassignChief(e.event))
       .setEventHandler[HierarchyEntity.PositionLimitChanged](e => changePositionLimit(e.event))
       .setEventHandler[HierarchyEntity.PersonAssigned](e => assignPerson(e.event))
@@ -93,6 +94,11 @@ private[impl] class HierarchyDbEventProcessor(
     } yield List(
       dbDao.updateChildren(event.parentId, children, event.deletedBy, event.deletedAt),
       dbDao.deleteUnit(event)
+    )
+
+  def assignCategory(event: HierarchyEntity.CategoryAssigned): Future[Seq[BoundStatement]] =
+    Future.successful(
+      dbDao.assignCategory(event)
     )
 
   def assignChief(event: HierarchyEntity.ChiefAssigned): Future[Seq[BoundStatement]] =

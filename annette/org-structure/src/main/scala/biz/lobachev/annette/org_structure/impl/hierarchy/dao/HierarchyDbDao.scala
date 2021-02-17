@@ -49,6 +49,8 @@ trait HierarchyDbDao {
     updatedAt: OffsetDateTime
   ): BoundStatement
 
+  def assignCategory(event: HierarchyEntity.CategoryAssigned): List[BoundStatement]
+
   def assignChief(event: HierarchyEntity.ChiefAssigned): List[BoundStatement]
 
   def unassignChief(event: HierarchyEntity.ChiefUnassigned): List[BoundStatement]
