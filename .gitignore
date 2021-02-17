@@ -1,4 +1,4 @@
-
+build-local.sh
 .metals
 .bloop
 keycloak.json

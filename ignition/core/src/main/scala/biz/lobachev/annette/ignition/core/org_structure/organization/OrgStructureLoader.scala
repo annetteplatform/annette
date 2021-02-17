@@ -50,7 +50,7 @@ class OrgStructureLoader(
         result <- loadOrganization(org, createdBy)
         _      <- result match {
                     case OrgCreated => loadChildren(org.children, org.id, org.id, createdBy)
-                    case OrgExist   => mergeOrg(org, org.id, None, disposedCategory, createdBy)
+                    case OrgExist   => mergeOrg(org, org.id, disposedCategory, createdBy)
                   }
         _      <- loadChiefs(org, org.id, createdBy)
       } yield ()
@@ -179,12 +179,9 @@ class OrgStructureLoader(
   private def mergeOrg(
     org: UnitData,
     orgId: OrgItemId,
-    parentId: Option[OrgItemId],
     disposedCategory: String,
     updatedBy: AnnettePrincipal
   ): Future[Unit] = {
-    println(parentId)
-    println(updatedBy)
     log.debug("Merging organization: {} - {}", orgId, org.name)
     val disposedUnitId   = UUID.randomUUID().toString
     val timestamp        = LocalDateTime.now().toString
@@ -215,7 +212,10 @@ class OrgStructureLoader(
       moveToMergeUnitIds = currentOrg.children.toSet -- org.children.map(_.id).toSet
       _                 <- moveToMergeUnit(orgId, disposedUnitId, moveToMergeUnitIds, updatedBy)
       _                 <- sequentialProcess(org.children)(child => mergeItem(child, orgId, orgId, disposedUnitId, updatedBy))
-    } yield ()
+    } yield {
+      log.debug("Completed merging organization {} - {}", orgId, org.name)
+      ()
+    }
   }
 
   private def moveToMergeUnit(
@@ -247,17 +247,21 @@ class OrgStructureLoader(
   ): Future[Unit] =
     for {
       currentItem <- getCurrentItem(item, orgId)
-      _            = log.debug(s"Merge new item ${item} with current $currentItem")
       _            = currentItem.map {
                        case currentUnit: OrgUnit if item.isInstanceOf[UnitData]             =>
+                         log.debug("Merging unit {} - {}", item.id, item.name)
                          mergeCurrentUnit(currentUnit, item.asInstanceOf[UnitData], orgId, parentId, mergeUnitId, updatedBy)
                        case currentPosition: OrgPosition if item.isInstanceOf[PositionData] =>
+                         log.debug("Merging position {} - {}", item.id, item.name)
                          mergeCurrentPosition(currentPosition, item.asInstanceOf[PositionData], orgId, parentId, updatedBy)
                      }.getOrElse {
-                       if (item.isInstanceOf[UnitData])
+                       if (item.isInstanceOf[UnitData]) {
+                         log.debug("Creating new unit {} - {}", item.id, item.name)
                          mergeNewUnit(item.asInstanceOf[UnitData], orgId, parentId, mergeUnitId, updatedBy)
-                       else
+                       } else {
+                         log.debug("Creating new position {} - {}", item.id, item.name)
                          mergeNewPosition(item.asInstanceOf[PositionData], orgId, parentId, updatedBy)
+                       }
                      }
     } yield ()
 
