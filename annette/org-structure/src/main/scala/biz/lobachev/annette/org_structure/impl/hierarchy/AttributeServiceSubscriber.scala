@@ -18,7 +18,7 @@ package biz.lobachev.annette.org_structure.impl.hierarchy
 
 import akka.Done
 import akka.stream.scaladsl.Flow
-import biz.lobachev.annette.attributes.api.AttributeService
+import biz.lobachev.annette.attributes.api.AttributeServiceApi
 import biz.lobachev.annette.attributes.api.index.{
   IndexAttributeAssigned,
   IndexAttributeCreated,
@@ -29,7 +29,7 @@ import biz.lobachev.annette.org_structure.impl.hierarchy.dao.HierarchyIndexDao
 
 import scala.concurrent.Future
 
-class AttributeServiceSubscriber(attributeService: AttributeService, indexDao: HierarchyIndexDao) {
+class AttributeServiceSubscriber(attributeService: AttributeServiceApi, indexDao: HierarchyIndexDao) {
   final val ORG_STRUCTURE_SCHEMA_IDS = Set("org-item", "org-position", "org-unit")
 
   attributeService.indexTopic.subscribe.atLeastOnce(Flow[IndexEvent].mapAsync(1) {

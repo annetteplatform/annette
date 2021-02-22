@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.ignition.core.persons
+package biz.lobachev.annette.ignition.core.persons_old
 
 import akka.Done
 import akka.actor.ActorSystem

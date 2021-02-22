@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.ignition.core.persons
+package biz.lobachev.annette.ignition.core.persons_old
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId

@@ -17,7 +17,7 @@
 package biz.lobachev.annette.persons.impl
 
 import akka.cluster.sharding.typed.scaladsl.Entity
-import biz.lobachev.annette.attributes.api.AttributeService
+import biz.lobachev.annette.attributes.api.AttributeServiceApi
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.microservice_core.elastic.ElasticModule
 import biz.lobachev.annette.persons.api.PersonServiceApi
@@ -95,7 +95,7 @@ abstract class PersonServiceApplication(context: LagomApplicationContext)
     }
   )
 
-  lazy val attributeService       = serviceClient.implement[AttributeService]
+  lazy val attributeService       = serviceClient.implement[AttributeServiceApi]
   val enableAttributeSubscription =
     Try(config.getBoolean("annette.attributes-service.enable-subscription")).toOption.getOrElse(true)
   if (enableAttributeSubscription)
