@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.ignition.core.authorization
+package biz.lobachev.annette.ignition.core.authorization_old
 
 import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
 

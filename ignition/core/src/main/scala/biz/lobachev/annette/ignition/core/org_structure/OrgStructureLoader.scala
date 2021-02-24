@@ -13,6 +13,7 @@ import play.api.libs.json.Json
 
 import java.time.LocalDateTime
 import java.util.UUID
+import scala.collection.immutable
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.io.{Source => IOSource}
@@ -458,11 +459,10 @@ class OrgStructureLoader(
              }
     } yield ()
 
-  def sequentialProcess[A, B](list: Iterable[A])(block: A => Future[B]): Future[Unit] =
-    list.foldLeft(Future.successful(())) { (future, item) =>
-      for {
-        _ <- future
-        _ <- block(item)
-      } yield ()
-    }
+  def sequentialProcess[A, B](list: immutable.Iterable[A])(block: A => Future[B]): Future[Unit] =
+    for {
+      _ <- Source(list)
+             .mapAsync(1)(item => block(item))
+             .runWith(Sink.ignore)
+    } yield ()
 }

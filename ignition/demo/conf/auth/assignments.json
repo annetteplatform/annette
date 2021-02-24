@@ -1,0 +1,17 @@
+[
+  {
+    "roleId": "admin-role",
+    "principalType": "person",
+    "principalId": "P0001"
+  },
+  {
+    "roleId": "admin-role",
+    "principalType": "person",
+    "principalId": "P0002"
+  },
+  {
+    "roleId": "admin-role",
+    "principalType": "person",
+    "principalId": "P0003"
+  }
+]

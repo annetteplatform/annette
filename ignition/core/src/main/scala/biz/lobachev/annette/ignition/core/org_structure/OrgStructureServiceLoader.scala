@@ -26,7 +26,7 @@ class OrgStructureServiceLoader(
       .load[OrgStructureIgnitionData]
       .fold(
         failure => {
-          val message = "Person ignition config load error"
+          val message = "Org structure ignition config load error"
           log.error(message, failure.prettyPrint())
           Future.successful(ServiceLoadResult(name, LoadFailed(message), Seq.empty))
         },

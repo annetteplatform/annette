@@ -1,6 +1,7 @@
 package biz.lobachev.annette.ignition.core
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.ignition.core.authorization.AuthorizationServiceLoader
 import biz.lobachev.annette.ignition.core.model.ServiceLoadResult
 import biz.lobachev.annette.ignition.core.org_structure.OrgStructureServiceLoader
 import biz.lobachev.annette.ignition.core.persons.PersonServiceLoader
@@ -13,6 +14,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class AnnetteIgnition(
   personServiceLoader: PersonServiceLoader,
   orgStructureServiceLoader: OrgStructureServiceLoader,
+  authorizationServiceLoader: AuthorizationServiceLoader,
   implicit val ec: ExecutionContext
 ) {
 
@@ -36,9 +38,10 @@ class AnnetteIgnition(
     (for {
       personLoadResult       <- personServiceLoader.run(principal)
       orgStructureLoadResult <- orgStructureServiceLoader.run(principal)
+      authLoadResult         <- authorizationServiceLoader.run(principal)
     } yield {
       log.debug("Annette ignition completed...")
-      logResults(personLoadResult :: orgStructureLoadResult :: Nil)
+      logResults(personLoadResult :: orgStructureLoadResult :: authLoadResult :: Nil)
     }).recover(th => log.error("Annette ignition failed with error: {}", th.getMessage, th))
   }
 
