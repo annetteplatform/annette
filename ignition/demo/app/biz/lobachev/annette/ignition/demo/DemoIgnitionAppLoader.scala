@@ -56,7 +56,8 @@ abstract class DemoIgnitionApp(context: Context)
     with LagomConfigComponent
     with LagomServiceClientComponents {
 
-  lazy val ignitionModule: IgnitionModule = new IgnitionModule(serviceClient, actorSystem, executionContext)
+  lazy val ignitionModule: IgnitionModule =
+    new IgnitionModule(serviceClient, actorSystem, executionContext, materializer)
   import ignitionModule._
 
   override def httpFilters: Seq[EssentialFilter] = Seq.empty

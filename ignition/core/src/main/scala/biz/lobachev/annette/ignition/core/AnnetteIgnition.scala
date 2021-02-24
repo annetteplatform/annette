@@ -26,10 +26,15 @@ class AnnetteIgnition(personServiceLoader: PersonServiceLoader, implicit val ec:
         principal => run(principal)
       )
 
-  private def run(principal: AnnettePrincipal): Future[Unit] =
-    for {
+  private def run(principal: AnnettePrincipal): Future[Unit] = {
+    log.debug("Annette ignition started...")
+    (for {
       personLoadResult <- personServiceLoader.run(principal)
-    } yield logResults(personLoadResult :: Nil)
+    } yield {
+      log.debug("Annette ignition completed...")
+      logResults(personLoadResult :: Nil)
+    }).recover(th => log.error("Annette ignition failed with error: {}", th.getMessage, th))
+  }
 
   def logResults(results: List[ServiceLoadResult]) = {
     println("*************************************************")

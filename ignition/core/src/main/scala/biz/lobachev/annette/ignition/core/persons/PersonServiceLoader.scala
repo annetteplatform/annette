@@ -11,6 +11,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class PersonServiceLoader(
   personCategoryLoader: PersonCategoryLoader,
+  personsLoader: PersonsLoader,
   implicit val executionContext: ExecutionContext
 ) extends ServiceLoader {
 
@@ -31,11 +32,12 @@ class PersonServiceLoader(
         personConfig =>
           for {
             categoryLoadResult <- personCategoryLoader.load(personConfig.categories, principal)
+            personLoadResult   <- personsLoader.load(personConfig.persons, principal)
           } yield
-            if (categoryLoadResult.status != LoadOk)
-              ServiceLoadResult(name, LoadFailed(""), Seq(categoryLoadResult))
+            if (categoryLoadResult.status != LoadOk || personLoadResult.status != LoadOk)
+              ServiceLoadResult(name, LoadFailed(""), Seq(categoryLoadResult, personLoadResult))
             else
-              ServiceLoadResult(name, LoadOk, Seq(categoryLoadResult))
+              ServiceLoadResult(name, LoadOk, Seq(categoryLoadResult, personLoadResult))
       )
 
 }
