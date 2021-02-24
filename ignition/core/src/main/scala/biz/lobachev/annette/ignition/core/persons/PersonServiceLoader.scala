@@ -22,7 +22,7 @@ class PersonServiceLoader(
   override def run(principal: AnnettePrincipal): Future[ServiceLoadResult] =
     ConfigSource.default
       .at("annette.ignition.persons")
-      .load[PersonIgnitionConfig]
+      .load[PersonIgnitionData]
       .fold(
         failure => {
           val message = "Person ignition config load error"

@@ -14,42 +14,38 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.ignition.core.persons_old
+package biz.lobachev.annette.ignition.core.org_structure_old.role
 
 import akka.Done
 import akka.actor.ActorSystem
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.persons.api.PersonService
-import biz.lobachev.annette.persons.api.person.CreatePersonPayload
+import biz.lobachev.annette.org_structure.api.OrgStructureService
+import biz.lobachev.annette.org_structure.api.role.CreateOrgRolePayload
 import io.scalaland.chimney.dsl._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future, Promise}
 
-class PersonLoader(
-  personService: PersonService,
-  actorSystem: ActorSystem,
-  implicit val executionContext: ExecutionContext
-) {
+class OrgRoleLoader(
+  orgStructureService: OrgStructureService,
+  actorSystem: ActorSystem
+)(implicit val executionContext: ExecutionContext) {
 
   protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 
-  def load(persons: Seq[PersonArr] = Seq.empty, createdBy: AnnettePrincipal) =
-    loadPersons(persons, createdBy)
+  def load(orgRoles: Seq[OrgRoleData] = Seq.empty, createdBy: AnnettePrincipal) = loadOrgRoles(orgRoles, createdBy)
 
-  private def loadPersons(
-    persons: Seq[PersonArr],
+  private def loadOrgRoles(
+    orgRoles: Seq[OrgRoleData],
     createdBy: AnnettePrincipal,
     promise: Promise[Done] = Promise(),
     iteration: Int = 100
   ): Future[Done] = {
 
-    val future = persons
-      .map(_.data)
-      .flatten
-      .foldLeft(Future.successful(())) { (f, person) =>
-        f.flatMap(_ => loadPerson(person, createdBy))
+    val future = orgRoles
+      .foldLeft(Future.successful(())) { (f, orgRole) =>
+        f.flatMap(_ => loadOrgRole(orgRole, createdBy))
       }
 
     future.foreach { _ =>
@@ -59,12 +55,12 @@ class PersonLoader(
     future.failed.foreach {
       case th: IllegalStateException =>
         log.warn(
-          "Failed to load persons. Retrying after delay. Failure reason: {}",
+          "Failed to load orgRoles. Retrying after delay. Failure reason: {}",
           th.getMessage
         )
         if (iteration > 0)
           actorSystem.scheduler.scheduleOnce(10.seconds)({
-            loadPersons(persons, createdBy, promise, iteration - 1)
+            loadOrgRoles(orgRoles, createdBy, promise, iteration - 1)
             ()
           })
         else
@@ -76,33 +72,27 @@ class PersonLoader(
     promise.future
   }
 
-  private def loadPerson(person: PersonConfig, principal: AnnettePrincipal): Future[Unit] = {
-    val payload = person
-      .into[CreatePersonPayload]
+  private def loadOrgRole(orgRole: OrgRoleData, principal: AnnettePrincipal): Future[Unit] = {
+    val payload = orgRole
+      .into[CreateOrgRolePayload]
       .withFieldConst(_.createdBy, principal)
       .transform
-    personService
-      .createOrUpdatePerson(payload)
+    orgStructureService
+      .createOrUpdateOrgRole(payload)
       .map { _ =>
-        log.debug(
-          "Person loaded: {} - {}, {} {}",
-          person.id,
-          person.lastname,
-          person.firstname,
-          person.middlename.getOrElse("")
-        )
+        log.debug("OrgRole loaded: {}", orgRole.id)
         ()
       }
       .recoverWith {
         case th: IllegalStateException => Future.failed(th)
         case th                        =>
-          log.error("Load person {} failed", person.id, th)
+          log.error("Load orgRole {} failed", orgRole.id, th)
           Future.failed(th)
       }
   }
 
   private def closeFailed(promise: Promise[Done], th: Throwable) = {
-    val message   = "Failed to load persons"
+    val message   = "Failed to load org roles"
     log.error(message, th)
     val exception = new RuntimeException(message, th)
     promise.failure(exception)

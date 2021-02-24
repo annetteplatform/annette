@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.ignition.core.org_structure
+package biz.lobachev.annette.ignition.core.org_structure_old
 
 import akka.Done
 import akka.actor.ActorSystem
-import biz.lobachev.annette.ignition.core.org_structure.category.OrgCategoryLoader
-import biz.lobachev.annette.ignition.core.org_structure.organization.OrgStructureLoader
-import biz.lobachev.annette.ignition.core.org_structure.role.OrgRoleLoader
+import biz.lobachev.annette.ignition.core.org_structure_old.category.OrgCategoryLoader
+import biz.lobachev.annette.ignition.core.org_structure_old.organization.OrgStructureLoader
+import biz.lobachev.annette.ignition.core.org_structure_old.role.OrgRoleLoader
 import biz.lobachev.annette.org_structure.api.OrgStructureService
 import org.slf4j.{Logger, LoggerFactory}
 import pureconfig.ConfigSource

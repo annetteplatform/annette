@@ -2,6 +2,7 @@ package biz.lobachev.annette.ignition.core
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.ignition.core.model.ServiceLoadResult
+import biz.lobachev.annette.ignition.core.org_structure.OrgStructureServiceLoader
 import biz.lobachev.annette.ignition.core.persons.PersonServiceLoader
 import org.slf4j.{Logger, LoggerFactory}
 import pureconfig.ConfigSource
@@ -9,7 +10,11 @@ import pureconfig.generic.auto._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class AnnetteIgnition(personServiceLoader: PersonServiceLoader, implicit val ec: ExecutionContext) {
+class AnnetteIgnition(
+  personServiceLoader: PersonServiceLoader,
+  orgStructureServiceLoader: OrgStructureServiceLoader,
+  implicit val ec: ExecutionContext
+) {
 
   protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 
@@ -29,10 +34,11 @@ class AnnetteIgnition(personServiceLoader: PersonServiceLoader, implicit val ec:
   private def run(principal: AnnettePrincipal): Future[Unit] = {
     log.debug("Annette ignition started...")
     (for {
-      personLoadResult <- personServiceLoader.run(principal)
+      personLoadResult       <- personServiceLoader.run(principal)
+      orgStructureLoadResult <- orgStructureServiceLoader.run(principal)
     } yield {
       log.debug("Annette ignition completed...")
-      logResults(personLoadResult :: Nil)
+      logResults(personLoadResult :: orgStructureLoadResult :: Nil)
     }).recover(th => log.error("Annette ignition failed with error: {}", th.getMessage, th))
   }
 

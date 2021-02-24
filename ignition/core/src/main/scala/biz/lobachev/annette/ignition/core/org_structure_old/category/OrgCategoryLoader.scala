@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.ignition.core.org_structure.category
+package biz.lobachev.annette.ignition.core.org_structure_old.category
 
 import akka.Done
 import akka.actor.ActorSystem

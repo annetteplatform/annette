@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.ignition.core.org_structure
+package biz.lobachev.annette.ignition.core.org_structure_old
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.ignition.core.org_structure.category.CategoryData
-import biz.lobachev.annette.ignition.core.org_structure.organization.UnitData
-import biz.lobachev.annette.ignition.core.org_structure.role.OrgRoleData
+import biz.lobachev.annette.ignition.core.org_structure_old.category.CategoryData
+import biz.lobachev.annette.ignition.core.org_structure_old.organization.UnitData
+import biz.lobachev.annette.ignition.core.org_structure_old.role.OrgRoleData
 
 case class InitOrgStructureData(
   enableOrgRoles: Boolean = true,

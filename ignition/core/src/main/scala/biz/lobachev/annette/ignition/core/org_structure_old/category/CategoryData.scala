@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.ignition.core.org_structure.role
+package biz.lobachev.annette.ignition.core.org_structure_old.category
 
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 
-case class OrgRoleData(
+case class CategoryData(
   id: OrgRoleId,
   name: String,
-  description: String = ""
+  forOrganization: Boolean = false,
+  forUnit: Boolean = false,
+  forPosition: Boolean = false
 )

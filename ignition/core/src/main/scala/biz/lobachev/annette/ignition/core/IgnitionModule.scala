@@ -2,7 +2,14 @@ package biz.lobachev.annette.ignition.core
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
+import biz.lobachev.annette.ignition.core.org_structure.{
+  OrgCategoryLoader,
+  OrgRoleLoader,
+  OrgStructureLoader,
+  OrgStructureServiceLoader
+}
 import biz.lobachev.annette.ignition.core.persons.{PersonCategoryLoader, PersonServiceLoader, PersonsLoader}
+import biz.lobachev.annette.org_structure.api.{OrgStructureServiceApi, OrgStructureServiceImpl}
 import biz.lobachev.annette.persons.api.{PersonServiceApi, PersonServiceImpl}
 import com.lightbend.lagom.scaladsl.client.ServiceClient
 import com.softwaremill.macwire.wire
@@ -15,10 +22,17 @@ class IgnitionModule(
   val executionContext: ExecutionContext,
   val materializer: Materializer
 ) {
-  lazy val personServiceApi          = serviceClient.implement[PersonServiceApi]
-  lazy val personService             = wire[PersonServiceImpl]
-  lazy val personCategoryLoader      = wire[PersonCategoryLoader]
-  lazy val personsLoader             = wire[PersonsLoader]
-  lazy val personServiceLoader       = wire[PersonServiceLoader]
+  lazy val personServiceApi     = serviceClient.implement[PersonServiceApi]
+  lazy val personService        = wire[PersonServiceImpl]
+  lazy val personCategoryLoader = wire[PersonCategoryLoader]
+  lazy val personsLoader        = wire[PersonsLoader]
+  lazy val personServiceLoader  = wire[PersonServiceLoader]
+
+  lazy val orgStructureServiceApi    = serviceClient.implement[OrgStructureServiceApi]
+  lazy val orgStructureService       = wire[OrgStructureServiceImpl]
+  lazy val orgCategoryLoader         = wire[OrgCategoryLoader]
+  lazy val orgRoleLoader             = wire[OrgRoleLoader]
+  lazy val orgStructureLoader        = wire[OrgStructureLoader]
+  lazy val orgStructureServiceLoader = wire[OrgStructureServiceLoader]
   lazy val ignition: AnnetteIgnition = wire[AnnetteIgnition]
 }

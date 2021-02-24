@@ -14,14 +14,28 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.ignition.core.org_structure.category
+package biz.lobachev.annette.ignition.core.org_structure
 
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 
-case class CategoryData(
+case class OrgStructureIgnitionData(
+  orgRoles: Seq[OrgRoleIgnitionData] = Seq.empty,
+  categories: Seq[CategoryIgnitionData] = Seq.empty,
+  disposedCategory: String,
+  removeDisposed: Boolean = false,
+  orgStructure: Seq[String] = Seq.empty
+)
+
+case class CategoryIgnitionData(
   id: OrgRoleId,
   name: String,
   forOrganization: Boolean = false,
   forUnit: Boolean = false,
   forPosition: Boolean = false
+)
+
+case class OrgRoleIgnitionData(
+  id: OrgRoleId,
+  name: String,
+  description: String = ""
 )

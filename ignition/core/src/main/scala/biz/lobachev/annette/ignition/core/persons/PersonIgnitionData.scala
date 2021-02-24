@@ -5,12 +5,12 @@ import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import biz.lobachev.annette.persons.api.category.PersonCategoryId
 import play.api.libs.json.Json
 
-case class PersonIgnitionConfig(
-  categories: Seq[PersonCategoryConfig] = Seq.empty,
+case class PersonIgnitionData(
+  categories: Seq[PersonCategoryData] = Seq.empty,
   persons: Seq[String] = Seq.empty
 )
 
-case class PersonCategoryConfig(
+case class PersonCategoryData(
   id: OrgRoleId,
   name: String
 )
