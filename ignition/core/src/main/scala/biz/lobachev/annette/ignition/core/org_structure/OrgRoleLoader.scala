@@ -1,37 +1,37 @@
-package biz.lobachev.annette.ignition.core.persons
+package biz.lobachev.annette.ignition.core.org_structure
 
 import akka.Done
-import biz.lobachev.annette.ignition.core.EntityLoader
 import akka.stream.Materializer
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.persons.api.PersonService
-import biz.lobachev.annette.persons.api.category.CreateCategoryPayload
-import io.scalaland.chimney.dsl._
+import biz.lobachev.annette.ignition.core.EntityLoader
+import biz.lobachev.annette.org_structure.api.OrgStructureService
+import biz.lobachev.annette.org_structure.api.role.{CreateOrgRolePayload}
+import io.scalaland.chimney.dsl.TransformerOps
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class PersonCategoryLoader(
-  personService: PersonService,
+class OrgRoleLoader(
+  orgStructureService: OrgStructureService,
   implicit val materializer: Materializer,
   implicit val executionContext: ExecutionContext
-) extends EntityLoader[PersonCategoryData] {
+) extends EntityLoader[OrgRoleIgnitionData] {
 
   protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 
-  val name = "Category"
+  val name = "OrgRole"
 
   override def loadItem(
-    item: PersonCategoryData,
+    item: OrgRoleIgnitionData,
     principal: AnnettePrincipal
   ): Future[Either[Throwable, Done.type]] = {
     val payload = item
-      .into[CreateCategoryPayload]
+      .into[CreateOrgRolePayload]
       .withFieldConst(_.createdBy, principal)
       .transform
 
-    personService
-      .createOrUpdateCategory(payload)
+    orgStructureService
+      .createOrUpdateOrgRole(payload)
       .map { _ =>
         log.debug(s"$name loaded: {}", item.id)
         Right(Done)
@@ -44,6 +44,7 @@ class PersonCategoryLoader(
             Left(th)
           )
       }
+
   }
 
 }

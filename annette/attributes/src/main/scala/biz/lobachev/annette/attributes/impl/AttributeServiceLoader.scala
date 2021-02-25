@@ -52,7 +52,7 @@ class AttributeServiceLoader extends LagomApplicationLoader {
     new AttributeServiceApplication(context) with LagomDevModeComponents
   }
 
-  override def describeService = Some(readDescriptor[AttributeService])
+  override def describeService = Some(readDescriptor[AttributeServiceApi])
 }
 
 trait AttributeComponents
@@ -69,7 +69,7 @@ trait AttributeComponents
 
   import elasticModule._
 
-  override lazy val lagomServer = serverFor[AttributeService](wire[AttributeServiceImpl])
+  override lazy val lagomServer = serverFor[AttributeServiceApi](wire[AttributeServiceApiImpl])
 
   override lazy val jsonSerializerRegistry = AttributesSerializerRegistry
 

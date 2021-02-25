@@ -1,39 +1,44 @@
-package biz.lobachev.annette.ignition.core.persons
+package biz.lobachev.annette.ignition.core.authorization
 
 import akka.Done
-import biz.lobachev.annette.ignition.core.EntityLoader
 import akka.stream.Materializer
+import biz.lobachev.annette.authorization.api.AuthorizationService
+import biz.lobachev.annette.authorization.api.role.CreateRolePayload
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.persons.api.PersonService
-import biz.lobachev.annette.persons.api.category.CreateCategoryPayload
-import io.scalaland.chimney.dsl._
+import biz.lobachev.annette.ignition.core.FileBatchLoader
+import io.scalaland.chimney.dsl.TransformerOps
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class PersonCategoryLoader(
-  personService: PersonService,
+class RoleLoader(
+  authorizationService: AuthorizationService,
   implicit val materializer: Materializer,
   implicit val executionContext: ExecutionContext
-) extends EntityLoader[PersonCategoryData] {
+) extends FileBatchLoader[AuthRoleData] {
 
   protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 
-  val name = "Category"
+  val name = "AuthRole"
 
-  override def loadItem(
-    item: PersonCategoryData,
+  protected override def loadItem(
+    item: AuthRoleData,
     principal: AnnettePrincipal
   ): Future[Either[Throwable, Done.type]] = {
     val payload = item
-      .into[CreateCategoryPayload]
+      .into[CreateRolePayload]
+      .withFieldConst(_.permissions, item.permissions.map(_.toPermission))
       .withFieldConst(_.createdBy, principal)
       .transform
 
-    personService
-      .createOrUpdateCategory(payload)
+    authorizationService
+      .createOrUpdateRole(payload)
       .map { _ =>
-        log.debug(s"$name loaded: {}", item.id)
+        log.debug(
+          s"$name loaded: {} - {}",
+          item.id,
+          item.name
+        )
         Right(Done)
       }
       .recoverWith {
@@ -44,6 +49,7 @@ class PersonCategoryLoader(
             Left(th)
           )
       }
+
   }
 
 }

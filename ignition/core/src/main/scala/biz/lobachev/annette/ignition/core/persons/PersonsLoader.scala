@@ -1,39 +1,45 @@
 package biz.lobachev.annette.ignition.core.persons
 
 import akka.Done
-import biz.lobachev.annette.ignition.core.EntityLoader
 import akka.stream.Materializer
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.ignition.core.FileBatchLoader
 import biz.lobachev.annette.persons.api.PersonService
-import biz.lobachev.annette.persons.api.category.CreateCategoryPayload
+import biz.lobachev.annette.persons.api.person.CreatePersonPayload
 import io.scalaland.chimney.dsl._
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class PersonCategoryLoader(
+class PersonsLoader(
   personService: PersonService,
-  implicit val materializer: Materializer,
-  implicit val executionContext: ExecutionContext
-) extends EntityLoader[PersonCategoryData] {
+  override implicit val materializer: Materializer,
+  override implicit val executionContext: ExecutionContext
+) extends FileBatchLoader[PersonData] {
 
   protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 
-  val name = "Category"
+  val name = "Person"
 
-  override def loadItem(
-    item: PersonCategoryData,
+  protected override def loadItem(
+    item: PersonData,
     principal: AnnettePrincipal
   ): Future[Either[Throwable, Done.type]] = {
     val payload = item
-      .into[CreateCategoryPayload]
+      .into[CreatePersonPayload]
       .withFieldConst(_.createdBy, principal)
       .transform
 
     personService
-      .createOrUpdateCategory(payload)
+      .createOrUpdatePerson(payload)
       .map { _ =>
-        log.debug(s"$name loaded: {}", item.id)
+        log.debug(
+          s"$name loaded: {} - {}, {} {}",
+          item.id,
+          item.lastname,
+          item.firstname,
+          item.middlename.getOrElse("")
+        )
         Right(Done)
       }
       .recoverWith {
@@ -44,6 +50,7 @@ class PersonCategoryLoader(
             Left(th)
           )
       }
+
   }
 
 }

@@ -14,42 +14,53 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.ignition.core.org_structure.organization
+package biz.lobachev.annette.ignition.core.org_structure
 
 import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
-import pureconfig.generic.FieldCoproductHint
+import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 
-sealed trait OrgItemData {
+sealed trait OrgItemIgnitionData {
   val id: String
   val name: String
   val shortName: String
   val categoryId: OrgCategoryId
 }
 
-object OrgItemData {
-  implicit val confHint = new FieldCoproductHint[OrgItemData]("type") {
-    override def fieldValue(name: String) =
-      name match {
-        case "PositionData" => "P"
-        case "UnitData"     => "U"
-      }
-  }
-}
-
-case class PositionData(
+case class PositionIgnitionData(
   id: String,
   name: String,
   shortName: String,
   limit: Int = 1,
   categoryId: OrgCategoryId,
   person: Option[String] = None
-) extends OrgItemData
+) extends OrgItemIgnitionData
 
-case class UnitData(
+object PositionIgnitionData {
+  implicit val format = Json.format[PositionIgnitionData]
+}
+
+case class UnitIgnitionData(
   id: String,
   name: String,
   shortName: String,
   chief: Option[String] = None,
-  children: Seq[OrgItemData] = Seq.empty,
+  children: Seq[OrgItemIgnitionData] = Seq.empty,
   categoryId: OrgCategoryId
-) extends OrgItemData
+) extends OrgItemIgnitionData
+
+object UnitIgnitionData {
+  implicit val format = Json.format[UnitIgnitionData]
+}
+
+object OrgItemIgnitionData {
+  implicit val config                              = JsonConfiguration(
+    discriminator = "type",
+    typeNaming = JsonNaming { fullName =>
+      fullName.split("\\.").toSeq.last match {
+        case "PositionIgnitionData" => "P"
+        case "UnitIgnitionData"     => "U"
+      }
+    }
+  )
+  implicit val format: Format[OrgItemIgnitionData] = Json.format
+}

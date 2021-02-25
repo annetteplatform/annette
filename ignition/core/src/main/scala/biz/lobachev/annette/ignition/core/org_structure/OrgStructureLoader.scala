@@ -1,24 +1,11 @@
-/*
- * Copyright 2013 Valery Lobachev
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package biz.lobachev.annette.ignition.core.org_structure.organization
+package biz.lobachev.annette.ignition.core.org_structure
 
 import akka.Done
-import akka.actor.ActorSystem
+import akka.stream.Materializer
+import akka.stream.scaladsl.{RestartSource, Sink, Source}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.ignition.core.FileSourcing
+import biz.lobachev.annette.ignition.core.model.{BatchLoadResult, EntityLoadResult, LoadFailed, LoadOk}
 import biz.lobachev.annette.org_structure.api.OrgStructureService
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import io.scalaland.chimney.dsl._
@@ -26,89 +13,119 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import java.time.LocalDateTime
 import java.util.UUID
+import scala.collection.immutable
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, Future, Promise}
+import scala.concurrent.{ExecutionContext, Future}
 
 sealed trait OrgLoadResult
-case object OrgCreated extends OrgLoadResult
-case object OrgExist   extends OrgLoadResult
+case object OrgCreated                     extends OrgLoadResult
+case object OrgExist                       extends OrgLoadResult
+case class OrgCreateFailure(th: Throwable) extends OrgLoadResult
 
 class OrgStructureLoader(
   orgStructureService: OrgStructureService,
-  actorSystem: ActorSystem
-)(implicit val executionContext: ExecutionContext) {
+  implicit val materializer: Materializer,
+  implicit val executionContext: ExecutionContext
+) extends FileSourcing {
 
   protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 
-  def load(
-    orgStructure: Seq[UnitData],
-    disposedCategory: String,
-    createdBy: AnnettePrincipal
-  ): Future[Unit] =
-    sequentialProcess(orgStructure) { org =>
-      val future = for {
-        result <- loadOrganization(org, createdBy)
-        _      <- result match {
-                    case OrgCreated => loadChildren(org.children, org.id, org.id, createdBy)
-                    case OrgExist   => mergeOrg(org, org.id, disposedCategory, createdBy)
-                  }
-        _      <- loadChiefs(org, org.id, createdBy)
-      } yield ()
-      future.failed.foreach(th => log.error("Failed to load organization id: {}, name: {}", org.id, org.name, th))
-      future
-    }
+  val name = "OrgStructure"
 
-  private def loadOrganization(
-    org: UnitData,
-    principal: AnnettePrincipal,
-    promise: Promise[OrgLoadResult] = Promise(),
-    iteration: Int = 10
+  def loadBatches(
+    batchFilenames: Seq[String],
+    disposedCategory: String,
+    removeDisposed: Boolean,
+    principal: AnnettePrincipal
+  ): Future[EntityLoadResult] =
+    Source(batchFilenames)
+      .mapAsync(1) { batchFilename =>
+        getData[UnitIgnitionData](name, batchFilename) match {
+          case Right(org) =>
+            loadBatch(batchFilename, org, disposedCategory, removeDisposed, principal)
+          case Left(th)   =>
+            Future.successful(BatchLoadResult(batchFilename, LoadFailed(th.getMessage), Some(0)))
+        }
+      }
+      .runWith(
+        Sink.fold(EntityLoadResult(name, LoadOk, 0, Seq.empty)) {
+          case (acc, res @ BatchLoadResult(_, LoadOk, _))        =>
+            acc.copy(
+              quantity = acc.quantity + 1,
+              batches = acc.batches :+ res
+            )
+          case (acc, res @ BatchLoadResult(_, LoadFailed(_), _)) =>
+            acc.copy(
+              status = LoadFailed(""),
+              quantity = acc.quantity + 1,
+              batches = acc.batches :+ res
+            )
+        }
+      )
+
+  def loadBatch(
+    batch: String,
+    org: UnitIgnitionData,
+    disposedCategory: String,
+    removeDisposed: Boolean,
+    principal: AnnettePrincipal
+  ): Future[BatchLoadResult] =
+    (
+      for {
+        result <- createOrg(org, principal)
+        _      <- result match {
+                    case OrgCreated           => loadOrg(org.children, org.id, org.id, principal)
+                    case OrgExist             => mergeOrg(org, org.id, disposedCategory, removeDisposed, principal)
+                    case OrgCreateFailure(th) => throw th
+                  }
+        _      <- loadChiefs(org, org.id, principal)
+      } yield BatchLoadResult(s"$batch ${org.id} - ${org.name}", LoadOk, None)
+    )
+      .recover(th => BatchLoadResult(s"$batch ${org.id} - ${org.name}", LoadFailed(th.getMessage), None))
+
+  private def createOrg(
+    org: UnitIgnitionData,
+    principal: AnnettePrincipal
   ): Future[OrgLoadResult] = {
+
     val payload = org
       .into[CreateOrganizationPayload]
       .withFieldConst(_.orgId, org.id)
       .withFieldConst(_.createdBy, principal)
       .transform
-    val future  =
-      orgStructureService
-        .createOrganization(payload)
-        .map { _ =>
-          log.debug("Organization created: {}", org.id, org.name)
-          OrgCreated
-        }
-        .recover {
-          case OrganizationAlreadyExist(_) => OrgExist
-          case th                          => throw th
-        }
-
-    future.foreach { res =>
-      promise.success(res)
-    }
-
-    future.failed.foreach {
-      case th: IllegalStateException =>
-        log.warn(
-          "Failed to load organization {} - {}. Retrying after delay. Failure reason: {}",
-          org.id,
-          org.name,
-          th.getMessage
+    RestartSource
+      .onFailuresWithBackoff(
+        minBackoff = 3.seconds,
+        maxBackoff = 20.seconds,
+        randomFactor = 0.2,
+        maxRestarts = 20
+      ) { () =>
+        Source.future(
+          orgStructureService
+            .createOrganization(payload)
+            .map { _ =>
+              log.debug("Organization created: {}", org.id, org.name)
+              OrgCreated
+            }
+            .recover {
+              case OrganizationAlreadyExist(_) => OrgExist
+              case th: IllegalStateException   =>
+                log.warn(
+                  "Failed to load organization {} - {}. Retrying after delay. Failure reason: {}",
+                  org.id,
+                  org.name,
+                  th.getMessage
+                )
+                throw th
+              case th                          => OrgCreateFailure(th)
+            }
         )
-        if (iteration > 0)
-          actorSystem.scheduler.scheduleOnce(20.seconds)({
-            loadOrganization(org, principal, promise, iteration - 1)
-            ()
-          })
-        else
-          closeFailed(promise, th)
-      case th                        =>
-        closeFailed(promise, th)
-    }
-
-    promise.future
+      }
+      .runWith(Sink.last)
   }
 
-  private def loadChildren(
-    children: Seq[OrgItemData],
+  private def loadOrg(
+    children: Seq[OrgItemIgnitionData],
     orgId: OrgItemId,
     parentId: OrgItemId,
     createdBy: AnnettePrincipal
@@ -117,19 +134,19 @@ class OrgStructureLoader(
       .foldLeft(Future.successful(())) { (f, orgItem) =>
         f.flatMap { _ =>
           orgItem match {
-            case unit: UnitData         =>
+            case unit: UnitIgnitionData         =>
               for {
                 _ <- createOrgUnit(unit, orgId, parentId, createdBy)
-                _ <- loadChildren(unit.children, orgId, unit.id, createdBy)
+                _ <- loadOrg(unit.children, orgId, unit.id, createdBy)
               } yield ()
-            case position: PositionData =>
+            case position: PositionIgnitionData =>
               createPosition(position, orgId, parentId, createdBy)
           }
         }
       }
 
   private def createOrgUnit(
-    unit: UnitData,
+    unit: UnitIgnitionData,
     orgId: OrgItemId,
     parentId: OrgItemId,
     createdBy: AnnettePrincipal
@@ -148,7 +165,7 @@ class OrgStructureLoader(
   }
 
   private def createPosition(
-    position: PositionData,
+    position: PositionIgnitionData,
     orgId: OrgItemId,
     parentId: OrgItemId,
     createdBy: AnnettePrincipal
@@ -177,11 +194,13 @@ class OrgStructureLoader(
   }
 
   private def mergeOrg(
-    org: UnitData,
+    org: UnitIgnitionData,
     orgId: OrgItemId,
     disposedCategory: String,
+    removeDisposed: Boolean,
     updatedBy: AnnettePrincipal
   ): Future[Unit] = {
+    println(removeDisposed)
     log.debug("Merging organization: {} - {}", orgId, org.name)
     val disposedUnitId   = UUID.randomUUID().toString
     val timestamp        = LocalDateTime.now().toString
@@ -239,7 +258,7 @@ class OrgStructureLoader(
     }
 
   private def mergeItem(
-    item: OrgItemData,
+    item: OrgItemIgnitionData,
     orgId: OrgItemId,
     parentId: OrgItemId,
     mergeUnitId: OrgItemId,
@@ -248,36 +267,43 @@ class OrgStructureLoader(
     for {
       currentItem <- getCurrentItem(item, orgId)
       _            = currentItem.map {
-                       case currentUnit: OrgUnit if item.isInstanceOf[UnitData]             =>
+                       case currentUnit: OrgUnit if item.isInstanceOf[UnitIgnitionData]             =>
                          log.debug("Merging unit {} - {}", item.id, item.name)
-                         mergeCurrentUnit(currentUnit, item.asInstanceOf[UnitData], orgId, parentId, mergeUnitId, updatedBy)
-                       case currentPosition: OrgPosition if item.isInstanceOf[PositionData] =>
+                         mergeCurrentUnit(
+                           currentUnit,
+                           item.asInstanceOf[UnitIgnitionData],
+                           orgId,
+                           parentId,
+                           mergeUnitId,
+                           updatedBy
+                         )
+                       case currentPosition: OrgPosition if item.isInstanceOf[PositionIgnitionData] =>
                          log.debug("Merging position {} - {}", item.id, item.name)
-                         mergeCurrentPosition(currentPosition, item.asInstanceOf[PositionData], orgId, parentId, updatedBy)
+                         mergeCurrentPosition(currentPosition, item.asInstanceOf[PositionIgnitionData], orgId, parentId, updatedBy)
                      }.getOrElse {
-                       if (item.isInstanceOf[UnitData]) {
+                       if (item.isInstanceOf[UnitIgnitionData]) {
                          log.debug("Creating new unit {} - {}", item.id, item.name)
-                         mergeNewUnit(item.asInstanceOf[UnitData], orgId, parentId, mergeUnitId, updatedBy)
+                         mergeNewUnit(item.asInstanceOf[UnitIgnitionData], orgId, parentId, mergeUnitId, updatedBy)
                        } else {
                          log.debug("Creating new position {} - {}", item.id, item.name)
-                         mergeNewPosition(item.asInstanceOf[PositionData], orgId, parentId, updatedBy)
+                         mergeNewPosition(item.asInstanceOf[PositionIgnitionData], orgId, parentId, updatedBy)
                        }
                      }
     } yield ()
 
-  private def getCurrentItem(item: OrgItemData, orgId: OrgItemId) =
+  private def getCurrentItem(item: OrgItemIgnitionData, orgId: OrgItemId) =
     orgStructureService
       .getOrgItemById(orgId, item.id)
       .map {
-        case currentUnit: OrgUnit if item.isInstanceOf[PositionData]     =>
+        case currentUnit: OrgUnit if item.isInstanceOf[PositionIgnitionData]     =>
           throw new IllegalArgumentException(
             s"Change of item [${item.id}] type Unit[${currentUnit.name}] to Position[${item.name}] is prohibited"
           )
-        case currentPosition: OrgPosition if item.isInstanceOf[UnitData] =>
+        case currentPosition: OrgPosition if item.isInstanceOf[UnitIgnitionData] =>
           throw new IllegalArgumentException(
             s"Change of item [${item.id}] type Position[${currentPosition.name}] to Unit[${item.name}] is prohibited"
           )
-        case item                                                        => Some(item)
+        case item                                                                => Some(item)
       }
       .recoverWith {
         case ItemNotFound(_)      => Future.successful(None)
@@ -285,7 +311,7 @@ class OrgStructureLoader(
       }
 
   def mergeNewUnit(
-    newUnit: UnitData,
+    newUnit: UnitIgnitionData,
     orgId: OrgItemId,
     parentId: OrgItemId,
     mergeUnitId: OrgItemId,
@@ -297,7 +323,7 @@ class OrgStructureLoader(
     } yield ()
 
   def mergeNewPosition(
-    newPosition: PositionData,
+    newPosition: PositionIgnitionData,
     orgId: OrgItemId,
     parentId: OrgItemId,
     updatedBy: AnnettePrincipal
@@ -305,7 +331,7 @@ class OrgStructureLoader(
 
   def mergeCurrentUnit(
     currentUnit: OrgUnit,
-    newUnit: UnitData,
+    newUnit: UnitIgnitionData,
     orgId: OrgItemId,
     parentId: OrgItemId,
     mergeUnitId: OrgItemId,
@@ -321,7 +347,7 @@ class OrgStructureLoader(
 
   def mergeCurrentPosition(
     currentPosition: OrgPosition,
-    newPosition: PositionData,
+    newPosition: PositionIgnitionData,
     orgId: OrgItemId,
     parentId: OrgItemId,
     updatedBy: AnnettePrincipal
@@ -345,7 +371,7 @@ class OrgStructureLoader(
 
   def mergeCommonProperties(
     currentItem: OrgItem,
-    newItem: OrgItemData,
+    newItem: OrgItemIgnitionData,
     orgId: OrgItemId,
     parentId: OrgItemId,
     updatedBy: AnnettePrincipal
@@ -367,7 +393,7 @@ class OrgStructureLoader(
 
     } yield ()
 
-  def loadChiefs(unit: UnitData, orgId: OrgItemId, createdBy: AnnettePrincipal): Future[Unit] =
+  def loadChiefs(unit: UnitIgnitionData, orgId: OrgItemId, createdBy: AnnettePrincipal): Future[Unit] =
     for {
       _ <- unit.chief.map { chiefId =>
              for {
@@ -402,8 +428,8 @@ class OrgStructureLoader(
              } yield Done
            }.getOrElse(Future.successful(Done))
       _ <- unit.children.map {
-             case u: UnitData => Some(u)
-             case _           => None
+             case u: UnitIgnitionData => Some(u)
+             case _                   => None
            }.flatten
              .foldLeft(Future.successful(())) { (f, childUnit) =>
                f.flatMap { _ =>
@@ -412,19 +438,10 @@ class OrgStructureLoader(
              }
     } yield ()
 
-  private def closeFailed[A](promise: Promise[A], th: Throwable) = {
-    val message   = "Failed to load org structure"
-    log.error(message, th)
-    val exception = new RuntimeException(message, th)
-    promise.failure(exception)
-  }
-
-  def sequentialProcess[A, B](list: Iterable[A])(block: A => Future[B]): Future[Unit] =
-    list.foldLeft(Future.successful(())) { (future, item) =>
-      for {
-        _ <- future
-        _ <- block(item)
-      } yield ()
-    }
-
+  def sequentialProcess[A, B](list: immutable.Iterable[A])(block: A => Future[B]): Future[Unit] =
+    for {
+      _ <- Source(list)
+             .mapAsync(1)(item => block(item))
+             .runWith(Sink.ignore)
+    } yield ()
 }

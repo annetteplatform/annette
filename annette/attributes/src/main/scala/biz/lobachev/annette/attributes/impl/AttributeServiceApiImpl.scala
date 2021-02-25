@@ -18,7 +18,7 @@ package biz.lobachev.annette.attributes.impl
 
 import akka.util.Timeout
 import akka.{Done, NotUsed}
-import biz.lobachev.annette.attributes.api.AttributeService
+import biz.lobachev.annette.attributes.api.AttributeServiceApi
 import biz.lobachev.annette.attributes.api.assignment._
 import biz.lobachev.annette.attributes.api.index._
 import biz.lobachev.annette.attributes.api.schema._
@@ -38,14 +38,14 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.Try
 
-class AttributeServiceImpl(
+class AttributeServiceApiImpl(
   schemaEntityService: SchemaEntityService,
   assignmentEntityService: AssignmentEntityService,
   persistentEntityRegistry: PersistentEntityRegistry,
   config: Config
 )(implicit
   ec: ExecutionContext
-) extends AttributeService {
+) extends AttributeServiceApi {
   implicit val timeout = Try(config.getDuration("annette.timeout")).getOrElse(Timeout(60.seconds))
 
   val log = LoggerFactory.getLogger(this.getClass)

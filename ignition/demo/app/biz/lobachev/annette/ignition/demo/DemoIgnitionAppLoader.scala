@@ -16,25 +16,30 @@
 
 package biz.lobachev.annette.ignition.demo
 
-import akka.Done
 import biz.lobachev.annette.api_gateway_core.exception.ApiGatewayErrorHandler
-import biz.lobachev.annette.application.api.{ApplicationServiceApi, ApplicationServiceImpl}
-import biz.lobachev.annette.authorization.api.{AuthorizationServiceApi, AuthorizationServiceImpl}
+import biz.lobachev.annette.ignition.core.IgnitionModule
+//import biz.lobachev.annette.ignition.core.persons.{PersonCategoryLoader, PersonServiceLoader}
+//import biz.lobachev.annette.persons.api.{PersonServiceApi, PersonServiceImpl}
+//import biz.lobachev.annette.application.api.{ApplicationServiceApi, ApplicationServiceImpl}
+//import biz.lobachev.annette.attributes.api.{AttributeServiceApi, AttributeServiceImpl}
+//import biz.lobachev.annette.authorization.api.{AuthorizationServiceApi, AuthorizationServiceImpl}
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
-import biz.lobachev.annette.ignition.core.authorization.{AuthRoleLoader, InitAuthorization}
-import biz.lobachev.annette.ignition.core.org_structure.InitOrgStructure
-import biz.lobachev.annette.ignition.core.org_structure.category.OrgCategoryLoader
-import biz.lobachev.annette.ignition.core.org_structure.organization.OrgStructureLoader
-import biz.lobachev.annette.ignition.core.org_structure.role.OrgRoleLoader
-import biz.lobachev.annette.ignition.core.persons.{InitPersons, PersonCategoryLoader, PersonLoader}
-import biz.lobachev.annette.org_structure.api.{OrgStructureServiceApi, OrgStructureServiceImpl}
-import biz.lobachev.annette.persons.api.{PersonServiceApi, PersonServiceImpl}
+//import biz.lobachev.annette.ignition.core.AnnetteIgnition
+//import biz.lobachev.annette.ignition.core.PersonModule
+//import biz.lobachev.annette.ignition.core.attributes.{AttributeDataLoader, InitAttributes, SchemaLoader}
+//import biz.lobachev.annette.ignition.core.authorization.{AuthRoleLoader, InitAuthorization}
+//import biz.lobachev.annette.ignition.core.org_structure.InitOrgStructure
+//import biz.lobachev.annette.ignition.core.org_structure.category.OrgCategoryLoader
+//import biz.lobachev.annette.ignition.core.org_structure.organization.OrgStructureLoader
+//import biz.lobachev.annette.ignition.core.org_structure.role.OrgRoleLoader
+//import biz.lobachev.annette.ignition.core.persons_old.{InitPersons, PersonCategoryLoader, PersonLoader}
+//import biz.lobachev.annette.org_structure.api.{OrgStructureServiceApi, OrgStructureServiceImpl}
+//import biz.lobachev.annette.persons.api.{PersonServiceApi, PersonServiceImpl}
 import com.lightbend.lagom.scaladsl.api.{LagomConfigComponent, ServiceAcl, ServiceInfo}
 import com.lightbend.lagom.scaladsl.client.LagomServiceClientComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.softwaremill.macwire._
 import controllers.AssetsComponents
-import org.slf4j.{Logger, LoggerFactory}
 import play.api.ApplicationLoader.Context
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.EssentialFilter
@@ -42,7 +47,7 @@ import play.api.{ApplicationLoader, BuiltInComponentsFromContext, LoggerConfigur
 import router.Routes
 
 import scala.collection.immutable
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext}
 
 abstract class DemoIgnitionApp(context: Context)
     extends BuiltInComponentsFromContext(context)
@@ -51,14 +56,14 @@ abstract class DemoIgnitionApp(context: Context)
     with LagomConfigComponent
     with LagomServiceClientComponents {
 
-  final private val log: Logger = LoggerFactory.getLogger(this.getClass)
+  lazy val ignitionModule: IgnitionModule =
+    new IgnitionModule(serviceClient, actorSystem, executionContext, materializer)
+  import ignitionModule._
 
   override def httpFilters: Seq[EssentialFilter] = Seq.empty
 
-  //override lazy val httpErrorHandler: JsonErrorHandler = wire[JsonErrorHandler]
-
   override lazy val serviceInfo: ServiceInfo                    = ServiceInfo(
-    name = "init-task",
+    name = "demo-ignition",
     acls = immutable.Seq(ServiceAcl.forPathRegex("/init/.*"))
   )
   implicit override lazy val executionContext: ExecutionContext = actorSystem.dispatcher
@@ -73,50 +78,55 @@ abstract class DemoIgnitionApp(context: Context)
 
   lazy val initController = wire[InitController]
 
-  lazy val authorizationServiceApi = serviceClient.implement[AuthorizationServiceApi]
-  lazy val authorizationService    = wire[AuthorizationServiceImpl]
-  lazy val orgStructureServiceApi  = serviceClient.implement[OrgStructureServiceApi]
-  lazy val orgStructureService     = wire[OrgStructureServiceImpl]
-  lazy val personServiceApi        = serviceClient.implement[PersonServiceApi]
-  lazy val personService           = wire[PersonServiceImpl]
-  lazy val applicationServiceApi   = serviceClient.implement[ApplicationServiceApi]
-  lazy val applicationService      = wire[ApplicationServiceImpl]
+  val ignitionFuture = for {
+    _ <- ignition.run()
+  } yield this.application.stop()
 
-  log.info("Init tasks started")
-  lazy val authRoleLoader: AuthRoleLoader             = wire[AuthRoleLoader]
-  lazy val initAuthorization: InitAuthorization       = wire[InitAuthorization]
-  lazy val orgStructureLoader: OrgStructureLoader     = wire[OrgStructureLoader]
-  lazy val orgRoleLoader: OrgRoleLoader               = wire[OrgRoleLoader]
-  lazy val orgCategoryLoader: OrgCategoryLoader       = wire[OrgCategoryLoader]
-  lazy val initOrgStructure: InitOrgStructure         = wire[InitOrgStructure]
-  lazy val personLoader: PersonLoader                 = wire[PersonLoader]
-  lazy val personCategoryLoader: PersonCategoryLoader = wire[PersonCategoryLoader]
-  lazy val initPersons: InitPersons                   = wire[InitPersons]
-
-  val initFuture = {
-    for {
-      personResult        <- initPersons.run().map(_ => true).recover(_ => false)
-      orgStructureResult  <- initOrgStructure.run().map(_ => true).recover(_ => false)
-      authorizationResult <- initAuthorization.run().map(_ => true).recover(_ => false)
-    } yield {
-      if (!personResult) log.error("Init person failed")
-      if (!orgStructureResult) log.error("Init org structure failed")
-      if (!authorizationResult) log.error("Init authorization failed")
-      if (personResult && orgStructureResult && authorizationResult) log.info("Init tasks completed")
-      else log.error("Init tasks failed")
-      this.application.stop()
-    }
-  }
-
-  initFuture.failed.foreach { th =>
-    log.error("Init tasks failed", th)
+  ignitionFuture.failed.foreach { _ =>
     this.application.stop()
   }
 
-  application.coordinatedShutdown.addTask("actor-system-terminate", "shutdown") { () =>
-    log.info("Init App shutdown")
-    Future.successful(Done)
-  }
+//  log.info("Init tasks started")
+//  lazy val authRoleLoader: AuthRoleLoader             = wire[AuthRoleLoader]
+//  lazy val initAuthorization: InitAuthorization       = wire[InitAuthorization]
+//  lazy val orgStructureLoader: OrgStructureLoader     = wire[OrgStructureLoader]
+//  lazy val orgRoleLoader: OrgRoleLoader               = wire[OrgRoleLoader]
+//  lazy val orgCategoryLoader: OrgCategoryLoader       = wire[OrgCategoryLoader]
+//  lazy val initOrgStructure: InitOrgStructure         = wire[InitOrgStructure]
+//  lazy val personLoader: PersonLoader                 = wire[PersonLoader]
+//  lazy val personCategoryLoader: PersonCategoryLoader = wire[PersonCategoryLoader]
+//  lazy val initPersons: InitPersons                   = wire[InitPersons]
+//  lazy val schemaLoader: SchemaLoader                 = wire[SchemaLoader]
+//  lazy val attributeDataLoader: AttributeDataLoader   = wire[AttributeDataLoader]
+//  lazy val initAttributes: InitAttributes             = wire[InitAttributes]
+//
+//  val initFuture = {
+//    for {
+//      personResult        <- initPersons.run().map(_ => true).recover(_ => false)
+//      orgStructureResult  <- initOrgStructure.run().map(_ => true).recover(_ => false)
+//      authorizationResult <- initAuthorization.run().map(_ => true).recover(_ => false)
+//      attributesResult    <- initAttributes.run().map(_ => true).recover(_ => false)
+//    } yield {
+//      if (!personResult) log.error("Init person failed")
+//      if (!orgStructureResult) log.error("Init org structure failed")
+//      if (!authorizationResult) log.error("Init authorization failed")
+//      if (!attributesResult) log.error("Init attributes failed")
+//      if (personResult && orgStructureResult && authorizationResult && attributesResult)
+//        log.info("Init tasks completed")
+//      else log.error("Init tasks failed")
+//      this.application.stop()
+//    }
+//  }
+//
+//  initFuture.failed.foreach { th =>
+//    log.error("Init tasks failed", th)
+//    this.application.stop()
+//  }
+//
+//  application.coordinatedShutdown.addTask("actor-system-terminate", "shutdown") { () =>
+//    log.info("Init App shutdown")
+//    Future.successful(Done)
+//  }
 
 }
 
