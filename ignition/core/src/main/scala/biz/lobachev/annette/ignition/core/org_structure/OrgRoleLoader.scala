@@ -3,7 +3,7 @@ package biz.lobachev.annette.ignition.core.org_structure
 import akka.Done
 import akka.stream.Materializer
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.ignition.core.ItemLoader
+import biz.lobachev.annette.ignition.core.EntityLoader
 import biz.lobachev.annette.org_structure.api.OrgStructureService
 import biz.lobachev.annette.org_structure.api.role.{CreateOrgRolePayload}
 import io.scalaland.chimney.dsl.TransformerOps
@@ -15,7 +15,7 @@ class OrgRoleLoader(
   orgStructureService: OrgStructureService,
   implicit val materializer: Materializer,
   implicit val executionContext: ExecutionContext
-) extends ItemLoader[OrgRoleIgnitionData] {
+) extends EntityLoader[OrgRoleIgnitionData] {
 
   protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 
@@ -33,13 +33,13 @@ class OrgRoleLoader(
     orgStructureService
       .createOrUpdateOrgRole(payload)
       .map { _ =>
-        log.debug("Org role loaded: {}", item.id)
+        log.debug(s"$name loaded: {}", item.id)
         Right(Done)
       }
       .recoverWith {
         case th: IllegalStateException => Future.failed(th)
         case th                        =>
-          log.error("Load org role {} failed", item.id, th)
+          log.error(s"Load $name {} failed", item.id, th)
           Future.successful(
             Left(th)
           )

@@ -5,17 +5,17 @@ import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import biz.lobachev.annette.persons.api.category.PersonCategoryId
 import play.api.libs.json.Json
 
-case class PersonIgnitionData(
+protected case class PersonIgnitionData(
   categories: Seq[PersonCategoryData] = Seq.empty,
   persons: Seq[String] = Seq.empty
 )
 
-case class PersonCategoryData(
+protected case class PersonCategoryData(
   id: OrgRoleId,
   name: String
 )
 
-case class PersonData(
+protected case class PersonData(
   id: PersonId,                      // person id
   lastname: String,                  // last name of the person
   firstname: String,                 // first name
@@ -25,6 +25,6 @@ case class PersonData(
   email: Option[String] = None       // email
 )
 
-object PersonData {
+protected object PersonData {
   implicit val format = Json.format[PersonData]
 }

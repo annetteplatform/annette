@@ -20,7 +20,7 @@ import biz.lobachev.annette.core.model.PermissionId
 import biz.lobachev.annette.core.model.auth.Permission
 import play.api.libs.json.Json
 
-case class AuthIgnitionData(
+protected case class AuthIgnitionData(
   roles: Seq[String] = Seq.empty,
   assignments: Seq[String] = Seq.empty
 )

@@ -4,45 +4,48 @@ import akka.Done
 import akka.stream.Materializer
 import akka.stream.scaladsl.{RestartSource, Sink, Source}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.ignition.core.FileSourcing
 import biz.lobachev.annette.ignition.core.model.{BatchLoadResult, EntityLoadResult, LoadFailed, LoadOk}
 import biz.lobachev.annette.org_structure.api.OrgStructureService
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import io.scalaland.chimney.dsl._
 import org.slf4j.{Logger, LoggerFactory}
-import play.api.libs.json.Json
 
 import java.time.LocalDateTime
 import java.util.UUID
 import scala.collection.immutable
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.io.{Source => IOSource}
-import scala.util.{Failure, Success, Try}
 
-sealed trait OrgLoadResult
-case object OrgCreated                     extends OrgLoadResult
-case object OrgExist                       extends OrgLoadResult
-case class OrgCreateFailure(th: Throwable) extends OrgLoadResult
+protected sealed trait OrgLoadResult
+protected case object OrgCreated                     extends OrgLoadResult
+protected case object OrgExist                       extends OrgLoadResult
+protected case class OrgCreateFailure(th: Throwable) extends OrgLoadResult
 
 class OrgStructureLoader(
   orgStructureService: OrgStructureService,
   implicit val materializer: Materializer,
   implicit val executionContext: ExecutionContext
-) {
+) extends FileSourcing {
 
   protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 
   val name = "OrgStructure"
 
-  def load(
-    batches: Seq[String],
+  def loadBatches(
+    batchFilenames: Seq[String],
     disposedCategory: String,
     removeDisposed: Boolean,
     principal: AnnettePrincipal
   ): Future[EntityLoadResult] =
-    Source(batches)
-      .mapAsync(1) { batch =>
-        loadBatch(batch, disposedCategory, removeDisposed, principal)
+    Source(batchFilenames)
+      .mapAsync(1) { batchFilename =>
+        getData[UnitIgnitionData](name, batchFilename) match {
+          case Right(org) =>
+            loadBatch(batchFilename, org, disposedCategory, removeDisposed, principal)
+          case Left(th)   =>
+            Future.successful(BatchLoadResult(batchFilename, LoadFailed(th.getMessage), Some(0)))
+        }
       }
       .runWith(
         Sink.fold(EntityLoadResult(name, LoadOk, 0, Seq.empty)) {
@@ -62,47 +65,23 @@ class OrgStructureLoader(
 
   def loadBatch(
     batch: String,
+    org: UnitIgnitionData,
     disposedCategory: String,
     removeDisposed: Boolean,
     principal: AnnettePrincipal
   ): Future[BatchLoadResult] =
-    getData(batch) match {
-      case Right(org) =>
-        (
-          for {
-            result <- createOrg(org, principal)
-            _      <- result match {
-                        case OrgCreated           => loadOrg(org.children, org.id, org.id, principal)
-                        case OrgExist             => mergeOrg(org, org.id, disposedCategory, removeDisposed, principal)
-                        case OrgCreateFailure(th) => throw th
-                      }
-            _      <- loadChiefs(org, org.id, principal)
-          } yield BatchLoadResult(s"$batch ${org.id} - ${org.name}", LoadOk, None)
-        )
-          .recover(th => BatchLoadResult(s"$batch ${org.id} - ${org.name}", LoadFailed(th.getMessage), None))
-      case Left(th)   =>
-        Future.successful(BatchLoadResult(batch, LoadFailed(th.getMessage), Some(0)))
-    }
-
-  def getData(filename: String): Either[Throwable, UnitIgnitionData] = {
-    val jsonTry = Try(IOSource.fromResource(filename).mkString)
-    jsonTry match {
-      case Success(json) =>
-        val resTry = Try(Json.parse(json).as[UnitIgnitionData])
-        resTry match {
-          case Success(data) => Right(data)
-          case Failure(th)   =>
-            val message = s"Parsing org structure json failed: $filename"
-            log.error(message, th)
-            Left(new IllegalArgumentException(message, th))
-        }
-      case Failure(th)   =>
-        val message = s"Org structure file load failed: $filename"
-        log.error(message, th)
-        Left(new IllegalArgumentException(message, th))
-
-    }
-  }
+    (
+      for {
+        result <- createOrg(org, principal)
+        _      <- result match {
+                    case OrgCreated           => loadOrg(org.children, org.id, org.id, principal)
+                    case OrgExist             => mergeOrg(org, org.id, disposedCategory, removeDisposed, principal)
+                    case OrgCreateFailure(th) => throw th
+                  }
+        _      <- loadChiefs(org, org.id, principal)
+      } yield BatchLoadResult(s"$batch ${org.id} - ${org.name}", LoadOk, None)
+    )
+      .recover(th => BatchLoadResult(s"$batch ${org.id} - ${org.name}", LoadFailed(th.getMessage), None))
 
   private def createOrg(
     org: UnitIgnitionData,

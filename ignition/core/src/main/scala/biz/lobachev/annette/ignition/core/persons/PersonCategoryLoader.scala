@@ -1,8 +1,7 @@
 package biz.lobachev.annette.ignition.core.persons
 
 import akka.Done
-import biz.lobachev.annette.ignition.core.ItemLoader
-//import akka.actor.ActorSystem
+import biz.lobachev.annette.ignition.core.EntityLoader
 import akka.stream.Materializer
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.persons.api.PersonService
@@ -16,7 +15,7 @@ class PersonCategoryLoader(
   personService: PersonService,
   implicit val materializer: Materializer,
   implicit val executionContext: ExecutionContext
-) extends ItemLoader[PersonCategoryData] {
+) extends EntityLoader[PersonCategoryData] {
 
   protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 
@@ -34,18 +33,17 @@ class PersonCategoryLoader(
     personService
       .createOrUpdateCategory(payload)
       .map { _ =>
-        log.debug("Person category loaded: {}", item.id)
+        log.debug(s"$name loaded: {}", item.id)
         Right(Done)
       }
       .recoverWith {
         case th: IllegalStateException => Future.failed(th)
         case th                        =>
-          log.error("Load person category {} failed", item.id, th)
+          log.error(s"Load $name {} failed", item.id, th)
           Future.successful(
             Left(th)
           )
       }
-
   }
 
 }

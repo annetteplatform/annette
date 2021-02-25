@@ -18,7 +18,7 @@ package biz.lobachev.annette.ignition.core
 
 import scala.concurrent.{ExecutionContext, Future}
 
-trait SequentialProcess {
+protected trait SequentialProcess {
   def seqProcess[A, B](list: Iterable[A])(block: A => Future[B])(implicit ec: ExecutionContext): Future[Seq[B]] = {
     val zero = Future.successful(Seq.empty[B])
     list.foldLeft(zero) { (future, item) =>

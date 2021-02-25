@@ -2,7 +2,9 @@ package biz.lobachev.annette.ignition.core
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
+import biz.lobachev.annette.attributes.api.{AttributeServiceApi, AttributeServiceImpl}
 import biz.lobachev.annette.authorization.api.{AuthorizationServiceApi, AuthorizationServiceImpl}
+import biz.lobachev.annette.ignition.core.attributes.{AttributeDataLoader, AttributeServiceLoader, SchemaLoader}
 import biz.lobachev.annette.ignition.core.authorization.{AssignmentLoader, AuthorizationServiceLoader, RoleLoader}
 import biz.lobachev.annette.ignition.core.org_structure.{
   OrgCategoryLoader,
@@ -43,4 +45,10 @@ class IgnitionModule(
   lazy val orgStructureLoader        = wire[OrgStructureLoader]
   lazy val orgStructureServiceLoader = wire[OrgStructureServiceLoader]
   lazy val ignition: AnnetteIgnition = wire[AnnetteIgnition]
+
+  lazy val attributeServiceApi    = serviceClient.implement[AttributeServiceApi]
+  lazy val attributeService       = wire[AttributeServiceImpl]
+  lazy val schemaLoader           = wire[SchemaLoader]
+  lazy val attributeDataLoader    = wire[AttributeDataLoader]
+  lazy val attributeServiceLoader = wire[AttributeServiceLoader]
 }

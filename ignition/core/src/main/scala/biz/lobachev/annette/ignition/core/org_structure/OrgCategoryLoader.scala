@@ -1,7 +1,7 @@
 package biz.lobachev.annette.ignition.core.org_structure
 
 import akka.Done
-import biz.lobachev.annette.ignition.core.ItemLoader
+import biz.lobachev.annette.ignition.core.EntityLoader
 import biz.lobachev.annette.org_structure.api.OrgStructureService
 import akka.stream.Materializer
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
@@ -15,7 +15,7 @@ class OrgCategoryLoader(
   orgStructureService: OrgStructureService,
   implicit val materializer: Materializer,
   implicit val executionContext: ExecutionContext
-) extends ItemLoader[CategoryIgnitionData] {
+) extends EntityLoader[CategoryIgnitionData] {
 
   protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 

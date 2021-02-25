@@ -16,11 +16,16 @@
 
 package biz.lobachev.annette.ignition.core.attributes
 
+import akka.Done
 import akka.actor.ActorSystem
+import akka.stream.Materializer
+import akka.stream.scaladsl.{RestartSource, Sink, Source}
 import biz.lobachev.annette.attributes.api.AttributeService
 import biz.lobachev.annette.attributes.api.attribute.PreparedAttribute
 import biz.lobachev.annette.attributes.api.schema.{ActivateSchemaPayload, CreateSchemaPayload, SchemaId}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.ignition.core.FileSourcing
+import biz.lobachev.annette.ignition.core.model.{EntityLoadResult, LoadFailed, LoadOk}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.duration._
@@ -28,88 +33,96 @@ import scala.concurrent.{ExecutionContext, Future, Promise}
 
 class SchemaLoader(
   attributeService: AttributeService,
-  actorSystem: ActorSystem
-)(implicit val executionContext: ExecutionContext) {
+  actorSystem: ActorSystem,
+  implicit val materializer: Materializer,
+  implicit val executionContext: ExecutionContext
+) extends FileSourcing {
 
   protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 
+  def loadFromFile(
+    schemaId: SchemaId,
+    name: String,
+    schemaFile: String,
+    principal: AnnettePrincipal
+  ): Future[EntityLoadResult] = {
+    val description = s"Schema [${schemaId.toComposed} - $name]"
+    getData[Set[PreparedAttribute]](description, schemaFile) match {
+      case Right(data) =>
+        load(description, schemaId, name, data, principal)
+      case Left(th)    =>
+        Future.successful(EntityLoadResult(description, LoadFailed(th.getMessage), 0, Seq.empty))
+    }
+  }
+
   def load(
-    id: String,
-    sub: Option[String],
+    description: String,
+    schemaId: SchemaId,
     name: String,
     preparedAttributes: Set[PreparedAttribute],
     principal: AnnettePrincipal
-  ): Future[Unit] = loadSchema(id, sub, name, preparedAttributes, principal)
+  ): Future[EntityLoadResult] =
+    RestartSource
+      .onFailuresWithBackoff(
+        minBackoff = 3.seconds,
+        maxBackoff = 20.seconds,
+        randomFactor = 0.2,
+        maxRestarts = 20
+      ) { () =>
+        Source.future(
+          loadItem(description, schemaId, name, preparedAttributes, principal).map {
+            case Right(Done) => EntityLoadResult(description, LoadOk, 1, Seq.empty)
+            case Left(th)    => EntityLoadResult(description, LoadFailed(th.getMessage), 0, Seq.empty)
+          }
+        )
+      }
+      .runWith(Sink.last)
 
-  private def loadSchema(
-    id: String,
-    sub: Option[String],
+  protected def loadItem(
+    description: String,
+    schemaId: SchemaId,
     name: String,
     preparedAttributes: Set[PreparedAttribute],
-    principal: AnnettePrincipal,
-    promise: Promise[Unit] = Promise(),
-    iteration: Int = 10
-  ): Future[Unit] = {
-    val schemaId = SchemaId(id, sub)
-    val future   =
-      for {
-        _ <- attributeService
-               .createOrUpdateSchema(
-                 CreateSchemaPayload(
-                   id = schemaId,
-                   name = name,
-                   preparedAttributes = preparedAttributes,
-                   updatedBy = principal
-                 )
+    principal: AnnettePrincipal
+  ): Future[Either[Throwable, Done.type]] = {
+    val promise: Promise[Either[Throwable, Done.type]] = Promise()
+    val future                                         = for {
+      _ <- attributeService
+             .createOrUpdateSchema(
+               CreateSchemaPayload(
+                 id = schemaId,
+                 name = name,
+                 preparedAttributes = preparedAttributes,
+                 updatedBy = principal
                )
-        _  = log.debug("Schema created: {}/{} - {}", id, sub.getOrElse(" "), name)
+             )
+      _  = log.debug("{} created", description)
 
-        _ <- attributeService
-               .activateSchema(
-                 ActivateSchemaPayload(
-                   id = schemaId,
-                   activatedBy = principal
-                 )
+      _ <- attributeService
+             .activateSchema(
+               ActivateSchemaPayload(
+                 id = schemaId,
+                 activatedBy = principal
                )
-        _  = log.debug("Schema activated: {}/{} - {}", id, sub.getOrElse(" "), name)
+             )
+      _  = log.debug("{} activated", description)
 
-      } yield ()
-
-    future.foreach { res =>
-      log.debug("Awaiting schema activation to complete: {}/{} - {}", id, sub.getOrElse(" "), name)
-      actorSystem.scheduler.scheduleOnce(10.seconds)({
-        promise.success(res)
+    } yield {
+      log.debug("Awaiting schema activation to complete: {}", description)
+      actorSystem.scheduler.scheduleOnce(30.seconds)({
+        log.debug("Schema activation completed: {}", description)
+        promise.success(Right(Done))
         ()
       })
     }
-
     future.failed.foreach {
-      case th: IllegalStateException =>
-        log.warn(
-          "Failed to create schema {}/{} - {}. Retrying after delay. Failure reason: {}",
-          id,
-          sub.getOrElse(" "),
-          name,
-          th.getMessage
-        )
-        if (iteration > 0)
-          actorSystem.scheduler.scheduleOnce(20.seconds)({
-            loadSchema(id, sub, name, preparedAttributes, principal, promise, iteration - 1)
-            ()
-          })
-        else
-          closeFailed(promise, th)
+      case th: IllegalStateException => promise.failure(th)
       case th                        =>
-        closeFailed(promise, th)
+        log.error("Load {} failed", description, th)
+        promise.success(Left(th))
     }
 
     promise.future
   }
 
-  private def closeFailed[A](promise: Promise[A], th: Throwable) = {
-    val message   = "Failed to load schema "
-    log.error(message, th)
-    val exception = new RuntimeException(message, th)
-    promise.failure(exception)
-  }
 }
