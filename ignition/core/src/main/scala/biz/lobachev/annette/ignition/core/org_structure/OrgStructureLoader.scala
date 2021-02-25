@@ -17,10 +17,10 @@ import scala.collection.immutable
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 
-protected sealed trait OrgLoadResult
-protected case object OrgCreated                     extends OrgLoadResult
-protected case object OrgExist                       extends OrgLoadResult
-protected case class OrgCreateFailure(th: Throwable) extends OrgLoadResult
+sealed trait OrgLoadResult
+case object OrgCreated                     extends OrgLoadResult
+case object OrgExist                       extends OrgLoadResult
+case class OrgCreateFailure(th: Throwable) extends OrgLoadResult
 
 class OrgStructureLoader(
   orgStructureService: OrgStructureService,

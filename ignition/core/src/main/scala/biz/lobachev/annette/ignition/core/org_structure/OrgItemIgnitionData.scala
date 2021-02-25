@@ -19,14 +19,14 @@ package biz.lobachev.annette.ignition.core.org_structure
 import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
 import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 
-protected sealed trait OrgItemIgnitionData {
+sealed trait OrgItemIgnitionData {
   val id: String
   val name: String
   val shortName: String
   val categoryId: OrgCategoryId
 }
 
-protected case class PositionIgnitionData(
+case class PositionIgnitionData(
   id: String,
   name: String,
   shortName: String,
@@ -35,11 +35,11 @@ protected case class PositionIgnitionData(
   person: Option[String] = None
 ) extends OrgItemIgnitionData
 
-protected object PositionIgnitionData {
+object PositionIgnitionData {
   implicit val format = Json.format[PositionIgnitionData]
 }
 
-protected case class UnitIgnitionData(
+case class UnitIgnitionData(
   id: String,
   name: String,
   shortName: String,
@@ -48,11 +48,11 @@ protected case class UnitIgnitionData(
   categoryId: OrgCategoryId
 ) extends OrgItemIgnitionData
 
-protected object UnitIgnitionData {
+object UnitIgnitionData {
   implicit val format = Json.format[UnitIgnitionData]
 }
 
-protected object OrgItemIgnitionData {
+object OrgItemIgnitionData {
   implicit val config                              = JsonConfiguration(
     discriminator = "type",
     typeNaming = JsonNaming { fullName =>

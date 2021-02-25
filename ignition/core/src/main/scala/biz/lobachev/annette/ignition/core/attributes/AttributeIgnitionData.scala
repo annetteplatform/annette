@@ -1,10 +1,10 @@
 package biz.lobachev.annette.ignition.core.attributes
 
-protected case class AttributeIgnitionData(
+case class AttributeIgnitionData(
   schemas: Seq[SchemaIgnitionData] = Seq.empty
 )
 
-protected case class SchemaIgnitionData(
+case class SchemaIgnitionData(
   id: String,
   sub: Option[String],
   name: String,

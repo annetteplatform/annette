@@ -18,7 +18,7 @@ package biz.lobachev.annette.ignition.core.org_structure
 
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 
-protected case class OrgStructureIgnitionData(
+case class OrgStructureIgnitionData(
   orgRoles: Seq[OrgRoleIgnitionData] = Seq.empty,
   categories: Seq[CategoryIgnitionData] = Seq.empty,
   disposedCategory: String,
@@ -26,7 +26,7 @@ protected case class OrgStructureIgnitionData(
   orgStructure: Seq[String] = Seq.empty
 )
 
-protected case class CategoryIgnitionData(
+case class CategoryIgnitionData(
   id: OrgRoleId,
   name: String,
   forOrganization: Boolean = false,
@@ -34,7 +34,7 @@ protected case class CategoryIgnitionData(
   forPosition: Boolean = false
 )
 
-protected case class OrgRoleIgnitionData(
+case class OrgRoleIgnitionData(
   id: OrgRoleId,
   name: String,
   description: String = ""
