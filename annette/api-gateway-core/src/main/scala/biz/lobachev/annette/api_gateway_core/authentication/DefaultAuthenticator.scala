@@ -16,6 +16,8 @@
 
 package biz.lobachev.annette.api_gateway_core.authentication
 
+import biz.lobachev.annette.core.model.auth.AuthenticatedPrincipal
+
 import javax.inject.{Inject, Singleton}
 import play.api.mvc.Request
 
@@ -36,11 +38,13 @@ class DefaultAuthenticator @Inject() (
         if (splitted.length == 2) {
           val authType = splitted(0).toLowerCase
           val token    = splitted(1)
-          authType match {
-            case "bearer" => bearerAuthenticator.authenticate(request.headers, token)
-            case "basic"  => basicAuthenticator.authenticate(request.headers, token)
-            case _        => Future.failed(InvalidAuthorizationHeaderException())
-          }
+          for {
+            subject <- authType match {
+                         case "bearer" => bearerAuthenticator.authenticate(request.headers, token)
+                         case "basic"  => basicAuthenticator.authenticate(request.headers, token)
+                         case _        => Future.failed(InvalidAuthorizationHeaderException())
+                       }
+          } yield subject.copy(principals = subject.principals :+ AuthenticatedPrincipal())
         } else
           Future.failed(InvalidAuthorizationHeaderException())
       }

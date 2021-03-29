@@ -74,3 +74,14 @@ object DescendantUnitPrincipal extends SimplePrincipal {
 object TechnicalPrincipal extends SimplePrincipal {
   val PRINCIPAL_TYPE = "tech"
 }
+
+object AuthenticatedPrincipal {
+  val PRINCIPAL_TYPE: String                             = "authenticated"
+  val PRINCIPAL_ID: String                               = "user"
+  def apply(): AnnettePrincipal                          = AnnettePrincipal(PRINCIPAL_TYPE, PRINCIPAL_ID)
+  def unapply(principal: AnnettePrincipal): Option[Unit] =
+    principal match {
+      case AnnettePrincipal(PRINCIPAL_TYPE, PRINCIPAL_ID) => Some(())
+      case _                                              => None
+    }
+}
