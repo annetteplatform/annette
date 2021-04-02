@@ -19,6 +19,8 @@ package biz.lobachev.annette.persons.impl.person
 import java.util.concurrent.TimeUnit
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.elastic.FindResult
@@ -37,7 +39,8 @@ class PersonEntityService(
   indexDao: PersonIndexDao,
   config: Config
 )(implicit
-  ec: ExecutionContext
+  ec: ExecutionContext,
+  val materializer: Materializer
 ) {
 
   implicit val timeout =
@@ -96,8 +99,8 @@ class PersonEntityService(
     if (fromReadSide)
       dbDao.getPersonsById(ids)
     else
-      Future
-        .traverse(ids) { id =>
+      Source(ids)
+        .mapAsync(1) { id =>
           refFor(id)
             .ask[Confirmation](GetPerson(id, _))
             .map {
@@ -105,6 +108,7 @@ class PersonEntityService(
               case _                                  => None
             }
         }
+        .runWith(Sink.seq)
         .map(_.flatten.map(a => a.id -> a).toMap)
 
   def findPersons(query: PersonFindQuery): Future[FindResult]                                  =

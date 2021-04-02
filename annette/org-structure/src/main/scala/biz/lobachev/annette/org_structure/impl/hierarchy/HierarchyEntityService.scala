@@ -19,6 +19,8 @@ package biz.lobachev.annette.org_structure.impl.hierarchy
 import java.util.concurrent.TimeUnit
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.core.model.PersonId
@@ -39,7 +41,8 @@ class HierarchyEntityService(
   indexDao: HierarchyIndexDao,
   config: Config
 )(implicit
-  ec: ExecutionContext
+  ec: ExecutionContext,
+  materializer: Materializer
 ) {
 
   implicit val timeout =
@@ -215,8 +218,8 @@ class HierarchyEntityService(
       .map(successToResult)
 
   def getOrgItemsById(orgId: OrgItemId, ids: Set[OrgItemId]): Future[Map[OrgItemId, OrgItem]] =
-    Future
-      .traverse(ids) { id =>
+    Source(ids)
+      .mapAsync(1) { id =>
         refFor(orgId)
           .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrgItem(id, _))
           .map {
@@ -226,6 +229,7 @@ class HierarchyEntityService(
             case _                                       => None
           }
       }
+      .runWith(Sink.seq)
       .map(_.flatten.map(item => item.id -> item).toMap)
 
   def getOrgItemById(orgId: OrgItemId, id: OrgItemId): Future[OrgItem]                        =

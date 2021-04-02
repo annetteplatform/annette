@@ -18,6 +18,8 @@ package biz.lobachev.annette.attributes.impl.assignment
 
 import java.time.OffsetDateTime
 import akka.Done
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.attributes.api.assignment._
 import biz.lobachev.annette.attributes.api.attribute.AttributeId
 import biz.lobachev.annette.attributes.api.schema.{SchemaAttributeId, SchemaId}
@@ -30,7 +32,12 @@ import play.api.libs.json.Json
 import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
 
-private[impl] class AssignmentRepository(session: CassandraSession)(implicit ec: ExecutionContext) {
+private[impl] class AssignmentRepository(
+  session: CassandraSession
+)(implicit
+  ec: ExecutionContext,
+  materializer: Materializer
+) {
 
   val log = LoggerFactory.getLogger(this.getClass)
 
@@ -255,10 +262,11 @@ private[impl] class AssignmentRepository(session: CassandraSession)(implicit ec:
     } yield assignment
 
   def getAssignmentsById(ids: Set[AttributeAssignmentId]): Future[Map[ComposedAssignmentId, AttributeAssignment]] =
-    Future
-      .traverse(ids) { id =>
+    Source(ids)
+      .mapAsync(1) { id =>
         getAssignmentById(id)
       }
+      .runWith(Sink.seq)
       .map(_.flatten.map(assignment => assignment.id.toComposed -> assignment).toMap)
 
   def getAssignmentById(id: AttributeAssignmentId): Future[Option[AttributeAssignment]]                           =
@@ -283,13 +291,14 @@ private[impl] class AssignmentRepository(session: CassandraSession)(implicit ec:
     } yield assignment
 
   def getAttributesWithAssignment(schemaId: SchemaId, attributeIds: Seq[AttributeId]): Future[Set[AttributeId]] =
-    Future
-      .traverse(attributeIds) { attributeId =>
+    Source(attributeIds)
+      .mapAsync(1) { attributeId =>
         isAssignmentExist(schemaId, attributeId).map {
           case true  => Some(attributeId)
           case false => None
         }
       }
+      .runWith(Sink.seq)
       .map(_.flatten.toSet)
 
   def isAssignmentExist(schemaId: SchemaId, attributeId: AttributeId): Future[Boolean] =

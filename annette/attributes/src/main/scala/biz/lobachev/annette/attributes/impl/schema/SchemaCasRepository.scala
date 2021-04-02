@@ -18,6 +18,8 @@ package biz.lobachev.annette.attributes.impl.schema
 
 import java.time.OffsetDateTime
 import akka.Done
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.attributes.api.attribute
 import biz.lobachev.annette.attributes.api.attribute.{
   Attribute,
@@ -37,7 +39,12 @@ import play.api.libs.json.Json
 
 import scala.concurrent.{ExecutionContext, Future}
 
-private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: ExecutionContext) {
+private[impl] class SchemaCasRepository(
+  session: CassandraSession
+)(implicit
+  ec: ExecutionContext,
+  materializer: Materializer
+) {
 
   val log = LoggerFactory.getLogger(this.getClass)
 
@@ -453,10 +460,11 @@ private[impl] class SchemaCasRepository(session: CassandraSession)(implicit ec: 
     } yield activeAttribute
 
   def getSchemasById(ids: Set[ComposedSchemaId]): Future[Map[ComposedSchemaId, Schema]] =
-    Future
-      .traverse(ids) { composedSchemaId =>
+    Source(ids)
+      .mapAsync(1) { composedSchemaId =>
         getSchemaById(composedSchemaId)
       }
+      .runWith(Sink.seq)
       .map(_.flatten.map(schema => schema.id.toComposed -> schema).toMap)
 
   private def convertSchema(row: Row): Schema = {

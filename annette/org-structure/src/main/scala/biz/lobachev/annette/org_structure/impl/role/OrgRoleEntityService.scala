@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.org_structure.api.role._
@@ -94,8 +95,8 @@ class OrgRoleEntityService(
   def getOrgRolesById(ids: Set[OrgRoleId], fromReadSide: Boolean): Future[Map[OrgRoleId, OrgRole]] =
     if (fromReadSide) dbDao.getOrgRolesById(ids)
     else
-      Future
-        .traverse(ids) { id =>
+      Source(ids)
+        .mapAsync(1) { id =>
           refFor(id)
             .ask[OrgRoleEntity.Confirmation](OrgRoleEntity.GetOrgRole(id, _))
             .map {
@@ -103,6 +104,7 @@ class OrgRoleEntityService(
               case _                                    => None
             }
         }
+        .runWith(Sink.seq)
         .map(seq => seq.flatten.map(role => role.id -> role).toMap)
 
   def findOrgRoles(query: OrgRoleFindQuery): Future[FindResult]                                    =

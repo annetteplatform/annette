@@ -16,6 +16,9 @@
 
 package biz.lobachev.annette.org_structure.impl.hierarchy.dao
 
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
+
 import java.time.OffsetDateTime
 import biz.lobachev.annette.attributes.api.query.AttributeElastic
 import biz.lobachev.annette.core.model.elastic.FindResult
@@ -35,7 +38,8 @@ import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 
 class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: ElasticClient)(implicit
-  override val ec: ExecutionContext
+  override val ec: ExecutionContext,
+  materializer: Materializer
 ) extends AbstractElasticIndexDao(elasticSettings, elasticClient)
     with HierarchyIndexDao
     with AttributeElastic {
@@ -223,8 +227,8 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
     rootPaths: Map[OrgItemId, Seq[OrgItemId]],
     updatedAt: OffsetDateTime
   ): Future[Unit] =
-    Future
-      .traverse(rootPaths.toSeq) {
+    Source(rootPaths.toSeq)
+      .mapAsync(1) {
         case (itemId, rootPath) =>
           elasticClient.execute {
             updateById(indexName, itemId)
@@ -232,6 +236,7 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
               .refresh(RefreshPolicy.Immediate)
           }.map(processResponse("updateRootPaths", itemId)(_))
       }
+      .runWith(Sink.ignore)
       .map(_ => ())
 
   // *************************** Search API ***************************

@@ -1,6 +1,7 @@
 package biz.lobachev.annette.org_structure.items.test
 
 import akka.Done
+import akka.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.org_structure.api.OrgStructureServiceApi
 import biz.lobachev.annette.org_structure.api.role._
 
@@ -9,7 +10,8 @@ import scala.concurrent.Future
 class OrgRoleServiceSpec extends AbstractOrgItemsServiceSpec with OrgRoleTestData {
   final val N = 10
 
-  lazy val client = server.serviceClient.implement[OrgStructureServiceApi]
+  lazy val client           = server.serviceClient.implement[OrgStructureServiceApi]
+  implicit val materializer = server.materializer
 
   "orgRole service" should {
 
@@ -35,7 +37,9 @@ class OrgRoleServiceSpec extends AbstractOrgItemsServiceSpec with OrgRoleTestDat
       val createPayloads   = (1 to N).map(_ => generateCreateOrgRolePayload())
       val createPayloadMap = createPayloads.map(p => p.id -> p).toMap
       for {
-        _     <- Future.traverse(createPayloads)(entity => client.createOrgRole.invoke(entity))
+        _     <- Source(createPayloads)
+                   .mapAsync(1)(entity => client.createOrgRole.invoke(entity))
+                   .runWith(Sink.ignore)
         found <- client.getOrgRolesById(false).invoke(createPayloads.map(_.id).toSet)
       } yield found shouldBe found.values.map(f => convertToOrgRole(createPayloadMap(f.id), f.updatedAt))
     }
@@ -55,7 +59,9 @@ class OrgRoleServiceSpec extends AbstractOrgItemsServiceSpec with OrgRoleTestDat
       val createPayloads   = (1 to N).map(_ => generateCreateOrgRolePayload())
       val createPayloadMap = createPayloads.map(p => p.id -> p).toMap
       (for {
-        _ <- Future.traverse(createPayloads)(entity => client.createOrgRole.invoke(entity))
+        _ <- Source(createPayloads)
+               .mapAsync(1)(entity => client.createOrgRole.invoke(entity))
+               .runWith(Sink.ignore)
       } yield awaitSuccess() {
         for {
           found <- client.getOrgRolesById(true).invoke(createPayloads.map(_.id).toSet)

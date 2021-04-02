@@ -1,8 +1,8 @@
 package biz.lobachev.annette.person.test
 
 import java.util.UUID
-
 import akka.Done
+import akka.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.persons.api.PersonServiceApi
 import biz.lobachev.annette.persons.api.person.PersonNotFound
 
@@ -11,7 +11,8 @@ import scala.concurrent.Future
 class PersonServiceApiSpec extends AbstractPersonServiceApiSpec with PersonTestData {
   final val N = 10
 
-  lazy val client = server.serviceClient.implement[PersonServiceApi]
+  lazy val client           = server.serviceClient.implement[PersonServiceApi]
+  implicit val materializer = server.materializer
 
   "person service" should {
 
@@ -37,7 +38,9 @@ class PersonServiceApiSpec extends AbstractPersonServiceApiSpec with PersonTestD
       val createPayloads   = (1 to N).map(_ => generateCreatePersonPayload())
       val createPayloadMap = createPayloads.map(p => p.id -> p).toMap
       for {
-        _     <- Future.traverse(createPayloads)(entity => client.createPerson.invoke(entity))
+        _     <- Source(createPayloads)
+                   .mapAsync(1)(entity => client.createPerson.invoke(entity))
+                   .runWith(Sink.ignore)
         found <- client.getPersonsById(false).invoke(createPayloads.map(_.id).toSet)
       } yield found shouldBe found.map { case (id, v) => id -> convertToPerson(createPayloadMap(id), v.updatedAt) }
     }
@@ -60,7 +63,9 @@ class PersonServiceApiSpec extends AbstractPersonServiceApiSpec with PersonTestD
       val createPayloads   = (1 to N).map(_ => generateCreatePersonPayload())
       val createPayloadMap = createPayloads.map(p => p.id -> p).toMap
       (for {
-        _ <- Future.traverse(createPayloads)(entity => client.createPerson.invoke(entity))
+        _ <- Source(createPayloads)
+               .mapAsync(1)(entity => client.createPerson.invoke(entity))
+               .runWith(Sink.ignore)
       } yield awaitSuccess() {
         for {
           found <- client.getPersonsById().invoke(createPayloads.map(_.id).toSet)
