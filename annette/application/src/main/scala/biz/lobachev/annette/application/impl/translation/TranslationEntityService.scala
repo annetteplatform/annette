@@ -19,6 +19,8 @@ package biz.lobachev.annette.application.impl.translation
 import java.util.concurrent.TimeUnit
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.application.api.language.LanguageId
 import biz.lobachev.annette.application.api.translation._
@@ -37,7 +39,8 @@ class TranslationEntityService(
   indexDao: TranslationIndexDao,
   config: Config
 )(implicit
-  ec: ExecutionContext
+  ec: ExecutionContext,
+  materializer: Materializer
 ) {
 
   val log = LoggerFactory.getLogger(this.getClass)
@@ -156,8 +159,8 @@ class TranslationEntityService(
     if (fromReadSide)
       dbDao.getTranslationJsonsById(ids, languageId)
     else
-      Future
-        .traverse(ids) { id =>
+      Source(ids)
+        .mapAsync(1) { id =>
           refFor(id)
             .ask[TranslationEntity.Confirmation](TranslationEntity.GetTranslationJson(id, languageId, _))
             .map {
@@ -165,6 +168,7 @@ class TranslationEntityService(
               case _                                                         => None
             }
         }
+        .runWith(Sink.seq)
         .map(_.flatten.map(a => a.id -> a).toMap)
 
   def findTranslations(query: FindTranslationQuery): Future[FindResult] = indexDao.findTranslations(query)

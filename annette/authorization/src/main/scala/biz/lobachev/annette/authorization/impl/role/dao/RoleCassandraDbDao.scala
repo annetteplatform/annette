@@ -18,6 +18,8 @@ package biz.lobachev.annette.authorization.impl.role.dao
 
 import java.time.OffsetDateTime
 import akka.Done
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.authorization.api.role._
 import biz.lobachev.annette.authorization.impl.role.RoleEntity
 import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
@@ -26,7 +28,12 @@ import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 
 import scala.concurrent.{ExecutionContext, Future}
 
-private[impl] class RoleCassandraDbDao(session: CassandraSession)(implicit ec: ExecutionContext) extends RoleDbDao {
+private[impl] class RoleCassandraDbDao(
+  session: CassandraSession
+)(implicit
+  ec: ExecutionContext,
+  materializer: Materializer
+) extends RoleDbDao {
 
   private var createRoleStatement: PreparedStatement            = _
   private var updateRoleNameStatement: PreparedStatement        = _
@@ -293,10 +300,11 @@ private[impl] class RoleCassandraDbDao(session: CassandraSession)(implicit ec: E
     } yield maybeCnt.map(row => if (row.getLong("cnt") > 0) Some(principals.toSet) else None).getOrElse(None)
 
   def getRoleById(ids: Set[AuthRoleId]): Future[Map[AuthRoleId, AuthRole]] =
-    Future
-      .traverse(ids) { id =>
+    Source(ids)
+      .mapAsync(1) { id =>
         getRoleById(id)
       }
+      .runWith(Sink.seq)
       .map(_.flatten.map(role => role.id -> role).toMap)
 
   private def convertRole(row: Row): AuthRole                              =

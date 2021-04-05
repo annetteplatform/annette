@@ -19,6 +19,8 @@ package biz.lobachev.annette.attributes.impl.schema
 import java.util.concurrent.TimeUnit
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.attributes.api.attribute.{Attribute, AttributeId}
 import biz.lobachev.annette.attributes.api.schema._
@@ -36,7 +38,8 @@ class SchemaEntityService(
   elasticRepository: SchemaElasticIndexDao,
   config: Config
 )(implicit
-  ec: ExecutionContext
+  ec: ExecutionContext,
+  materializer: Materializer
 ) {
   val log = LoggerFactory.getLogger(this.getClass)
 
@@ -155,15 +158,17 @@ class SchemaEntityService(
         .getSchemasById(ids)
     else
       for {
-        schemas <- Future.traverse(ids) { composedSchemaId =>
-                     val id = SchemaId.fromComposed(composedSchemaId)
-                     refFor(id)
-                       .ask[SchemaEntity.Confirmation](SchemaEntity.GetSchema(_))
-                       .map {
-                         case SchemaEntity.SuccessSchema(schema) => Some(schema)
-                         case _                                  => None
-                       }
-                   }
+        schemas <- Source(ids)
+                     .mapAsync(1) { composedSchemaId =>
+                       val id = SchemaId.fromComposed(composedSchemaId)
+                       refFor(id)
+                         .ask[SchemaEntity.Confirmation](SchemaEntity.GetSchema(_))
+                         .map {
+                           case SchemaEntity.SuccessSchema(schema) => Some(schema)
+                           case _                                  => None
+                         }
+                     }
+                     .runWith(Sink.seq)
       } yield schemas.flatten.map(schema => schema.id.toComposed -> schema).toMap
 
   def findSchemas(query: FindSchemaQuery): Future[FindResult]                                                  =

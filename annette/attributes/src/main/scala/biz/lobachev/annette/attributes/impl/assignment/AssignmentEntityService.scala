@@ -19,6 +19,8 @@ package biz.lobachev.annette.attributes.impl.assignment
 import java.util.concurrent.TimeUnit
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.attributes.api.assignment._
 import biz.lobachev.annette.attributes.api.attribute.{
@@ -48,7 +50,8 @@ class AssignmentEntityService(
   repository: AssignmentRepository,
   config: Config
 )(implicit
-  ec: ExecutionContext
+  ec: ExecutionContext,
+  materializer: Materializer
 ) {
 
   val log: Logger = LoggerFactory.getLogger(this.getClass)
@@ -127,11 +130,13 @@ class AssignmentEntityService(
   ): Future[Done] =
     for {
       ids <- repository.getSchemaAttributeAssignmentIds(schemaId, attributeId)
-      _   <- Future.traverse(ids) { id =>
-               val payload = UnassignAttributePayload(id, updatedBy)
-               refFor(payload.id)
-                 .ask[AssignmentEntity.Confirmation](AssignmentEntity.UnassignAttribute(payload, Some(alias), _))
-             }
+      _   <- Source(ids)
+               .mapAsync(1) { id =>
+                 val payload = UnassignAttributePayload(id, updatedBy)
+                 refFor(payload.id)
+                   .ask[AssignmentEntity.Confirmation](AssignmentEntity.UnassignAttribute(payload, Some(alias), _))
+               }
+               .runWith(Sink.ignore)
     } yield Done
 
   def getAssignmentById(
@@ -158,15 +163,17 @@ class AssignmentEntityService(
       repository.getAssignmentsById(ids)
     else
       for {
-        schemas <- Future.traverse(ids) { id =>
-                     refFor(id)
-                       .ask[AssignmentEntity.Confirmation](AssignmentEntity.GetAssignment(id, _))
-                       .map {
-                         case AssignmentEntity.SuccessAttributeAssignment(attributeAssignment) =>
-                           Some(attributeAssignment)
-                         case _                                                                => None
-                       }
-                   }
+        schemas <- Source(ids)
+                     .mapAsync(1) { id =>
+                       refFor(id)
+                         .ask[AssignmentEntity.Confirmation](AssignmentEntity.GetAssignment(id, _))
+                         .map {
+                           case AssignmentEntity.SuccessAttributeAssignment(attributeAssignment) =>
+                             Some(attributeAssignment)
+                           case _                                                                => None
+                         }
+                     }
+                     .runWith(Sink.seq)
       } yield schemas.flatten.map(schema => schema.id.toComposed -> schema).toMap
   }
 

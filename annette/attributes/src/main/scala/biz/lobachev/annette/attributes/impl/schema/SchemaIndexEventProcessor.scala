@@ -17,6 +17,8 @@
 package biz.lobachev.annette.attributes.impl.schema
 
 import akka.Done
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.attributes.api.schema.SchemaAttributeId
 import biz.lobachev.annette.attributes.impl.assignment.AssignmentEntityService
 import biz.lobachev.annette.attributes.impl.index.IndexEntityService
@@ -32,7 +34,8 @@ private[impl] class SchemaIndexEventProcessor(
   assignmentEntityService: AssignmentEntityService,
   indexEntityService: IndexEntityService
 )(implicit
-  ec: ExecutionContext
+  ec: ExecutionContext,
+  materializer: Materializer
 ) extends ReadSideProcessor[SchemaEntity.Event] {
 
   val log = LoggerFactory.getLogger(this.getClass)
@@ -77,18 +80,22 @@ private[impl] class SchemaIndexEventProcessor(
   private def reindexAttributes(id: SchemaAttributeId, fieldName: String): Future[Done] =
     for {
       assignments <- assignmentEntityService.getAttributeAssignments(id)
-      _           <- Future.traverse(assignments.values) { assignment =>
-                       indexEntityService.assignIndexAttribute(id, assignment.id.objectId, assignment.attribute, fieldName)
-                     }
+      _           <- Source(assignments.values.toSeq)
+                       .mapAsync(1) { assignment =>
+                         indexEntityService.assignIndexAttribute(id, assignment.id.objectId, assignment.attribute, fieldName)
+                       }
+                       .runWith(Sink.ignore)
     } yield Done
 
   // TODO: remove all attributes
   private def unassignAttributes(id: SchemaAttributeId, fieldName: String): Future[Done] =
     for {
       assignments <- assignmentEntityService.getAttributeAssignments(id)
-      _           <- Future.traverse(assignments.values) { assignment =>
-                       indexEntityService.unassignIndexAttribute(id, assignment.id.objectId, fieldName)
-                     }
+      _           <- Source(assignments.values.toSeq)
+                       .mapAsync(1) { assignment =>
+                         indexEntityService.unassignIndexAttribute(id, assignment.id.objectId, fieldName)
+                       }
+                       .runWith(Sink.ignore)
     } yield Done
 
 }

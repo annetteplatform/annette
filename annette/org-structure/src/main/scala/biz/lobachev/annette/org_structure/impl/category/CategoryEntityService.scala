@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.org_structure.api.category._
@@ -94,8 +95,8 @@ class CategoryEntityService(
   def getCategoriesById(ids: Set[OrgCategoryId], fromReadSide: Boolean): Future[Map[OrgCategoryId, OrgCategory]] =
     if (fromReadSide) dbDao.getCategoriesById(ids)
     else
-      Future
-        .traverse(ids) { id =>
+      Source(ids)
+        .mapAsync(1) { id =>
           refFor(id)
             .ask[CategoryEntity.Confirmation](CategoryEntity.GetCategory(id, _))
             .map {
@@ -103,6 +104,7 @@ class CategoryEntityService(
               case _                                      => None
             }
         }
+        .runWith(Sink.seq)
         .map(seq => seq.flatten.map(category => category.id -> category).toMap)
 
   def findCategories(query: OrgCategoryFindQuery): Future[FindResult]                                            =

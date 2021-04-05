@@ -19,6 +19,8 @@ package biz.lobachev.annette.application.impl.application
 import java.util.concurrent.TimeUnit
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.impl.application.dao.{ApplicationDbDao, ApplicationIndexDao}
@@ -36,7 +38,8 @@ class ApplicationEntityService(
   indexDao: ApplicationIndexDao,
   config: Config
 )(implicit
-  ec: ExecutionContext
+  ec: ExecutionContext,
+  materializer: Materializer
 ) {
 
   val log = LoggerFactory.getLogger(this.getClass)
@@ -97,8 +100,8 @@ class ApplicationEntityService(
     if (fromReadSide)
       dbDao.getApplicationsById(ids)
     else
-      Future
-        .traverse(ids) { id =>
+      Source(ids)
+        .mapAsync(1) { id =>
           refFor(id)
             .ask[ApplicationEntity.Confirmation](ApplicationEntity.GetApplication(id, _))
             .map {
@@ -106,6 +109,7 @@ class ApplicationEntityService(
               case _                                                 => None
             }
         }
+        .runWith(Sink.seq)
         .map(_.flatten.map(a => a.id -> a).toMap)
 
   def findApplications(query: FindApplicationQuery): Future[FindResult]                                            =

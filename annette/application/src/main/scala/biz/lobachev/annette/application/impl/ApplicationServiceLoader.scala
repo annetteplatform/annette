@@ -32,6 +32,7 @@ import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.microservice_core.elastic.ElasticModule
 import com.lightbend.lagom.scaladsl.api.LagomConfigComponent
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
+import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
@@ -114,7 +115,8 @@ trait ApplicationComponents
 abstract class ApplicationServiceApplication(context: LagomApplicationContext)
     extends LagomApplication(context)
     with ApplicationComponents
-    with LagomKafkaComponents {}
+    with LagomKafkaComponents
+    with ClusterComponents {}
 
 object ApplicationServiceSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: immutable.Seq[JsonSerializer[_]] =

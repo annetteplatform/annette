@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.authorization.api.role._
 import biz.lobachev.annette.authorization.impl.role.dao.{RoleDbDao, RoleIndexDao}
@@ -129,14 +130,16 @@ class RoleEntityService(
         .getRoleById(ids)
     else
       for {
-        roles <- Future.traverse(ids) { id =>
-                   refFor(id)
-                     .ask[RoleEntity.Confirmation](RoleEntity.GetRoleById(id, _))
-                     .map {
-                       case RoleEntity.SuccessRole(role) => Some(role)
-                       case _                            => None
-                     }
-                 }
+        roles <- Source(ids)
+                   .mapAsync(1) { id =>
+                     refFor(id)
+                       .ask[RoleEntity.Confirmation](RoleEntity.GetRoleById(id, _))
+                       .map {
+                         case RoleEntity.SuccessRole(role) => Some(role)
+                         case _                            => None
+                       }
+                   }
+                   .runWith(Sink.seq)
       } yield roles.flatten.map(role => role.id -> role).toMap
 
   def findRoles(payload: AuthRoleFindQuery): Future[FindResult]                                    =
