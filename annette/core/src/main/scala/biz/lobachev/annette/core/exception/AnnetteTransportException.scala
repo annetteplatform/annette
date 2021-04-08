@@ -28,6 +28,7 @@ case class AnnetteTransportException(
 }
 
 object AnnetteTransportException {
+
   def toMessageString(
     errorCode: TransportErrorCode,
     code: String,
@@ -38,4 +39,5 @@ object AnnetteTransportException {
     val paramsList      = params.map { case (k, v) => s"$k: $v" }.mkString("[", ", ", "]")
     s"$errorCodeVal ($errorCodeString) - $code$paramsList"
   }
+
 }

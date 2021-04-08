@@ -31,22 +31,35 @@ class AnnetteTransportExceptionSerializer(environment: Environment = Environment
 
   val log = LoggerFactory.getLogger(this.getClass)
 
+  def serializeAnnetteTransportException(
+    ate: AnnetteTransportException
+  ): RawExceptionMessage = {
+    val json         = Json.toJson(ate.params + ("code" -> ate.code))
+    val messageBytes = ByteString.fromString(Json.stringify(json))
+    RawExceptionMessage(
+      errorCode = ate.errorCode,
+      protocol = MessageProtocol(
+        contentType = Some("application/json"),
+        charset = None,
+        version = None
+      ),
+      message = messageBytes
+    )
+  }
   override def serialize(exception: Throwable, accept: Seq[MessageProtocol]): RawExceptionMessage =
     exception match {
       case ate: AnnetteTransportException =>
-        val json         = Json.toJson(ate.params + ("code" -> ate.code))
-        val messageBytes = ByteString.fromString(Json.stringify(json))
-        RawExceptionMessage(
-          errorCode = ate.errorCode,
-          protocol = MessageProtocol(
-            contentType = Some("application/json"),
-            charset = None,
-            version = None
-          ),
-          message = messageBytes
+        serializeAnnetteTransportException(ate)
+
+      case te: TransportException         =>
+        serializeAnnetteTransportException(
+          AnnetteTransportThrowable(te.errorCode, te.getCause)
+        )
+      case th: Throwable                  =>
+        serializeAnnetteTransportException(
+          AnnetteTransportThrowable(TransportErrorCode.InternalServerError, th)
         )
 
-      case _                              => super.serialize(exception, accept)
     }
 
   override def deserialize(message: RawExceptionMessage): Throwable = {
