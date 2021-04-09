@@ -18,18 +18,8 @@ package biz.lobachev.annette.core.exception
 
 import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
 
-trait AnnetteTransportExceptionWithIdCompanion {
+trait AnnetteTransportExceptionWithIdCompanion extends AnnetteTransportExceptionCompanion1 {
   val ErrorCode: TransportErrorCode
   val MessageCode: String
-
-  def apply(id: String) = new AnnetteTransportException(ErrorCode, MessageCode, Map("id" -> id))
-  def unapply(ex: Exception): Option[String] =
-    ex match {
-      case ate: AnnetteTransportException
-          if ate.errorCode == ErrorCode &&
-            ate.code == MessageCode &&
-            ate.params.isDefinedAt("id") =>
-        Some(ate.params("id"))
-      case _ => None
-    }
+  val Arg1Key: String = "id"
 }
