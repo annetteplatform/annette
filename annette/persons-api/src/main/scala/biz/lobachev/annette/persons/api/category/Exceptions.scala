@@ -16,15 +16,17 @@
 
 package biz.lobachev.annette.persons.api.category
 
-import biz.lobachev.annette.core.exception.AnnetteTransportExceptionWithIdCompanion
+import biz.lobachev.annette.core.exception.AnnetteTransportExceptionCompanion1
 import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
 
-object PersonCategoryNotFound extends AnnetteTransportExceptionWithIdCompanion {
-  val ErrorCode   = TransportErrorCode.NotFound
-  val MessageCode = "annette.personService.category.notFound"
+object PersonCategoryNotFound extends AnnetteTransportExceptionCompanion1 {
+  val ErrorCode       = TransportErrorCode.NotFound
+  val MessageCode     = "annette.personService.category.notFound"
+  val Arg1Key: String = "id"
 }
 
-object PersonCategoryAlreadyExist extends AnnetteTransportExceptionWithIdCompanion {
-  val ErrorCode   = TransportErrorCode.BadRequest
-  val MessageCode = "annette.personService.category.alreadyExist"
+object PersonCategoryAlreadyExist extends AnnetteTransportExceptionCompanion1 {
+  val ErrorCode       = TransportErrorCode.BadRequest
+  val MessageCode     = "annette.personService.category.alreadyExist"
+  val Arg1Key: String = "id"
 }
