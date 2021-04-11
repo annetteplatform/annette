@@ -78,6 +78,9 @@ lazy val root = (project in file("."))
     `microservice-core`,
     `api-gateway-core`,
     `api-gateway`,
+    // initialization application
+    `ignition-core`,
+    `demo-ignition`,
     // API gateways
     `application-api-gateway`,
     `authorization-api-gateway`,
@@ -89,15 +92,13 @@ lazy val root = (project in file("."))
     `authorization-api`,
     `org-structure-api`,
     `persons-api`,
+    `principal-groups-api`,
     // microservices
     `application`,
     `attributes`,
     `authorization`,
     `org-structure`,
-    `persons`,
-    // initialization application
-    `ignition-core`,
-    `demo-ignition`
+    `persons`
   )
 
 lazy val `core` = (project in file("annette/core"))
@@ -123,6 +124,7 @@ lazy val `microservice-core` = (project in file("annette/microservice-core"))
       lagomScaladslPersistenceCassandra,
       lagomScaladslServer % Optional,
       lagomScaladslTestKit,
+      Dependencies.chimney,
       Dependencies.playJsonExt,
       Dependencies.logstashEncoder,
       Dependencies.macwire
@@ -442,6 +444,17 @@ lazy val `persons-api-gateway` = (project in file("annette/persons-api-gateway")
     `api-gateway-core`,
     `persons-api`
   )
+
+lazy val `principal-groups-api` = (project in file("annette/principal-groups-api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      lagomScaladslTestKit,
+      Dependencies.chimney
+    ) ++ Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(`microservice-core`)
 
 lazy val `demo-ignition` = demoIgnitionProject(project in file("ignition/demo"))
 lazy val `application`   = applicationProject(project in file("annette/application"))
