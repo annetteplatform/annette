@@ -31,13 +31,13 @@ class PrincipalGroupServiceImpl(api: PrincipalGroupServiceApi, implicit val ec: 
   override def createPrincipalGroup(payload: CreatePrincipalGroupPayload): Future[Done] =
     api.createPrincipalGroup.invoke(payload)
 
-  override def updatePrincipalGroupName(payload: UpdateNamePayload): Future[Done] =
+  override def updatePrincipalGroupName(payload: UpdatePrincipalGroupNamePayload): Future[Done] =
     api.updatePrincipalGroupName.invoke(payload)
 
-  override def updatePrincipalGroupDescription(payload: UpdateDescriptionPayload): Future[Done] =
+  override def updatePrincipalGroupDescription(payload: UpdatePrincipalGroupDescriptionPayload): Future[Done] =
     api.updatePrincipalGroupDescription.invoke(payload)
 
-  override def updatePrincipalGroupCategory(payload: UpdateCategoryIdPayload): Future[Done] =
+  override def updatePrincipalGroupCategory(payload: UpdatePrincipalGroupCategoryPayload): Future[Done] =
     api.updatePrincipalGroupCategory.invoke(payload)
 
   override def deletePrincipalGroup(payload: DeletePrincipalGroupPayload): Future[Done] =

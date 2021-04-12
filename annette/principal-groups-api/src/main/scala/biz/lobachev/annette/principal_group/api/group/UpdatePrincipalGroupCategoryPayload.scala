@@ -17,14 +17,15 @@
 package biz.lobachev.annette.principal_group.api.group
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.principal_group.api.category.CategoryId
 import play.api.libs.json.Json
 
-case class UpdateDescriptionPayload(
+case class UpdatePrincipalGroupCategoryPayload(
   id: PrincipalGroupId,
-  description: String,
+  categoryId: CategoryId,
   updatedBy: AnnettePrincipal
 )
 
-object UpdateDescriptionPayload {
-  implicit val format = Json.format[UpdateDescriptionPayload]
+object UpdatePrincipalGroupCategoryPayload {
+  implicit val format = Json.format[UpdatePrincipalGroupCategoryPayload]
 }

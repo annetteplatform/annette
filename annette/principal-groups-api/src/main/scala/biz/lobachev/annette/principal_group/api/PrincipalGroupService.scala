@@ -26,9 +26,9 @@ import scala.concurrent.Future
 trait PersonService {
 
   def createPrincipalGroup(payload: CreatePrincipalGroupPayload): Future[Done]
-  def updatePrincipalGroupName(payload: UpdateNamePayload): Future[Done]
-  def updatePrincipalGroupDescription(payload: UpdateDescriptionPayload): Future[Done]
-  def updatePrincipalGroupCategory(payload: UpdateCategoryIdPayload): Future[Done]
+  def updatePrincipalGroupName(payload: UpdatePrincipalGroupNamePayload): Future[Done]
+  def updatePrincipalGroupDescription(payload: UpdatePrincipalGroupDescriptionPayload): Future[Done]
+  def updatePrincipalGroupCategory(payload: UpdatePrincipalGroupCategoryPayload): Future[Done]
   def deletePrincipalGroup(payload: DeletePrincipalGroupPayload): Future[Done]
   def assignPrincipal(payload: AssignPrincipalPayload): Future[Done]
   def unassignPrincipal(payload: UnassignPrincipalPayload): Future[Done]

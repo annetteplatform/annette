@@ -34,9 +34,9 @@ import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 trait PrincipalGroupServiceApi extends Service {
 
   def createPrincipalGroup: ServiceCall[CreatePrincipalGroupPayload, Done]
-  def updatePrincipalGroupName: ServiceCall[UpdateNamePayload, Done]
-  def updatePrincipalGroupDescription: ServiceCall[UpdateDescriptionPayload, Done]
-  def updatePrincipalGroupCategory: ServiceCall[UpdateCategoryIdPayload, Done]
+  def updatePrincipalGroupName: ServiceCall[UpdatePrincipalGroupNamePayload, Done]
+  def updatePrincipalGroupDescription: ServiceCall[UpdatePrincipalGroupDescriptionPayload, Done]
+  def updatePrincipalGroupCategory: ServiceCall[UpdatePrincipalGroupCategoryPayload, Done]
   def deletePrincipalGroup: ServiceCall[DeletePrincipalGroupPayload, Done]
   def assignPrincipal: ServiceCall[AssignPrincipalPayload, Done]
   def unassignPrincipal: ServiceCall[UnassignPrincipalPayload, Done]
@@ -76,7 +76,7 @@ trait PrincipalGroupServiceApi extends Service {
         pathCall("/api/principal-groups/v1/getAssignments/:id",                      getAssignments _),
 
         pathCall("/api/principal-groups/v1/createCategory",                 createCategory),
-        pathCall("/api/principal-groups/v1/updateCategory",                 updatePrincipalGroupCategory),
+        pathCall("/api/principal-groups/v1/updateCategory",                 updateCategory),
         pathCall("/api/principal-groups/v1/deleteCategory",                 deleteCategory),
         pathCall("/api/principal-groups/v1/getCategoryById/:id/:readSide",  getCategoryById _),
         pathCall("/api/principal-groups/v1/getCategoriesById/:readSide",    getCategoriesById _) ,

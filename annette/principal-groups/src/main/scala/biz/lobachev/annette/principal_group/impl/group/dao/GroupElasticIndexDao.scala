@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.impl.person.dao
+package biz.lobachev.annette.principal_group.impl.group.dao
 
-import biz.lobachev.annette.attributes.api.query.AttributeElastic
 import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.microservice_core.elastic.{AbstractElasticIndexDao, ElasticSettings}
-import biz.lobachev.annette.persons.api.person._
-import biz.lobachev.annette.persons.impl.person.PersonEntity
-import biz.lobachev.annette.persons.impl.person.PersonEntity.PersonDeleted
+import biz.lobachev.annette.principal_group.api.group.PrincipalGroupFindQuery
+import biz.lobachev.annette.principal_group.impl.group.PrincipalGroupEntity
+import biz.lobachev.annette.principal_group.impl.group.PrincipalGroupEntity.PrincipalGroupDeleted
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.analysis.{Analysis, CustomAnalyzer, EdgeNGramTokenizer}
@@ -32,15 +31,13 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class PersonElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: ElasticClient)(implicit
+class GroupElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: ElasticClient)(implicit
   override val ec: ExecutionContext
-) extends AbstractElasticIndexDao(elasticSettings, elasticClient)
-    with PersonIndexDao
-    with AttributeElastic {
+) extends AbstractElasticIndexDao(elasticSettings, elasticClient) {
 
   override val log = LoggerFactory.getLogger(this.getClass)
 
-  override def indexSuffix = "persons-person"
+  override def indexSuffix = "principal-groups-group"
 
   // *************************** Index API ***************************
 
@@ -49,12 +46,9 @@ class PersonElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Ela
       .mapping(
         properties(
           keywordField("id"),
-          textField("lastname").fielddata(true).analyzer("name_analyzer").searchAnalyzer("name_search"),
-          textField("firstname").fielddata(true).analyzer("name_analyzer").searchAnalyzer("name_search"),
-          textField("middlename").fielddata(true).analyzer("name_analyzer").searchAnalyzer("name_search"),
+          textField("name").fielddata(true).analyzer("name_analyzer").searchAnalyzer("name_search"),
+          textField("description").fielddata(true).analyzer("name_analyzer").searchAnalyzer("name_search"),
           keywordField("categoryId"),
-          keywordField("phone"),
-          keywordField("email"), //.analyzer("ngram_name_analyzer").searchAnalyzer("standard"),
           dateField("updatedAt")
         )
       )
@@ -84,73 +78,77 @@ class PersonElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Ela
         )
       )
 
-  def createPerson(event: PersonEntity.PersonCreated): Future[Unit] =
+  def createPrincipalGroup(event: PrincipalGroupEntity.PrincipalGroupCreated): Future[Unit] =
     elasticClient.execute {
       indexInto(indexName)
         .id(event.id)
         .fields(
-          "id"         -> event.id,
-          "lastname"   -> event.lastname,
-          "firstname"  -> event.firstname,
-          "middlename" -> event.middlename,
-          "categoryId" -> event.categoryId,
-          "phone"      -> event.phone,
-          "email"      -> event.email,
-          "updatedAt"  -> event.createdAt
+          "id"          -> event.id,
+          "name"        -> event.name,
+          "description" -> event.description,
+          "categoryId"  -> event.categoryId,
+          "updatedAt"   -> event.createdAt
         )
         .refresh(RefreshPolicy.Immediate)
-    }.map(processResponse("createPerson", event.id)(_))
+    }.map(processResponse("createPrincipalGroup", event.id)(_))
 
-  def updatePerson(event: PersonEntity.PersonUpdated): Future[Unit] =
+  def updatePrincipalGroupName(event: PrincipalGroupEntity.PrincipalGroupNameUpdated): Future[Unit] =
     elasticClient.execute {
       updateById(indexName, event.id)
         .doc(
-          "id"         -> event.id,
-          "lastname"   -> event.lastname,
-          "firstname"  -> event.firstname,
-          "middlename" -> event.middlename,
-          "categoryId" -> event.categoryId,
-          "phone"      -> event.phone,
-          "email"      -> event.email,
-          "updatedAt"  -> event.updatedAt
+          "id"        -> event.id,
+          "name"      -> event.name,
+          "updatedAt" -> event.updatedAt
         )
         .refresh(RefreshPolicy.Immediate)
-    }.map(processResponse("updatePerson", event.id)(_))
+    }.map(processResponse("updatePrincipalGroupName", event.id)(_))
 
-  def deletePerson(event: PersonDeleted): Future[Unit] =
+  def updatePrincipalGroupDescription(event: PrincipalGroupEntity.PrincipalGroupDescriptionUpdated): Future[Unit] =
+    elasticClient.execute {
+      updateById(indexName, event.id)
+        .doc(
+          "id"          -> event.id,
+          "description" -> event.description,
+          "updatedAt"   -> event.updatedAt
+        )
+        .refresh(RefreshPolicy.Immediate)
+    }.map(processResponse("updatePrincipalGroupDescription", event.id)(_))
+
+  def updatePrincipalGroupCategory(event: PrincipalGroupEntity.PrincipalGroupCategoryUpdated): Future[Unit] =
+    elasticClient.execute {
+      updateById(indexName, event.id)
+        .doc(
+          "id"        -> event.id,
+          "category"  -> event.categoryId,
+          "updatedAt" -> event.updatedAt
+        )
+        .refresh(RefreshPolicy.Immediate)
+    }.map(processResponse("updatePrincipalGroupCategory", event.id)(_))
+
+  def deletePrincipalGroup(event: PrincipalGroupDeleted): Future[Unit] =
     elasticClient.execute {
       deleteById(indexName, event.id)
     }
-      .map(processResponse("deletePerson", event.id)(_))
+      .map(processResponse("deletePrincipalGroup", event.id)(_))
 
   // *************************** Search API ***************************
 
-  def findPerson(query: PersonFindQuery): Future[FindResult] = {
+  def findPrincipalGroup(query: PrincipalGroupFindQuery): Future[FindResult] = {
 
-    val fieldQuery             = Seq(
-      query.firstname.map(matchQuery("firstname", _)),
-      query.lastname.map(matchQuery("lastname", _)),
-      query.middlename.map(matchQuery("middlename", _)),
-      query.phone.map(matchQuery("phone", _)),
-      query.email.map(matchQuery("email", _))
-    ).flatten
     val filterQuery            = buildFilterQuery(
       query.filter,
-      Seq("lastname" -> 3.0, "firstname" -> 2.0, "middlename" -> 1.0, "email" -> 3.0, "phone" -> 1.0)
+      Seq("name" -> 3.0, "description" -> 2.0)
     )
-    val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
+    val sortBy: Seq[FieldSort] = buildSortBy(query.sortBy)
     val categoryQuery          = query.categories.map(chiefs => termsSetQuery("categoryId", chiefs, script("1"))).toSeq
-    val attributeQuery         = buildAttributeQuery(query.attributes)
 
     val searchRequest = search(indexName)
-      .bool(must(filterQuery ++ fieldQuery ++ categoryQuery ++ attributeQuery))
+      .bool(must(filterQuery ++ categoryQuery))
       .from(query.offset)
       .size(query.size)
       .sortBy(sortBy)
       .sourceInclude("updatedAt")
       .trackTotalHits(true)
-
-    //println(elasticClient.show(searchRequest))
 
     findEntity(searchRequest)
 
