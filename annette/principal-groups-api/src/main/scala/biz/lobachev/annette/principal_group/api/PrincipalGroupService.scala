@@ -23,7 +23,7 @@ import biz.lobachev.annette.principal_group.api.group._
 
 import scala.concurrent.Future
 
-trait PersonService {
+trait PrincipalGroupService {
 
   def createPrincipalGroup(payload: CreatePrincipalGroupPayload): Future[Done]
   def updatePrincipalGroupName(payload: UpdatePrincipalGroupNamePayload): Future[Done]

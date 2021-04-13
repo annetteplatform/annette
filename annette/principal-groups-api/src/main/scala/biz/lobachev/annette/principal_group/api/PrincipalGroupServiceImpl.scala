@@ -26,7 +26,7 @@ import io.scalaland.chimney.dsl._
 import scala.concurrent.{ExecutionContext, Future}
 
 class PrincipalGroupServiceImpl(api: PrincipalGroupServiceApi, implicit val ec: ExecutionContext)
-    extends PersonService {
+    extends PrincipalGroupService {
 
   override def createPrincipalGroup(payload: CreatePrincipalGroupPayload): Future[Done] =
     api.createPrincipalGroup.invoke(payload)

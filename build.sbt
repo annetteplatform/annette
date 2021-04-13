@@ -93,6 +93,7 @@ lazy val root = (project in file("."))
     `org-structure-api`,
     `persons-api`,
     `principal-groups-api`,
+    `subscriptions-api`,
     // microservices
     `application`,
     `attributes`,
@@ -474,6 +475,17 @@ def principalGroupsProject(pr: Project) =
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
     .dependsOn(`principal-groups-api`)
+
+lazy val `subscriptions-api` = (project in file("annette/subscriptions-api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      lagomScaladslTestKit,
+      Dependencies.chimney
+    ) ++ Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(`microservice-core`)
 
 lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/demo"))
 lazy val `application`      = applicationProject(project in file("annette/application"))
