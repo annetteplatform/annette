@@ -14,29 +14,27 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.principal_group.impl.group.model
+package biz.lobachev.annette.subscription.impl.subscription_type.model
+
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 
 import java.time.OffsetDateTime
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.principal_group.api.category.CategoryId
-import biz.lobachev.annette.principal_group.api.group.{PrincipalGroup, PrincipalGroupId}
+import biz.lobachev.annette.subscription.api.subscription_type.{SubscriptionType, SubscriptionTypeId}
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 
-case class PrincipalGroupState(
-  id: PrincipalGroupId,
+case class SubscriptionTypeState(
+  id: SubscriptionTypeId,
   name: String,
-  description: String,
-  categoryId: CategoryId,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) {
 
-  def toPrincipalGroup: PrincipalGroup =
-    this.into[PrincipalGroup].transform
+  def toSubscriptionType: SubscriptionType =
+    this.into[SubscriptionType].transform
 
 }
 
-object PrincipalGroupState {
-  implicit val format = Json.format[PrincipalGroupState]
+object SubscriptionTypeState {
+  implicit val format = Json.format[SubscriptionTypeState]
 }

@@ -80,7 +80,7 @@ lazy val root = (project in file("."))
     `api-gateway`,
     // initialization application
     `ignition-core`,
-    `demo-ignition`,
+//    `demo-ignition`,
     // API gateways
     `application-api-gateway`,
     `authorization-api-gateway`,
@@ -100,7 +100,8 @@ lazy val root = (project in file("."))
     `authorization`,
     `org-structure`,
     `persons`,
-    `principal-groups`
+    `principal-groups`,
+    `subscriptions`
   )
 
 lazy val `core` = (project in file("annette/core"))
@@ -487,10 +488,29 @@ lazy val `subscriptions-api` = (project in file("annette/subscriptions-api"))
   .settings(annetteSettings: _*)
   .dependsOn(`microservice-core`)
 
-lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/demo"))
+def subscriptionsProject(pr: Project) =
+  pr
+    .enablePlugins(LagomScala)
+    .settings(
+      libraryDependencies ++= Seq(
+        lagomScaladslPersistenceCassandra,
+        lagomScaladslKafkaClient,
+        lagomScaladslTestKit,
+        Dependencies.macwire,
+        Dependencies.chimney
+      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
+    )
+    .settings(lagomForkedTestSettings: _*)
+    .settings(confDirSettings: _*)
+    .settings(annetteSettings: _*)
+    .settings(dockerSettings: _*)
+    .dependsOn(`subscriptions-api`)
+
+//lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/demo"))
 lazy val `application`      = applicationProject(project in file("annette/application"))
 lazy val `attributes`       = attributesProject(project in file("annette/attributes"))
 lazy val `authorization`    = authorizationProject(project in file("annette/authorization"))
 lazy val `org-structure`    = orgStructureProject(project in file("annette/org-structure"))
 lazy val `persons`          = personsProject(project in file("annette/persons"))
 lazy val `principal-groups` = principalGroupsProject(project in file("annette/principal-groups"))
+lazy val `subscriptions`    = subscriptionsProject(project in file("annette/subscriptions"))

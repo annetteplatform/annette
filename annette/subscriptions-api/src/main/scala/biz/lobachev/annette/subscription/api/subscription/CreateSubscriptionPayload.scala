@@ -8,7 +8,7 @@ case class CreateSubscriptionPayload(
   subscriptionType: SubscriptionTypeId,
   objectId: ObjectId,
   principal: AnnettePrincipal,
-  updatedBy: AnnettePrincipal
+  createdBy: AnnettePrincipal
 )
 
 object CreateSubscriptionPayload {
