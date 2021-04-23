@@ -94,6 +94,7 @@ lazy val root = (project in file("."))
     `persons-api`,
     `principal-groups-api`,
     `subscriptions-api`,
+    `blogs-api`,
     // microservices
     `application`,
     `attributes`,
@@ -101,7 +102,8 @@ lazy val root = (project in file("."))
     `org-structure`,
     `persons`,
     `principal-groups`,
-    `subscriptions`
+    `subscriptions`,
+    `blogs`
   )
 
 lazy val `core` = (project in file("annette/core"))
@@ -506,6 +508,35 @@ def subscriptionsProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`subscriptions-api`)
 
+lazy val `blogs-api` = (project in file("annette/blogs-api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      lagomScaladslTestKit,
+      Dependencies.chimney
+    ) ++ Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(`microservice-core`)
+
+def blogsProject(pr: Project) =
+  pr
+    .enablePlugins(LagomScala)
+    .settings(
+      libraryDependencies ++= Seq(
+        lagomScaladslPersistenceCassandra,
+        lagomScaladslKafkaClient,
+        lagomScaladslTestKit,
+        Dependencies.macwire,
+        Dependencies.chimney
+      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
+    )
+    .settings(lagomForkedTestSettings: _*)
+    .settings(confDirSettings: _*)
+    .settings(annetteSettings: _*)
+    .settings(dockerSettings: _*)
+    .dependsOn(`blogs-api`)
+
 //lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/demo"))
 lazy val `application`      = applicationProject(project in file("annette/application"))
 lazy val `attributes`       = attributesProject(project in file("annette/attributes"))
@@ -514,3 +545,4 @@ lazy val `org-structure`    = orgStructureProject(project in file("annette/org-s
 lazy val `persons`          = personsProject(project in file("annette/persons"))
 lazy val `principal-groups` = principalGroupsProject(project in file("annette/principal-groups"))
 lazy val `subscriptions`    = subscriptionsProject(project in file("annette/subscriptions"))
+lazy val `blogs`            = blogsProject(project in file("annette/blogs"))
