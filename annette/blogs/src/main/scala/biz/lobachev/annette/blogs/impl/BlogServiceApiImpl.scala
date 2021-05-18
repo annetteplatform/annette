@@ -17,12 +17,12 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.duration._
 
-class BlogsServiceApiImpl(
+class BlogServiceApiImpl(
   categoryEntityService: CategoryEntityService,
   blogEntityService: BlogEntityService,
   postEntityService: PostEntityService,
   postMetricEntityService: PostMetricEntityService
-) extends BlogsServiceApi {
+) extends BlogServiceApi {
 
   implicit val timeout = Timeout(50.seconds)
 
@@ -254,16 +254,14 @@ class BlogsServiceApiImpl(
       postMetricEntityService.likePost(payload)
     }
 
-  override def getPostMetricById(id: PostId, fromReadSide: Boolean = true): ServiceCall[NotUsed, PostMetric] =
+  override def getPostMetricById(id: PostId): ServiceCall[NotUsed, PostMetric] =
     ServiceCall { _ =>
-      postMetricEntityService.getPostMetricById(id, fromReadSide)
+      postMetricEntityService.getPostMetricById(id)
     }
 
-  override def getPostMetricsById(
-    fromReadSide: Boolean = true
-  ): ServiceCall[Set[PostId], Map[PostId, PostMetric]] =
+  override def getPostMetricsById: ServiceCall[Set[PostId], Map[PostId, PostMetric]] =
     ServiceCall { ids =>
-      postMetricEntityService.getPostMetricsById(ids, fromReadSide)
+      postMetricEntityService.getPostMetricsById(ids)
     }
 
 }

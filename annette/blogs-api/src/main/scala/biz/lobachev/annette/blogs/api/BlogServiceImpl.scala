@@ -8,7 +8,7 @@ import biz.lobachev.annette.core.model.elastic.FindResult
 
 import scala.concurrent.Future
 
-class BlogsServiceImpl(api: BlogsServiceApi) extends BlogsService {
+class BlogServiceImpl(api: BlogServiceApi) extends BlogService {
   override def createCategory(payload: CreateCategoryPayload): Future[Done] =
     api.createCategory.invoke(payload)
 
@@ -141,10 +141,10 @@ class BlogsServiceImpl(api: BlogsServiceApi) extends BlogsService {
   override def likePost(payload: LikePostPayload): Future[Done] =
     api.likePost.invoke(payload)
 
-  override def getPostMetricById(id: PostId, fromReadSide: Boolean): Future[PostMetric] =
-    api.getPostMetricById(id, fromReadSide).invoke()
+  override def getPostMetricById(id: PostId): Future[PostMetric] =
+    api.getPostMetricById(id).invoke()
 
-  override def getPostMetricsById(ids: Set[PostId], fromReadSide: Boolean): Future[Map[PostId, PostMetric]] =
-    api.getPostMetricsById(fromReadSide).invoke(ids)
+  override def getPostMetricsById(ids: Set[PostId]): Future[Map[PostId, PostMetric]] =
+    api.getPostMetricsById.invoke(ids)
 
 }

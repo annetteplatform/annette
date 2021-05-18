@@ -1,55 +1,83 @@
 package biz.lobachev.annette.blogs.impl.post_metric.dao
 
 import akka.Done
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.blogs.api.post.PostId
 import biz.lobachev.annette.blogs.api.post_metric._
 import biz.lobachev.annette.blogs.impl.post_metric.PostMetricEntity
-import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
+import com.datastax.driver.core.{BoundStatement, PreparedStatement}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 import org.slf4j.LoggerFactory
 
 import scala.collection.immutable.{Seq, _}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.jdk.CollectionConverters._
 
-private[impl] class PostMetricCassandraDbDao(session: CassandraSession)(implicit ec: ExecutionContext) {
+private[impl] class PostMetricCassandraDbDao(session: CassandraSession)(implicit
+  ec: ExecutionContext,
+  materializer: Materializer
+) {
 
   val log = LoggerFactory.getLogger(this.getClass)
 
-  private var viewPostStatement: PreparedStatement         = _
-  private var likePostStatement: PreparedStatement         = _
-  private var deletePostMetricStatement: PreparedStatement = _
+  private var viewPostStatement: PreparedStatement        = _
+  private var likePostStatement: PreparedStatement        = _
+  private var deletePostViewsStatement: PreparedStatement = _
+  private var deletePostLikesStatement: PreparedStatement = _
 
   def createTables(): Future[Done] =
     for {
       _ <- session.executeCreateTable("""
-                                        |CREATE TABLE IF NOT EXISTS ?????? (
-                                        |          id               text PRIMARY KEY,
+                                        |CREATE TABLE IF NOT EXISTS post_likes (
+                                        |          post_id text,
+                                        |          principal text,
+                                        |          PRIMARY KEY (post_id, principal)
+                                        |)
+                                        |""".stripMargin)
+      _ <- session.executeCreateTable("""
+                                        |CREATE TABLE IF NOT EXISTS post_views (
+                                        |          post_id text,
+                                        |          principal text,
+                                        |          views counter,
+                                        |          PRIMARY KEY (post_id, principal)
                                         |)
                                         |""".stripMargin)
     } yield Done
 
   def prepareStatements(): Future[Done] =
     for {
-      viewPostStmt         <- session.prepare(
-                                """
-                          |
+      viewPostStmt        <- session.prepare(
+                               """
+                          | UPDATE post_views SET
+                          |     views = views + 1
+                          |   WHERE
+                          |      post_id = :post_id AND
+                          |      principal = :principal
                           |""".stripMargin
-                              )
-      likePostStmt         <- session.prepare(
-                                """
-                          |
+                             )
+      likePostStmt        <- session.prepare(
+                               """
+                          | INSERT INTO post_likes (post_id, principal)
+                          |   VALUES (:post_id, :principal)
                           |""".stripMargin
-                              )
-      deletePostMetricStmt <- session.prepare(
-                                """
-                                  |
-                                  |""".stripMargin
-                              )
+                             )
+      deletePostViewsStmt <- session.prepare(
+                               """
+                                 | DELETE FROM post_views
+                                 |   WHERE post_id = :post_id
+                                 |""".stripMargin
+                             )
+      deletePostLikesStmt <- session.prepare(
+                               """
+                                 | DELETE FROM post_likes
+                                 |   WHERE post_id = :post_id
+                                 |""".stripMargin
+                             )
     } yield {
       viewPostStatement = viewPostStmt
       likePostStatement = likePostStmt
-      deletePostMetricStatement = deletePostMetricStmt
+      deletePostViewsStatement = deletePostViewsStmt
+      deletePostLikesStatement = deletePostLikesStmt
       Done
     }
 
@@ -71,27 +99,31 @@ private[impl] class PostMetricCassandraDbDao(session: CassandraSession)(implicit
 
   def deletePostMetric(event: PostMetricEntity.PostMetricDeleted): Future[Seq[BoundStatement]] =
     build(
-      deletePostMetricStatement
+      deletePostViewsStatement
         .bind()
-        // TODO: insert .set
-        .setString("id", event.id)
+        .setString("post_id", event.id),
+      deletePostLikesStatement
+        .bind()
+        .setString("post_id", event.id)
     )
 
   def getPostMetricById(id: PostId): Future[Option[PostMetric]] =
     for {
       // TODO: change the following code
-      stmt        <- session.prepare("SELECT * FROM ??? WHERE id = :id")
-      maybeEntity <- session.selectOne(stmt.bind().setString("id", id)).map(_.map(convertPostMetric))
-    } yield maybeEntity
+      viewsStmt <- session.prepare("SELECT count(*) from post_views where post_id =  :post_id")
+      views     <-
+        session.selectOne(viewsStmt.bind().setString("post_id", id)).map(_.map(_.getLong("count").toInt).getOrElse(0))
+      likesStmt <- session.prepare("SELECT count(*) from post_likes where post_id =  :post_id")
+      likes     <-
+        session.selectOne(likesStmt.bind().setString("post_id", id)).map(_.map(_.getLong("count").toInt).getOrElse(0))
 
-  def getPostMetricsById(ids: Set[PostId]): Future[Map[PostId, PostMetric]] =
-    for {
-      // TODO: change the following code
-      stmt   <- session.prepare("SELECT * FROM ??? WHERE id IN ?")
-      result <- session.selectAll(stmt.bind(ids.toList.asJava)).map(_.map(convertPostMetric))
-    } yield result.map(a => a.id -> a).toMap
+    } yield Some(PostMetric(id, views, likes))
 
-  private def convertPostMetric(row: Row): PostMetric                       = ???
+  def getPostMetricsById(ids: Set[PostId]): Future[Map[PostId, PostMetric]]    =
+    Source(ids)
+      .mapAsync(1)(getPostMetricById)
+      .runWith(Sink.seq)
+      .map(_.flatten.map(a => a.id -> a).toMap)
 
   private def build(statements: BoundStatement*): Future[List[BoundStatement]] =
     Future.successful(statements.toList)

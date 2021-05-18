@@ -15,26 +15,24 @@ import biz.lobachev.annette.blogs.impl.post.model.PostSerializerRegistry
 import biz.lobachev.annette.blogs.impl.post_metric._
 import biz.lobachev.annette.blogs.impl.post_metric.dao.PostMetricCassandraDbDao
 import biz.lobachev.annette.blogs.impl.post_metric.model.PostMetricSerializerRegistry
+import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.microservice_core.elastic.ElasticModule
-import com.lightbend.lagom.scaladsl.api.{LagomConfigComponent, ServiceLocator}
-import com.lightbend.lagom.scaladsl.api.ServiceLocator.NoServiceLocator
+import com.lightbend.lagom.scaladsl.api.LagomConfigComponent
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 import com.lightbend.lagom.scaladsl.server._
 import com.softwaremill.macwire._
-import play.api.{Environment, LoggerConfigurator}
 import play.api.libs.ws.ahc.AhcWSComponents
+import play.api.{Environment, LoggerConfigurator}
 
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext
 
-class BlogsServiceLoader extends LagomApplicationLoader {
+class BlogServiceLoader extends LagomApplicationLoader {
 
   override def load(context: LagomApplicationContext): LagomApplication =
-    new BlogsServiceApplication(context) {
-      override def serviceLocator: ServiceLocator = NoServiceLocator
-    }
+    new BlogServiceApplication(context) with AnnetteDiscoveryComponents
 
   override def loadDevMode(context: LagomApplicationContext): LagomApplication = {
     // workaround for custom logback.xml
@@ -42,13 +40,13 @@ class BlogsServiceLoader extends LagomApplicationLoader {
     LoggerConfigurator(environment.classLoader).foreach {
       _.configure(environment)
     }
-    new BlogsServiceApplication(context) with LagomDevModeComponents
+    new BlogServiceApplication(context) with LagomDevModeComponents
   }
 
-  override def describeService = Some(readDescriptor[BlogsServiceApi])
+  override def describeService = Some(readDescriptor[BlogServiceApi])
 }
 
-trait BlogsComponents
+trait BlogComponents
     extends LagomServerComponents
     with CassandraPersistenceComponents
     with LagomConfigComponent
@@ -61,9 +59,9 @@ trait BlogsComponents
   val elasticModule = new ElasticModule(config)
   import elasticModule._
 
-  override lazy val lagomServer = serverFor[BlogsServiceApi](wire[BlogsServiceApiImpl])
+  override lazy val lagomServer = serverFor[BlogServiceApi](wire[BlogServiceApiImpl])
 
-  lazy val jsonSerializerRegistry = BlogsSerializerRegistry
+  lazy val jsonSerializerRegistry = BlogServiceSerializerRegistry
 
   lazy val wiredCategoryCasRepository     = wire[CategoryCassandraDbDao]
   lazy val wiredCategoryElasticRepository = wire[CategoryElasticIndexDao]
@@ -109,11 +107,11 @@ trait BlogsComponents
 
 }
 
-abstract class BlogsServiceApplication(context: LagomApplicationContext)
+abstract class BlogServiceApplication(context: LagomApplicationContext)
     extends LagomApplication(context)
-    with BlogsComponents {}
+    with BlogComponents {}
 
-object BlogsSerializerRegistry extends JsonSerializerRegistry {
+object BlogServiceSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: immutable.Seq[JsonSerializer[_]] =
     CategorySerializerRegistry.serializers ++
       BlogSerializerRegistry.serializers ++

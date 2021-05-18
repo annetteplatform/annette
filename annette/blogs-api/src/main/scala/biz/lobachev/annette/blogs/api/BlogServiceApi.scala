@@ -11,7 +11,7 @@ import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 
 import scala.collection.immutable.Map
 
-trait BlogsServiceApi extends Service {
+trait BlogServiceApi extends Service {
 
   def createCategory: ServiceCall[CreateCategoryPayload, Done]
   def updateCategory: ServiceCall[UpdateCategoryPayload, Done]
@@ -60,8 +60,8 @@ trait BlogsServiceApi extends Service {
 
   def viewPost: ServiceCall[ViewPostPayload, Done]
   def likePost: ServiceCall[LikePostPayload, Done]
-  def getPostMetricById(id: PostId, fromReadSide: Boolean = true): ServiceCall[NotUsed, PostMetric]
-  def getPostMetricsById(fromReadSide: Boolean = true): ServiceCall[Set[PostId], Map[PostId, PostMetric]]
+  def getPostMetricById(id: PostId): ServiceCall[NotUsed, PostMetric]
+  def getPostMetricsById: ServiceCall[Set[PostId], Map[PostId, PostMetric]]
 
   final override def descriptor = {
     import Service._
@@ -71,7 +71,7 @@ trait BlogsServiceApi extends Service {
         pathCall("/api/blogs/v1/updateCategory", updateCategory),
         pathCall("/api/blogs/v1/deleteCategory", deleteCategory),
         pathCall("/api/blogs/v1/getCategoryById/:id/:fromReadSide", getCategoryById _),
-        pathCall("/api/blogs/v1/getCategoriesByIds/:fromReadSide", getCategoriesById _),
+        pathCall("/api/blogs/v1/getCategoriesById/:fromReadSide", getCategoriesById _),
         pathCall("/api/blogs/v1/findCategories", findCategories),
         pathCall("/api/blogs/v1/createBlog", createBlog),
         pathCall("/api/blogs/v1/updateBlogName", updateBlogName),
@@ -85,7 +85,7 @@ trait BlogsServiceApi extends Service {
         pathCall("/api/blogs/v1/getBlogById/:id/:fromReadSide", getBlogById _),
         pathCall("/api/blogs/v1/getBlogAnnotationById/:id/:fromReadSide", getBlogAnnotationById _),
         pathCall("/api/blogs/v1/getBlogsByIds/:fromReadSide", getBlogsById _),
-        pathCall("/api/blogs/v1/getBlogAnnotationsByIds/:fromReadSide", getBlogAnnotationsById _),
+        pathCall("/api/blogs/v1/getBlogAnnotationsById/:fromReadSide", getBlogAnnotationsById _),
         pathCall("/api/blogs/v1/findBlogs", findBlogs),
         pathCall("/api/blogs/v1/createPost", createPost),
         pathCall("/api/blogs/v1/updatePostFeatured", updatePostFeatured),
@@ -101,8 +101,8 @@ trait BlogsServiceApi extends Service {
         pathCall("/api/blogs/v1/deletePost", deletePost),
         pathCall("/api/blogs/v1/getPostById/:id/:fromReadSide", getPostById _),
         pathCall("/api/blogs/v1/getPostAnnotationById/:id/:fromReadSide", getPostAnnotationById _),
-        pathCall("/api/blogs/v1/getPostsByIds/:fromReadSide", getPostsById _),
-        pathCall("/api/blogs/v1/getPostAnnotationsByIds/:fromReadSide", getPostAnnotationsById _),
+        pathCall("/api/blogs/v1/getPostsById/:fromReadSide", getPostsById _),
+        pathCall("/api/blogs/v1/getPostAnnotationsById/:fromReadSide", getPostAnnotationsById _),
         pathCall("/api/blogs/v1/findPosts", findPosts),
         pathCall("/api/blogs/v1/addPostMedia", addPostMedia),
         pathCall("/api/blogs/v1/removePostMedia", removePostMedia),
@@ -111,8 +111,8 @@ trait BlogsServiceApi extends Service {
         pathCall("/api/blogs/v1/removePostDoc", removePostDoc),
         pathCall("/api/blogs/v1/viewPost", viewPost),
         pathCall("/api/blogs/v1/likePost", likePost),
-        pathCall("/api/blogs/v1/getPostMetricById/:id/:fromReadSide", getPostMetricById _),
-        pathCall("/api/blogs/v1/getPostMetricsByIds/:fromReadSide", getPostMetricsById _)
+        pathCall("/api/blogs/v1/getPostMetricById/:id", getPostMetricById _),
+        pathCall("/api/blogs/v1/getPostMetricsById", getPostMetricsById)
       )
       .withExceptionSerializer(new AnnetteTransportExceptionSerializer())
       .withAutoAcl(true)

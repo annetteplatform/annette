@@ -15,7 +15,6 @@ object PostMetricSerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[OffsetDateTime],
       JsonSerializer[AnnettePrincipal],
       JsonSerializer[PostMetricEntity.Success.type],
-      JsonSerializer[PostMetricEntity.SuccessPostMetric],
       JsonSerializer[PostMetricEntity.PostViewed],
       JsonSerializer[PostMetricEntity.PostLiked],
       JsonSerializer[PostMetricEntity.PostMetricDeleted]

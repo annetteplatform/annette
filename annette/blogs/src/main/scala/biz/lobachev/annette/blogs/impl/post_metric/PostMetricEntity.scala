@@ -1,17 +1,17 @@
 package biz.lobachev.annette.blogs.impl.post_metric
 
-import java.time.OffsetDateTime
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.blogs.api.post.PostId
-import com.lightbend.lagom.scaladsl.persistence._
-import play.api.libs.json._
-import org.slf4j.LoggerFactory
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.blogs.api.post_metric._
 import biz.lobachev.annette.blogs.impl.post_metric.model.PostMetricState
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import com.lightbend.lagom.scaladsl.persistence._
+import org.slf4j.LoggerFactory
+import play.api.libs.json._
+
+import java.time.OffsetDateTime
 
 object PostMetricEntity {
 
@@ -21,14 +21,11 @@ object PostMetricEntity {
   final case class LikePost(id: PostId, updatedBy: AnnettePrincipal, replyTo: ActorRef[Confirmation]) extends Command
   final case class DeletePostMetric(id: PostId, deletedBy: AnnettePrincipal, replyTo: ActorRef[Confirmation])
       extends Command
-  final case class GetPostMetric(id: PostId, replyTo: ActorRef[Confirmation])                         extends Command
 
   sealed trait Confirmation
-  final case object Success                                  extends Confirmation
-  final case class SuccessPostMetric(postMetric: PostMetric) extends Confirmation
+  final case object Success extends Confirmation
 
-  implicit val confirmationSuccessFormat: Format[Success.type]                = Json.format
-  implicit val confirmationSuccessPostMetricFormat: Format[SuccessPostMetric] = Json.format
+  implicit val confirmationSuccessFormat: Format[Success.type] = Json.format
 
   sealed trait Event extends AggregateEvent[Event] {
     override def aggregateTag: AggregateEventTagger[Event] = Event.Tag
@@ -40,13 +37,11 @@ object PostMetricEntity {
 
   final case class PostViewed(
     id: PostId,
-    views: Int,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
   final case class PostLiked(
     id: PostId,
-    likes: Int,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -92,7 +87,6 @@ final case class PostMetricEntity(maybeState: Option[PostMetricState] = None) {
       case cmd: ViewPost         => viewPost(cmd)
       case cmd: LikePost         => likePost(cmd)
       case cmd: DeletePostMetric => deletePostMetric(cmd)
-      case cmd: GetPostMetric    => getPostMetric(cmd)
     }
 
   def viewPost(cmd: ViewPost): ReplyEffect[Event, PostMetricEntity] = ???
@@ -100,8 +94,6 @@ final case class PostMetricEntity(maybeState: Option[PostMetricState] = None) {
   def likePost(cmd: LikePost): ReplyEffect[Event, PostMetricEntity] = ???
 
   def deletePostMetric(cmd: DeletePostMetric): ReplyEffect[Event, PostMetricEntity] = ???
-
-  def getPostMetric(cmd: GetPostMetric): ReplyEffect[Event, PostMetricEntity] = ???
 
   def applyEvent(event: Event): PostMetricEntity =
     event match {

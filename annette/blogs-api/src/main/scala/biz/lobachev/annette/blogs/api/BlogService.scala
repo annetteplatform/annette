@@ -10,7 +10,7 @@ import biz.lobachev.annette.core.model.elastic.FindResult
 import scala.collection.immutable.Map
 import scala.concurrent.Future
 
-trait BlogsService {
+trait BlogService {
 
   def createCategory(payload: CreateCategoryPayload): Future[Done]
   def updateCategory(payload: UpdateCategoryPayload): Future[Done]
@@ -59,7 +59,7 @@ trait BlogsService {
 
   def viewPost(payload: ViewPostPayload): Future[Done]
   def likePost(payload: LikePostPayload): Future[Done]
-  def getPostMetricById(id: PostId, fromReadSide: Boolean = true): Future[PostMetric]
-  def getPostMetricsById(ids: Set[PostId], fromReadSide: Boolean = true): Future[Map[PostId, PostMetric]]
+  def getPostMetricById(id: PostId): Future[PostMetric]
+  def getPostMetricsById(ids: Set[PostId]): Future[Map[PostId, PostMetric]]
 
 }

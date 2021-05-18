@@ -32,12 +32,6 @@ class PostMetricEntityService(
       case _                        => throw new RuntimeException("Match fail")
     }
 
-  private def convertSuccessPostMetric(confirmation: PostMetricEntity.Confirmation): PostMetric =
-    confirmation match {
-      case PostMetricEntity.SuccessPostMetric(postMetric) => postMetric
-      case _                                              => throw new RuntimeException("Match fail")
-    }
-
   def viewPost(payload: ViewPostPayload): Future[Done] =
     refFor(payload.id)
       .ask[PostMetricEntity.Confirmation](replyTo =>
@@ -63,32 +57,12 @@ class PostMetricEntityService(
       .ask[PostMetricEntity.Confirmation](PostMetricEntity.DeletePostMetric(id, deletedBy, _))
       .map(convertSuccess)
 
-  def getPostMetric(id: PostId): Future[PostMetric] =
-    refFor(id)
-      .ask[PostMetricEntity.Confirmation](PostMetricEntity.GetPostMetric(id, _))
-      .map(convertSuccessPostMetric)
+  def getPostMetricById(id: PostId): Future[PostMetric] =
+    casRepository
+      .getPostMetricById(id)
+      .map(_.getOrElse(throw PostNotFound(id)))
 
-  def getPostMetricById(id: PostId, fromReadSide: Boolean): Future[PostMetric] =
-    if (fromReadSide)
-      casRepository
-        .getPostMetricById(id)
-        .map(_.getOrElse(throw PostNotFound(id)))
-    else
-      getPostMetric(id)
-
-  def getPostMetricsById(ids: Set[PostId], fromReadSide: Boolean): Future[Map[PostId, PostMetric]] =
-    if (fromReadSide)
-      casRepository.getPostMetricsById(ids)
-    else
-      Future
-        .traverse(ids) { id =>
-          refFor(id)
-            .ask[PostMetricEntity.Confirmation](PostMetricEntity.GetPostMetric(id, _))
-            .map {
-              case PostMetricEntity.SuccessPostMetric(postMetric) => Some(postMetric)
-              case _                                              => None
-            }
-        }
-        .map(_.flatten.map(a => a.id -> a).toMap)
+  def getPostMetricsById(ids: Set[PostId]): Future[Map[PostId, PostMetric]] =
+    casRepository.getPostMetricsById(ids)
 
 }

@@ -8,8 +8,6 @@ import java.time.OffsetDateTime
 
 case class PostMetricState(
   id: PostId,
-  views: Int,
-  likes: Int,
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
 )
