@@ -1,14 +1,17 @@
 package biz.lobachev.annette.blogs.api.post
 
-import biz.lobachev.annette.blogs.api.category.CategoryId
+import biz.lobachev.annette.blogs.api.blog.BlogId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
 case class CreatePostPayload(
   id: PostId,
-  name: String,
-  description: String,
-  categoryId: CategoryId,
+  blogId: BlogId,
+  featured: Boolean,
+  authorId: AnnettePrincipal,
+  title: String,
+  introContent: PostContent,
+  content: PostContent,
   targets: Set[AnnettePrincipal] = Set.empty,
   createdBy: AnnettePrincipal
 )

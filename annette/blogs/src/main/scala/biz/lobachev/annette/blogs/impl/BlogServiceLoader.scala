@@ -12,9 +12,6 @@ import biz.lobachev.annette.blogs.impl.category.model.CategorySerializerRegistry
 import biz.lobachev.annette.blogs.impl.post._
 import biz.lobachev.annette.blogs.impl.post.dao.{PostCassandraDbDao, PostElasticIndexDao}
 import biz.lobachev.annette.blogs.impl.post.model.PostSerializerRegistry
-import biz.lobachev.annette.blogs.impl.post_metric._
-import biz.lobachev.annette.blogs.impl.post_metric.dao.PostMetricCassandraDbDao
-import biz.lobachev.annette.blogs.impl.post_metric.model.PostMetricSerializerRegistry
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.microservice_core.elastic.ElasticModule
 import com.lightbend.lagom.scaladsl.api.LagomConfigComponent
@@ -61,7 +58,7 @@ trait BlogComponents
 
   override lazy val lagomServer = serverFor[BlogServiceApi](wire[BlogServiceApiImpl])
 
-  lazy val jsonSerializerRegistry = BlogServiceSerializerRegistry
+  lazy val jsonSerializerRegistry = ServiceSerializerRegistry
 
   lazy val wiredCategoryCasRepository     = wire[CategoryCassandraDbDao]
   lazy val wiredCategoryElasticRepository = wire[CategoryElasticIndexDao]
@@ -96,25 +93,15 @@ trait BlogComponents
     }
   )
 
-  lazy val wiredPostMetricCasRepository = wire[PostMetricCassandraDbDao]
-  readSide.register(wire[PostMetricDbEventProcessor])
-  lazy val wiredPostMetricEntityService = wire[PostMetricEntityService]
-  clusterSharding.init(
-    Entity(PostMetricEntity.typeKey) { entityContext =>
-      PostMetricEntity(entityContext)
-    }
-  )
-
 }
 
 abstract class BlogServiceApplication(context: LagomApplicationContext)
     extends LagomApplication(context)
     with BlogComponents {}
 
-object BlogServiceSerializerRegistry extends JsonSerializerRegistry {
+object ServiceSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: immutable.Seq[JsonSerializer[_]] =
     CategorySerializerRegistry.serializers ++
       BlogSerializerRegistry.serializers ++
-      PostSerializerRegistry.serializers ++
-      PostMetricSerializerRegistry.serializers
+      PostSerializerRegistry.serializers
 }

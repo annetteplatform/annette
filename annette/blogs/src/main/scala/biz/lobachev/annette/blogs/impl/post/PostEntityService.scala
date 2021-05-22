@@ -19,6 +19,7 @@ class PostEntityService(
 )(implicit
   ec: ExecutionContext
 ) {
+
   val log = LoggerFactory.getLogger(this.getClass)
 
   implicit val timeout = Timeout(50.seconds)
@@ -250,7 +251,10 @@ class PostEntityService(
     else
       getPost(id)
 
-  def getPostAnnotationById(id: PostId, fromReadSide: Boolean): Future[PostAnnotation] =
+  def getPostAnnotationById(
+    id: PostId,
+    fromReadSide: Boolean
+  ): Future[PostAnnotation] =
     if (fromReadSide)
       dbDao
         .getPostAnnotationById(id)
@@ -258,7 +262,10 @@ class PostEntityService(
     else
       getPostAnnotation(id)
 
-  def getPostsById(ids: Set[PostId], fromReadSide: Boolean): Future[Map[PostId, Post]]                     =
+  def getPostsById(
+    ids: Set[PostId],
+    fromReadSide: Boolean
+  ): Future[Map[PostId, Post]]                            =
     if (fromReadSide)
       dbDao.getPostsById(ids)
     else
@@ -273,7 +280,10 @@ class PostEntityService(
         }
         .map(_.flatten.map(a => a.id -> a).toMap)
 
-  def getPostAnnotationsById(ids: Set[PostId], fromReadSide: Boolean): Future[Map[PostId, PostAnnotation]] =
+  def getPostAnnotationsById(
+    ids: Set[PostId],
+    fromReadSide: Boolean
+  ): Future[Map[PostId, PostAnnotation]]                  =
     if (fromReadSide)
       dbDao.getPostAnnotationsById(ids)
     else
@@ -288,6 +298,14 @@ class PostEntityService(
         }
         .map(_.flatten.map(a => a.id -> a).toMap)
 
-  def findPosts(query: PostFindQuery): Future[FindResult]                                                  = indexDao.findPosts(query)
+  def findPosts(query: PostFindQuery): Future[FindResult] = indexDao.findPosts(query)
+
+  def viewPost(payload: ViewPostPayload): Future[Done] = dbDao.viewPost(payload.id, payload.updatedBy)
+
+  def likePost(payload: LikePostPayload): Future[Done] = dbDao.likePost(payload.id, payload.updatedBy)
+
+  def getPostMetricById(id: PostId): Future[PostMetric] = dbDao.getPostMetricById(id)
+
+  def getPostMetricsById(ids: Set[PostId]): Future[Map[PostId, PostMetric]] = dbDao.getPostMetricsById(ids)
 
 }

@@ -4,7 +4,6 @@ import akka.Done
 import biz.lobachev.annette.blogs.api.blog._
 import biz.lobachev.annette.blogs.api.category._
 import biz.lobachev.annette.blogs.api.post._
-import biz.lobachev.annette.blogs.api.post_metric._
 import biz.lobachev.annette.core.model.elastic.FindResult
 
 import scala.collection.immutable.Map

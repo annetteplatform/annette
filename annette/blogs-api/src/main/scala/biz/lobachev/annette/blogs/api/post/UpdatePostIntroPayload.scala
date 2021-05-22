@@ -5,8 +5,7 @@ import play.api.libs.json.{Format, Json}
 
 case class UpdatePostIntroPayload(
   id: PostId,
-  introContentType: String,
-  introContent: String,
+  introContent: PostContent,
   updatedBy: AnnettePrincipal
 )
 

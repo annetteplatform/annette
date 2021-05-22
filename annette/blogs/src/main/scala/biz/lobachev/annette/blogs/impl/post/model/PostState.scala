@@ -1,6 +1,6 @@
 package biz.lobachev.annette.blogs.impl.post.model
 
-import biz.lobachev.annette.blogs.api.post.ContentType.ContentType
+import biz.lobachev.annette.blogs.api.blog.BlogId
 import biz.lobachev.annette.blogs.api.post.PublicationStatus.PublicationStatus
 import biz.lobachev.annette.blogs.api.post._
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
@@ -10,18 +10,17 @@ import java.time.OffsetDateTime
 
 case class PostState(
   id: PostId,
+  blogId: BlogId,
   featured: Boolean,
   authorId: AnnettePrincipal,
   title: String,
-  introContentType: ContentType,
-  introContent: String,
-  contentType: ContentType,
-  content: String,
-  publicationStatus: PublicationStatus,
-  publicationTimestamp: Option[OffsetDateTime],
+  introContent: PostContent,
+  content: PostContent,
+  publicationStatus: PublicationStatus = PublicationStatus.Draft,
+  publicationTimestamp: Option[OffsetDateTime] = None,
   targets: Set[AnnettePrincipal] = Set.empty,
-  media: Map[MediaId, Media],
-  docs: Map[DocId, Doc],
+  media: Map[MediaId, Media] = Map.empty,
+  docs: Map[DocId, Doc] = Map.empty,
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
 )

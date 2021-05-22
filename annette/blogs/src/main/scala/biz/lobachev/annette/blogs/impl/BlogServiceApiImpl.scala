@@ -6,11 +6,9 @@ import biz.lobachev.annette.blogs.api._
 import biz.lobachev.annette.blogs.api.blog._
 import biz.lobachev.annette.blogs.api.category._
 import biz.lobachev.annette.blogs.api.post._
-import biz.lobachev.annette.blogs.api.post_metric._
 import biz.lobachev.annette.blogs.impl.blog._
 import biz.lobachev.annette.blogs.impl.category._
 import biz.lobachev.annette.blogs.impl.post._
-import biz.lobachev.annette.blogs.impl.post_metric._
 import biz.lobachev.annette.core.model.elastic.FindResult
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import org.slf4j.LoggerFactory
@@ -20,8 +18,7 @@ import scala.concurrent.duration._
 class BlogServiceApiImpl(
   categoryEntityService: CategoryEntityService,
   blogEntityService: BlogEntityService,
-  postEntityService: PostEntityService,
-  postMetricEntityService: PostMetricEntityService
+  postEntityService: PostEntityService
 ) extends BlogServiceApi {
 
   implicit val timeout = Timeout(50.seconds)
@@ -246,22 +243,22 @@ class BlogServiceApiImpl(
 
   override def viewPost: ServiceCall[ViewPostPayload, Done] =
     ServiceCall { payload =>
-      postMetricEntityService.viewPost(payload)
+      postEntityService.viewPost(payload)
     }
 
   override def likePost: ServiceCall[LikePostPayload, Done] =
     ServiceCall { payload =>
-      postMetricEntityService.likePost(payload)
+      postEntityService.likePost(payload)
     }
 
   override def getPostMetricById(id: PostId): ServiceCall[NotUsed, PostMetric] =
     ServiceCall { _ =>
-      postMetricEntityService.getPostMetricById(id)
+      postEntityService.getPostMetricById(id)
     }
 
   override def getPostMetricsById: ServiceCall[Set[PostId], Map[PostId, PostMetric]] =
     ServiceCall { ids =>
-      postMetricEntityService.getPostMetricsById(ids)
+      postEntityService.getPostMetricsById(ids)
     }
 
 }

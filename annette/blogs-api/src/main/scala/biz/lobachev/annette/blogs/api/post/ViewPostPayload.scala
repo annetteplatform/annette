@@ -1,6 +1,5 @@
-package biz.lobachev.annette.blogs.api.post_metric
+package biz.lobachev.annette.blogs.api.post
 
-import biz.lobachev.annette.blogs.api.post.PostId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 

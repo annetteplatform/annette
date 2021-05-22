@@ -4,14 +4,15 @@ import java.time.OffsetDateTime
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
-import akka.persistence.typed.scaladsl.{EventSourcedBehavior, ReplyEffect, RetentionCriteria}
-import biz.lobachev.annette.blogs.api.category.CategoryId
+import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
+import biz.lobachev.annette.blogs.api.blog.BlogId
 import com.lightbend.lagom.scaladsl.persistence._
 import play.api.libs.json._
 import org.slf4j.LoggerFactory
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.blogs.api.post._
 import biz.lobachev.annette.blogs.impl.post.model.PostState
+import io.scalaland.chimney.dsl._
 
 object PostEntity {
 
@@ -19,9 +20,12 @@ object PostEntity {
   sealed trait Command extends CommandSerializable
   final case class CreatePost(
     id: PostId,
-    name: String,
-    description: String,
-    categoryId: CategoryId,
+    blogId: BlogId,
+    featured: Boolean,
+    authorId: AnnettePrincipal,
+    title: String,
+    introContent: PostContent,
+    content: PostContent,
     targets: Set[AnnettePrincipal] = Set.empty,
     createdBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
@@ -50,16 +54,14 @@ object PostEntity {
 
   final case class UpdatePostIntro(
     id: PostId,
-    introContentType: String,
-    introContent: String,
+    introContent: PostContent,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
 
   final case class UpdatePostContent(
     id: PostId,
-    contentType: String,
-    content: String,
+    content: PostContent,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
@@ -90,7 +92,11 @@ object PostEntity {
     replyTo: ActorRef[Confirmation]
   ) extends Command
 
-  final case class DeletePost(id: PostId, deletedBy: AnnettePrincipal, replyTo: ActorRef[Confirmation]) extends Command
+  final case class DeletePost(
+    id: PostId,
+    deletedBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  ) extends Command
 
   final case class GetPost(id: PostId, replyTo: ActorRef[Confirmation])           extends Command
   final case class GetPostAnnotation(id: PostId, replyTo: ActorRef[Confirmation]) extends Command
@@ -139,6 +145,7 @@ object PostEntity {
   final case class SuccessPostAnnotation(postAnnotation: PostAnnotation) extends Confirmation
   final case object PostAlreadyExist                                     extends Confirmation
   final case object PostNotFound                                         extends Confirmation
+  final case object PostPublicationDateClearNotAllowed                   extends Confirmation
   final case object PostMediaAlreadyExist                                extends Confirmation
   final case object PostMediaNotFound                                    extends Confirmation
   final case object PostDocAlreadyExist                                  extends Confirmation
@@ -164,9 +171,12 @@ object PostEntity {
 
   final case class PostCreated(
     id: PostId,
-    name: String,
-    description: String,
-    categoryId: CategoryId,
+    blogId: BlogId,
+    featured: Boolean,
+    authorId: AnnettePrincipal,
+    title: String,
+    introContent: PostContent,
+    content: PostContent,
     targets: Set[AnnettePrincipal] = Set.empty,
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
@@ -191,15 +201,13 @@ object PostEntity {
   ) extends Event
   final case class PostIntroUpdated(
     id: PostId,
-    introContentType: String,
-    introContent: String,
+    introContent: PostContent,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
   final case class PostContentUpdated(
     id: PostId,
-    contentType: String,
-    content: String,
+    content: PostContent,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -211,6 +219,7 @@ object PostEntity {
   ) extends Event
   final case class PostPublished(
     id: PostId,
+    publicationTimestamp: OffsetDateTime,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -231,8 +240,11 @@ object PostEntity {
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
-  final case class PostDeleted(id: PostId, deleteBy: AnnettePrincipal, deleteAt: OffsetDateTime = OffsetDateTime.now)
-      extends Event
+  final case class PostDeleted(
+    id: PostId,
+    deletedBy: AnnettePrincipal,
+    deleteAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
   final case class PostMediaAdded(
     postId: PostId,
     mediaId: MediaId,
@@ -336,43 +348,201 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
       case cmd: RemovePostDoc                  => removePostDoc(cmd)
     }
 
-  def createPost(cmd: CreatePost): ReplyEffect[Event, PostEntity] = ???
+  def createPost(cmd: CreatePost): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None    =>
+        val event = cmd.transformInto[PostCreated]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+      case Some(_) => Effect.reply(cmd.replyTo)(PostAlreadyExist)
+    }
 
-  def updatePostFeatured(cmd: UpdatePostFeatured): ReplyEffect[Event, PostEntity] = ???
+  def updatePostFeatured(cmd: UpdatePostFeatured): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None    => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(_) =>
+        val event = cmd.transformInto[PostFeaturedUpdated]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def updatePostAuthor(cmd: UpdatePostAuthor): ReplyEffect[Event, PostEntity] = ???
+  def updatePostAuthor(cmd: UpdatePostAuthor): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None    => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(_) =>
+        val event = cmd.transformInto[PostAuthorUpdated]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def updatePostTitle(cmd: UpdatePostTitle): ReplyEffect[Event, PostEntity] = ???
+  def updatePostTitle(cmd: UpdatePostTitle): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None    => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(_) =>
+        val event = cmd.transformInto[PostTitleUpdated]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def updatePostIntro(cmd: UpdatePostIntro): ReplyEffect[Event, PostEntity] = ???
+  def updatePostIntro(cmd: UpdatePostIntro): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None    => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(_) =>
+        val event = cmd.transformInto[PostIntroUpdated]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def updatePostContent(cmd: UpdatePostContent): ReplyEffect[Event, PostEntity] = ???
+  def updatePostContent(cmd: UpdatePostContent): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None    => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(_) =>
+        val event = cmd.transformInto[PostContentUpdated]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def updatePostPublicationTimestamp(cmd: UpdatePostPublicationTimestamp): ReplyEffect[Event, PostEntity] = ???
+  def updatePostPublicationTimestamp(cmd: UpdatePostPublicationTimestamp): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None    => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(state)
+          if state.publicationStatus == PublicationStatus.Published &&
+            cmd.publicationTimestamp.isEmpty =>
+        Effect.reply(cmd.replyTo)(PostPublicationDateClearNotAllowed)
+      case Some(_) =>
+        val event = cmd.transformInto[PostPublicationTimestampUpdated]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def publishPost(cmd: PublishPost): ReplyEffect[Event, PostEntity] = ???
+  def publishPost(cmd: PublishPost): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None        => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(state) =>
+        val event = cmd
+          .into[PostPublished]
+          .withFieldConst(_.publicationTimestamp, state.publicationTimestamp.getOrElse(OffsetDateTime.now))
+          .transform
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def unpublishPost(cmd: UnpublishPost): ReplyEffect[Event, PostEntity] = ???
+  def unpublishPost(cmd: UnpublishPost): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None    => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(_) =>
+        val event = cmd.transformInto[PostUnpublished]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def assignPostTargetPrincipal(cmd: AssignPostTargetPrincipal): ReplyEffect[Event, PostEntity] = ???
+  def assignPostTargetPrincipal(cmd: AssignPostTargetPrincipal): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None                                                 => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(state) if state.targets.contains(cmd.principal) => Effect.reply(cmd.replyTo)(Success)
+      case Some(_)                                              =>
+        val event = cmd.transformInto[PostTargetPrincipalAssigned]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def unassignPostTargetPrincipal(cmd: UnassignPostTargetPrincipal): ReplyEffect[Event, PostEntity] = ???
+  def unassignPostTargetPrincipal(cmd: UnassignPostTargetPrincipal): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None                                                  => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(state) if !state.targets.contains(cmd.principal) => Effect.reply(cmd.replyTo)(Success)
+      case Some(_)                                               =>
+        val event = cmd.transformInto[PostTargetPrincipalUnassigned]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def deletePost(cmd: DeletePost): ReplyEffect[Event, PostEntity] = ???
+  def deletePost(cmd: DeletePost): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None    => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(_) =>
+        val event = cmd.transformInto[PostDeleted]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def getPost(cmd: GetPost): ReplyEffect[Event, PostEntity] = ???
+  def getPost(cmd: GetPost): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None        => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(state) => Effect.reply(cmd.replyTo)(SuccessPost(state.transformInto[Post]))
+    }
 
-  def getPostAnnotation(cmd: GetPostAnnotation): ReplyEffect[Event, PostEntity] = ???
+  def getPostAnnotation(cmd: GetPostAnnotation): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None        => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(state) => Effect.reply(cmd.replyTo)(SuccessPostAnnotation(state.transformInto[PostAnnotation]))
+    }
 
-  def addPostMedia(cmd: AddPostMedia): ReplyEffect[Event, PostEntity] = ???
+  def addPostMedia(cmd: AddPostMedia): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None                                             => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(state) if state.media.contains(cmd.mediaId) => Effect.reply(cmd.replyTo)(PostMediaAlreadyExist)
+      case Some(_)                                          =>
+        val event = cmd.transformInto[PostMediaAdded]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def removePostMedia(cmd: RemovePostMedia): ReplyEffect[Event, PostEntity] = ???
+  def removePostMedia(cmd: RemovePostMedia): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None                                              => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(state) if !state.media.contains(cmd.mediaId) => Effect.reply(cmd.replyTo)(PostMediaNotFound)
+      case Some(_)                                           =>
+        val event = cmd.transformInto[PostMediaRemoved]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def addPostDoc(cmd: AddPostDoc): ReplyEffect[Event, PostEntity] = ???
+  def addPostDoc(cmd: AddPostDoc): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None                                          => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(state) if state.docs.contains(cmd.docId) => Effect.reply(cmd.replyTo)(PostDocAlreadyExist)
+      case Some(_)                                       =>
+        val event = cmd.transformInto[PostDocAdded]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def updatePostDocName(cmd: UpdatePostDocName): ReplyEffect[Event, PostEntity] = ???
+  def updatePostDocName(cmd: UpdatePostDocName): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None                                           => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(state) if !state.docs.contains(cmd.docId) => Effect.reply(cmd.replyTo)(PostDocNotFound)
+      case Some(_)                                        =>
+        val event = cmd.transformInto[PostDocNameUpdated]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def removePostDoc(cmd: RemovePostDoc): ReplyEffect[Event, PostEntity] = ???
+  def removePostDoc(cmd: RemovePostDoc): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None                                           => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(state) if !state.docs.contains(cmd.docId) => Effect.reply(cmd.replyTo)(PostDocNotFound)
+      case Some(_)                                        =>
+        val event = cmd.transformInto[PostDocRemoved]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
   def applyEvent(event: Event): PostEntity =
     event match {
@@ -387,7 +557,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
       case event: PostUnpublished                 => onPostUnpublished(event)
       case event: PostTargetPrincipalAssigned     => onPostTargetPrincipalAssigned(event)
       case event: PostTargetPrincipalUnassigned   => onPostTargetPrincipalUnassigned(event)
-      case event: PostDeleted                     => onPostDeleted(event)
+      case _: PostDeleted                         => onPostDeleted()
       case event: PostMediaAdded                  => onPostMediaAdded(event)
       case event: PostMediaRemoved                => onPostMediaRemoved(event)
       case event: PostDocAdded                    => onPostDocAdded(event)
@@ -395,38 +565,187 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
       case event: PostDocRemoved                  => onPostDocRemoved(event)
     }
 
-  def onPostCreated(event: PostCreated): PostEntity = ???
+  def onPostCreated(event: PostCreated): PostEntity =
+    PostEntity(
+      Some(
+        event
+          .into[PostState]
+          .withFieldConst(_.updatedBy, event.createdBy)
+          .transform
+      )
+    )
 
-  def onPostFeaturedUpdated(event: PostFeaturedUpdated): PostEntity = ???
+  def onPostFeaturedUpdated(event: PostFeaturedUpdated): PostEntity =
+    PostEntity(
+      maybeState.map(
+        _.copy(
+          featured = event.featured,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onPostAuthorUpdated(event: PostAuthorUpdated): PostEntity = ???
+  def onPostAuthorUpdated(event: PostAuthorUpdated): PostEntity =
+    PostEntity(
+      maybeState.map(
+        _.copy(
+          authorId = event.authorId,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onPostTitleUpdated(event: PostTitleUpdated): PostEntity = ???
+  def onPostTitleUpdated(event: PostTitleUpdated): PostEntity =
+    PostEntity(
+      maybeState.map(
+        _.copy(
+          title = event.title,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onPostIntroUpdated(event: PostIntroUpdated): PostEntity = ???
+  def onPostIntroUpdated(event: PostIntroUpdated): PostEntity =
+    PostEntity(
+      maybeState.map(
+        _.copy(
+          introContent = event.introContent,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onPostContentUpdated(event: PostContentUpdated): PostEntity = ???
+  def onPostContentUpdated(event: PostContentUpdated): PostEntity =
+    PostEntity(
+      maybeState.map(
+        _.copy(
+          content = event.content,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onPostPublicationTimestampUpdated(event: PostPublicationTimestampUpdated): PostEntity = ???
+  def onPostPublicationTimestampUpdated(event: PostPublicationTimestampUpdated): PostEntity =
+    PostEntity(
+      maybeState.map(
+        _.copy(
+          publicationTimestamp = event.publicationTimestamp,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onPostPublished(event: PostPublished): PostEntity = ???
+  def onPostPublished(event: PostPublished): PostEntity =
+    PostEntity(
+      maybeState.map(
+        _.copy(
+          publicationStatus = PublicationStatus.Published,
+          publicationTimestamp = Some(event.publicationTimestamp),
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onPostUnpublished(event: PostUnpublished): PostEntity = ???
+  def onPostUnpublished(event: PostUnpublished): PostEntity =
+    PostEntity(
+      maybeState.map(
+        _.copy(
+          publicationStatus = PublicationStatus.Draft,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onPostTargetPrincipalAssigned(event: PostTargetPrincipalAssigned): PostEntity = ???
+  def onPostTargetPrincipalAssigned(event: PostTargetPrincipalAssigned): PostEntity =
+    PostEntity(
+      maybeState.map(state =>
+        state.copy(
+          targets = state.targets + event.principal,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onPostTargetPrincipalUnassigned(event: PostTargetPrincipalUnassigned): PostEntity = ???
+  def onPostTargetPrincipalUnassigned(event: PostTargetPrincipalUnassigned): PostEntity =
+    PostEntity(
+      maybeState.map(state =>
+        state.copy(
+          targets = state.targets - event.principal,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onPostDeleted(event: PostDeleted): PostEntity = ???
+  def onPostDeleted(): PostEntity =
+    PostEntity(None)
 
-  def onPostMediaAdded(event: PostMediaAdded): PostEntity = ???
+  def onPostMediaAdded(event: PostMediaAdded): PostEntity =
+    PostEntity(
+      maybeState.map(state =>
+        state.copy(
+          media = state.media + (event.mediaId -> Media(event.mediaId, event.filename)),
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onPostMediaRemoved(event: PostMediaRemoved): PostEntity = ???
+  def onPostMediaRemoved(event: PostMediaRemoved): PostEntity =
+    PostEntity(
+      maybeState.map(state =>
+        state.copy(
+          media = state.media - event.mediaId,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onPostDocAdded(event: PostDocAdded): PostEntity = ???
+  def onPostDocAdded(event: PostDocAdded): PostEntity =
+    PostEntity(
+      maybeState.map(state =>
+        state.copy(
+          docs = state.docs + (event.docId -> Doc(event.docId, event.name, event.filename)),
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onPostDocNameUpdated(event: PostDocNameUpdated): PostEntity = ???
+  def onPostDocNameUpdated(event: PostDocNameUpdated): PostEntity =
+    PostEntity(
+      maybeState.map { state =>
+        val updatedDocs = state.docs
+          .get(event.docId)
+          .map(doc => state.docs + (event.docId -> doc.copy(name = event.name)))
+          .getOrElse(state.docs)
+        state.copy(
+          docs = updatedDocs,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      }
+    )
 
-  def onPostDocRemoved(event: PostDocRemoved): PostEntity = ???
+  def onPostDocRemoved(event: PostDocRemoved): PostEntity =
+    PostEntity(
+      maybeState.map(state =>
+        state.copy(
+          docs = state.docs - event.docId,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
 }

@@ -1,12 +1,12 @@
-package biz.lobachev.annette.blogs.api.post_metric
+package biz.lobachev.annette.blogs.api.post
 
-import biz.lobachev.annette.blogs.api.post.PostId
 import play.api.libs.json.{Format, Json}
 
 case class PostMetric(
   id: PostId,
   views: Int,
-  likes: Int
+  likes: Int,
+  likedByMe: Boolean
 )
 
 object PostMetric {

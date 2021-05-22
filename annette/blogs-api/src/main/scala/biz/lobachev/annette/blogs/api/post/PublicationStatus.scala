@@ -5,8 +5,8 @@ import play.api.libs.json.Json
 object PublicationStatus extends Enumeration {
   type PublicationStatus = Value
 
-  val HTML     = Value("html")
-  val Markdown = Value("markdown")
+  val Draft     = Value("draft")
+  val Published = Value("published")
 
   implicit val format = Json.formatEnum(this)
 }
