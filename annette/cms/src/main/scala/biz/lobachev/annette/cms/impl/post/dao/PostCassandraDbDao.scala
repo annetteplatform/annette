@@ -1,3 +1,19 @@
+/*
+ * Copyright 2013 Valery Lobachev
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package biz.lobachev.annette.cms.impl.post.dao
 
 import akka.Done
@@ -46,6 +62,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
   private var updatePostTimestampStatement: PreparedStatement            = _
   private var viewPostStatement: PreparedStatement                       = _
   private var likePostStatement: PreparedStatement                       = _
+  private var unlikePostStatement: PreparedStatement                     = _
   private var deletePostViewsStatement: PreparedStatement                = _
   private var deletePostLikesStatement: PreparedStatement                = _
 
@@ -325,6 +342,14 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
                           |   VALUES (:post_id, :principal)
                           |""".stripMargin
                                             )
+      unlikePostStmt                     <- session.prepare(
+                                              """
+                            | DELETE FROM post_likes
+                            |   WHERE
+                            |     post_id = :post_id AND
+                            |      principal = :principal
+                            |""".stripMargin
+                                            )
 
     } yield {
       createPostStatement = createPostStmt
@@ -350,6 +375,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
       updatePostTimestampStatement = updatePostTimestampStmt
       viewPostStatement = viewPostStmt
       likePostStatement = likePostStmt
+      unlikePostStatement = unlikePostStmt
       deletePostViewsStatement = deletePostViewsStmt
       deletePostLikesStatement = deletePostLikesStmt
       Done
@@ -446,7 +472,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
       publishPostStatement
         .bind()
         .setString("id", event.id)
-        .setString("publication_timestamp", "published")
+        .setString("publication_status", "published")
         .setString("publication_timestamp", event.publicationTimestamp.toString)
         .setString("updated_at", event.updatedAt.toString)
         .setString("updated_by_type", event.updatedBy.principalType)
@@ -458,7 +484,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
       unpublishPostStatement
         .bind()
         .setString("id", event.id)
-        .setString("publication_timestamp", "draft")
+        .setString("publication_status", "draft")
         .setString("updated_at", event.updatedAt.toString)
         .setString("updated_by_type", event.updatedBy.principalType)
         .setString("updated_by_id", event.updatedBy.principalId)
@@ -495,7 +521,13 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def deletePost(event: PostEntity.PostDeleted): Future[Seq[BoundStatement]] =
-    build(
+    for {
+      _ <- session.executeWrite(
+             deletePostViewsStatement
+               .bind()
+               .setString("post_id", event.id)
+           )
+    } yield Seq(
       deletePostStatement
         .bind()
         .setString("id", event.id),
@@ -506,9 +538,6 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
         .bind()
         .setString("post_id", event.id),
       deletePostDocsStatement
-        .bind()
-        .setString("post_id", event.id),
-      deletePostViewsStatement
         .bind()
         .setString("post_id", event.id),
       deletePostLikesStatement
@@ -631,7 +660,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
 
   def getPostDocs(id: PostId): Future[Map[DocId, Doc]] =
     for {
-      stmt   <- session.prepare("SELECT  doc_id, filename FROM post_docs WHERE post_id = ?")
+      stmt   <- session.prepare("SELECT  doc_id, name, filename FROM post_docs WHERE post_id = ?")
       result <- session.selectAll(stmt.bind(id)).map(_.map(convertDoc).map(a => a.id -> a).toMap)
     } yield result
 
@@ -732,6 +761,14 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
   def likePost(id: PostId, principal: AnnettePrincipal): Future[Done] =
     session.executeWrite(
       likePostStatement
+        .bind()
+        .setString("post_id", id)
+        .setString("principal", principal.code)
+    )
+
+  def unlikePost(id: PostId, principal: AnnettePrincipal): Future[Done] =
+    session.executeWrite(
+      unlikePostStatement
         .bind()
         .setString("post_id", id)
         .setString("principal", principal.code)

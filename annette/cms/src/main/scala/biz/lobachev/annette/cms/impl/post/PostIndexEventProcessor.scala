@@ -1,3 +1,19 @@
+/*
+ * Copyright 2013 Valery Lobachev
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package biz.lobachev.annette.cms.impl.post
 
 import akka.Done
@@ -34,11 +50,6 @@ private[impl] class PostIndexEventProcessor(
       .setEventHandler[PostEntity.PostTargetPrincipalAssigned](e => assignPostTargetPrincipal(e.event))
       .setEventHandler[PostEntity.PostTargetPrincipalUnassigned](e => unassignPostTargetPrincipal(e.event))
       .setEventHandler[PostEntity.PostDeleted](e => deletePost(e.event))
-      .setEventHandler[PostEntity.PostMediaAdded](e => addPostMedia(e.event))
-      .setEventHandler[PostEntity.PostMediaRemoved](e => removePostMedia(e.event))
-      .setEventHandler[PostEntity.PostDocAdded](e => addPostDoc(e.event))
-      .setEventHandler[PostEntity.PostDocNameUpdated](e => updatePostDocName(e.event))
-      .setEventHandler[PostEntity.PostDocRemoved](e => removePostDoc(e.event))
       .build()
 
   def aggregateTags: Set[AggregateEventTag[PostEntity.Event]] = PostEntity.Event.Tag.allTags
@@ -104,31 +115,6 @@ private[impl] class PostIndexEventProcessor(
   def deletePost(event: PostEntity.PostDeleted): Future[Seq[BoundStatement]] =
     elasticRepository
       .deletePost(event)
-      .map(_ => Seq.empty)
-
-  def addPostMedia(event: PostEntity.PostMediaAdded): Future[Seq[BoundStatement]] =
-    elasticRepository
-      .addPostMedia(event)
-      .map(_ => Seq.empty)
-
-  def removePostMedia(event: PostEntity.PostMediaRemoved): Future[Seq[BoundStatement]] =
-    elasticRepository
-      .removePostMedia(event)
-      .map(_ => Seq.empty)
-
-  def addPostDoc(event: PostEntity.PostDocAdded): Future[Seq[BoundStatement]] =
-    elasticRepository
-      .addPostDoc(event)
-      .map(_ => Seq.empty)
-
-  def updatePostDocName(event: PostEntity.PostDocNameUpdated): Future[Seq[BoundStatement]] =
-    elasticRepository
-      .updatePostDocName(event)
-      .map(_ => Seq.empty)
-
-  def removePostDoc(event: PostEntity.PostDocRemoved): Future[Seq[BoundStatement]] =
-    elasticRepository
-      .removePostDoc(event)
       .map(_ => Seq.empty)
 
 }

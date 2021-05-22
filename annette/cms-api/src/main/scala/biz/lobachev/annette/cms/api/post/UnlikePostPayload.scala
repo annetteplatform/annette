@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.api.space
+package biz.lobachev.annette.cms.api.post
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
-case class ActivateSpacePayload(
-  id: SpaceId,
+case class UnlikePostPayload(
+  id: PostId,
   updatedBy: AnnettePrincipal
 )
 
-object ActivateSpacePayload {
-  implicit val format: Format[ActivateSpacePayload] = Json.format
+object UnlikePostPayload {
+  implicit val format: Format[UnlikePostPayload] = Json.format
 }
