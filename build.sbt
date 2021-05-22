@@ -94,7 +94,7 @@ lazy val root = (project in file("."))
     `persons-api`,
     `principal-groups-api`,
     `subscriptions-api`,
-    `blogs-api`,
+    `cms-api`,
     // microservices
     `application`,
     `attributes`,
@@ -103,7 +103,7 @@ lazy val root = (project in file("."))
     `persons`,
     `principal-groups`,
     `subscriptions`,
-    `blogs`
+    `cms`
   )
 
 lazy val `core` = (project in file("annette/core"))
@@ -508,7 +508,7 @@ def subscriptionsProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`subscriptions-api`)
 
-lazy val `blogs-api` = (project in file("annette/blogs-api"))
+lazy val `cms-api` = (project in file("annette/cms-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -519,7 +519,7 @@ lazy val `blogs-api` = (project in file("annette/blogs-api"))
   .settings(annetteSettings: _*)
   .dependsOn(`microservice-core`)
 
-def blogsProject(pr: Project) =
+def cmsProject(pr: Project) =
   pr
     .enablePlugins(LagomScala)
     .settings(
@@ -535,7 +535,7 @@ def blogsProject(pr: Project) =
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`blogs-api`)
+    .dependsOn(`cms-api`)
 
 //lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/demo"))
 lazy val `application`      = applicationProject(project in file("annette/application"))
@@ -545,4 +545,4 @@ lazy val `org-structure`    = orgStructureProject(project in file("annette/org-s
 lazy val `persons`          = personsProject(project in file("annette/persons"))
 lazy val `principal-groups` = principalGroupsProject(project in file("annette/principal-groups"))
 lazy val `subscriptions`    = subscriptionsProject(project in file("annette/subscriptions"))
-lazy val `blogs`            = blogsProject(project in file("annette/blogs"))
+lazy val `cms`              = cmsProject(project in file("annette/cms"))
