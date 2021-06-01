@@ -285,4 +285,5 @@ class CmsServiceApiImpl(
       postEntityService.getPostMetricsById(ids)
     }
 
+  override def movePost: ServiceCall[MovePostPayload, Done] = ???
 }

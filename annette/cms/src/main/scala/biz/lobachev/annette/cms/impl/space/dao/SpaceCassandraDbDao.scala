@@ -57,6 +57,7 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
                                         |          id text PRIMARY KEY,
                                         |          name text,
                                         |          description text,
+                                        |          space_type text,
                                         |          category_id text,
                                         |          active boolean,
                                         |          updated_at text,
@@ -78,10 +79,10 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
     for {
       createSpaceStmt                  <- session.prepare(
                                             """
-                             | INSERT INTO spaces (id, name, description, category_id, active,
+                             | INSERT INTO spaces (id, name, description, space_type, category_id, active,
                              |     updated_at, updated_by_type, updated_by_id
                              |     )
-                             |   VALUES (:id, :name, :description, :category_id, :active,
+                             |   VALUES (:id, :name, :description, :space_type, :category_id, :active,
                              |     :updated_at, :updated_by_type, :updated_by_id
                              |     )
                              |""".stripMargin
@@ -194,6 +195,7 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
         .setString("id", event.id)
         .setString("name", event.name)
         .setString("description", event.description)
+        .setString("space_type", event.spaceType.toString)
         .setString("category_id", event.categoryId)
         .setBool("active", true)
         .setString("updated_at", event.createdAt.toString)
@@ -306,7 +308,7 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
     for {
       stmt        <-
         session.prepare(
-          "SELECT id, name, category_id, active, updated_at, updated_by_type, updated_by_id FROM spaces WHERE id = :id"
+          "SELECT id, name, space_type, category_id, active, updated_at, updated_by_type, updated_by_id FROM spaces WHERE id = :id"
         )
       maybeEntity <- session.selectOne(stmt.bind().setString("id", id)).map(_.map(convertSpaceAnnotation))
     } yield maybeEntity
@@ -321,7 +323,7 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
     for {
       stmt   <-
         session.prepare(
-          "SELECT id, name, category_id, active, updated_at, updated_by_type, updated_by_id FROM spaces WHERE id IN ?"
+          "SELECT id, name, space_type, category_id, active, updated_at, updated_by_type, updated_by_id FROM spaces WHERE id IN ?"
         )
       result <- session.selectAll(stmt.bind(ids.toList.asJava)).map(_.map(convertSpaceAnnotation))
     } yield result.map(a => a.id -> a).toMap
@@ -331,6 +333,7 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
       id = row.getString("id"),
       name = row.getString("name"),
       description = row.getString("description"),
+      spaceType = SpaceType.from(row.getString("space_type")),
       categoryId = row.getString("category_id"),
       active = row.getBool("active"),
       updatedAt = OffsetDateTime.parse(row.getString("updated_at")),
@@ -339,7 +342,8 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
         principalId = row.getString("updated_by_id")
       )
     )
-  private def convertTarget(row: Row): AnnettePrincipal                                 =
+
+  private def convertTarget(row: Row): AnnettePrincipal =
     AnnettePrincipal(
       principalType = row.getString("principal_type"),
       principalId = row.getString("principal_id")
@@ -349,6 +353,7 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
     SpaceAnnotation(
       id = row.getString("id"),
       name = row.getString("name"),
+      spaceType = SpaceType.from(row.getString("space_type")),
       categoryId = row.getString("category_id"),
       active = row.getBool("active"),
       updatedAt = OffsetDateTime.parse(row.getString("updated_at")),

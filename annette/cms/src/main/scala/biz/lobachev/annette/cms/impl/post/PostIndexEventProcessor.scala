@@ -36,7 +36,7 @@ private[impl] class PostIndexEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[PostEntity.Event] =
     readSide
-      .builder[PostEntity.Event]("CMS_Post_ElasticEventOffset")
+      .builder[PostEntity.Event]("cms-post-index")
       .setGlobalPrepare(globalPrepare)
       .setEventHandler[PostEntity.PostCreated](e => createPost(e.event))
       .setEventHandler[PostEntity.PostFeaturedUpdated](e => updatePostFeatured(e.event))

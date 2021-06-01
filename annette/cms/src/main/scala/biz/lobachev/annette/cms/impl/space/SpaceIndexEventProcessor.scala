@@ -35,7 +35,7 @@ private[impl] class SpaceIndexEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[SpaceEntity.Event] =
     readSide
-      .builder[SpaceEntity.Event]("CMS_Space_ElasticEventOffset")
+      .builder[SpaceEntity.Event]("cms-space-index")
       .setGlobalPrepare(elasticRepository.createEntityIndex)
       .setEventHandler[SpaceEntity.SpaceCreated](e => createSpace(e.event))
       .setEventHandler[SpaceEntity.SpaceNameUpdated](e => updateSpaceName(e.event))

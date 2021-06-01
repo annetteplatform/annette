@@ -23,6 +23,7 @@ import play.api.libs.json.{Format, Json}
 case class CreatePostPayload(
   id: PostId,
   spaceId: SpaceId,
+  parent: Option[PostId] = None,
   featured: Boolean,
   authorId: AnnettePrincipal,
   title: String,

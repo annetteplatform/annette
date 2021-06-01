@@ -79,6 +79,8 @@ trait CmsServiceApi extends Service {
   def getPostMetricById(id: PostId): ServiceCall[NotUsed, PostMetric]
   def getPostMetricsById: ServiceCall[Set[PostId], Map[PostId, PostMetric]]
 
+  def movePost: ServiceCall[MovePostPayload, Done]
+
   final override def descriptor = {
     import Service._
     named("cms")
@@ -100,7 +102,7 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/deleteSpace", deleteSpace),
         pathCall("/api/cms/v1/getSpaceById/:id/:fromReadSide", getSpaceById _),
         pathCall("/api/cms/v1/getSpaceAnnotationById/:id/:fromReadSide", getSpaceAnnotationById _),
-        pathCall("/api/cms/v1/getSpacesByIds/:fromReadSide", getSpacesById _),
+        pathCall("/api/cms/v1/getSpacesById/:fromReadSide", getSpacesById _),
         pathCall("/api/cms/v1/getSpaceAnnotationsById/:fromReadSide", getSpaceAnnotationsById _),
         pathCall("/api/cms/v1/findSpaces", findSpaces),
         pathCall("/api/cms/v1/createPost", createPost),
@@ -129,7 +131,8 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/likePost", likePost),
         pathCall("/api/cms/v1/unlikePost", unlikePost),
         pathCall("/api/cms/v1/getPostMetricById/:id", getPostMetricById _),
-        pathCall("/api/cms/v1/getPostMetricsById", getPostMetricsById)
+        pathCall("/api/cms/v1/getPostMetricsById", getPostMetricsById),
+        pathCall("/api/cms/v1/movePost", movePost)
       )
       .withExceptionSerializer(new AnnetteTransportExceptionSerializer())
       .withAutoAcl(true)

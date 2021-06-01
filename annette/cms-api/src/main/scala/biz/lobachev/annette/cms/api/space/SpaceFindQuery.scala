@@ -16,6 +16,8 @@
 
 package biz.lobachev.annette.cms.api.space
 
+import biz.lobachev.annette.cms.api.category.CategoryId
+import biz.lobachev.annette.cms.api.space.SpaceType.SpaceType
 import biz.lobachev.annette.core.model.elastic.SortBy
 import play.api.libs.json.{Format, Json}
 
@@ -23,7 +25,8 @@ case class SpaceFindQuery(
   offset: Int = 0,
   size: Int,
   filter: Option[String] = None,
-  name: Option[String] = None,
+  spaceType: Option[SpaceType] = None,
+  categories: Option[Set[CategoryId]] = None,
   sortBy: Option[SortBy] = None
 )
 

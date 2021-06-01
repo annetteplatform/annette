@@ -29,7 +29,7 @@ private[impl] class CategoryDbEventProcessor(
 
   def buildHandler() =
     readSide
-      .builder[CategoryEntity.Event]("CMS_Category_CasEventOffset")
+      .builder[CategoryEntity.Event]("cms-category-cas")
       .setGlobalPrepare(dbDao.createTables)
       .setPrepare(_ => dbDao.prepareStatements())
       .setEventHandler[CategoryEntity.CategoryCreated](e => createCategory(e.event))

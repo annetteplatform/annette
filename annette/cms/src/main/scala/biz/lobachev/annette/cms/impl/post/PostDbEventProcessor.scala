@@ -30,7 +30,7 @@ private[impl] class PostDbEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[PostEntity.Event] =
     readSide
-      .builder[PostEntity.Event]("CMS_Post_CasEventOffset")
+      .builder[PostEntity.Event]("cms-post-cas")
       .setGlobalPrepare(dbDao.createTables)
       .setPrepare(_ => dbDao.prepareStatements())
       .setEventHandler[PostEntity.PostCreated](e => dbDao.createPost(e.event))

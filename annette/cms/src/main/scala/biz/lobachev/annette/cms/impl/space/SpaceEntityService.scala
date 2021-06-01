@@ -71,6 +71,7 @@ class SpaceEntityService(
       .ask[SpaceEntity.Confirmation](replyTo =>
         payload
           .into[SpaceEntity.CreateSpace]
+          .withFieldConst(_.spaceType, payload.spaceType.toString)
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )

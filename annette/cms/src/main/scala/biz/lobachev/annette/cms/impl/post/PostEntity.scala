@@ -587,6 +587,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
         event
           .into[PostState]
           .withFieldConst(_.updatedBy, event.createdBy)
+          .withFieldConst(_.updatedAt, event.createdAt)
           .transform
       )
     )

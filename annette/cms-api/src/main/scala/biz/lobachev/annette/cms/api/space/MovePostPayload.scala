@@ -16,21 +16,17 @@
 
 package biz.lobachev.annette.cms.api.space
 
-import biz.lobachev.annette.cms.api.category.CategoryId
-import biz.lobachev.annette.cms.api.space.SpaceType.SpaceType
+import biz.lobachev.annette.cms.api.post.PostId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.Json
 
-case class CreateSpacePayload(
-  id: SpaceId,
-  name: String,
-  description: String,
-  spaceType: SpaceType,
-  categoryId: CategoryId,
-  targets: Set[AnnettePrincipal] = Set.empty,
-  createdBy: AnnettePrincipal
+case class MovePostPayload(
+  postId: PostId,
+  newParentId: PostId,
+  order: Option[Int] = None,
+  updatedBy: AnnettePrincipal
 )
 
-object CreateSpacePayload {
-  implicit val format: Format[CreateSpacePayload] = Json.format
+object MovePostPayload {
+  implicit val format = Json.format[MovePostPayload]
 }

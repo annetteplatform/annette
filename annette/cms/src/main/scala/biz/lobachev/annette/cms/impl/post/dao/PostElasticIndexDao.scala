@@ -24,6 +24,7 @@ import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.requests.common.RefreshPolicy
 import com.sksamuel.elastic4s.requests.indexes.CreateIndexRequest
+import com.sksamuel.elastic4s.requests.searches.sort.FieldSort
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -190,7 +191,7 @@ class PostElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Elast
                .script(s"""ctx._source.targets.add("${event.principal.code}")""")
                .refresh(RefreshPolicy.Immediate)
            }
-             .map(processResponse("assignPostTargetPrincipal", event.id)(_))
+             .map(processResponse("assignPostTargetPrincipal1", event.id)(_))
       _ <- elasticClient.execute {
              updateById(indexName, event.id)
                .doc(
@@ -199,7 +200,7 @@ class PostElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Elast
                )
                .refresh(RefreshPolicy.Immediate)
            }
-             .map(processResponse("unassignPostTargetPrincipal2", event.id)(_))
+             .map(processResponse("assignPostTargetPrincipal2", event.id)(_))
     } yield ()
 
   def unassignPostTargetPrincipal(event: PostEntity.PostTargetPrincipalUnassigned): Future[Unit] =
@@ -229,13 +230,42 @@ class PostElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Elast
     }
       .map(processResponse("deletePost", event.id)(_))
 
-  def findPosts(query: PostFindQuery): Future[FindResult] = ???
+  def findPosts(query: PostFindQuery): Future[FindResult] = {
 
-  //  private def processResponse[T](method: String, id: String): PartialFunction[Response[T], Unit] = {
-//    case success: RequestSuccess[_] =>
-//      log.debug("{}( {} ): {}", method, id, success)
-//    case failure: RequestFailure    =>
-//      log.error("{}( {} ): {}", method, id, failure)
-//      throw failure.error.asException
-//  }
+    val filterQuery                   = buildFilterQuery(
+      query.filter,
+      Seq("title" -> 3.0, "intro" -> 2.0, "content" -> 1.0)
+    )
+    val postIdsQuery                  = query.postIds.map(postIds => termsSetQuery("id", postIds, script("1"))).toSeq
+    val spacesQuery                   = query.spaces.map(spaces => termsSetQuery("spaceId", spaces, script("1"))).toSeq
+    val featuredQuery                 = query.featured.map(matchQuery("featured", _)).toSeq
+    val authorsQuery                  = query.authors.map(authors => termsSetQuery("authorId", authors.map(_.code), script("1"))).toSeq
+    val publicationStatusQuery        = query.publicationStatus.map(matchQuery("publicationStatus", _)).toSeq
+    val publicationTimestampFromQuery =
+      query.publicationTimestampFrom.map(from => rangeQuery("publicationTimestamp").gte(ElasticDate(from.toString)))
+    val publicationTimestampToQuery   =
+      query.publicationTimestampTo.map(to => rangeQuery("publicationTimestamp").lte(ElasticDate(to.toString)))
+    val targetsQuery                  = query.targets.map(targets => termsSetQuery("targets", targets.map(_.code), script("1"))).toSeq
+    val sortBy: Seq[FieldSort]        = buildSortBy(query.sortBy)
+
+    val searchRequest = search(indexName)
+      .bool(
+        must(
+          filterQuery ++ postIdsQuery ++ spacesQuery ++ featuredQuery ++
+            authorsQuery ++ publicationStatusQuery ++ publicationTimestampFromQuery ++
+            publicationTimestampToQuery ++ targetsQuery
+        )
+      )
+      .from(query.offset)
+      .size(query.size)
+      .sortBy(sortBy)
+      .sourceInclude("updatedAt")
+      .trackTotalHits(true)
+
+    println(elasticClient.show(searchRequest))
+
+    findEntity(searchRequest)
+
+  }
+
 }

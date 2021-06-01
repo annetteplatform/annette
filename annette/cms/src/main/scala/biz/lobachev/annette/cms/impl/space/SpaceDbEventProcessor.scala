@@ -30,7 +30,7 @@ private[impl] class SpaceDbEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[SpaceEntity.Event] =
     readSide
-      .builder[SpaceEntity.Event]("CMS_Space_CasEventOffset")
+      .builder[SpaceEntity.Event]("cms-space-cas")
       .setGlobalPrepare(() => casDao.createTables())
       .setPrepare(_ => casDao.prepareStatements())
       .setEventHandler[SpaceEntity.SpaceCreated](e => casDao.createSpace(e.event))

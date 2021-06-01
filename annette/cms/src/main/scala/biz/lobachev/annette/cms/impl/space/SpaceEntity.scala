@@ -20,65 +20,79 @@ import java.time.OffsetDateTime
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
-import akka.persistence.typed.scaladsl.{EventSourcedBehavior, ReplyEffect, RetentionCriteria}
+import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import com.lightbend.lagom.scaladsl.persistence._
 import play.api.libs.json._
 import org.slf4j.LoggerFactory
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.cms.api.space._
 import biz.lobachev.annette.cms.api.category.CategoryId
+import biz.lobachev.annette.cms.api.space.SpaceType.SpaceType
 import biz.lobachev.annette.cms.impl.space.model.SpaceState
+import io.scalaland.chimney.dsl._
 
 object SpaceEntity {
 
   trait CommandSerializable
-  sealed trait Command                                                              extends CommandSerializable
+  sealed trait Command extends CommandSerializable
+
   final case class CreateSpace(
     id: SpaceId,
     name: String,
     description: String,
+    spaceType: String,
     categoryId: CategoryId,
     targets: Set[AnnettePrincipal] = Set.empty,
     createdBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                 extends Command
+  ) extends Command
+
   final case class UpdateSpaceName(
     id: SpaceId,
     name: String,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                 extends Command
+  ) extends Command
+
   final case class UpdateSpaceDescription(
     id: SpaceId,
     description: String,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                 extends Command
+  ) extends Command
+
   final case class UpdateSpaceCategory(
     id: SpaceId,
     categoryId: CategoryId,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                 extends Command
+  ) extends Command
+
   final case class AssignSpaceTargetPrincipal(
     id: SpaceId,
     principal: AnnettePrincipal,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                 extends Command
+  ) extends Command
+
   final case class UnassignSpaceTargetPrincipal(
     id: SpaceId,
     principal: AnnettePrincipal,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                 extends Command
+  ) extends Command
+
   final case class ActivateSpace(id: SpaceId, updatedBy: AnnettePrincipal, replyTo: ActorRef[Confirmation])
       extends Command
+
   final case class DeactivateSpace(id: SpaceId, updatedBy: AnnettePrincipal, replyTo: ActorRef[Confirmation])
       extends Command
+
   final case class DeleteSpace(id: SpaceId, deletedBy: AnnettePrincipal, replyTo: ActorRef[Confirmation])
       extends Command
-  final case class GetSpace(id: SpaceId, replyTo: ActorRef[Confirmation])           extends Command
+
+  final case class GetSpace(id: SpaceId, replyTo: ActorRef[Confirmation]) extends Command
+
   final case class GetSpaceAnnotation(id: SpaceId, replyTo: ActorRef[Confirmation]) extends Command
 
   sealed trait Confirmation
@@ -106,6 +120,7 @@ object SpaceEntity {
     id: SpaceId,
     name: String,
     description: String,
+    spaceType: SpaceType,
     categoryId: CategoryId,
     targets: Set[AnnettePrincipal] = Set.empty,
     createdBy: AnnettePrincipal,
@@ -151,7 +166,7 @@ object SpaceEntity {
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
-  final case class SpaceDeleted(id: SpaceId, deleteBy: AnnettePrincipal, deleteAt: OffsetDateTime = OffsetDateTime.now)
+  final case class SpaceDeleted(id: SpaceId, deletedBy: AnnettePrincipal, deleteAt: OffsetDateTime = OffsetDateTime.now)
       extends Event
 
   implicit val eventSpaceCreatedFormat: Format[SpaceCreated]                                     = Json.format
@@ -206,27 +221,114 @@ final case class SpaceEntity(maybeState: Option[SpaceState] = None) {
       case cmd: GetSpaceAnnotation           => getSpaceAnnotation(cmd)
     }
 
-  def createSpace(cmd: CreateSpace): ReplyEffect[Event, SpaceEntity] = ???
+  def createSpace(cmd: CreateSpace): ReplyEffect[Event, SpaceEntity] =
+    maybeState match {
+      case None    =>
+        val event = cmd
+          .into[SpaceCreated]
+          .withFieldConst(_.spaceType, SpaceType.from(cmd.spaceType))
+          .transform
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+      case Some(_) => Effect.reply(cmd.replyTo)(SpaceAlreadyExist)
+    }
 
-  def updateSpaceName(cmd: UpdateSpaceName): ReplyEffect[Event, SpaceEntity] = ???
+  def updateSpaceName(cmd: UpdateSpaceName): ReplyEffect[Event, SpaceEntity] =
+    maybeState match {
+      case None    => Effect.reply(cmd.replyTo)(SpaceNotFound)
+      case Some(_) =>
+        val event = cmd.transformInto[SpaceNameUpdated]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def updateSpaceDescription(cmd: UpdateSpaceDescription): ReplyEffect[Event, SpaceEntity] = ???
+  def updateSpaceDescription(cmd: UpdateSpaceDescription): ReplyEffect[Event, SpaceEntity] =
+    maybeState match {
+      case None    => Effect.reply(cmd.replyTo)(SpaceNotFound)
+      case Some(_) =>
+        val event = cmd.transformInto[SpaceDescriptionUpdated]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def updateSpaceCategory(cmd: UpdateSpaceCategory): ReplyEffect[Event, SpaceEntity] = ???
+  def updateSpaceCategory(cmd: UpdateSpaceCategory): ReplyEffect[Event, SpaceEntity] =
+    maybeState match {
+      case None    => Effect.reply(cmd.replyTo)(SpaceNotFound)
+      case Some(_) =>
+        val event = cmd.transformInto[SpaceCategoryUpdated]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def assignSpaceTargetPrincipal(cmd: AssignSpaceTargetPrincipal): ReplyEffect[Event, SpaceEntity] = ???
+  def assignSpaceTargetPrincipal(cmd: AssignSpaceTargetPrincipal): ReplyEffect[Event, SpaceEntity] =
+    maybeState match {
+      case None                                                 => Effect.reply(cmd.replyTo)(SpaceNotFound)
+      case Some(state) if state.targets.contains(cmd.principal) => Effect.reply(cmd.replyTo)(Success)
+      case Some(_)                                              =>
+        val event = cmd.transformInto[SpaceTargetPrincipalAssigned]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def unassignSpaceTargetPrincipal(cmd: UnassignSpaceTargetPrincipal): ReplyEffect[Event, SpaceEntity] = ???
+  def unassignSpaceTargetPrincipal(cmd: UnassignSpaceTargetPrincipal): ReplyEffect[Event, SpaceEntity] =
+    maybeState match {
+      case None                                                  => Effect.reply(cmd.replyTo)(SpaceNotFound)
+      case Some(state) if !state.targets.contains(cmd.principal) => Effect.reply(cmd.replyTo)(Success)
+      case Some(_)                                               =>
+        val event = cmd.transformInto[SpaceTargetPrincipalUnassigned]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def activateSpace(cmd: ActivateSpace): ReplyEffect[Event, SpaceEntity] = ???
+  def activateSpace(cmd: ActivateSpace): ReplyEffect[Event, SpaceEntity] =
+    maybeState match {
+      case None                         => Effect.reply(cmd.replyTo)(SpaceNotFound)
+      case Some(state) if !state.active =>
+        val event = cmd.transformInto[SpaceActivated]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+      case _                            => Effect.reply(cmd.replyTo)(Success)
+    }
 
-  def deactivateSpace(cmd: DeactivateSpace): ReplyEffect[Event, SpaceEntity] = ???
+  def deactivateSpace(cmd: DeactivateSpace): ReplyEffect[Event, SpaceEntity] =
+    maybeState match {
+      case None                        => Effect.reply(cmd.replyTo)(SpaceNotFound)
+      case Some(state) if state.active =>
+        val event = cmd.transformInto[SpaceDeactivated]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+      case _                           => Effect.reply(cmd.replyTo)(Success)
+    }
 
-  def deleteSpace(cmd: DeleteSpace): ReplyEffect[Event, SpaceEntity] = ???
+  def deleteSpace(cmd: DeleteSpace): ReplyEffect[Event, SpaceEntity] =
+    maybeState match {
+      case None    => Effect.reply(cmd.replyTo)(SpaceNotFound)
+      case Some(_) =>
+        val event = cmd.transformInto[SpaceDeleted]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
 
-  def getSpace(cmd: GetSpace): ReplyEffect[Event, SpaceEntity] = ???
+  def getSpace(cmd: GetSpace): ReplyEffect[Event, SpaceEntity] =
+    maybeState match {
+      case None        => Effect.reply(cmd.replyTo)(SpaceNotFound)
+      case Some(state) => Effect.reply(cmd.replyTo)(SuccessSpace(state.transformInto[Space]))
+    }
 
-  def getSpaceAnnotation(cmd: GetSpaceAnnotation): ReplyEffect[Event, SpaceEntity] = ???
+  def getSpaceAnnotation(cmd: GetSpaceAnnotation): ReplyEffect[Event, SpaceEntity] =
+    maybeState match {
+      case None        => Effect.reply(cmd.replyTo)(SpaceNotFound)
+      case Some(state) => Effect.reply(cmd.replyTo)(SuccessSpaceAnnotation(state.transformInto[SpaceAnnotation]))
+    }
 
   def applyEvent(event: Event): SpaceEntity =
     event match {
@@ -238,25 +340,99 @@ final case class SpaceEntity(maybeState: Option[SpaceState] = None) {
       case event: SpaceTargetPrincipalUnassigned => onSpaceTargetPrincipalUnassigned(event)
       case event: SpaceActivated                 => onSpaceActivated(event)
       case event: SpaceDeactivated               => onSpaceDeactivated(event)
-      case event: SpaceDeleted                   => onSpaceDeleted(event)
+      case _: SpaceDeleted                       => onSpaceDeleted()
     }
 
-  def onSpaceCreated(event: SpaceCreated): SpaceEntity = ???
+  def onSpaceCreated(event: SpaceCreated): SpaceEntity =
+    SpaceEntity(
+      Some(
+        event
+          .into[SpaceState]
+          .withFieldConst(_.active, true)
+          .withFieldConst(_.updatedBy, event.createdBy)
+          .withFieldConst(_.updatedAt, event.createdAt)
+          .transform
+      )
+    )
 
-  def onSpaceNameUpdated(event: SpaceNameUpdated): SpaceEntity = ???
+  def onSpaceNameUpdated(event: SpaceNameUpdated): SpaceEntity =
+    SpaceEntity(
+      maybeState.map(
+        _.copy(
+          name = event.name,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onSpaceDescriptionUpdated(event: SpaceDescriptionUpdated): SpaceEntity = ???
+  def onSpaceDescriptionUpdated(event: SpaceDescriptionUpdated): SpaceEntity =
+    SpaceEntity(
+      maybeState.map(
+        _.copy(
+          description = event.description,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onSpaceCategoryUpdated(event: SpaceCategoryUpdated): SpaceEntity = ???
+  def onSpaceCategoryUpdated(event: SpaceCategoryUpdated): SpaceEntity =
+    SpaceEntity(
+      maybeState.map(
+        _.copy(
+          categoryId = event.categoryId,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onSpaceTargetPrincipalAssigned(event: SpaceTargetPrincipalAssigned): SpaceEntity = ???
+  def onSpaceTargetPrincipalAssigned(event: SpaceTargetPrincipalAssigned): SpaceEntity =
+    SpaceEntity(
+      maybeState.map(state =>
+        state.copy(
+          targets = state.targets + event.principal,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onSpaceTargetPrincipalUnassigned(event: SpaceTargetPrincipalUnassigned): SpaceEntity = ???
+  def onSpaceTargetPrincipalUnassigned(event: SpaceTargetPrincipalUnassigned): SpaceEntity =
+    SpaceEntity(
+      maybeState.map(state =>
+        state.copy(
+          targets = state.targets - event.principal,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onSpaceActivated(event: SpaceActivated): SpaceEntity = ???
+  def onSpaceActivated(event: SpaceActivated): SpaceEntity =
+    SpaceEntity(
+      maybeState.map(state =>
+        state.copy(
+          active = true,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onSpaceDeactivated(event: SpaceDeactivated): SpaceEntity = ???
+  def onSpaceDeactivated(event: SpaceDeactivated): SpaceEntity =
+    SpaceEntity(
+      maybeState.map(state =>
+        state.copy(
+          active = false,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
 
-  def onSpaceDeleted(event: SpaceDeleted): SpaceEntity = ???
+  def onSpaceDeleted(): SpaceEntity =
+    SpaceEntity(None)
 
 }
