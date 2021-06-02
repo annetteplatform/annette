@@ -24,17 +24,22 @@ import biz.lobachev.annette.cms.api.category._
 import biz.lobachev.annette.cms.api.post._
 import biz.lobachev.annette.cms.impl.space._
 import biz.lobachev.annette.cms.impl.category._
+import biz.lobachev.annette.cms.impl.hierarchy.HierarchyEntityService
 import biz.lobachev.annette.cms.impl.post._
 import biz.lobachev.annette.core.model.elastic.FindResult
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import org.slf4j.LoggerFactory
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
 class CmsServiceApiImpl(
   categoryEntityService: CategoryEntityService,
   spaceEntityService: SpaceEntityService,
+  hierarchyEntityService: HierarchyEntityService,
   postEntityService: PostEntityService
+)(implicit
+  ec: ExecutionContext
 ) extends CmsServiceApi {
 
   implicit val timeout = Timeout(50.seconds)
@@ -75,7 +80,11 @@ class CmsServiceApiImpl(
 
   override def createSpace: ServiceCall[CreateSpacePayload, Done] =
     ServiceCall { payload =>
-      spaceEntityService.createSpace(payload)
+      for {
+        _ <- spaceEntityService.createSpace(payload)
+        _ <- if (payload.spaceType == SpaceType.Wiki) hierarchyEntityService.createSpace(payload)
+             else Future.successful(Done)
+      } yield Done
     }
 
   override def updateSpaceName: ServiceCall[UpdateSpaceNamePayload, Done] =
@@ -115,7 +124,12 @@ class CmsServiceApiImpl(
 
   override def deleteSpace: ServiceCall[DeleteSpacePayload, Done] =
     ServiceCall { payload =>
-      spaceEntityService.deleteSpace(payload)
+      for {
+        space <- spaceEntityService.getSpaceById(payload.id, false)
+        _     <- if (space.spaceType == SpaceType.Wiki) hierarchyEntityService.deleteSpace(payload)
+                 else Future.successful(Done)
+        _     <- spaceEntityService.deleteSpace(payload)
+      } yield Done
     }
 
   override def getSpaceById(id: SpaceId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Space] =
@@ -150,7 +164,30 @@ class CmsServiceApiImpl(
 
   override def createPost: ServiceCall[CreatePostPayload, Done] =
     ServiceCall { payload =>
-      postEntityService.createPost(payload)
+      for {
+        // validate if space exist
+        space <- spaceEntityService.getSpaceById(payload.spaceId, false)
+        // if space is wiki assign post to hierarchy
+        _     <- if (space.spaceType == SpaceType.Wiki)
+                   hierarchyEntityService.addPost(
+                     spaceId = payload.spaceId,
+                     postId = payload.id,
+                     parent = payload.parent,
+                     updatedBy = payload.createdBy
+                   )
+                 else Future.successful(Done)
+        // create post with targets from space
+        _     <- postEntityService
+                   .createPost(payload, space.targets)
+                   .recoverWith { th =>
+                     if (space.spaceType == SpaceType.Wiki)
+                       // remove post from hierarchy if create post failed
+                       hierarchyEntityService
+                         .removePost(payload.spaceId, payload.id, payload.createdBy)
+                         .map(_ => throw th)
+                     else Future.failed(th)
+                   }
+      } yield Done
     }
 
   override def updatePostFeatured: ServiceCall[UpdatePostFeaturedPayload, Done] =
@@ -205,7 +242,17 @@ class CmsServiceApiImpl(
 
   override def deletePost: ServiceCall[DeletePostPayload, Done] =
     ServiceCall { payload =>
-      postEntityService.deletePost(payload)
+      for {
+        // get post's space
+        post  <- postEntityService.getPostAnnotationById(payload.id, false)
+        space <- spaceEntityService.getSpaceById(post.spaceId, false)
+        // if space is wiki remove post from hierarchy
+        _     <- if (space.spaceType == SpaceType.Wiki)
+                   hierarchyEntityService.removePost(post.spaceId, payload.id, payload.deletedBy)
+                 else Future.successful(Done)
+        _     <- postEntityService.deletePost(payload)
+
+      } yield Done
     }
 
   override def getPostById(id: PostId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Post] =
@@ -285,5 +332,22 @@ class CmsServiceApiImpl(
       postEntityService.getPostMetricsById(ids)
     }
 
-  override def movePost: ServiceCall[MovePostPayload, Done] = ???
+  override def movePost: ServiceCall[MovePostPayload, Done] =
+    ServiceCall { payload =>
+      for {
+        post <- postEntityService.getPostAnnotationById(payload.postId, false)
+        _    <- hierarchyEntityService.movePost(
+                  spaceId = post.spaceId,
+                  postId = payload.postId,
+                  newParent = payload.newParentId,
+                  newPosition = payload.order,
+                  updatedBy = payload.updatedBy
+                )
+      } yield Done
+    }
+
+  override def getWikiHierarchyById(spaceId: SpaceId, fromReadSide: Boolean): ServiceCall[NotUsed, WikiHierarchy] =
+    ServiceCall { _ =>
+      hierarchyEntityService.getHierarchyById(spaceId, fromReadSide)
+    }
 }

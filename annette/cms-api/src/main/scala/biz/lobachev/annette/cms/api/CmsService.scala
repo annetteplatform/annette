@@ -17,9 +17,9 @@
 package biz.lobachev.annette.cms.api
 
 import akka.Done
-import biz.lobachev.annette.cms.api.space._
 import biz.lobachev.annette.cms.api.category._
 import biz.lobachev.annette.cms.api.post._
+import biz.lobachev.annette.cms.api.space._
 import biz.lobachev.annette.core.model.elastic.FindResult
 
 import scala.collection.immutable.Map
@@ -77,5 +77,8 @@ trait CmsService {
   def unlikePost(payload: UnlikePostPayload): Future[Done]
   def getPostMetricById(id: PostId): Future[PostMetric]
   def getPostMetricsById(ids: Set[PostId]): Future[Map[PostId, PostMetric]]
+
+  def movePost(payload: MovePostPayload): Future[Done]
+  def getWikiHierarchyById(id: SpaceId, fromReadSide: Boolean = true): Future[WikiHierarchy]
 
 }

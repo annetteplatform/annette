@@ -169,4 +169,9 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def getPostMetricsById(ids: Set[PostId]): Future[Map[PostId, PostMetric]] =
     api.getPostMetricsById.invoke(ids)
 
+  override def movePost(payload: MovePostPayload): Future[Done] =
+    api.movePost.invoke(payload)
+
+  override def getWikiHierarchyById(id: SpaceId, fromReadSide: Boolean): Future[WikiHierarchy] =
+    api.getWikiHierarchyById(id, fromReadSide).invoke()
 }

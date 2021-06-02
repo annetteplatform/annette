@@ -16,20 +16,21 @@
 
 package biz.lobachev.annette.cms.impl.space
 
-import java.time.OffsetDateTime
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
-import com.lightbend.lagom.scaladsl.persistence._
-import play.api.libs.json._
-import org.slf4j.LoggerFactory
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.cms.api.space._
 import biz.lobachev.annette.cms.api.category.CategoryId
 import biz.lobachev.annette.cms.api.space.SpaceType.SpaceType
+import biz.lobachev.annette.cms.api.space._
 import biz.lobachev.annette.cms.impl.space.model.SpaceState
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import com.lightbend.lagom.scaladsl.persistence._
 import io.scalaland.chimney.dsl._
+import org.slf4j.LoggerFactory
+import play.api.libs.json._
+
+import java.time.OffsetDateTime
 
 object SpaceEntity {
 
@@ -99,12 +100,14 @@ object SpaceEntity {
   final case object Success                                                 extends Confirmation
   final case class SuccessSpace(space: Space)                               extends Confirmation
   final case class SuccessSpaceAnnotation(spaceAnnotation: SpaceAnnotation) extends Confirmation
+  final case class SuccessTargets(targets: Set[AnnettePrincipal])           extends Confirmation
   final case object SpaceAlreadyExist                                       extends Confirmation
   final case object SpaceNotFound                                           extends Confirmation
 
   implicit val confirmationSuccessFormat: Format[Success.type]                          = Json.format
   implicit val confirmationSuccessSpaceFormat: Format[SuccessSpace]                     = Json.format
   implicit val confirmationSuccessSpaceAnnotationFormat: Format[SuccessSpaceAnnotation] = Json.format
+  implicit val confirmationSuccessTargetsFormat: Format[SuccessTargets]                 = Json.format
   implicit val confirmationSpaceAlreadyExistFormat: Format[SpaceAlreadyExist.type]      = Json.format
   implicit val confirmationSpaceNotFoundFormat: Format[SpaceNotFound.type]              = Json.format
 

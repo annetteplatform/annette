@@ -80,6 +80,7 @@ trait CmsServiceApi extends Service {
   def getPostMetricsById: ServiceCall[Set[PostId], Map[PostId, PostMetric]]
 
   def movePost: ServiceCall[MovePostPayload, Done]
+  def getWikiHierarchyById(id: SpaceId, fromReadSide: Boolean = true): ServiceCall[NotUsed, WikiHierarchy]
 
   final override def descriptor = {
     import Service._
@@ -132,7 +133,8 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/unlikePost", unlikePost),
         pathCall("/api/cms/v1/getPostMetricById/:id", getPostMetricById _),
         pathCall("/api/cms/v1/getPostMetricsById", getPostMetricsById),
-        pathCall("/api/cms/v1/movePost", movePost)
+        pathCall("/api/cms/v1/movePost", movePost),
+        pathCall("/api/cms/v1/getWikiHierarchyById/:id/:fromReadSide", getWikiHierarchyById _)
       )
       .withExceptionSerializer(new AnnetteTransportExceptionSerializer())
       .withAutoAcl(true)

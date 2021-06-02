@@ -262,7 +262,7 @@ class PostElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Elast
       .sourceInclude("updatedAt")
       .trackTotalHits(true)
 
-    println(elasticClient.show(searchRequest))
+//    println(elasticClient.show(searchRequest))
 
     findEntity(searchRequest)
 

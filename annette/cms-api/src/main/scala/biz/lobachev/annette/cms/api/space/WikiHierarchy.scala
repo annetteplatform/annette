@@ -14,24 +14,22 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.api.post
+package biz.lobachev.annette.cms.api.space
 
-import biz.lobachev.annette.cms.api.space.SpaceId
+import biz.lobachev.annette.cms.api.post.PostId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
-case class CreatePostPayload(
-  id: PostId,
+import java.time.OffsetDateTime
+
+case class WikiHierarchy(
   spaceId: SpaceId,
-  parent: Option[PostId] = None,
-  featured: Boolean,
-  authorId: AnnettePrincipal,
-  title: String,
-  introContent: PostContent,
-  content: PostContent,
-  createdBy: AnnettePrincipal
+  rootPostId: Option[PostId] = None,
+  childPosts: Map[PostId, Seq[PostId]] = Map.empty,
+  updatedBy: AnnettePrincipal,
+  updatedAt: OffsetDateTime = OffsetDateTime.now
 )
 
-object CreatePostPayload {
-  implicit val format: Format[CreatePostPayload] = Json.format
+object WikiHierarchy {
+  implicit val format: Format[WikiHierarchy] = Json.format
 }

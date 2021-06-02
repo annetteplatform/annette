@@ -19,14 +19,14 @@ package biz.lobachev.annette.cms.impl.space
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
-import org.slf4j.LoggerFactory
-
-import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, Future}
 import biz.lobachev.annette.cms.api.space._
 import biz.lobachev.annette.cms.impl.space.dao.{SpaceCassandraDbDao, SpaceElasticIndexDao}
 import biz.lobachev.annette.core.model.elastic.FindResult
 import io.scalaland.chimney.dsl._
+import org.slf4j.LoggerFactory
+
+import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 
 class SpaceEntityService(
   clusterSharding: ClusterSharding,
@@ -35,6 +35,7 @@ class SpaceEntityService(
 )(implicit
   ec: ExecutionContext
 ) {
+
   val log = LoggerFactory.getLogger(this.getClass)
 
   implicit val timeout = Timeout(50.seconds)
@@ -157,12 +158,12 @@ class SpaceEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def getSpace(id: SpaceId): Future[Space] =
+  private def getSpace(id: SpaceId): Future[Space] =
     refFor(id)
       .ask[SpaceEntity.Confirmation](SpaceEntity.GetSpace(id, _))
       .map(convertSuccessSpace(_, id))
 
-  def getSpaceAnnotation(id: SpaceId): Future[SpaceAnnotation] =
+  private def getSpaceAnnotation(id: SpaceId): Future[SpaceAnnotation] =
     refFor(id)
       .ask[SpaceEntity.Confirmation](SpaceEntity.GetSpaceAnnotation(id, _))
       .map(convertSuccessSpaceAnnotation(_, id))

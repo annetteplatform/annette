@@ -25,6 +25,9 @@ import biz.lobachev.annette.cms.impl.space.model.SpaceSerializerRegistry
 import biz.lobachev.annette.cms.impl.category._
 import biz.lobachev.annette.cms.impl.category.dao.{CategoryCassandraDbDao, CategoryElasticIndexDao}
 import biz.lobachev.annette.cms.impl.category.model.CategorySerializerRegistry
+import biz.lobachev.annette.cms.impl.hierarchy.{HierarchyDbEventProcessor, HierarchyEntity, HierarchyEntityService}
+import biz.lobachev.annette.cms.impl.hierarchy.dao.HierarchyCassandraDbDao
+import biz.lobachev.annette.cms.impl.hierarchy.model.HierarchySerializerRegistry
 import biz.lobachev.annette.cms.impl.post._
 import biz.lobachev.annette.cms.impl.post.dao.{PostCassandraDbDao, PostElasticIndexDao}
 import biz.lobachev.annette.cms.impl.post.model.PostSerializerRegistry
@@ -98,6 +101,15 @@ trait CmsComponents
     }
   )
 
+  lazy val wiredHierarchyCasRepository = wire[HierarchyCassandraDbDao]
+  readSide.register(wire[HierarchyDbEventProcessor])
+  lazy val wiredHierarchyEntityService = wire[HierarchyEntityService]
+  clusterSharding.init(
+    Entity(HierarchyEntity.typeKey) { entityContext =>
+      HierarchyEntity(entityContext)
+    }
+  )
+
   lazy val wiredPostCasRepository     = wire[PostCassandraDbDao]
   lazy val wiredPostElasticRepository = wire[PostElasticIndexDao]
   readSide.register(wire[PostDbEventProcessor])
@@ -119,5 +131,6 @@ object ServiceSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: immutable.Seq[JsonSerializer[_]] =
     CategorySerializerRegistry.serializers ++
       SpaceSerializerRegistry.serializers ++
+      HierarchySerializerRegistry.serializers ++
       PostSerializerRegistry.serializers
 }

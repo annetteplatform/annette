@@ -26,6 +26,7 @@ import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import biz.lobachev.annette.cms.api.post._
 import biz.lobachev.annette.cms.impl.post.dao.{PostCassandraDbDao, PostElasticIndexDao}
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.elastic.FindResult
 
 class PostEntityService(
@@ -80,11 +81,12 @@ class PostEntityService(
       case _                                                => throw new RuntimeException("Match fail")
     }
 
-  def createPost(payload: CreatePostPayload): Future[Done] =
+  def createPost(payload: CreatePostPayload, targets: Set[AnnettePrincipal]): Future[Done] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
           .into[PostEntity.CreatePost]
+          .withFieldConst(_.targets, targets)
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
