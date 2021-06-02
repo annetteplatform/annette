@@ -179,16 +179,24 @@ class SpaceElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Elas
 
   def findSpaces(query: SpaceFindQuery): Future[FindResult] = {
 
-    val filterQuery            = buildFilterQuery(
+    val filterQuery    = buildFilterQuery(
       query.filter,
       Seq("name" -> 3.0, "description" -> 1.0)
     )
-    val spaceTypeQuery         = query.spaceType.map(matchQuery("spaceType", _)).toSeq
-    val categoryQuery          = query.categories.map(categories => termsSetQuery("categoryId", categories, script("1"))).toSeq
+    val spaceTypeQuery = query.spaceType
+      .map(matchQuery("spaceType", _))
+      .toSeq
+    val categoryQuery  = query.categories
+      .map(categories => termsSetQuery("categoryId", categories, script("1")))
+      .toSeq
+    val targetsQuery   = query.targets
+      .map(targets => termsSetQuery("targets", targets.map(_.code), script("1")))
+      .toSeq
+
     val sortBy: Seq[FieldSort] = buildSortBy(query.sortBy)
 
     val searchRequest = search(indexName)
-      .bool(must(filterQuery ++ spaceTypeQuery ++ categoryQuery))
+      .bool(must(filterQuery ++ spaceTypeQuery ++ categoryQuery ++ targetsQuery))
       .from(query.offset)
       .size(query.size)
       .sortBy(sortBy)
