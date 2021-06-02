@@ -29,6 +29,7 @@ case class SpaceFindQuery(
   spaceType: Option[SpaceType] = None,
   categories: Option[Set[CategoryId]] = None,
   targets: Option[Set[AnnettePrincipal]] = None,
+  active: Option[Boolean] = None,
   sortBy: Option[SortBy] = None
 )
 
