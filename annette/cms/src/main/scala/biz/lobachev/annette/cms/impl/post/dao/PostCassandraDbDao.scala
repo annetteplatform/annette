@@ -31,6 +31,7 @@ import java.time.OffsetDateTime
 import scala.collection.immutable.{Seq, _}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
+import io.scalaland.chimney.dsl._
 
 private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
   ec: ExecutionContext,
@@ -88,9 +89,10 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
       _ <- session.executeCreateTable("""
                                         |CREATE TABLE IF NOT EXISTS post_targets (
                                         |          post_id text ,
+                                        |          principal text,
                                         |          principal_type text,
                                         |          principal_id text,
-                                        |          PRIMARY KEY (post_id, principal_type, principal_id)
+                                        |          PRIMARY KEY (post_id, principal)
                                         |)
                                         |""".stripMargin)
 
@@ -228,19 +230,19 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
                                |""".stripMargin
                                             )
 
-      assignPostTargetPrincipalStmt      <- session.prepare(
-                                              """
-                                           | INSERT INTO post_targets (post_id, principal_type, principal_id )
-                                           |   VALUES (:post_id, :principal_type, :principal_id)
-                                           |""".stripMargin
-                                            )
+      assignPostTargetPrincipalStmt      <-
+        session.prepare(
+          """
+            | INSERT INTO post_targets (post_id, principal,  principal_type, principal_id )
+            |   VALUES (:post_id, :principal, :principal_type, :principal_id)
+            |""".stripMargin
+        )
       unassignPostTargetPrincipalStmt    <- session.prepare(
                                               """
                                              | DELETE FROM post_targets
                                              |   WHERE
                                              |     post_id = :post_id AND
-                                             |     principal_type = :principal_type AND
-                                             |     principal_id = :principal_id
+                                             |     principal = :principal
                                              |""".stripMargin
                                             )
       deletePostStmt                     <- session.prepare(
@@ -495,6 +497,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
       assignPostTargetPrincipalStatement
         .bind()
         .setString("post_id", event.id)
+        .setString("principal", event.principal.code)
         .setString("principal_type", event.principal.principalType)
         .setString("principal_id", event.principal.principalId),
       updatePostTimestampStatement
@@ -510,8 +513,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
       unassignPostTargetPrincipalStatement
         .bind()
         .setString("post_id", event.id)
-        .setString("principal_type", event.principal.principalType)
-        .setString("principal_id", event.principal.principalId),
+        .setString("principal", event.principal.code),
       updatePostTimestampStatement
         .bind()
         .setString("id", event.id)
@@ -634,7 +636,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
       )
     )
 
-  def getPostTargets(id: PostId): Future[Set[AnnettePrincipal]] =
+  private def getPostTargets(id: PostId): Future[Set[AnnettePrincipal]] =
     for {
       stmt   <- session.prepare("SELECT  principal_type, principal_id FROM post_targets WHERE post_id = ?")
       result <- session.selectAll(stmt.bind(id)).map(_.map(convertTargets).toSet)
@@ -658,7 +660,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
       row.getString("filename")
     )
 
-  def getPostDocs(id: PostId): Future[Map[DocId, Doc]] =
+  private def getPostDocs(id: PostId): Future[Map[DocId, Doc]] =
     for {
       stmt   <- session.prepare("SELECT  doc_id, name, filename FROM post_docs WHERE post_id = ?")
       result <- session.selectAll(stmt.bind(id)).map(_.map(convertDoc).map(a => a.id -> a).toMap)
@@ -682,13 +684,13 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
       maybeEntity <- session.selectOne(stmt.bind().setString("id", id)).map(_.map(convertPostAnnotation))
     } yield maybeEntity
 
-  def getPostsById(ids: Set[PostId]): Future[Map[PostId, Post]]                     =
+  def getPostsById(ids: Set[PostId]): Future[Map[PostId, Post]]                                        =
     Source(ids)
       .mapAsync(1)(getPostById)
       .runWith(Sink.seq)
       .map(_.flatten.map(a => a.id -> a).toMap)
 
-  def getPostAnnotationsById(ids: Set[PostId]): Future[Map[PostId, PostAnnotation]] =
+  def getPostAnnotationsById(ids: Set[PostId]): Future[Map[PostId, PostAnnotation]]                    =
     for {
       stmt   <- session.prepare("""
                                 | SELECT id, space_id, featured, author_id_type, author_id_id,
@@ -698,6 +700,29 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
                                 |""".stripMargin)
       result <- session.selectAll(stmt.bind(ids.toList.asJava)).map(_.map(convertPostAnnotation))
     } yield result.map(a => a.id -> a).toMap
+
+  def getPostViews(ids: Set[PostId], principals: Set[AnnettePrincipal]): Future[Map[PostId, PostView]] =
+    for {
+      stmt    <- session.prepare("SELECT post_id FROM post_targets WHERE post_id IN :ids AND principal IN :principals")
+      postIds <- session
+                   .selectAll(
+                     stmt
+                       .bind()
+                       .setList("ids", ids.toList.asJava)
+                       .setList("principals", principals.map(_.code).toList.asJava)
+                   )
+                   .map(_.map(_.getString("post_id")).toSet)
+      stmt    <- session.prepare(" SELECT *  FROM posts WHERE id IN ?")
+      result  <- session.selectAll(stmt.bind(postIds.toList.asJava)).map(_.map(convertPost))
+
+    } yield result
+      .filter(post =>
+        post.publicationStatus == PublicationStatus.Published &&
+          post.publicationTimestamp.map(_.compareTo(OffsetDateTime.now) <= 0).getOrElse(true)
+      )
+      .map(_.transformInto[PostView])
+      .map(a => a.id -> a)
+      .toMap
 
   private def convertPost(row: Row): Post = {
     val publicationStatus = row.getString("publication_status") match {
@@ -776,7 +801,6 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
 
   def getPostMetricById(id: PostId): Future[PostMetric] =
     for {
-      // TODO: change the following code
       viewsStmt <- session.prepare("SELECT count(*) from post_views where post_id =  :post_id")
       views     <-
         session.selectOne(viewsStmt.bind().setString("post_id", id)).map(_.map(_.getLong("count").toInt).getOrElse(0))

@@ -29,6 +29,8 @@ import biz.lobachev.annette.cms.impl.post.dao.{PostCassandraDbDao, PostElasticIn
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.elastic.FindResult
 
+import scala.collection.immutable.{Map, Set}
+
 class PostEntityService(
   clusterSharding: ClusterSharding,
   dbDao: PostCassandraDbDao,
@@ -284,7 +286,7 @@ class PostEntityService(
   def getPostsById(
     ids: Set[PostId],
     fromReadSide: Boolean
-  ): Future[Map[PostId, Post]]                            =
+  ): Future[Map[PostId, Post]]                                                  =
     if (fromReadSide)
       dbDao.getPostsById(ids)
     else
@@ -302,7 +304,7 @@ class PostEntityService(
   def getPostAnnotationsById(
     ids: Set[PostId],
     fromReadSide: Boolean
-  ): Future[Map[PostId, PostAnnotation]]                  =
+  ): Future[Map[PostId, PostAnnotation]]                                        =
     if (fromReadSide)
       dbDao.getPostAnnotationsById(ids)
     else
@@ -316,6 +318,9 @@ class PostEntityService(
             }
         }
         .map(_.flatten.map(a => a.id -> a).toMap)
+
+  def getPostViews(payload: GetPostViewsPayload): Future[Map[PostId, PostView]] =
+    dbDao.getPostViews(payload.ids, payload.principals)
 
   def findPosts(query: PostFindQuery): Future[FindResult] = indexDao.findPosts(query)
 

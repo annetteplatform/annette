@@ -66,6 +66,7 @@ trait CmsServiceApi extends Service {
   def getPostAnnotationById(id: PostId, fromReadSide: Boolean = true): ServiceCall[NotUsed, PostAnnotation]
   def getPostsById(fromReadSide: Boolean = true): ServiceCall[Set[PostId], Map[PostId, Post]]
   def getPostAnnotationsById(fromReadSide: Boolean = true): ServiceCall[Set[PostId], Map[PostId, PostAnnotation]]
+  def getPostViews: ServiceCall[GetPostViewsPayload, Map[PostId, PostView]]
   def findPosts: ServiceCall[PostFindQuery, FindResult]
   def addPostMedia: ServiceCall[AddPostMediaPayload, Done]
   def removePostMedia: ServiceCall[RemovePostMediaPayload, Done]
@@ -122,6 +123,7 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/getPostAnnotationById/:id/:fromReadSide", getPostAnnotationById _),
         pathCall("/api/cms/v1/getPostsById/:fromReadSide", getPostsById _),
         pathCall("/api/cms/v1/getPostAnnotationsById/:fromReadSide", getPostAnnotationsById _),
+        pathCall("/api/cms/v1/getPostViews", getPostViews),
         pathCall("/api/cms/v1/findPosts", findPosts),
         pathCall("/api/cms/v1/addPostMedia", addPostMedia),
         pathCall("/api/cms/v1/removePostMedia", removePostMedia),

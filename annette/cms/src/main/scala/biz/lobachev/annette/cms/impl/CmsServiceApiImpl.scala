@@ -30,6 +30,7 @@ import biz.lobachev.annette.core.model.elastic.FindResult
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import org.slf4j.LoggerFactory
 
+import scala.collection.immutable.Map
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
@@ -275,6 +276,11 @@ class CmsServiceApiImpl(
   ): ServiceCall[Set[PostId], Map[PostId, PostAnnotation]] =
     ServiceCall { ids =>
       postEntityService.getPostAnnotationsById(ids, fromReadSide)
+    }
+
+  override def getPostViews: ServiceCall[GetPostViewsPayload, Map[PostId, PostView]] =
+    ServiceCall { payload =>
+      postEntityService.getPostViews(payload)
     }
 
   override def findPosts: ServiceCall[PostFindQuery, FindResult] =

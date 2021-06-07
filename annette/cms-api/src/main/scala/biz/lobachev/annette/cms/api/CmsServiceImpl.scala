@@ -136,6 +136,9 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def getPostAnnotationsById(ids: Set[PostId], fromReadSide: Boolean): Future[Map[PostId, PostAnnotation]] =
     api.getPostAnnotationsById(fromReadSide).invoke(ids)
 
+  override def getPostViews(payload: GetPostViewsPayload): Future[Map[PostId, PostView]] =
+    api.getPostViews.invoke(payload)
+
   override def findPosts(query: PostFindQuery): Future[FindResult] =
     api.findPosts.invoke(query)
 
@@ -174,4 +177,5 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
 
   override def getWikiHierarchyById(id: SpaceId, fromReadSide: Boolean): Future[WikiHierarchy] =
     api.getWikiHierarchyById(id, fromReadSide).invoke()
+
 }

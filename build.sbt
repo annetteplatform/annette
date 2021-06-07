@@ -86,6 +86,7 @@ lazy val root = (project in file("."))
     `authorization-api-gateway`,
     `org-structure-api-gateway`,
     `persons-api-gateway`,
+    `cms-api-gateway`,
     // microservices API
     `application-api`,
     `attributes-api`,
@@ -536,6 +537,26 @@ def cmsProject(pr: Project) =
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
     .dependsOn(`cms-api`)
+
+lazy val `cms-api-gateway` = (project in file("annette/cms-api-gateway"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslServer % Optional,
+      ws,
+      Dependencies.macwire,
+      Dependencies.playJsonExt,
+      Dependencies.jwt,
+      Dependencies.pureConfig,
+      Dependencies.chimney
+    ) ++
+      Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(
+    `api-gateway-core`,
+    `cms-api`,
+    `subscriptions-api`
+  )
 
 //lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/demo"))
 lazy val `application`      = applicationProject(project in file("annette/application"))

@@ -14,26 +14,28 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.api.space
+package biz.lobachev.annette.cms.api.post
 
-import biz.lobachev.annette.cms.api.category.CategoryId
-import biz.lobachev.annette.cms.api.space.SpaceType.SpaceType
+import biz.lobachev.annette.cms.api.space.SpaceId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.elastic.SortBy
 import play.api.libs.json.{Format, Json}
 
-case class SpaceFindQuery(
-  offset: Int = 0,
-  size: Int,
-  filter: Option[String] = None,
-  spaceIds: Option[Set[SpaceId]] = None,
-  spaceType: Option[SpaceType] = None,
-  categories: Option[Set[CategoryId]] = None,
-  targets: Option[Set[AnnettePrincipal]] = None,
-  active: Option[Boolean] = None,
-  sortBy: Option[SortBy] = None
+import java.time.OffsetDateTime
+
+case class PostView(
+  id: PostId,
+  spaceId: SpaceId,
+  featured: Boolean,
+  authorId: AnnettePrincipal,
+  title: String,
+  introContent: PostContent,
+  content: PostContent,
+  publicationStatus: PublicationStatus.PublicationStatus = PublicationStatus.Draft,
+  publicationTimestamp: Option[OffsetDateTime] = None,
+  updatedBy: AnnettePrincipal,
+  updatedAt: OffsetDateTime = OffsetDateTime.now
 )
 
-object SpaceFindQuery {
-  implicit val format: Format[SpaceFindQuery] = Json.format
+object PostView {
+  implicit val format: Format[PostView] = Json.format
 }

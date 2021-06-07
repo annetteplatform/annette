@@ -183,6 +183,7 @@ class SpaceElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Elas
       query.filter,
       Seq("name" -> 3.0, "description" -> 1.0)
     )
+    val spaceIdsQuery  = query.spaceIds.map(spaceIds => termsSetQuery("id", spaceIds, script("1"))).toSeq
     val spaceTypeQuery = query.spaceType
       .map(matchQuery("spaceType", _))
       .toSeq
@@ -197,7 +198,7 @@ class SpaceElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Elas
     val sortBy: Seq[FieldSort] = buildSortBy(query.sortBy)
 
     val searchRequest = search(indexName)
-      .bool(must(filterQuery ++ spaceTypeQuery ++ categoryQuery ++ targetsQuery ++ activeQuery))
+      .bool(must(filterQuery ++ spaceIdsQuery ++ spaceTypeQuery ++ categoryQuery ++ targetsQuery ++ activeQuery))
       .from(query.offset)
       .size(query.size)
       .sortBy(sortBy)

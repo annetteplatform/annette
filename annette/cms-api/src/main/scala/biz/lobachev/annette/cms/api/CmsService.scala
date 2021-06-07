@@ -65,6 +65,7 @@ trait CmsService {
   def getPostAnnotationById(id: PostId, fromReadSide: Boolean = true): Future[PostAnnotation]
   def getPostsById(ids: Set[PostId], fromReadSide: Boolean = true): Future[Map[PostId, Post]]
   def getPostAnnotationsById(ids: Set[PostId], fromReadSide: Boolean = true): Future[Map[PostId, PostAnnotation]]
+  def getPostViews(payload: GetPostViewsPayload): Future[Map[PostId, PostView]]
   def findPosts(query: PostFindQuery): Future[FindResult]
   def addPostMedia(payload: AddPostMediaPayload): Future[Done]
   def removePostMedia(payload: RemovePostMediaPayload): Future[Done]
