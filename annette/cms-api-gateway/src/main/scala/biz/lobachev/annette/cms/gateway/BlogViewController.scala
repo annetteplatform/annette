@@ -34,7 +34,7 @@ import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
-class BlogPostController @Inject() (
+class BlogViewController @Inject() (
   authenticated: AuthenticatedAction,
   authorizer: Authorizer,
   cc: ControllerComponents,
