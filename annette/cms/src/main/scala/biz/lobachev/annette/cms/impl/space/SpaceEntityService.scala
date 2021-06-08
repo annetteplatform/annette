@@ -19,7 +19,7 @@ package biz.lobachev.annette.cms.impl.space
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
-import biz.lobachev.annette.cms.api.space._
+import biz.lobachev.annette.cms.api.space.{GetSpaceViewsPayload, _}
 import biz.lobachev.annette.cms.impl.space.dao.{SpaceCassandraDbDao, SpaceElasticIndexDao}
 import biz.lobachev.annette.core.model.elastic.FindResult
 import io.scalaland.chimney.dsl._
@@ -57,14 +57,6 @@ class SpaceEntityService(
       case SpaceEntity.SpaceAlreadyExist   => throw SpaceAlreadyExist(id)
       case SpaceEntity.SpaceNotFound       => throw SpaceNotFound(id)
       case _                               => throw new RuntimeException("Match fail")
-    }
-
-  private def convertSuccessSpaceAnnotation(confirmation: SpaceEntity.Confirmation, id: SpaceId): SpaceAnnotation =
-    confirmation match {
-      case SpaceEntity.SuccessSpaceAnnotation(spaceAnnotation) => spaceAnnotation
-      case SpaceEntity.SpaceAlreadyExist                       => throw SpaceAlreadyExist(id)
-      case SpaceEntity.SpaceNotFound                           => throw SpaceNotFound(id)
-      case _                                                   => throw new RuntimeException("Match fail")
     }
 
   def createSpace(payload: CreateSpacePayload): Future[Done] =
@@ -163,11 +155,6 @@ class SpaceEntityService(
       .ask[SpaceEntity.Confirmation](SpaceEntity.GetSpace(id, _))
       .map(convertSuccessSpace(_, id))
 
-  private def getSpaceAnnotation(id: SpaceId): Future[SpaceAnnotation] =
-    refFor(id)
-      .ask[SpaceEntity.Confirmation](SpaceEntity.GetSpaceAnnotation(id, _))
-      .map(convertSuccessSpaceAnnotation(_, id))
-
   def getSpaceById(id: SpaceId, fromReadSide: Boolean): Future[Space] =
     if (fromReadSide)
       dbDao
@@ -176,15 +163,7 @@ class SpaceEntityService(
     else
       getSpace(id)
 
-  def getSpaceAnnotationById(id: SpaceId, fromReadSide: Boolean): Future[SpaceAnnotation] =
-    if (fromReadSide)
-      dbDao
-        .getSpaceAnnotationById(id)
-        .map(_.getOrElse(throw SpaceNotFound(id)))
-    else
-      getSpaceAnnotation(id)
-
-  def getSpacesById(ids: Set[SpaceId], fromReadSide: Boolean): Future[Map[SpaceId, Space]]                     =
+  def getSpacesById(ids: Set[SpaceId], fromReadSide: Boolean): Future[Map[SpaceId, Space]] =
     if (fromReadSide)
       dbDao.getSpacesById(ids)
     else
@@ -199,21 +178,9 @@ class SpaceEntityService(
         }
         .map(_.flatten.map(a => a.id -> a).toMap)
 
-  def getSpaceAnnotationsById(ids: Set[SpaceId], fromReadSide: Boolean): Future[Map[SpaceId, SpaceAnnotation]] =
-    if (fromReadSide)
-      dbDao.getSpaceAnnotationsById(ids)
-    else
-      Future
-        .traverse(ids) { id =>
-          refFor(id)
-            .ask[SpaceEntity.Confirmation](SpaceEntity.GetSpaceAnnotation(id, _))
-            .map {
-              case SpaceEntity.SuccessSpaceAnnotation(space) => Some(space)
-              case _                                         => None
-            }
-        }
-        .map(_.flatten.map(a => a.id -> a).toMap)
+  def getSpaceViews(payload: GetSpaceViewsPayload): Future[Map[SpaceId, SpaceView]]        =
+    dbDao.getSpaceViews(payload.ids, payload.principals)
 
-  def findSpaces(query: SpaceFindQuery): Future[FindResult]                                                    = indexDao.findSpaces(query)
+  def findSpaces(query: SpaceFindQuery): Future[FindResult] = indexDao.findSpaces(query)
 
 }

@@ -17,7 +17,7 @@
 package biz.lobachev.annette.cms.impl.space.model
 
 import biz.lobachev.annette.cms.impl.space.SpaceEntity
-import biz.lobachev.annette.cms.api.space.{Space, SpaceAnnotation}
+import biz.lobachev.annette.cms.api.space.{Space, SpaceView}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
@@ -27,13 +27,12 @@ object SpaceSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
       JsonSerializer[SpaceState],
-      JsonSerializer[SpaceAnnotation],
+      JsonSerializer[SpaceView],
       JsonSerializer[Space],
       JsonSerializer[OffsetDateTime],
       JsonSerializer[AnnettePrincipal],
       JsonSerializer[SpaceEntity.Success.type],
       JsonSerializer[SpaceEntity.SuccessSpace],
-      JsonSerializer[SpaceEntity.SuccessSpaceAnnotation],
       JsonSerializer[SpaceEntity.SpaceAlreadyExist.type],
       JsonSerializer[SpaceEntity.SpaceNotFound.type],
       JsonSerializer[SpaceEntity.SpaceCreated],

@@ -19,6 +19,7 @@ package biz.lobachev.annette.cms.gateway
 import biz.lobachev.annette.core.model.auth.Permission
 
 object Permissions {
-  final val VIEW_BLOGS = Permission("annette.cms.blog.view.all")
+  final val VIEW_BLOGS  = Permission("annette.cms.blog.view")
+  final val VIEW_WIKIES = Permission("annette.cms.wiki.view")
 
 }

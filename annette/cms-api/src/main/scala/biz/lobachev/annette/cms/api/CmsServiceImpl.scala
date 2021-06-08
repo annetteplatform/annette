@@ -22,6 +22,7 @@ import biz.lobachev.annette.cms.api.category._
 import biz.lobachev.annette.cms.api.post._
 import biz.lobachev.annette.core.model.elastic.FindResult
 
+import scala.collection.immutable.Map
 import scala.concurrent.Future
 
 class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
@@ -73,17 +74,13 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def getSpaceById(id: SpaceId, fromReadSide: Boolean): Future[Space] =
     api.getSpaceById(id, fromReadSide).invoke()
 
-  override def getSpaceAnnotationById(id: SpaceId, fromReadSide: Boolean): Future[SpaceAnnotation] =
-    api.getSpaceAnnotationById(id, fromReadSide).invoke()
-
   override def getSpacesById(ids: Set[SpaceId], fromReadSide: Boolean): Future[Map[SpaceId, Space]] =
     api.getSpacesById(fromReadSide).invoke(ids)
 
-  override def getSpaceAnnotationsById(
-    ids: Set[SpaceId],
-    fromReadSide: Boolean
-  ): Future[Map[SpaceId, SpaceAnnotation]] =
-    api.getSpaceAnnotationsById(fromReadSide).invoke(ids)
+  override def getSpaceViews(
+    payload: GetSpaceViewsPayload
+  ): Future[Map[SpaceId, SpaceView]] =
+    api.getSpaceViews.invoke(payload)
 
   override def findSpaces(query: SpaceFindQuery): Future[FindResult] =
     api.findSpaces.invoke(query)
@@ -139,6 +136,9 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def getPostViews(payload: GetPostViewsPayload): Future[Map[PostId, PostView]] =
     api.getPostViews.invoke(payload)
 
+  override def canAccessToPost(payload: CanAccessToPostPayload): Future[Boolean] =
+    api.canAccessToPost.invoke(payload)
+
   override def findPosts(query: PostFindQuery): Future[FindResult] =
     api.findPosts.invoke(query)
 
@@ -166,11 +166,11 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def unlikePost(payload: UnlikePostPayload): Future[Done] =
     api.unlikePost.invoke(payload)
 
-  override def getPostMetricById(id: PostId): Future[PostMetric] =
-    api.getPostMetricById(id).invoke()
+  override def getPostMetricById(payload: GetPostMetricPayload): Future[PostMetric] =
+    api.getPostMetricById.invoke(payload)
 
-  override def getPostMetricsById(ids: Set[PostId]): Future[Map[PostId, PostMetric]] =
-    api.getPostMetricsById.invoke(ids)
+  override def getPostMetricsById(payload: GetPostMetricsPayload): Future[Map[PostId, PostMetric]] =
+    api.getPostMetricsById.invoke(payload)
 
   override def movePost(payload: MovePostPayload): Future[Done] =
     api.movePost.invoke(payload)

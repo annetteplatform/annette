@@ -45,9 +45,8 @@ trait CmsServiceApi extends Service {
   def deactivateSpace: ServiceCall[DeactivateSpacePayload, Done]
   def deleteSpace: ServiceCall[DeleteSpacePayload, Done]
   def getSpaceById(id: SpaceId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Space]
-  def getSpaceAnnotationById(id: SpaceId, fromReadSide: Boolean = true): ServiceCall[NotUsed, SpaceAnnotation]
   def getSpacesById(fromReadSide: Boolean = true): ServiceCall[Set[SpaceId], Map[SpaceId, Space]]
-  def getSpaceAnnotationsById(fromReadSide: Boolean = true): ServiceCall[Set[SpaceId], Map[SpaceId, SpaceAnnotation]]
+  def getSpaceViews: ServiceCall[GetSpaceViewsPayload, Map[SpaceId, SpaceView]]
   def findSpaces: ServiceCall[SpaceFindQuery, FindResult]
 
   def createPost: ServiceCall[CreatePostPayload, Done]
@@ -67,6 +66,7 @@ trait CmsServiceApi extends Service {
   def getPostsById(fromReadSide: Boolean = true): ServiceCall[Set[PostId], Map[PostId, Post]]
   def getPostAnnotationsById(fromReadSide: Boolean = true): ServiceCall[Set[PostId], Map[PostId, PostAnnotation]]
   def getPostViews: ServiceCall[GetPostViewsPayload, Map[PostId, PostView]]
+  def canAccessToPost: ServiceCall[CanAccessToPostPayload, Boolean]
   def findPosts: ServiceCall[PostFindQuery, FindResult]
   def addPostMedia: ServiceCall[AddPostMediaPayload, Done]
   def removePostMedia: ServiceCall[RemovePostMediaPayload, Done]
@@ -77,8 +77,8 @@ trait CmsServiceApi extends Service {
   def viewPost: ServiceCall[ViewPostPayload, Done]
   def likePost: ServiceCall[LikePostPayload, Done]
   def unlikePost: ServiceCall[UnlikePostPayload, Done]
-  def getPostMetricById(id: PostId): ServiceCall[NotUsed, PostMetric]
-  def getPostMetricsById: ServiceCall[Set[PostId], Map[PostId, PostMetric]]
+  def getPostMetricById: ServiceCall[GetPostMetricPayload, PostMetric]
+  def getPostMetricsById: ServiceCall[GetPostMetricsPayload, Map[PostId, PostMetric]]
 
   def movePost: ServiceCall[MovePostPayload, Done]
   def getWikiHierarchyById(id: SpaceId, fromReadSide: Boolean = true): ServiceCall[NotUsed, WikiHierarchy]
@@ -103,9 +103,8 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/deactivateSpace", deactivateSpace),
         pathCall("/api/cms/v1/deleteSpace", deleteSpace),
         pathCall("/api/cms/v1/getSpaceById/:id/:fromReadSide", getSpaceById _),
-        pathCall("/api/cms/v1/getSpaceAnnotationById/:id/:fromReadSide", getSpaceAnnotationById _),
         pathCall("/api/cms/v1/getSpacesById/:fromReadSide", getSpacesById _),
-        pathCall("/api/cms/v1/getSpaceAnnotationsById/:fromReadSide", getSpaceAnnotationsById _),
+        pathCall("/api/cms/v1/getSpaceViews", getSpaceViews),
         pathCall("/api/cms/v1/findSpaces", findSpaces),
         pathCall("/api/cms/v1/createPost", createPost),
         pathCall("/api/cms/v1/updatePostFeatured", updatePostFeatured),
@@ -124,6 +123,7 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/getPostsById/:fromReadSide", getPostsById _),
         pathCall("/api/cms/v1/getPostAnnotationsById/:fromReadSide", getPostAnnotationsById _),
         pathCall("/api/cms/v1/getPostViews", getPostViews),
+        pathCall("/api/cms/v1/canAccessToPost", canAccessToPost),
         pathCall("/api/cms/v1/findPosts", findPosts),
         pathCall("/api/cms/v1/addPostMedia", addPostMedia),
         pathCall("/api/cms/v1/removePostMedia", removePostMedia),
@@ -133,7 +133,7 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/viewPost", viewPost),
         pathCall("/api/cms/v1/likePost", likePost),
         pathCall("/api/cms/v1/unlikePost", unlikePost),
-        pathCall("/api/cms/v1/getPostMetricById/:id", getPostMetricById _),
+        pathCall("/api/cms/v1/getPostMetricById", getPostMetricById),
         pathCall("/api/cms/v1/getPostMetricsById", getPostMetricsById),
         pathCall("/api/cms/v1/movePost", movePost),
         pathCall("/api/cms/v1/getWikiHierarchyById/:id/:fromReadSide", getWikiHierarchyById _)

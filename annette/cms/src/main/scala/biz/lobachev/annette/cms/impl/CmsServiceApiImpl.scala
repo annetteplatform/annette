@@ -138,24 +138,14 @@ class CmsServiceApiImpl(
       spaceEntityService.getSpaceById(id, fromReadSide)
     }
 
-  override def getSpaceAnnotationById(
-    id: SpaceId,
-    fromReadSide: Boolean = true
-  ): ServiceCall[NotUsed, SpaceAnnotation] =
-    ServiceCall { _ =>
-      spaceEntityService.getSpaceAnnotationById(id, fromReadSide)
-    }
-
   override def getSpacesById(fromReadSide: Boolean = true): ServiceCall[Set[SpaceId], Map[SpaceId, Space]] =
     ServiceCall { ids =>
       spaceEntityService.getSpacesById(ids, fromReadSide)
     }
 
-  override def getSpaceAnnotationsById(
-    fromReadSide: Boolean = true
-  ): ServiceCall[Set[SpaceId], Map[SpaceId, SpaceAnnotation]] =
-    ServiceCall { ids =>
-      spaceEntityService.getSpaceAnnotationsById(ids, fromReadSide)
+  override def getSpaceViews: ServiceCall[GetSpaceViewsPayload, Map[SpaceId, SpaceView]] =
+    ServiceCall { payload =>
+      spaceEntityService.getSpaceViews(payload)
     }
 
   override def findSpaces: ServiceCall[SpaceFindQuery, FindResult] =
@@ -283,6 +273,11 @@ class CmsServiceApiImpl(
       postEntityService.getPostViews(payload)
     }
 
+  override def canAccessToPost: ServiceCall[CanAccessToPostPayload, Boolean] =
+    ServiceCall { payload =>
+      postEntityService.canAccessToPost(payload)
+    }
+
   override def findPosts: ServiceCall[PostFindQuery, FindResult] =
     ServiceCall { query =>
       postEntityService.findPosts(query)
@@ -328,14 +323,14 @@ class CmsServiceApiImpl(
       postEntityService.unlikePost(payload)
     }
 
-  override def getPostMetricById(id: PostId): ServiceCall[NotUsed, PostMetric] =
-    ServiceCall { _ =>
-      postEntityService.getPostMetricById(id)
+  override def getPostMetricById: ServiceCall[GetPostMetricPayload, PostMetric] =
+    ServiceCall { payload =>
+      postEntityService.getPostMetricById(payload)
     }
 
-  override def getPostMetricsById: ServiceCall[Set[PostId], Map[PostId, PostMetric]] =
-    ServiceCall { ids =>
-      postEntityService.getPostMetricsById(ids)
+  override def getPostMetricsById: ServiceCall[GetPostMetricsPayload, Map[PostId, PostMetric]] =
+    ServiceCall { payload =>
+      postEntityService.getPostMetricsById(payload)
     }
 
   override def movePost: ServiceCall[MovePostPayload, Done] =

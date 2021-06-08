@@ -246,7 +246,7 @@ class PostElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Elast
     val publicationTimestampToQuery   =
       query.publicationTimestampTo.map(to => rangeQuery("publicationTimestamp").lte(ElasticDate(to.toString)))
     val targetsQuery                  = query.targets.map(targets => termsSetQuery("targets", targets.map(_.code), script("1"))).toSeq
-    val sortBy: Seq[FieldSort]        = buildSortBy(query.sortBy)
+    val sortBy: Seq[FieldSort]        = buildSortBySeq(query.sortBy)
 
     val searchRequest = search(indexName)
       .bool(

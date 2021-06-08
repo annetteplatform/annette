@@ -14,17 +14,26 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.api.post
+package biz.lobachev.annette.cms.api.space
 
+import biz.lobachev.annette.cms.api.category.CategoryId
+import biz.lobachev.annette.cms.api.space.SpaceType.SpaceType
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
-case class PostMetric(
-  id: PostId,
-  views: Int,
-  likes: Int,
-  likedByMe: Boolean
+import java.time.OffsetDateTime
+
+case class SpaceView(
+  id: SpaceId,
+  name: String,
+  description: String,
+  spaceType: SpaceType,
+  categoryId: CategoryId,
+  active: Boolean,
+  updatedBy: AnnettePrincipal,
+  updatedAt: OffsetDateTime = OffsetDateTime.now
 )
 
-object PostMetric {
-  implicit val format: Format[PostMetric] = Json.format
+object SpaceView {
+  implicit val format: Format[SpaceView] = Json.format
 }

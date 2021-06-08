@@ -28,7 +28,7 @@ case class PostFindQueryDto(
   spaces: Option[Set[SpaceId]] = None,
   featured: Option[Boolean] = None,
   authors: Option[Set[AnnettePrincipal]] = None,
-  sortBy: Option[SortBy] = None
+  sortBy: Option[Seq[SortBy]] = None
 )
 
 object PostFindQueryDto {

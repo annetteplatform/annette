@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.api.post
+package biz.lobachev.annette.cms.gateway.dto
 
+import biz.lobachev.annette.cms.api.space.SpaceId
+import biz.lobachev.annette.core.model.elastic.SortBy
 import play.api.libs.json.{Format, Json}
 
-case class PostMetric(
-  id: PostId,
-  views: Int,
-  likes: Int,
-  likedByMe: Boolean
+case class SubscriptionFindQueryDto(
+  offset: Int = 0,
+  size: Int,
+  spaceIds: Option[Set[SpaceId]] = None,
+  sortBy: Option[SortBy] = None
 )
 
-object PostMetric {
-  implicit val format: Format[PostMetric] = Json.format
+object SubscriptionFindQueryDto {
+  implicit val format: Format[SubscriptionFindQueryDto] = Json.format
 }

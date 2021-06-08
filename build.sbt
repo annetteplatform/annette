@@ -184,7 +184,8 @@ lazy val `api-gateway` = (project in file("annette/api-gateway"))
     `application-api-gateway`,
     `authorization-api-gateway`,
     `org-structure-api-gateway`,
-    `persons-api-gateway`
+    `persons-api-gateway`,
+    `cms-api-gateway`
   )
 
 lazy val `ignition-core` = (project in file("ignition/core"))

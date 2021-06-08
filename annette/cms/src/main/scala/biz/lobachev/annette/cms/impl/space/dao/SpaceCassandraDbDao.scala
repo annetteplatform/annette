@@ -68,9 +68,10 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
       _ <- session.executeCreateTable("""
                                         |CREATE TABLE IF NOT EXISTS space_targets (
                                         |          space_id text,
+                                        |          principal text,
                                         |          principal_type text,
                                         |          principal_id text,
-                                        |          PRIMARY KEY (space_id, principal_type, principal_id)
+                                        |          PRIMARY KEY (space_id, principal)
                                         |)
                                         |""".stripMargin)
     } yield Done
@@ -126,19 +127,19 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
                                       |  WHERE id = :id
                                       |""".stripMargin
                                           )
-      assignSpaceTargetPrincipalStmt   <- session.prepare(
-                                            """
-                                            | INSERT INTO space_targets (space_id, principal_type, principal_id )
-                                            |   VALUES (:space_id, :principal_type, :principal_id)
-                                            |""".stripMargin
-                                          )
+      assignSpaceTargetPrincipalStmt   <-
+        session.prepare(
+          """
+            | INSERT INTO space_targets (space_id, principal, principal_type, principal_id )
+            |   VALUES (:space_id, :principal, :principal_type, :principal_id)
+            |""".stripMargin
+        )
       unassignSpaceTargetPrincipalStmt <- session.prepare(
                                             """
                                               | DELETE FROM space_targets
                                               |   WHERE
                                               |     space_id = :space_id AND
-                                              |     principal_type = :principal_type AND
-                                              |     principal_id = :principal_id
+                                              |     principal = :principal
                                               |""".stripMargin
                                           )
       activateSpaceStmt                <- session.prepare(
@@ -188,8 +189,18 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
       Done
     }
 
-  def createSpace(event: SpaceEntity.SpaceCreated): Future[Seq[BoundStatement]] =
-    build(
+  def createSpace(event: SpaceEntity.SpaceCreated): Future[Seq[BoundStatement]] = {
+    val targets = event.targets
+      .map(target =>
+        assignSpaceTargetPrincipalStatement
+          .bind()
+          .setString("space_id", event.id)
+          .setString("principal", target.code)
+          .setString("principal_type", target.principalType)
+          .setString("principal_id", target.principalId)
+      )
+      .toSeq
+    Future.successful(
       createSpaceStatement
         .bind()
         .setString("id", event.id)
@@ -201,7 +212,9 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
         .setString("updated_at", event.createdAt.toString)
         .setString("updated_by_type", event.createdBy.principalType)
         .setString("updated_by_id", event.createdBy.principalId)
+        +: targets
     )
+  }
 
   def updateSpaceName(event: SpaceEntity.SpaceNameUpdated): Future[Seq[BoundStatement]] =
     build(
@@ -241,6 +254,7 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
       assignSpaceTargetPrincipalStatement
         .bind()
         .setString("space_id", event.id)
+        .setString("principal", event.principal.code)
         .setString("principal_type", event.principal.principalType)
         .setString("principal_id", event.principal.principalId),
       updateSpaceTimestampStatement
@@ -256,6 +270,7 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
       unassignSpaceTargetPrincipalStatement
         .bind()
         .setString("space_id", event.id)
+        .setString("principal", event.principal.code)
         .setString("principal_type", event.principal.principalType)
         .setString("principal_id", event.principal.principalId),
       updateSpaceTimestampStatement
@@ -304,31 +319,32 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
       targets     <- session.selectAll(targetStmt.bind().setString("space_id", id)).map(_.map(convertTarget))
     } yield maybeEntity.map(_.copy(targets = targets.toSet))
 
-  def getSpaceAnnotationById(id: SpaceId): Future[Option[SpaceAnnotation]] =
-    for {
-      stmt        <-
-        session.prepare(
-          "SELECT id, name, space_type, category_id, active, updated_at, updated_by_type, updated_by_id FROM spaces WHERE id = :id"
-        )
-      maybeEntity <- session.selectOne(stmt.bind().setString("id", id)).map(_.map(convertSpaceAnnotation))
-    } yield maybeEntity
-
-  def getSpacesById(ids: Set[SpaceId]): Future[Map[SpaceId, Space]]                     =
+  def getSpacesById(ids: Set[SpaceId]): Future[Map[SpaceId, Space]]                                        =
     Source(ids)
       .mapAsync(1)(getSpaceById)
       .runWith(Sink.seq)
       .map(_.flatten.map(a => a.id -> a).toMap)
 
-  def getSpaceAnnotationsById(ids: Set[SpaceId]): Future[Map[SpaceId, SpaceAnnotation]] =
+  def getSpaceViews(ids: Set[SpaceId], principals: Set[AnnettePrincipal]): Future[Map[SpaceId, SpaceView]] =
     for {
-      stmt   <-
-        session.prepare(
-          "SELECT id, name, space_type, category_id, active, updated_at, updated_by_type, updated_by_id FROM spaces WHERE id IN ?"
-        )
-      result <- session.selectAll(stmt.bind(ids.toList.asJava)).map(_.map(convertSpaceAnnotation))
+      stmt     <- session.prepare(
+                    "SELECT space_id FROM space_targets WHERE space_id IN :ids AND principal IN :principals"
+                  )
+      spaceIds <- session
+                    .selectAll(
+                      stmt
+                        .bind()
+                        .setList("ids", ids.toList.asJava)
+                        .setList("principals", principals.map(_.code).toList.asJava)
+                    )
+                    .map(_.map(_.getString("space_id")).toSet)
+      stmt     <- session.prepare(
+                    "SELECT * FROM spaces WHERE id IN ?"
+                  )
+      result   <- session.selectAll(stmt.bind(spaceIds.toList.asJava)).map(_.map(convertSpaceView))
     } yield result.map(a => a.id -> a).toMap
 
-  private def convertSpace(row: Row): Space                                             =
+  private def convertSpace(row: Row): Space                                                                =
     Space(
       id = row.getString("id"),
       name = row.getString("name"),
@@ -349,10 +365,11 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
       principalId = row.getString("principal_id")
     )
 
-  private def convertSpaceAnnotation(row: Row): SpaceAnnotation =
-    SpaceAnnotation(
+  private def convertSpaceView(row: Row): SpaceView =
+    SpaceView(
       id = row.getString("id"),
       name = row.getString("name"),
+      description = row.getString("description"),
       spaceType = SpaceType.from(row.getString("space_type")),
       categoryId = row.getString("category_id"),
       active = row.getBool("active"),

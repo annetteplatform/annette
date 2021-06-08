@@ -35,7 +35,7 @@ case class PostFindQuery(
   publicationTimestampFrom: Option[OffsetDateTime] = None,
   publicationTimestampTo: Option[OffsetDateTime] = None,
   targets: Option[Set[AnnettePrincipal]] = None,
-  sortBy: Option[SortBy] = None
+  sortBy: Option[Seq[SortBy]] = None
 )
 
 object PostFindQuery {

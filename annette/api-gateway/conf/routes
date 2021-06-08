@@ -102,6 +102,22 @@ POST    /api/annette/v1/person/findCategories                      biz.lobachev.
 GET     /api/annette/v1/person/profile       biz.lobachev.annette.person.gateway.PersonController.profile
 
 
+# CMS API
+POST    /api/annette/v1/cms/view/findBlogPosts     biz.lobachev.annette.cms.gateway.CmsViewController.findBlogPosts
+POST    /api/annette/v1/cms/view/getPostViews      biz.lobachev.annette.cms.gateway.CmsViewController.getPostViews
+POST    /api/annette/v1/cms/view/viewPost/:postId       biz.lobachev.annette.cms.gateway.CmsViewController.viewPost(postId: String)
+POST    /api/annette/v1/cms/view/likePost/:postId       biz.lobachev.annette.cms.gateway.CmsViewController.likePost(postId: String)
+POST    /api/annette/v1/cms/view/unlikePost/:postId       biz.lobachev.annette.cms.gateway.CmsViewController.unlikePost(postId: String)
+GET    /api/annette/v1/cms/view/getPostMetricById/:postId       biz.lobachev.annette.cms.gateway.CmsViewController.getPostMetricById(postId: String)
+POST    /api/annette/v1/cms/view/getPostMetricsById        biz.lobachev.annette.cms.gateway.CmsViewController.getPostMetricsById
+POST    /api/annette/v1/cms/view/findSpaces        biz.lobachev.annette.cms.gateway.CmsViewController.findSpaces
+POST    /api/annette/v1/cms/view/getSpaces         biz.lobachev.annette.cms.gateway.CmsViewController.getSpaces
+POST    /api/annette/v1/cms/view/findMyBlogSubscriptions         biz.lobachev.annette.cms.gateway.CmsViewController.findMyBlogSubscriptions
+POST    /api/annette/v1/cms/view/subscribeToSpace/:spaceId       biz.lobachev.annette.cms.gateway.CmsViewController.subscribeToSpace(spaceId: String)
+POST    /api/annette/v1/cms/view/unsubscribeFromSpace/:spaceId   biz.lobachev.annette.cms.gateway.CmsViewController.unsubscribeFromSpace(spaceId: String)
+POST    /api/annette/v1/cms/view/findCategories        biz.lobachev.annette.cms.gateway.CmsViewController.findCategories
+POST    /api/annette/v1/cms/view/getCategories         biz.lobachev.annette.cms.gateway.CmsViewController.getCategories
+
 
 
 

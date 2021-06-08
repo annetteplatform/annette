@@ -384,8 +384,18 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
     }
   }
 
-  def createPost(event: PostEntity.PostCreated): Future[Seq[BoundStatement]] =
-    build(
+  def createPost(event: PostEntity.PostCreated): Future[Seq[BoundStatement]] = {
+    val targets = event.targets
+      .map(target =>
+        assignPostTargetPrincipalStatement
+          .bind()
+          .setString("post_id", event.id)
+          .setString("principal", target.code)
+          .setString("principal_type", target.principalType)
+          .setString("principal_id", target.principalId)
+      )
+      .toSeq
+    Future.successful(
       createPostStatement
         .bind()
         .setString("id", event.id)
@@ -400,7 +410,9 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
         .setString("updated_at", event.createdAt.toString)
         .setString("updated_by_type", event.createdBy.principalType)
         .setString("updated_by_id", event.createdBy.principalId)
+        +: targets
     )
+  }
 
   def updatePostFeatured(event: PostEntity.PostFeaturedUpdated): Future[Seq[BoundStatement]] =
     build(
@@ -724,6 +736,20 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
       .map(a => a.id -> a)
       .toMap
 
+  def canAccessToPost(id: PostId, principals: Set[AnnettePrincipal]): Future[Boolean] =
+    for {
+      stmt  <- session.prepare("SELECT count(*) FROM post_targets WHERE post_id=:id AND principal IN :principals")
+      count <- session
+                 .selectOne(
+                   stmt
+                     .bind()
+                     .setString("id", id)
+                     .setList("principals", principals.map(_.code).toList.asJava)
+                 )
+                 .map(_.map(_.getLong("count").toInt).getOrElse(0))
+
+    } yield count > 0
+
   private def convertPost(row: Row): Post = {
     val publicationStatus = row.getString("publication_status") match {
       case "published" => PublicationStatus.Published
@@ -799,23 +825,28 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
         .setString("principal", principal.code)
     )
 
-  def getPostMetricById(id: PostId): Future[PostMetric] =
+  def getPostMetricById(id: PostId, principal: AnnettePrincipal): Future[PostMetric] =
     for {
-      viewsStmt <- session.prepare("SELECT count(*) from post_views where post_id =  :post_id")
-      views     <-
+      viewsStmt     <- session.prepare("SELECT count(*) from post_views where post_id =  :post_id")
+      views         <-
         session.selectOne(viewsStmt.bind().setString("post_id", id)).map(_.map(_.getLong("count").toInt).getOrElse(0))
-      likesStmt <- session.prepare("SELECT count(*) from post_likes where post_id =  :post_id")
-      likes     <-
+      likesStmt     <- session.prepare("SELECT count(*) from post_likes where post_id =  :post_id")
+      likes         <-
         session.selectOne(likesStmt.bind().setString("post_id", id)).map(_.map(_.getLong("count").toInt).getOrElse(0))
+      likedByMeStmt <-
+        session.prepare("SELECT count(*) from post_likes where post_id =  :post_id AND principal = :principal")
+      likedByMe     <- session
+                         .selectOne(likedByMeStmt.bind().setString("post_id", id).setString("principal", principal.code))
+                         .map(_.map(_.getLong("count") > 0).getOrElse(false))
 
-    } yield PostMetric(id, views, likes)
+    } yield PostMetric(id, views, likes, likedByMe)
 
-  def getPostMetricsById(ids: Set[PostId]): Future[Map[PostId, PostMetric]]    =
+  def getPostMetricsById(ids: Set[PostId], principal: AnnettePrincipal): Future[Map[PostId, PostMetric]] =
     Source(ids)
-      .mapAsync(1)(getPostMetricById)
+      .mapAsync(1)(id => getPostMetricById(id, principal))
       .runWith(Sink.seq)
       .map(_.map(a => a.id -> a).toMap)
 
-  private def build(statements: BoundStatement*): Future[List[BoundStatement]] =
+  private def build(statements: BoundStatement*): Future[List[BoundStatement]]                           =
     Future.successful(statements.toList)
 }

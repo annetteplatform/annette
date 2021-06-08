@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.api.post
+package biz.lobachev.annette.cms.gateway.dto
 
+import biz.lobachev.annette.cms.api.space.SpaceId
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
-case class PostMetric(
-  id: PostId,
-  views: Int,
-  likes: Int,
-  likedByMe: Boolean
+case class BlogSubscriptionDto(
+  spaceId: SpaceId,
+  principal: AnnettePrincipal
 )
 
-object PostMetric {
-  implicit val format: Format[PostMetric] = Json.format
+object BlogSubscriptionDto {
+  implicit val format: Format[BlogSubscriptionDto] = Json.format
 }

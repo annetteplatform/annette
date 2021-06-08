@@ -24,7 +24,7 @@ import io.scalaland.chimney.dsl._
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-import biz.lobachev.annette.cms.api.post._
+import biz.lobachev.annette.cms.api.post.{GetPostMetricPayload, _}
 import biz.lobachev.annette.cms.impl.post.dao.{PostCassandraDbDao, PostElasticIndexDao}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.elastic.FindResult
@@ -214,6 +214,9 @@ class PostEntityService(
       .ask[PostEntity.Confirmation](PostEntity.GetPostAnnotation(id, _))
       .map(convertSuccessPostAnnotation(_, id))
 
+  def canAccessToPost(payload: CanAccessToPostPayload): Future[Boolean] =
+    dbDao.canAccessToPost(payload.id, payload.principals)
+
   def addPostMedia(payload: AddPostMediaPayload): Future[Done] =
     refFor(payload.postId)
       .ask[PostEntity.Confirmation](replyTo =>
@@ -330,8 +333,10 @@ class PostEntityService(
 
   def unlikePost(payload: UnlikePostPayload): Future[Done] = dbDao.unlikePost(payload.id, payload.updatedBy)
 
-  def getPostMetricById(id: PostId): Future[PostMetric] = dbDao.getPostMetricById(id)
+  def getPostMetricById(payload: GetPostMetricPayload): Future[PostMetric] =
+    dbDao.getPostMetricById(payload.id, payload.principal)
 
-  def getPostMetricsById(ids: Set[PostId]): Future[Map[PostId, PostMetric]] = dbDao.getPostMetricsById(ids)
+  def getPostMetricsById(payload: GetPostMetricsPayload): Future[Map[PostId, PostMetric]] =
+    dbDao.getPostMetricsById(payload.ids, payload.principal)
 
 }

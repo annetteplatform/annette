@@ -34,11 +34,14 @@ import biz.lobachev.annette.application.api.{ApplicationServiceApi, ApplicationS
 import biz.lobachev.annette.application.gateway.ApplicationController
 import biz.lobachev.annette.authorization.api.{AuthorizationServiceApi, AuthorizationServiceImpl}
 import biz.lobachev.annette.authorization.gateway.AuthorizationController
+import biz.lobachev.annette.cms.api.{CmsServiceApi, CmsServiceImpl}
+import biz.lobachev.annette.cms.gateway.CmsViewController
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.org_structure.api.{OrgStructureServiceApi, OrgStructureServiceImpl}
 import biz.lobachev.annette.org_structure.gateway.OrgStructureController
 import biz.lobachev.annette.person.gateway.PersonController
 import biz.lobachev.annette.persons.api.{PersonServiceApi, PersonServiceImpl}
+import biz.lobachev.annette.subscription.api.{SubscriptionServiceApi, SubscriptionServiceImpl}
 import com.lightbend.lagom.scaladsl.api.{LagomConfigComponent, ServiceAcl, ServiceInfo}
 import com.lightbend.lagom.scaladsl.client.LagomServiceClientComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
@@ -107,16 +110,28 @@ abstract class ServiceGateway(context: Context)
   lazy val personController        = wire[PersonController]
   lazy val orgStructureController  = wire[OrgStructureController]
   lazy val applicationController   = wire[ApplicationController]
+  lazy val blogViewController      = wire[CmsViewController]
 
   lazy val authorizationServiceApi = serviceClient.implement[AuthorizationServiceApi]
   lazy val authorizationService    = wire[AuthorizationServiceImpl]
-  lazy val orgStructureServiceApi  = serviceClient.implement[OrgStructureServiceApi]
-  lazy val orgStructureService     = wire[OrgStructureServiceImpl]
-  lazy val personServiceApi        = serviceClient.implement[PersonServiceApi]
-  lazy val personService           = wire[PersonServiceImpl]
+
+  lazy val orgStructureServiceApi = serviceClient.implement[OrgStructureServiceApi]
+  lazy val orgStructureService    = wire[OrgStructureServiceImpl]
+
+  lazy val personServiceApi = serviceClient.implement[PersonServiceApi]
+  lazy val personService    = wire[PersonServiceImpl]
 
   lazy val applicationServiceApi = serviceClient.implement[ApplicationServiceApi]
   lazy val applicationService    = wire[ApplicationServiceImpl]
+
+//  lazy val principalGroupServiceApi = serviceClient.implement[PrincipalGroupsServiceApi]
+//  lazy val principalGroupService    = wire[PrincipalGroupServiceImpl]
+
+  lazy val subscriptionServiceApi = serviceClient.implement[SubscriptionServiceApi]
+  lazy val subscriptionService    = wire[SubscriptionServiceImpl]
+
+  lazy val cmsServiceApi = serviceClient.implement[CmsServiceApi]
+  lazy val cmsService    = wire[CmsServiceImpl]
 
 }
 

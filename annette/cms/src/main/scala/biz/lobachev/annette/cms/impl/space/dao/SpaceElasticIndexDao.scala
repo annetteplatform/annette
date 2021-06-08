@@ -64,6 +64,7 @@ class SpaceElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Elas
           "spaceType"   -> event.spaceType.toString,
           "categoryId"  -> event.categoryId,
           "targets"     -> event.targets.map(_.code),
+          "active" -> true,
           "updatedBy"   -> event.createdBy.code,
           "updatedAt"   -> event.createdAt
         )

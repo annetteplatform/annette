@@ -94,22 +94,18 @@ object SpaceEntity {
 
   final case class GetSpace(id: SpaceId, replyTo: ActorRef[Confirmation]) extends Command
 
-  final case class GetSpaceAnnotation(id: SpaceId, replyTo: ActorRef[Confirmation]) extends Command
-
   sealed trait Confirmation
-  final case object Success                                                 extends Confirmation
-  final case class SuccessSpace(space: Space)                               extends Confirmation
-  final case class SuccessSpaceAnnotation(spaceAnnotation: SpaceAnnotation) extends Confirmation
-  final case class SuccessTargets(targets: Set[AnnettePrincipal])           extends Confirmation
-  final case object SpaceAlreadyExist                                       extends Confirmation
-  final case object SpaceNotFound                                           extends Confirmation
+  final case object Success                                       extends Confirmation
+  final case class SuccessSpace(space: Space)                     extends Confirmation
+  final case class SuccessTargets(targets: Set[AnnettePrincipal]) extends Confirmation
+  final case object SpaceAlreadyExist                             extends Confirmation
+  final case object SpaceNotFound                                 extends Confirmation
 
-  implicit val confirmationSuccessFormat: Format[Success.type]                          = Json.format
-  implicit val confirmationSuccessSpaceFormat: Format[SuccessSpace]                     = Json.format
-  implicit val confirmationSuccessSpaceAnnotationFormat: Format[SuccessSpaceAnnotation] = Json.format
-  implicit val confirmationSuccessTargetsFormat: Format[SuccessTargets]                 = Json.format
-  implicit val confirmationSpaceAlreadyExistFormat: Format[SpaceAlreadyExist.type]      = Json.format
-  implicit val confirmationSpaceNotFoundFormat: Format[SpaceNotFound.type]              = Json.format
+  implicit val confirmationSuccessFormat: Format[Success.type]                     = Json.format
+  implicit val confirmationSuccessSpaceFormat: Format[SuccessSpace]                = Json.format
+  implicit val confirmationSuccessTargetsFormat: Format[SuccessTargets]            = Json.format
+  implicit val confirmationSpaceAlreadyExistFormat: Format[SpaceAlreadyExist.type] = Json.format
+  implicit val confirmationSpaceNotFoundFormat: Format[SpaceNotFound.type]         = Json.format
 
   sealed trait Event extends AggregateEvent[Event] {
     override def aggregateTag: AggregateEventTagger[Event] = Event.Tag
@@ -221,7 +217,6 @@ final case class SpaceEntity(maybeState: Option[SpaceState] = None) {
       case cmd: DeactivateSpace              => deactivateSpace(cmd)
       case cmd: DeleteSpace                  => deleteSpace(cmd)
       case cmd: GetSpace                     => getSpace(cmd)
-      case cmd: GetSpaceAnnotation           => getSpaceAnnotation(cmd)
     }
 
   def createSpace(cmd: CreateSpace): ReplyEffect[Event, SpaceEntity] =
@@ -325,12 +320,6 @@ final case class SpaceEntity(maybeState: Option[SpaceState] = None) {
     maybeState match {
       case None        => Effect.reply(cmd.replyTo)(SpaceNotFound)
       case Some(state) => Effect.reply(cmd.replyTo)(SuccessSpace(state.transformInto[Space]))
-    }
-
-  def getSpaceAnnotation(cmd: GetSpaceAnnotation): ReplyEffect[Event, SpaceEntity] =
-    maybeState match {
-      case None        => Effect.reply(cmd.replyTo)(SpaceNotFound)
-      case Some(state) => Effect.reply(cmd.replyTo)(SuccessSpaceAnnotation(state.transformInto[SpaceAnnotation]))
     }
 
   def applyEvent(event: Event): SpaceEntity =
