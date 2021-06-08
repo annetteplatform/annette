@@ -82,6 +82,9 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   ): Future[Map[SpaceId, SpaceView]] =
     api.getSpaceViews.invoke(payload)
 
+  override def canAccessToSpace(payload: CanAccessToSpacePayload): Future[Boolean] =
+    api.canAccessToSpace.invoke(payload)
+
   override def findSpaces(query: SpaceFindQuery): Future[FindResult] =
     api.findSpaces.invoke(query)
 

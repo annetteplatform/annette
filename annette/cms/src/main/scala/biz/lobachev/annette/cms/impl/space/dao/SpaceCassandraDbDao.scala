@@ -344,7 +344,20 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
       result   <- session.selectAll(stmt.bind(spaceIds.toList.asJava)).map(_.map(convertSpaceView))
     } yield result.map(a => a.id -> a).toMap
 
-  private def convertSpace(row: Row): Space                                                                =
+  def canAccessToSpace(id: SpaceId, principals: Set[AnnettePrincipal]): Future[Boolean]                    =
+    for {
+      stmt  <- session.prepare("SELECT count(*) FROM space_targets WHERE space_id=:id AND principal IN :principals")
+      count <- session
+                 .selectOne(
+                   stmt
+                     .bind()
+                     .setString("id", id)
+                     .setList("principals", principals.map(_.code).toList.asJava)
+                 )
+                 .map(_.map(_.getLong("count").toInt).getOrElse(0))
+    } yield count > 0
+
+  private def convertSpace(row: Row): Space =
     Space(
       id = row.getString("id"),
       name = row.getString("name"),

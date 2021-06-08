@@ -148,6 +148,11 @@ class CmsServiceApiImpl(
       spaceEntityService.getSpaceViews(payload)
     }
 
+  override def canAccessToSpace: ServiceCall[CanAccessToSpacePayload, Boolean] =
+    ServiceCall { payload =>
+      spaceEntityService.canAccessToSpace(payload)
+    }
+
   override def findSpaces: ServiceCall[SpaceFindQuery, FindResult] =
     ServiceCall { query =>
       spaceEntityService.findSpaces(query)

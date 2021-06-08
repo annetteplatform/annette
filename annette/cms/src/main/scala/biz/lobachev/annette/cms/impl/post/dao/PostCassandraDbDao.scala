@@ -747,7 +747,6 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
                      .setList("principals", principals.map(_.code).toList.asJava)
                  )
                  .map(_.map(_.getLong("count").toInt).getOrElse(0))
-
     } yield count > 0
 
   private def convertPost(row: Row): Post = {

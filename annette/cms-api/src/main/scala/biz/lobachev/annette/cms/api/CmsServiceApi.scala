@@ -47,6 +47,7 @@ trait CmsServiceApi extends Service {
   def getSpaceById(id: SpaceId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Space]
   def getSpacesById(fromReadSide: Boolean = true): ServiceCall[Set[SpaceId], Map[SpaceId, Space]]
   def getSpaceViews: ServiceCall[GetSpaceViewsPayload, Map[SpaceId, SpaceView]]
+  def canAccessToSpace: ServiceCall[CanAccessToSpacePayload, Boolean]
   def findSpaces: ServiceCall[SpaceFindQuery, FindResult]
 
   def createPost: ServiceCall[CreatePostPayload, Done]

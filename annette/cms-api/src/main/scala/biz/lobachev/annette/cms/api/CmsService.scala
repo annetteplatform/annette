@@ -46,6 +46,7 @@ trait CmsService {
   def getSpaceById(id: SpaceId, fromReadSide: Boolean = true): Future[Space]
   def getSpacesById(ids: Set[SpaceId], fromReadSide: Boolean = true): Future[Map[SpaceId, Space]]
   def getSpaceViews(payload: GetSpaceViewsPayload): Future[Map[SpaceId, SpaceView]]
+  def canAccessToSpace(payload: CanAccessToSpacePayload): Future[Boolean]
   def findSpaces(payload: SpaceFindQuery): Future[FindResult]
 
   def createPost(payload: CreatePostPayload): Future[Done]

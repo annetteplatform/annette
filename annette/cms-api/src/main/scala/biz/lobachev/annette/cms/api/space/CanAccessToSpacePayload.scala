@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.api.post
+package biz.lobachev.annette.cms.api.space
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import play.api.libs.json.{Format, Json}
 
-case class CanAccessToPostPayload(
-  id: PostId,
+case class CanAccessToSpacePayload(
+  id: SpaceId,
   principals: Set[AnnettePrincipal]
 )
-
-object CanAccessToPostPayload {
-  implicit val format: Format[CanAccessToPostPayload] = Json.format
-}

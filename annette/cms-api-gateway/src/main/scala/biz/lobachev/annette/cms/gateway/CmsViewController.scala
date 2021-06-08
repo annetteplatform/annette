@@ -78,23 +78,23 @@ class CmsViewController @Inject() (
     authenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         for {
-          spaceExist <- cmsService
-                          .getSpaceViews(
-                            GetSpaceViewsPayload(
-                              ids = Set(spaceId),
-                              principals = request.subject.principals.toSet
-                            )
-                          )
-                          .map(_.contains(spaceId))
-          _           = if (!spaceExist) throw SpaceNotFound(spaceId)
-          _          <- subscriptionService.createSubscription(
-                          CreateSubscriptionPayload(
-                            blogSubscriptionType,
-                            spaceId,
-                            request.subject.principals.head,
-                            request.subject.principals.head
-                          )
-                        )
+          canAccessToSpace <- cmsService
+                                .canAccessToSpace(
+                                  CanAccessToSpacePayload(
+                                    id = spaceId,
+                                    principals = request.subject.principals.toSet
+                                  )
+                                )
+
+          _                 = if (!canAccessToSpace) throw SpaceNotFound(spaceId)
+          _                <- subscriptionService.createSubscription(
+                                CreateSubscriptionPayload(
+                                  blogSubscriptionType,
+                                  spaceId,
+                                  request.subject.principals.head,
+                                  request.subject.principals.head
+                                )
+                              )
         } yield Ok("")
       }
     }

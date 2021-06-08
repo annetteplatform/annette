@@ -181,6 +181,9 @@ class SpaceEntityService(
   def getSpaceViews(payload: GetSpaceViewsPayload): Future[Map[SpaceId, SpaceView]]        =
     dbDao.getSpaceViews(payload.ids, payload.principals)
 
+  def canAccessToSpace(payload: CanAccessToSpacePayload): Future[Boolean] =
+    dbDao.canAccessToSpace(payload.id, payload.principals)
+
   def findSpaces(query: SpaceFindQuery): Future[FindResult] = indexDao.findSpaces(query)
 
 }

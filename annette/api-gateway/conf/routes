@@ -108,7 +108,7 @@ POST    /api/annette/v1/cms/view/getPostViews      biz.lobachev.annette.cms.gate
 POST    /api/annette/v1/cms/view/viewPost/:postId       biz.lobachev.annette.cms.gateway.CmsViewController.viewPost(postId: String)
 POST    /api/annette/v1/cms/view/likePost/:postId       biz.lobachev.annette.cms.gateway.CmsViewController.likePost(postId: String)
 POST    /api/annette/v1/cms/view/unlikePost/:postId       biz.lobachev.annette.cms.gateway.CmsViewController.unlikePost(postId: String)
-GET    /api/annette/v1/cms/view/getPostMetricById/:postId       biz.lobachev.annette.cms.gateway.CmsViewController.getPostMetricById(postId: String)
+GET     /api/annette/v1/cms/view/getPostMetricById/:postId       biz.lobachev.annette.cms.gateway.CmsViewController.getPostMetricById(postId: String)
 POST    /api/annette/v1/cms/view/getPostMetricsById        biz.lobachev.annette.cms.gateway.CmsViewController.getPostMetricsById
 POST    /api/annette/v1/cms/view/findSpaces        biz.lobachev.annette.cms.gateway.CmsViewController.findSpaces
 POST    /api/annette/v1/cms/view/getSpaces         biz.lobachev.annette.cms.gateway.CmsViewController.getSpaces
