@@ -21,7 +21,9 @@ import play.api.libs.json.{Format, Json}
 
 case class GetPostViewsPayload(
   ids: Set[PostId],
-  principals: Set[AnnettePrincipal]
+  directPrincipal: AnnettePrincipal,
+  principals: Set[AnnettePrincipal],
+  withContent: Boolean
 )
 
 object GetPostViewsPayload {

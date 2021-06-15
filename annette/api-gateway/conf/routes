@@ -103,20 +103,24 @@ GET     /api/annette/v1/person/profile       biz.lobachev.annette.person.gateway
 
 
 # CMS API
-POST    /api/annette/v1/cms/view/findBlogPosts     biz.lobachev.annette.cms.gateway.CmsViewController.findBlogPosts
-POST    /api/annette/v1/cms/view/getPostViews      biz.lobachev.annette.cms.gateway.CmsViewController.getPostViews
-POST    /api/annette/v1/cms/view/viewPost/:postId       biz.lobachev.annette.cms.gateway.CmsViewController.viewPost(postId: String)
-POST    /api/annette/v1/cms/view/likePost/:postId       biz.lobachev.annette.cms.gateway.CmsViewController.likePost(postId: String)
-POST    /api/annette/v1/cms/view/unlikePost/:postId       biz.lobachev.annette.cms.gateway.CmsViewController.unlikePost(postId: String)
-GET     /api/annette/v1/cms/view/getPostMetricById/:postId       biz.lobachev.annette.cms.gateway.CmsViewController.getPostMetricById(postId: String)
-POST    /api/annette/v1/cms/view/getPostMetricsById        biz.lobachev.annette.cms.gateway.CmsViewController.getPostMetricsById
-POST    /api/annette/v1/cms/view/findSpaces        biz.lobachev.annette.cms.gateway.CmsViewController.findSpaces
-POST    /api/annette/v1/cms/view/getSpaces         biz.lobachev.annette.cms.gateway.CmsViewController.getSpaces
-POST    /api/annette/v1/cms/view/findMyBlogSubscriptions         biz.lobachev.annette.cms.gateway.CmsViewController.findMyBlogSubscriptions
-POST    /api/annette/v1/cms/view/subscribeToSpace/:spaceId       biz.lobachev.annette.cms.gateway.CmsViewController.subscribeToSpace(spaceId: String)
-POST    /api/annette/v1/cms/view/unsubscribeFromSpace/:spaceId   biz.lobachev.annette.cms.gateway.CmsViewController.unsubscribeFromSpace(spaceId: String)
-POST    /api/annette/v1/cms/view/findCategories        biz.lobachev.annette.cms.gateway.CmsViewController.findCategories
-POST    /api/annette/v1/cms/view/getCategories         biz.lobachev.annette.cms.gateway.CmsViewController.getCategories
+POST    /api/annette/v1/cms/findPostViews                   biz.lobachev.annette.cms.gateway.CmsViewController.findPostViews
+POST    /api/annette/v1/cms/getPostViewAnnotationsById      biz.lobachev.annette.cms.gateway.CmsViewController.getPostViewAnnotationsById
+POST    /api/annette/v1/cms/getPostViewsById                biz.lobachev.annette.cms.gateway.CmsViewController.getPostViewsById
+GET     /api/annette/v1/cms/getPostViewById/:postId         biz.lobachev.annette.cms.gateway.CmsViewController.getPostViewById(postId: String)
+POST    /api/annette/v1/cms/viewPost/:postId                biz.lobachev.annette.cms.gateway.CmsViewController.viewPost(postId: String)
+POST    /api/annette/v1/cms/likePost/:postId                biz.lobachev.annette.cms.gateway.CmsViewController.likePost(postId: String)
+POST    /api/annette/v1/cms/unlikePost/:postId              biz.lobachev.annette.cms.gateway.CmsViewController.unlikePost(postId: String)
+POST    /api/annette/v1/cms/findSpaceViews                  biz.lobachev.annette.cms.gateway.CmsViewController.findSpaceViews
+POST    /api/annette/v1/cms/getSpaceViewsById                biz.lobachev.annette.cms.gateway.CmsViewController.getSpaceViewsById
+POST    /api/annette/v1/cms/subscribeToSpace/:spaceId       biz.lobachev.annette.cms.gateway.CmsViewController.subscribeToSpace(spaceId: String)
+POST    /api/annette/v1/cms/unsubscribeFromSpace/:spaceId   biz.lobachev.annette.cms.gateway.CmsViewController.unsubscribeFromSpace(spaceId: String)
+POST    /api/annette/v1/cms/createCategory                  biz.lobachev.annette.cms.gateway.CmsViewController.createCategory
+POST    /api/annette/v1/cms/updateCategory                  biz.lobachev.annette.cms.gateway.CmsViewController.updateCategory
+POST    /api/annette/v1/cms/deleteCategory                  biz.lobachev.annette.cms.gateway.CmsViewController.deleteCategory
+GET     /api/annette/v1/cms/getCategoryById/:id             biz.lobachev.annette.cms.gateway.CmsViewController.getCategoryById(id: String)
+GET     /api/annette/v1/cms/getCategoryByIdForEdit/:id      biz.lobachev.annette.cms.gateway.CmsViewController.getCategoryByIdForEdit(id: String)
+POST    /api/annette/v1/cms/getCategoriesById               biz.lobachev.annette.cms.gateway.CmsViewController.getCategoriesById
+POST    /api/annette/v1/cms/findCategories                  biz.lobachev.annette.cms.gateway.CmsViewController.findCategories
 
 
 

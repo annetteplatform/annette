@@ -29,9 +29,10 @@ case class PostView(
   authorId: AnnettePrincipal,
   title: String,
   introContent: PostContent,
-  content: PostContent,
+  content: Option[PostContent] = None,
   publicationStatus: PublicationStatus.PublicationStatus = PublicationStatus.Draft,
   publicationTimestamp: Option[OffsetDateTime] = None,
+  metric: Option[PostMetric] = None,
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
 )

@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway
+package biz.lobachev.annette.cms.gateway.dto
 
-import biz.lobachev.annette.core.model.auth.Permission
+import biz.lobachev.annette.cms.api.category.CategoryId
+import play.api.libs.json.{Format, Json}
 
-object Permissions {
-  final val VIEW_BLOGS  = Permission("annette.cms.blog.view")
-  final val VIEW_WIKIES = Permission("annette.cms.wiki.view")
+case class CategoryDto(
+  id: CategoryId,
+  name: String
+)
 
-  final val VIEW_ALL_SPACE_CATEGORIES     = Permission("annette.cms.category.view.all")
-  final val MAINTAIN_ALL_SPACE_CATEGORIES = Permission("annette.cms.category.maintain.all")
-
+object CategoryDto {
+  implicit val format: Format[CategoryDto] = Json.format
 }

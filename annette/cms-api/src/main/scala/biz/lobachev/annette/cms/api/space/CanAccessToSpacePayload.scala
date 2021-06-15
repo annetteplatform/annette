@@ -17,8 +17,13 @@
 package biz.lobachev.annette.cms.api.space
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import play.api.libs.json.{Format, Json}
 
 case class CanAccessToSpacePayload(
   id: SpaceId,
   principals: Set[AnnettePrincipal]
 )
+
+object CanAccessToSpacePayload {
+  implicit val format: Format[CanAccessToSpacePayload] = Json.format
+}

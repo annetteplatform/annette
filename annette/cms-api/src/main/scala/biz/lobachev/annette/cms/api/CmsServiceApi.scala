@@ -106,6 +106,7 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/getSpaceById/:id/:fromReadSide", getSpaceById _),
         pathCall("/api/cms/v1/getSpacesById/:fromReadSide", getSpacesById _),
         pathCall("/api/cms/v1/getSpaceViews", getSpaceViews),
+        pathCall("/api/cms/v1/canAccessToSpace", canAccessToSpace),
         pathCall("/api/cms/v1/findSpaces", findSpaces),
         pathCall("/api/cms/v1/createPost", createPost),
         pathCall("/api/cms/v1/updatePostFeatured", updatePostFeatured),

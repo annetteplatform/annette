@@ -19,9 +19,16 @@ package biz.lobachev.annette.cms.gateway
 import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.CmsService
-import biz.lobachev.annette.cms.api.category.{CategoryFindQuery, CategoryId}
+import biz.lobachev.annette.cms.api.category.{
+  CategoryFindQuery,
+  CategoryId,
+  CreateCategoryPayload,
+  DeleteCategoryPayload,
+  UpdateCategoryPayload
+}
 import biz.lobachev.annette.cms.api.post._
 import biz.lobachev.annette.cms.api.space._
+import biz.lobachev.annette.cms.gateway.Permissions.{MAINTAIN_ALL_SPACE_CATEGORIES, VIEW_ALL_SPACE_CATEGORIES}
 import biz.lobachev.annette.cms.gateway.dto._
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.elastic.{FindResult, SortBy}
@@ -49,104 +56,13 @@ class CmsViewController @Inject() (
   implicit val ec: ExecutionContext
 ) extends AbstractController(cc) {
 
-  val blogSubscriptionType = "blog"
+  val spaceSubscriptionType = "space"
 
 //  private val log = LoggerFactory.getLogger(this.getClass)
 
-  def findMyBlogSubscriptions =
-    authenticated.async(parse.json[SubscriptionFindQueryDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
-        val payload = request.request.body
-        val query   = payload
-          .into[SubscriptionFindQuery]
-          .withFieldConst(_.principals, Some(request.subject.principals.toSet))
-          .withFieldConst(_.subscriptionType, Some(Set(blogSubscriptionType)))
-          .withFieldComputed(_.objects, _.spaceIds)
-          .transform
+  // ****************************** PostView ******************************
 
-        for {
-          result <- subscriptionService.findSubscriptions(query)
-        } yield Ok(
-          Json.toJson(
-            result.hits.map(hit => BlogSubscriptionDto(hit.subscription.objectId, hit.subscription.principal))
-          )
-        )
-      }
-    }
-
-  def subscribeToSpace(spaceId: SpaceId) =
-    authenticated.async { implicit request =>
-      authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
-        for {
-          canAccessToSpace <- cmsService
-                                .canAccessToSpace(
-                                  CanAccessToSpacePayload(
-                                    id = spaceId,
-                                    principals = request.subject.principals.toSet
-                                  )
-                                )
-
-          _                 = if (!canAccessToSpace) throw SpaceNotFound(spaceId)
-          _                <- subscriptionService.createSubscription(
-                                CreateSubscriptionPayload(
-                                  blogSubscriptionType,
-                                  spaceId,
-                                  request.subject.principals.head,
-                                  request.subject.principals.head
-                                )
-                              )
-        } yield Ok("")
-      }
-    }
-
-  def unsubscribeFromSpace(spaceId: SpaceId) =
-    authenticated.async { implicit request =>
-      authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
-        for {
-          _ <- subscriptionService.deleteSubscription(
-                 DeleteSubscriptionPayload(
-                   blogSubscriptionType,
-                   spaceId,
-                   request.subject.principals.head,
-                   request.subject.principals.head
-                 )
-               )
-        } yield Ok("")
-      }
-    }
-
-  def findSpaces: Action[SpaceFindQueryDto] =
-    authenticated.async(parse.json[SpaceFindQueryDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.VIEW_BLOGS, Permissions.VIEW_WIKIES) {
-        val payload = request.request.body
-        val query   = payload
-          .into[SpaceFindQuery]
-          .withFieldConst(_.targets, Some(request.subject.principals.toSet))
-          .withFieldConst(_.active, Some(true))
-          .transform
-
-        for {
-          result <- cmsService.findSpaces(query)
-        } yield Ok(Json.toJson(result))
-      }
-    }
-
-  def getSpaces =
-    authenticated.async(parse.json[Set[SpaceId]]) { implicit request =>
-      authorizer.performCheckAny(Permissions.VIEW_BLOGS, Permissions.VIEW_WIKIES) {
-        val ids = request.request.body
-        for {
-          result <- cmsService.getSpaceViews(
-                      GetSpaceViewsPayload(
-                        ids = ids,
-                        principals = request.subject.principals.toSet
-                      )
-                    )
-        } yield Ok(Json.toJson(result))
-      }
-    }
-
-  def findBlogPosts: Action[PostFindQueryDto] =
+  def findPostViews: Action[PostFindQueryDto] =
     authenticated.async(parse.json[PostFindQueryDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         val payload = request.request.body
@@ -176,7 +92,24 @@ class CmsViewController @Inject() (
       }
     }
 
-  def getPostViews =
+  def getPostViewAnnotationsById =
+    authenticated.async(parse.json[Set[PostId]]) { implicit request =>
+      authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
+        val ids = request.request.body
+        for {
+          postViewAnnotations <- cmsService.getPostViews(
+                                   GetPostViewsPayload(
+                                     ids = ids,
+                                     directPrincipal = request.subject.principals.head,
+                                     principals = request.subject.principals.toSet,
+                                     false
+                                   )
+                                 )
+        } yield Ok(Json.toJson(postViewAnnotations))
+      }
+    }
+
+  def getPostViewsById =
     authenticated.async(parse.json[Set[PostId]]) { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         val ids = request.request.body
@@ -184,29 +117,28 @@ class CmsViewController @Inject() (
           result <- cmsService.getPostViews(
                       GetPostViewsPayload(
                         ids = ids,
-                        principals = request.subject.principals.toSet
+                        directPrincipal = request.subject.principals.head,
+                        principals = request.subject.principals.toSet,
+                        withContent = true
                       )
                     )
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def findCategories: Action[CategoryFindQuery] =
-    authenticated.async(parse.json[CategoryFindQuery]) { implicit request =>
-      authorizer.performCheckAny(Permissions.VIEW_BLOGS, Permissions.VIEW_WIKIES) {
+  def getPostViewById(postId: PostId) =
+    authenticated.async { implicit request =>
+      authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         for {
-          result <- cmsService.findCategories(request.request.body)
-        } yield Ok(Json.toJson(result))
-      }
-    }
-
-  def getCategories =
-    authenticated.async(parse.json[Set[CategoryId]]) { implicit request =>
-      authorizer.performCheckAny(Permissions.VIEW_BLOGS, Permissions.VIEW_WIKIES) {
-        for {
-          result <- cmsService.getCategoriesById(request.request.body, true)
-
-        } yield Ok(Json.toJson(result))
+          result <- cmsService.getPostViews(
+                      GetPostViewsPayload(
+                        ids = Set(postId),
+                        directPrincipal = request.subject.principals.head,
+                        principals = request.subject.principals.toSet,
+                        withContent = true
+                      )
+                    )
+        } yield Ok(Json.toJson(result.get(postId).getOrElse(throw PostNotFound(postId))))
       }
     }
 
@@ -264,34 +196,6 @@ class CmsViewController @Inject() (
       }
     }
 
-  def getPostMetricById(id: PostId) =
-    authenticated.async { implicit request =>
-      authorizer.performCheckAny(Permissions.VIEW_BLOGS, Permissions.VIEW_WIKIES) {
-        for {
-          canAccess <- cmsService.canAccessToPost(
-                         CanAccessToPostPayload(
-                           id,
-                           request.subject.principals.toSet
-                         )
-                       )
-          result    <- if (canAccess)
-                         cmsService.getPostMetricById(GetPostMetricPayload(id, request.subject.principals.head))
-                       else Future.failed(PostNotFound(id))
-        } yield Ok(Json.toJson(result))
-      }
-    }
-
-  def getPostMetricsById =
-    authenticated.async(parse.json[Set[PostId]]) { implicit request =>
-      authorizer.performCheckAny(Permissions.VIEW_BLOGS, Permissions.VIEW_WIKIES) {
-        for {
-          result <- cmsService.getPostMetricsById(
-                      GetPostMetricsPayload(request.request.body, request.subject.principals.head)
-                    )
-        } yield Ok(Json.toJson(result))
-      }
-    }
-
   private def getLimitedSpaces(spaces: Set[SpaceId], targets: Set[AnnettePrincipal]): Future[Set[SpaceId]] =
     if (spaces.nonEmpty)
       // restrict spaces that user has access
@@ -313,7 +217,7 @@ class CmsViewController @Inject() (
         subscriptions     <- subscriptionService.findSubscriptions(
                                SubscriptionFindQuery(
                                  size = 100,
-                                 subscriptionType = Some(Set(blogSubscriptionType)),
+                                 subscriptionType = Some(Set(spaceSubscriptionType)),
                                  principals = Some(targets)
                                )
                              )
@@ -332,5 +236,178 @@ class CmsViewController @Inject() (
                                  .map(_.hits.map(_.id).toSet)
                              else Future.successful(Set.empty[SpaceId])
       } yield result
+
+  // ****************************** Spaces ******************************
+
+  def findSpaceViews: Action[SpaceFindQueryDto] =
+    authenticated.async(parse.json[SpaceFindQueryDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.VIEW_BLOGS, Permissions.VIEW_WIKIES) {
+        val payload = request.request.body
+        val query   = payload
+          .into[SpaceFindQuery]
+          .withFieldConst(_.targets, Some(request.subject.principals.toSet))
+          .withFieldConst(_.active, Some(true))
+          .transform
+
+        for {
+          result <- cmsService.findSpaces(query)
+        } yield Ok(Json.toJson(result))
+      }
+    }
+
+  def getSpaceViewsById =
+    authenticated.async(parse.json[Set[SpaceId]]) { implicit request =>
+      authorizer.performCheckAny(Permissions.VIEW_BLOGS, Permissions.VIEW_WIKIES) {
+        val ids                = request.request.body
+        val spaceFuture        = cmsService.getSpaceViews(
+          GetSpaceViewsPayload(
+            ids = ids,
+            principals = request.subject.principals.toSet
+          )
+        )
+        val subscriptionFuture = subscriptionService.findSubscriptions(
+          SubscriptionFindQuery(
+            size = 1000,
+            principals = Some(request.subject.principals.toSet),
+            subscriptionType = Some(Set(spaceSubscriptionType)),
+            objects = Some(ids)
+          )
+        )
+        for {
+          spaces         <- spaceFuture
+          subscriptions  <- subscriptionFuture
+          subscriptionMap = subscriptions.hits
+                              .map(_.subscription)
+                              .toSet
+                              .groupMap[String, AnnettePrincipal](_.objectId)(_.principal)
+          result          = spaces.view
+                              .mapValues(sv =>
+                                sv.into[SpaceViewDto]
+                                  .withFieldConst(_.subscriptions, subscriptionMap.get(sv.id).getOrElse(Set.empty))
+                                  .transform
+                              )
+        } yield Ok(Json.toJson(result))
+      }
+    }
+
+  def subscribeToSpace(spaceId: SpaceId) =
+    authenticated.async { implicit request =>
+      authorizer.performCheckAny(Permissions.VIEW_BLOGS, Permissions.VIEW_WIKIES) {
+        for {
+          canAccessToSpace <- cmsService
+                                .canAccessToSpace(
+                                  CanAccessToSpacePayload(
+                                    id = spaceId,
+                                    principals = request.subject.principals.toSet
+                                  )
+                                )
+
+          _                 = if (!canAccessToSpace) throw SpaceNotFound(spaceId)
+          _                <- subscriptionService.createSubscription(
+                                CreateSubscriptionPayload(
+                                  spaceSubscriptionType,
+                                  spaceId,
+                                  request.subject.principals.head,
+                                  request.subject.principals.head
+                                )
+                              )
+        } yield Ok("")
+      }
+    }
+
+  def unsubscribeFromSpace(spaceId: SpaceId) =
+    authenticated.async { implicit request =>
+      authorizer.performCheckAny(Permissions.VIEW_BLOGS, Permissions.VIEW_WIKIES) {
+        for {
+          _ <- subscriptionService.deleteSubscription(
+                 DeleteSubscriptionPayload(
+                   spaceSubscriptionType,
+                   spaceId,
+                   request.subject.principals.head,
+                   request.subject.principals.head
+                 )
+               )
+        } yield Ok("")
+      }
+    }
+
+  // ****************************** Categories ******************************
+
+  def createCategory =
+    authenticated.async(parse.json[CategoryDto]) { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_SPACE_CATEGORIES) {
+        val payload = request.body
+          .into[CreateCategoryPayload]
+          .withFieldConst(_.createdBy, request.subject.principals.head)
+          .transform
+        for {
+          _    <- cmsService.createCategory(payload)
+          role <- cmsService.getCategoryById(payload.id, false)
+        } yield Ok(Json.toJson(role))
+      }
+    }
+
+  def updateCategory =
+    authenticated.async(parse.json[CategoryDto]) { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_SPACE_CATEGORIES) {
+        val payload = request.body
+          .into[UpdateCategoryPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _    <- cmsService.updateCategory(payload)
+          role <- cmsService.getCategoryById(payload.id, false)
+        } yield Ok(Json.toJson(role))
+      }
+    }
+
+  def deleteCategory =
+    authenticated.async(parse.json[DeleteCategoryDto]) { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_SPACE_CATEGORIES) {
+        val payload = request.body
+          .into[DeleteCategoryPayload]
+          .withFieldConst(_.deletedBy, request.subject.principals.head)
+          .transform
+        for {
+          _ <- cmsService.deleteCategory(payload)
+        } yield Ok("")
+      }
+    }
+
+  def getCategoryById(id: CategoryId) =
+    authenticated.async { implicit request =>
+      authorizer.performCheckAny(VIEW_ALL_SPACE_CATEGORIES, MAINTAIN_ALL_SPACE_CATEGORIES) {
+        for {
+          role <- cmsService.getCategoryById(id, true)
+        } yield Ok(Json.toJson(role))
+      }
+    }
+
+  def getCategoryByIdForEdit(id: CategoryId) =
+    authenticated.async { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_SPACE_CATEGORIES) {
+        for {
+          role <- cmsService.getCategoryById(id, false)
+        } yield Ok(Json.toJson(role))
+      }
+    }
+
+  def findCategories: Action[CategoryFindQuery] =
+    authenticated.async(parse.json[CategoryFindQuery]) { implicit request =>
+      authorizer.performCheckAny(VIEW_ALL_SPACE_CATEGORIES, MAINTAIN_ALL_SPACE_CATEGORIES) {
+        for {
+          result <- cmsService.findCategories(request.request.body)
+        } yield Ok(Json.toJson(result))
+      }
+    }
+
+  def getCategoriesById =
+    authenticated.async(parse.json[Set[CategoryId]]) { implicit request =>
+      authorizer.performCheckAny(VIEW_ALL_SPACE_CATEGORIES, MAINTAIN_ALL_SPACE_CATEGORIES) {
+        for {
+          result <- cmsService.getCategoriesById(request.request.body, true)
+        } yield Ok(Json.toJson(result))
+      }
+    }
 
 }

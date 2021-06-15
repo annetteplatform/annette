@@ -57,6 +57,9 @@
       },
       {
         "id": "annette.application.language.maintain.all"
+      },
+      {
+        "id": "annette.cms.blog.view"
       }
     ]
   }

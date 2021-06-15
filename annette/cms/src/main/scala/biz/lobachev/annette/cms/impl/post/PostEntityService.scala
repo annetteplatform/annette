@@ -323,7 +323,7 @@ class PostEntityService(
         .map(_.flatten.map(a => a.id -> a).toMap)
 
   def getPostViews(payload: GetPostViewsPayload): Future[Map[PostId, PostView]] =
-    dbDao.getPostViews(payload.ids, payload.principals)
+    dbDao.getPostViewsById(payload)
 
   def findPosts(query: PostFindQuery): Future[FindResult] = indexDao.findPosts(query)
 

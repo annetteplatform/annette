@@ -31,7 +31,6 @@ import java.time.OffsetDateTime
 import scala.collection.immutable.{Seq, _}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
-import io.scalaland.chimney.dsl._
 
 private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
   ec: ExecutionContext,
@@ -696,13 +695,13 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
       maybeEntity <- session.selectOne(stmt.bind().setString("id", id)).map(_.map(convertPostAnnotation))
     } yield maybeEntity
 
-  def getPostsById(ids: Set[PostId]): Future[Map[PostId, Post]]                                        =
+  def getPostsById(ids: Set[PostId]): Future[Map[PostId, Post]]                       =
     Source(ids)
       .mapAsync(1)(getPostById)
       .runWith(Sink.seq)
       .map(_.flatten.map(a => a.id -> a).toMap)
 
-  def getPostAnnotationsById(ids: Set[PostId]): Future[Map[PostId, PostAnnotation]]                    =
+  def getPostAnnotationsById(ids: Set[PostId]): Future[Map[PostId, PostAnnotation]]   =
     for {
       stmt   <- session.prepare("""
                                 | SELECT id, space_id, featured, author_id_type, author_id_id,
@@ -712,29 +711,6 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
                                 |""".stripMargin)
       result <- session.selectAll(stmt.bind(ids.toList.asJava)).map(_.map(convertPostAnnotation))
     } yield result.map(a => a.id -> a).toMap
-
-  def getPostViews(ids: Set[PostId], principals: Set[AnnettePrincipal]): Future[Map[PostId, PostView]] =
-    for {
-      stmt    <- session.prepare("SELECT post_id FROM post_targets WHERE post_id IN :ids AND principal IN :principals")
-      postIds <- session
-                   .selectAll(
-                     stmt
-                       .bind()
-                       .setList("ids", ids.toList.asJava)
-                       .setList("principals", principals.map(_.code).toList.asJava)
-                   )
-                   .map(_.map(_.getString("post_id")).toSet)
-      stmt    <- session.prepare(" SELECT *  FROM posts WHERE id IN ?")
-      result  <- session.selectAll(stmt.bind(postIds.toList.asJava)).map(_.map(convertPost))
-
-    } yield result
-      .filter(post =>
-        post.publicationStatus == PublicationStatus.Published &&
-          post.publicationTimestamp.map(_.compareTo(OffsetDateTime.now) <= 0).getOrElse(true)
-      )
-      .map(_.transformInto[PostView])
-      .map(a => a.id -> a)
-      .toMap
 
   def canAccessToPost(id: PostId, principals: Set[AnnettePrincipal]): Future[Boolean] =
     for {
@@ -749,56 +725,114 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
                  .map(_.map(_.getLong("count").toInt).getOrElse(0))
     } yield count > 0
 
-  private def convertPost(row: Row): Post = {
-    val publicationStatus = row.getString("publication_status") match {
+  def getPostViewsById(payload: GetPostViewsPayload): Future[Map[PostId, PostView]] = {
+    val fields =
+      if (payload.withContent)
+        "id, space_id, featured, author_id_type, author_id_id, title, intro_content, content, publication_status, publication_timestamp, updated_at, updated_by_type, updated_by_id"
+      else
+        "id, space_id, featured, author_id_type, author_id_id, title, intro_content, publication_status, publication_timestamp, updated_at, updated_by_type, updated_by_id"
+
+    for {
+      allowedPostIds    <- getAllowedPostIds(payload.ids, payload.principals + payload.directPrincipal)
+      stmt              <- session.prepare(s" SELECT $fields  FROM posts WHERE id IN ?")
+      postViews         <- session
+                             .selectAll(stmt.bind(allowedPostIds.toList.asJava))
+                             .map(_.map(r => convertPostView(r, payload.withContent)))
+      publishedPostViews = postViews.filter(post =>
+                             post.publicationStatus == PublicationStatus.Published &&
+                               post.publicationTimestamp.map(_.compareTo(OffsetDateTime.now) <= 0).getOrElse(true)
+                           )
+      metrics           <- getPostMetricsById(publishedPostViews.map(_.id).toSet, payload.directPrincipal)
+
+    } yield publishedPostViews
+      .map(pv => pv.copy(metric = metrics.get(pv.id)))
+      .map(a => a.id -> a)
+      .toMap
+  }
+
+  private def getAllowedPostIds(ids: Set[PostId], principals: Set[AnnettePrincipal]): Future[Set[String]] =
+    for {
+      stmt    <- session.prepare("SELECT post_id FROM post_targets WHERE post_id IN :ids AND principal IN :principals")
+      postIds <- session
+                   .selectAll(
+                     stmt
+                       .bind()
+                       .setList("ids", ids.toList.asJava)
+                       .setList("principals", principals.map(_.code).toList.asJava)
+                   )
+                   .map(_.map(_.getString("post_id")).toSet)
+    } yield postIds
+
+  private def convertPostView(row: Row, withContent: Boolean): PostView = {
+    val publicationStatus = convertPublicationStatus(row)
+    val content           =
+      if (withContent) Some(Json.parse(row.getString("content")).as[PostContent])
+      else None
+    PostView(
+      id = row.getString("id"),
+      spaceId = row.getString("space_id"),
+      featured = row.getBool("featured"),
+      authorId = convertAnnettePrincipal(row, "author_id_type", "author_id_id"),
+      title = row.getString("title"),
+      introContent = Json.parse(row.getString("intro_content")).as[PostContent],
+      content = content,
+      publicationStatus = publicationStatus,
+      publicationTimestamp = Option(row.getString("publication_timestamp")).map(OffsetDateTime.parse),
+      updatedAt = OffsetDateTime.parse(row.getString("updated_at")),
+      updatedBy = convertAnnettePrincipal(row)
+    )
+  }
+
+  private def convertAnnettePrincipal(
+    row: Row,
+    typeField: String = "updated_by_type",
+    idField: String = "updated_by_id"
+  ) =
+    AnnettePrincipal(
+      principalType = row.getString(typeField),
+      principalId = row.getString(idField)
+    )
+
+  private def convertPublicationStatus(row: Row) =
+    row.getString("publication_status") match {
       case "published" => PublicationStatus.Published
       case _           => PublicationStatus.Draft
     }
+
+  private def convertPost(row: Row): Post = {
+    val publicationStatus = convertPublicationStatus(row)
     Post(
       id = row.getString("id"),
       spaceId = row.getString("space_id"),
       featured = row.getBool("featured"),
-      authorId = AnnettePrincipal(
-        principalType = row.getString("author_id_type"),
-        principalId = row.getString("author_id_id")
-      ),
+      authorId = convertAnnettePrincipal(row, "author_id_type", "author_id_id"),
       title = row.getString("title"),
       introContent = Json.parse(row.getString("intro_content")).as[PostContent],
       content = Json.parse(row.getString("content")).as[PostContent],
       publicationStatus = publicationStatus,
       publicationTimestamp = Option(row.getString("publication_timestamp")).map(OffsetDateTime.parse),
       updatedAt = OffsetDateTime.parse(row.getString("updated_at")),
-      updatedBy = AnnettePrincipal(
-        principalType = row.getString("updated_by_type"),
-        principalId = row.getString("updated_by_id")
-      )
+      updatedBy = convertAnnettePrincipal(row)
     )
   }
 
   private def convertPostAnnotation(row: Row): PostAnnotation = {
-    val publicationStatus = row.getString("publication_status") match {
-      case "published" => PublicationStatus.Published
-      case _           => PublicationStatus.Draft
-    }
+    val publicationStatus = convertPublicationStatus(row)
     PostAnnotation(
       id = row.getString("id"),
       spaceId = row.getString("space_id"),
       featured = row.getBool("featured"),
-      authorId = AnnettePrincipal(
-        principalType = row.getString("author_id_type"),
-        principalId = row.getString("author_id_id")
-      ),
+      authorId = convertAnnettePrincipal(row, "author_id_type", "author_id_id"),
       title = row.getString("title"),
       introContent = Json.parse(row.getString("intro_content")).as[PostContent],
       publicationStatus = publicationStatus,
       publicationTimestamp = Option(row.getString("publication_timestamp")).map(OffsetDateTime.parse),
       updatedAt = OffsetDateTime.parse(row.getString("updated_at")),
-      updatedBy = AnnettePrincipal(
-        principalType = row.getString("updated_by_type"),
-        principalId = row.getString("updated_by_id")
-      )
+      updatedBy = convertAnnettePrincipal(row)
     )
   }
+
+  // ***************************** metrics update *****************************
 
   def viewPost(id: PostId, principal: AnnettePrincipal): Future[Done] =
     session.executeWrite(
@@ -824,21 +858,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
         .setString("principal", principal.code)
     )
 
-  def getPostMetricById(id: PostId, principal: AnnettePrincipal): Future[PostMetric] =
-    for {
-      viewsStmt     <- session.prepare("SELECT count(*) from post_views where post_id =  :post_id")
-      views         <-
-        session.selectOne(viewsStmt.bind().setString("post_id", id)).map(_.map(_.getLong("count").toInt).getOrElse(0))
-      likesStmt     <- session.prepare("SELECT count(*) from post_likes where post_id =  :post_id")
-      likes         <-
-        session.selectOne(likesStmt.bind().setString("post_id", id)).map(_.map(_.getLong("count").toInt).getOrElse(0))
-      likedByMeStmt <-
-        session.prepare("SELECT count(*) from post_likes where post_id =  :post_id AND principal = :principal")
-      likedByMe     <- session
-                         .selectOne(likedByMeStmt.bind().setString("post_id", id).setString("principal", principal.code))
-                         .map(_.map(_.getLong("count") > 0).getOrElse(false))
-
-    } yield PostMetric(id, views, likes, likedByMe)
+  // ***************************** metrics *****************************
 
   def getPostMetricsById(ids: Set[PostId], principal: AnnettePrincipal): Future[Map[PostId, PostMetric]] =
     Source(ids)
@@ -846,6 +866,36 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
       .runWith(Sink.seq)
       .map(_.map(a => a.id -> a).toMap)
 
-  private def build(statements: BoundStatement*): Future[List[BoundStatement]]                           =
+  def getPostMetricById(id: PostId, principal: AnnettePrincipal): Future[PostMetric]                     =
+    for {
+      views     <- getPostViewsCountById(id)
+      likes     <- getPostLikesCountById(id)
+      likedByMe <- getPostLikedByMeById(id, principal)
+    } yield PostMetric(id, views, likes, likedByMe)
+
+  private def getPostViewsCountById(id: PostId): Future[Int] =
+    for {
+      viewsStmt <- session.prepare("SELECT count(*) from post_views where post_id =  :post_id")
+      views     <-
+        session.selectOne(viewsStmt.bind().setString("post_id", id)).map(_.map(_.getLong("count").toInt).getOrElse(0))
+    } yield views
+
+  private def getPostLikesCountById(id: PostId): Future[Int] =
+    for {
+      likesStmt <- session.prepare("SELECT count(*) from post_likes where post_id =  :post_id")
+      likes     <-
+        session.selectOne(likesStmt.bind().setString("post_id", id)).map(_.map(_.getLong("count").toInt).getOrElse(0))
+    } yield likes
+
+  private def getPostLikedByMeById(id: PostId, principal: AnnettePrincipal): Future[Boolean] =
+    for {
+      likedByMeStmt <-
+        session.prepare("SELECT count(*) from post_likes where post_id =  :post_id AND principal = :principal")
+      likedByMe     <- session
+                         .selectOne(likedByMeStmt.bind().setString("post_id", id).setString("principal", principal.code))
+                         .map(_.map(_.getLong("count") > 0).getOrElse(false))
+    } yield likedByMe
+
+  private def build(statements: BoundStatement*): Future[List[BoundStatement]] =
     Future.successful(statements.toList)
 }

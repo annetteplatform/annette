@@ -121,6 +121,7 @@ abstract class AbstractElasticIndexDao(elasticSettings: ElasticSettings, val ela
       case results: RequestSuccess[SearchResponse] =>
         log.trace(s"findEntity: results ${results.toString}")
         val total = results.result.hits.total.value
+        log.debug(s"findEntity: total= $total, hits= ${results.result.hits.hits.length}")
         val hits  = results.result.hits.hits.map { hit =>
           val updatedAt = hit.sourceAsMap
             .get("updatedAt")

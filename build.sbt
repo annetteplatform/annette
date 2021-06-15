@@ -208,7 +208,9 @@ lazy val `ignition-core` = (project in file("ignition/core"))
     `application-api`,
     `authorization-api`,
     `org-structure-api`,
-    `persons-api`
+    `persons-api`,
+    `cms-api`,
+    `subscriptions-api`
   )
 
 def demoIgnitionProject(pr: Project) =
