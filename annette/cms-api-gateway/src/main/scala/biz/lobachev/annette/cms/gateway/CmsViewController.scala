@@ -237,7 +237,7 @@ class CmsViewController @Inject() (
                              else Future.successful(Set.empty[SpaceId])
       } yield result
 
-  // ****************************** Spaces ******************************
+  // ****************************** Space Views ******************************
 
   def findSpaceViews: Action[SpaceFindQueryDto] =
     authenticated.async(parse.json[SpaceFindQueryDto]) { implicit request =>
@@ -406,6 +406,37 @@ class CmsViewController @Inject() (
       authorizer.performCheckAny(VIEW_ALL_SPACE_CATEGORIES, MAINTAIN_ALL_SPACE_CATEGORIES) {
         for {
           result <- cmsService.getCategoriesById(request.request.body, true)
+        } yield Ok(Json.toJson(result))
+      }
+    }
+
+  // ****************************** Spaces ******************************
+
+  def findSpaces: Action[SpaceFindQueryDto] =
+    authenticated.async(parse.json[SpaceFindQueryDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+        val payload = request.request.body
+        val query   = payload
+          .into[SpaceFindQuery]
+          .withFieldConst(_.targets, Some(request.subject.principals.toSet))
+          .withFieldConst(_.active, Some(true))
+          .transform
+
+        for {
+          result <- cmsService.findSpaces(query)
+        } yield Ok(Json.toJson(result))
+      }
+    }
+
+  def getSpacesById =
+    authenticated.async(parse.json[Set[SpaceId]]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+        val ids = request.request.body
+
+        for {
+          spaces <- cmsService.getSpacesById(ids)
+          result  = spaces.view
+                      .mapValues(sv => sv.into[SpaceDto].transform)
         } yield Ok(Json.toJson(result))
       }
     }

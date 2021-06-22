@@ -25,4 +25,6 @@ object Permissions {
   final val VIEW_ALL_SPACE_CATEGORIES     = Permission("annette.cms.category.view.all")
   final val MAINTAIN_ALL_SPACE_CATEGORIES = Permission("annette.cms.category.maintain.all")
 
+  final val MAINTAIN_ALL_SPACES = Permission("annette.cms.space.maintain.all")
+
 }

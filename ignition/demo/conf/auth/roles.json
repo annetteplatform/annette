@@ -60,6 +60,18 @@
       },
       {
         "id": "annette.cms.blog.view"
+      },
+      {
+        "id": "annette.cms.wiki.view"
+      },
+      {
+        "id": "annette.cms.category.view.all"
+      },
+      {
+        "id": "annette.cms.category.maintain.all"
+      },
+      {
+        "id": "annette.cms.space.maintain.all"
       }
     ]
   }
