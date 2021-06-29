@@ -62,8 +62,8 @@ class CmsViewController @Inject() (
 
   // ****************************** PostView ******************************
 
-  def findPostViews: Action[PostFindQueryDto] =
-    authenticated.async(parse.json[PostFindQueryDto]) { implicit request =>
+  def findPostViews: Action[PostViewFindQueryDto] =
+    authenticated.async(parse.json[PostViewFindQueryDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         val payload = request.request.body
         for {
@@ -437,6 +437,180 @@ class CmsViewController @Inject() (
           spaces <- cmsService.getSpacesById(ids)
           result  = spaces.view
                       .mapValues(sv => sv.into[SpaceDto].transform)
+        } yield Ok(Json.toJson(result))
+      }
+    }
+
+  // ****************************** Post ******************************
+
+  def createPost =
+    authenticated.async(parse.json[CreatePostPayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+        val payload = request.body
+          .into[CreatePostPayload]
+          .withFieldConst(_.createdBy, request.subject.principals.head)
+          .transform
+        for {
+          _    <- cmsService.createPost(payload)
+          post <- cmsService.getPostById(payload.id, false)
+        } yield Ok(Json.toJson(post))
+      }
+    }
+
+  def updatePostTitle =
+    authenticated.async(parse.json[UpdatePostTitlePayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+        val payload = request.body
+          .into[UpdatePostTitlePayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _    <- cmsService.updatePostTitle(payload)
+          post <- cmsService.getPostById(payload.id, false)
+        } yield Ok(Json.toJson(post))
+      }
+    }
+
+  def updatePostAuthor =
+    authenticated.async(parse.json[UpdatePostAuthorPayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+        val payload = request.body
+          .into[UpdatePostAuthorPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _    <- cmsService.updatePostAuthor(payload)
+          post <- cmsService.getPostById(payload.id, false)
+        } yield Ok(Json.toJson(post))
+      }
+    }
+
+  def updatePostIntro =
+    authenticated.async(parse.json[UpdatePostIntroPayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+        val payload = request.body
+          .into[UpdatePostIntroPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _    <- cmsService.updatePostIntro(payload)
+          post <- cmsService.getPostById(payload.id, false)
+        } yield Ok(Json.toJson(post))
+      }
+    }
+
+  def updatePostContent =
+    authenticated.async(parse.json[UpdatePostContentPayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+        val payload = request.body
+          .into[UpdatePostContentPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _    <- cmsService.updatePostContent(payload)
+          post <- cmsService.getPostById(payload.id, false)
+        } yield Ok(Json.toJson(post))
+      }
+    }
+
+  def updatePostPublicationTimestamp =
+    authenticated.async(parse.json[UpdatePostPublicationTimestampPayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+        val payload = request.body
+          .into[UpdatePostPublicationTimestampPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _    <- cmsService.updatePostPublicationTimestamp(payload)
+          post <- cmsService.getPostById(payload.id, false)
+        } yield Ok(Json.toJson(post))
+      }
+    }
+
+  def publishPost(id: String) =
+    authenticated.async { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+        val payload = PublishPostPayload(id, request.subject.principals.head)
+        for {
+          _    <- cmsService.publishPost(payload)
+          post <- cmsService.getPostById(id, false)
+        } yield Ok(Json.toJson(post))
+      }
+    }
+
+  def unpublishPost(id: String) =
+    authenticated.async { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+        val payload = UnpublishPostPayload(id, request.subject.principals.head)
+        for {
+          _    <- cmsService.unpublishPost(payload)
+          post <- cmsService.getPostById(id, false)
+        } yield Ok(Json.toJson(post))
+      }
+    }
+
+  def updatePostFeatured(id: String, featured: Boolean) =
+    authenticated.async { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+        val payload = UpdatePostFeaturedPayload(id, featured, request.subject.principals.head)
+        for {
+          _    <- cmsService.updatePostFeatured(payload)
+          post <- cmsService.getPostById(id, false)
+        } yield Ok(Json.toJson(post))
+      }
+    }
+
+  def findPosts: Action[PostFindQueryDto] =
+    authenticated.async(parse.json[PostFindQueryDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+        val payload = request.request.body
+        for {
+          result <- {
+            val sortBy =
+              if (payload.filter.map(_.isEmpty).getOrElse(true) && payload.sortBy.isEmpty)
+                Some(
+                  Seq(
+                    SortBy("featured", Some(false)),
+                    SortBy("publicationTimestamp", Some(false))
+                  )
+                )
+              else payload.sortBy
+            val query  = payload
+              .into[PostFindQuery]
+              .withFieldConst(_.sortBy, sortBy)
+              .transform
+            cmsService.findPosts(query)
+          }
+
+        } yield Ok(Json.toJson(result))
+      }
+    }
+
+  def getPostAnnotationsById =
+    authenticated.async(parse.json[Set[PostId]]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+        val ids = request.request.body
+        for {
+          postAnnotations <- cmsService.getPostAnnotationsById(ids)
+        } yield Ok(Json.toJson(postAnnotations))
+      }
+    }
+
+  def getPostsById =
+    authenticated.async(parse.json[Set[PostId]]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+        val ids = request.request.body
+        for {
+          result <- cmsService.getPostsById(ids)
+        } yield Ok(Json.toJson(result))
+      }
+    }
+
+  def getPostByIdForEdit(postId: PostId) =
+    authenticated.async { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+        for {
+          result <- cmsService.getPostById(postId, false)
         } yield Ok(Json.toJson(result))
       }
     }

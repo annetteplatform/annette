@@ -19,7 +19,7 @@ package biz.lobachev.annette.cms.api.post
 import play.api.libs.json.{Format, Json}
 
 case class Doc(
-  id: MediaId,
+  id: DocId,
   name: String,
   filename: String
 )

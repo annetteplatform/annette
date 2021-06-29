@@ -72,6 +72,9 @@
       },
       {
         "id": "annette.cms.space.maintain.all"
+      },
+      {
+        "id": "annette.cms.post.maintain.all"
       }
     ]
   }

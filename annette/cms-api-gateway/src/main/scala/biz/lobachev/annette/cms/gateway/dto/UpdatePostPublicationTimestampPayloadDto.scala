@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway
+package biz.lobachev.annette.cms.gateway.dto
 
-import biz.lobachev.annette.core.model.auth.Permission
+import biz.lobachev.annette.cms.api.post.PostId
+import play.api.libs.json.{Format, Json}
 
-object Permissions {
-  final val VIEW_BLOGS  = Permission("annette.cms.blog.view")
-  final val VIEW_WIKIES = Permission("annette.cms.wiki.view")
+import java.time.OffsetDateTime
 
-  final val VIEW_ALL_SPACE_CATEGORIES     = Permission("annette.cms.category.view.all")
-  final val MAINTAIN_ALL_SPACE_CATEGORIES = Permission("annette.cms.category.maintain.all")
+case class UpdatePostPublicationTimestampPayloadDto(
+  id: PostId,
+  publicationTimestamp: Option[OffsetDateTime]
+)
 
-  final val MAINTAIN_ALL_SPACES = Permission("annette.cms.space.maintain.all")
-  final val MAINTAIN_ALL_POSTS  = Permission("annette.cms.post.maintain.all")
-
+object UpdatePostPublicationTimestampPayloadDto {
+  implicit val format: Format[UpdatePostPublicationTimestampPayloadDto] = Json.format
 }

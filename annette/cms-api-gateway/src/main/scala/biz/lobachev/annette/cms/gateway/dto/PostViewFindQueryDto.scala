@@ -16,29 +16,21 @@
 
 package biz.lobachev.annette.cms.gateway.dto
 
-import biz.lobachev.annette.cms.api.post.{PostId, PublicationStatus}
 import biz.lobachev.annette.cms.api.space.SpaceId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.elastic.SortBy
 import play.api.libs.json.{Format, Json}
 
-import java.time.OffsetDateTime
-
-case class PostFindQueryDto(
+case class PostViewFindQueryDto(
   offset: Int = 0,
   size: Int,
   filter: Option[String] = None,
-  postIds: Option[Set[PostId]] = None,
   spaces: Option[Set[SpaceId]] = None,
   featured: Option[Boolean] = None,
   authors: Option[Set[AnnettePrincipal]] = None,
-  publicationStatus: Option[PublicationStatus.PublicationStatus] = None,
-  publicationTimestampFrom: Option[OffsetDateTime] = None,
-  publicationTimestampTo: Option[OffsetDateTime] = None,
-  targets: Option[Set[AnnettePrincipal]] = None,
   sortBy: Option[Seq[SortBy]] = None
 )
 
-object PostFindQueryDto {
-  implicit val format: Format[PostFindQueryDto] = Json.format
+object PostViewFindQueryDto {
+  implicit val format: Format[PostViewFindQueryDto] = Json.format
 }
