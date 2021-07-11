@@ -19,13 +19,7 @@ package biz.lobachev.annette.cms.gateway
 import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.CmsService
-import biz.lobachev.annette.cms.api.category.{
-  CategoryFindQuery,
-  CategoryId,
-  CreateCategoryPayload,
-  DeleteCategoryPayload,
-  UpdateCategoryPayload
-}
+import biz.lobachev.annette.cms.api.category._
 import biz.lobachev.annette.cms.api.post._
 import biz.lobachev.annette.cms.api.space._
 import biz.lobachev.annette.cms.gateway.Permissions.{MAINTAIN_ALL_SPACE_CATEGORIES, VIEW_ALL_SPACE_CATEGORIES}
@@ -412,16 +406,25 @@ class CmsViewController @Inject() (
 
   // ****************************** Spaces ******************************
 
+  def createSpace =
+    authenticated.async(parse.json[CreateSpacePayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+        val payload = request.body
+          .into[CreateSpacePayload]
+          .withFieldConst(_.createdBy, request.subject.principals.head)
+          .transform
+        for {
+          _    <- cmsService.createSpace(payload)
+          post <- cmsService.getSpaceById(payload.id, false)
+        } yield Ok(Json.toJson(post))
+      }
+    }
+
   def findSpaces: Action[SpaceFindQueryDto] =
     authenticated.async(parse.json[SpaceFindQueryDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
         val payload = request.request.body
-        val query   = payload
-          .into[SpaceFindQuery]
-          .withFieldConst(_.targets, Some(request.subject.principals.toSet))
-          .withFieldConst(_.active, Some(true))
-          .transform
-
+        val query   = payload.transformInto[SpaceFindQuery]
         for {
           result <- cmsService.findSpaces(query)
         } yield Ok(Json.toJson(result))

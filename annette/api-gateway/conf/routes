@@ -121,6 +121,7 @@ GET     /api/annette/v1/cms/getCategoryById/:id             biz.lobachev.annette
 GET     /api/annette/v1/cms/getCategoryByIdForEdit/:id      biz.lobachev.annette.cms.gateway.CmsViewController.getCategoryByIdForEdit(id: String)
 POST    /api/annette/v1/cms/getCategoriesById               biz.lobachev.annette.cms.gateway.CmsViewController.getCategoriesById
 POST    /api/annette/v1/cms/findCategories                  biz.lobachev.annette.cms.gateway.CmsViewController.findCategories
+POST    /api/annette/v1/cms/createSpace                     biz.lobachev.annette.cms.gateway.CmsViewController.createSpace
 POST    /api/annette/v1/cms/findSpaces                      biz.lobachev.annette.cms.gateway.CmsViewController.findSpaces
 POST    /api/annette/v1/cms/getSpacesById                   biz.lobachev.annette.cms.gateway.CmsViewController.getSpacesById
 POST    /api/annette/v1/cms/createPost                      biz.lobachev.annette.cms.gateway.CmsViewController.createPost
