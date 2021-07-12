@@ -17,7 +17,7 @@
 package biz.lobachev.annette.application.impl.language
 
 import akka.Done
-import biz.lobachev.annette.application.impl.language.dao.LanguageDbDao
+import biz.lobachev.annette.application.impl.language.dao.LanguageCassandraDbDao
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
@@ -27,7 +27,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class LanguageDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: LanguageDbDao
+  dbDao: LanguageCassandraDbDao
 )(implicit
   ec: ExecutionContext
 ) extends ReadSideProcessor[LanguageEntity.Event] {

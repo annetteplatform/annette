@@ -24,11 +24,10 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 
-import scala.collection.immutable.{Seq, _}
+import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
 
-private[impl] class LanguageCassandraDbDao(session: CassandraSession)(implicit ec: ExecutionContext)
-    extends LanguageDbDao {
+private[impl] class LanguageCassandraDbDao(session: CassandraSession)(implicit ec: ExecutionContext) {
 
   private var createLanguageStatement: PreparedStatement = _
   private var updateLanguageStatement: PreparedStatement = _
@@ -121,19 +120,13 @@ private[impl] class LanguageCassandraDbDao(session: CassandraSession)(implicit e
         .setString("id", event.id)
     )
 
-  def getLanguageById(id: LanguageId): Future[Option[Language]] =
-    for {
-      stmt        <- session.prepare("SELECT * FROM languages WHERE id = :id")
-      maybeEntity <- session.selectOne(stmt.bind().setString("id", id)).map(_.map(convertLanguage))
-    } yield maybeEntity
-
-  def getLanguages: Future[Map[LanguageId, Language]] =
+  def getLanguages: Future[Seq[Language]] =
     for {
       stmt   <- session.prepare("SELECT * FROM languages")
       result <- session.selectAll(stmt.bind).map(_.map(convertLanguage))
-    } yield result.map(a => a.id -> a).toMap
+    } yield result
 
-  def convertLanguage(row: Row): Language             =
+  def convertLanguage(row: Row): Language =
     Language(
       id = row.getString("id"),
       name = row.getString("name"),

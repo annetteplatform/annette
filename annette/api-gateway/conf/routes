@@ -10,8 +10,8 @@ GET    /api/annette/v1/auth/error2          biz.lobachev.annette.api_gateway_cor
 POST    /api/annette/v1/application/createLanguage     biz.lobachev.annette.application.gateway.ApplicationController.createLanguage
 POST    /api/annette/v1/application/updateLanguage     biz.lobachev.annette.application.gateway.ApplicationController.updateLanguage
 POST    /api/annette/v1/application/deleteLanguage     biz.lobachev.annette.application.gateway.ApplicationController.deleteLanguage
-GET     /api/annette/v1/application/getLanguageById/:id/:fromReadSide    biz.lobachev.annette.application.gateway.ApplicationController.getLanguageById(id: String, fromReadSide: Boolean)
-GET     /api/annette/v1/application/getLanguages             biz.lobachev.annette.application.gateway.ApplicationController.getLanguages
+GET     /api/annette/v1/application/getLanguage/:id    biz.lobachev.annette.application.gateway.ApplicationController.getLanguage(id: String)
+GET     /api/annette/v1/application/getLanguages       biz.lobachev.annette.application.gateway.ApplicationController.getLanguages
 POST    /api/annette/v1/application/createTranslation        biz.lobachev.annette.application.gateway.ApplicationController.createTranslation
 POST    /api/annette/v1/application/updateTranslationName    biz.lobachev.annette.application.gateway.ApplicationController.updateTranslationName
 POST    /api/annette/v1/application/deleteTranslation        biz.lobachev.annette.application.gateway.ApplicationController.deleteTranslation
@@ -125,6 +125,7 @@ POST    /api/annette/v1/cms/createSpace                     biz.lobachev.annette
 POST    /api/annette/v1/cms/findSpaces                      biz.lobachev.annette.cms.gateway.CmsViewController.findSpaces
 POST    /api/annette/v1/cms/getSpacesById                   biz.lobachev.annette.cms.gateway.CmsViewController.getSpacesById
 POST    /api/annette/v1/cms/createPost                      biz.lobachev.annette.cms.gateway.CmsViewController.createPost
+POST    /api/annette/v1/cms/updatePostFeatured/:id/:featured   biz.lobachev.annette.cms.gateway.CmsViewController.updatePostFeatured(id: String, featured: Boolean)
 POST    /api/annette/v1/cms/updatePostTitle                 biz.lobachev.annette.cms.gateway.CmsViewController.updatePostTitle
 POST    /api/annette/v1/cms/updatePostAuthor                biz.lobachev.annette.cms.gateway.CmsViewController.updatePostAuthor
 POST    /api/annette/v1/cms/updatePostIntro                 biz.lobachev.annette.cms.gateway.CmsViewController.updatePostIntro
@@ -132,7 +133,6 @@ POST    /api/annette/v1/cms/updatePostContent               biz.lobachev.annette
 POST    /api/annette/v1/cms/updatePostPublicationTimestamp  biz.lobachev.annette.cms.gateway.CmsViewController.updatePostPublicationTimestamp
 POST    /api/annette/v1/cms/publishPost/:id                 biz.lobachev.annette.cms.gateway.CmsViewController.publishPost(id: String)
 POST    /api/annette/v1/cms/unpublishPost/:id               biz.lobachev.annette.cms.gateway.CmsViewController.unpublishPost(id: String)
-POST    /api/annette/v1/cms/updatePostFeatured/:id/:featured   biz.lobachev.annette.cms.gateway.CmsViewController.updatePostFeatured(id: String, featured: Boolean)
 POST    /api/annette/v1/cms/findPosts                       biz.lobachev.annette.cms.gateway.CmsViewController.findPosts
 POST    /api/annette/v1/cms/getPostAnnotationsById          biz.lobachev.annette.cms.gateway.CmsViewController.getPostAnnotationsById
 POST    /api/annette/v1/cms/getPostsById                    biz.lobachev.annette.cms.gateway.CmsViewController.getPostsById

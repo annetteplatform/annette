@@ -55,7 +55,7 @@ class ApplicationController @Inject() (
       authorizer.performCheckAny(MAINTAIN_ALL_LANGUAGES) {
         for {
           _      <- applicationService.createLanguage(payload)
-          result <- applicationService.getLanguageById(payload.id, false)
+          result <- applicationService.getLanguage(payload.id)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -66,7 +66,7 @@ class ApplicationController @Inject() (
       authorizer.performCheckAny(MAINTAIN_ALL_LANGUAGES) {
         for {
           _      <- applicationService.updateLanguage(payload)
-          result <- applicationService.getLanguageById(payload.id, false)
+          result <- applicationService.getLanguage(payload.id)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -81,10 +81,10 @@ class ApplicationController @Inject() (
       }
     }
 
-  def getLanguageById(id: LanguageId, fromReadSide: Boolean = true) =
+  def getLanguage(id: LanguageId) =
     Action.async { _ =>
       for {
-        result <- applicationService.getLanguageById(id, fromReadSide)
+        result <- applicationService.getLanguage(id)
       } yield Ok(Json.toJson(result))
     }
 

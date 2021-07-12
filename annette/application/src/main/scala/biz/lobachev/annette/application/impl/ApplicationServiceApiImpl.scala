@@ -63,12 +63,12 @@ class ApplicationServiceApiImpl(
       languageEntityService.deleteLanguage(payload)
     }
 
-  override def getLanguageById(id: LanguageId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Language] =
+  override def getLanguage(id: LanguageId): ServiceCall[NotUsed, Language] =
     ServiceCall { _ =>
-      languageEntityService.getLanguageById(id, fromReadSide)
+      languageEntityService.getLanguage(id)
     }
 
-  override def getLanguages: ServiceCall[NotUsed, Map[LanguageId, Language]] =
+  override def getLanguages: ServiceCall[NotUsed, Seq[Language]] =
     ServiceCall { _ =>
       languageEntityService.getLanguages
     }

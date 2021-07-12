@@ -17,12 +17,11 @@
 package biz.lobachev.annette.application.impl.language
 
 import java.util.concurrent.TimeUnit
-
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
 import biz.lobachev.annette.application.api.language._
-import biz.lobachev.annette.application.impl.language.dao.LanguageDbDao
+import biz.lobachev.annette.application.impl.language.dao.LanguageCassandraDbDao
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 
@@ -32,7 +31,7 @@ import scala.util.Try
 
 class LanguageEntityService(
   clusterSharding: ClusterSharding,
-  dbDao: LanguageDbDao,
+  dbDao: LanguageCassandraDbDao,
   config: Config
 )(implicit
   ec: ExecutionContext
@@ -83,14 +82,6 @@ class LanguageEntityService(
       .ask[LanguageEntity.Confirmation](LanguageEntity.GetLanguage(id, _))
       .map(convertSuccessLanguage)
 
-  def getLanguageById(id: LanguageId, fromReadSide: Boolean): Future[Language] =
-    if (fromReadSide)
-      dbDao
-        .getLanguageById(id)
-        .map(_.getOrElse(throw LanguageNotFound()))
-    else
-      getLanguage(id)
-
-  def getLanguages: Future[Map[LanguageId, Language]] = dbDao.getLanguages
+  def getLanguages: Future[Seq[Language]] = dbDao.getLanguages
 
 }

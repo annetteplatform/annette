@@ -31,8 +31,8 @@ trait ApplicationServiceApi extends Service {
   def createLanguage: ServiceCall[CreateLanguagePayload, Done]
   def updateLanguage: ServiceCall[UpdateLanguagePayload, Done]
   def deleteLanguage: ServiceCall[DeleteLanguagePayload, Done]
-  def getLanguageById(id: LanguageId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Language]
-  def getLanguages: ServiceCall[NotUsed, Map[LanguageId, Language]]
+  def getLanguage(id: LanguageId): ServiceCall[NotUsed, Language]
+  def getLanguages: ServiceCall[NotUsed, Seq[Language]]
 
   def createTranslation: ServiceCall[CreateTranslationPayload, Done]
   def updateTranslationName: ServiceCall[UpdateTranslationNamePayload, Done]
@@ -69,7 +69,7 @@ trait ApplicationServiceApi extends Service {
         pathCall("/api/application/v1/createLanguage", createLanguage),
         pathCall("/api/application/v1/updateLanguage", updateLanguage),
         pathCall("/api/application/v1/deleteLanguage", deleteLanguage),
-        pathCall("/api/application/v1/getLanguageById/:id/:fromReadSide", getLanguageById _),
+        pathCall("/api/application/v1/getLanguage/:id", getLanguage _),
         pathCall("/api/application/v1/getLanguages", getLanguages),
         pathCall("/api/application/v1/createTranslation", createTranslation),
         pathCall("/api/application/v1/updateTranslationName", updateTranslationName),
