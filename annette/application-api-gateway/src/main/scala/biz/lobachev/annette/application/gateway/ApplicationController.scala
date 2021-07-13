@@ -31,7 +31,7 @@ import biz.lobachev.annette.application.gateway.Permissions.{
   MAINTAIN_ALL_LANGUAGES,
   MAINTAIN_ALL_TRANSLATIONS
 }
-import biz.lobachev.annette.application.gateway.dto.{DeleteTranslationJsonPayloadDto, UpdateTranslationJsonPayloadDto}
+import biz.lobachev.annette.application.gateway.dto._
 import biz.lobachev.annette.core.model.LanguageId
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
@@ -52,8 +52,11 @@ class ApplicationController @Inject() (
   // private val log = LoggerFactory.getLogger(this.getClass)
 
   def createLanguage =
-    authenticated.async(parse.json[CreateLanguagePayload]) { implicit request =>
+    authenticated.async(parse.json[CreateLanguagePayloadDto]) { implicit request =>
       val payload = request.body
+        .into[CreateLanguagePayload]
+        .withFieldConst(_.createdBy, request.subject.principals.head)
+        .transform
       authorizer.performCheckAny(MAINTAIN_ALL_LANGUAGES) {
         for {
           _      <- applicationService.createLanguage(payload)
@@ -63,8 +66,11 @@ class ApplicationController @Inject() (
     }
 
   def updateLanguage =
-    authenticated.async(parse.json[UpdateLanguagePayload]) { implicit request =>
+    authenticated.async(parse.json[UpdateLanguagePayloadDto]) { implicit request =>
       val payload = request.body
+        .into[UpdateLanguagePayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheckAny(MAINTAIN_ALL_LANGUAGES) {
         for {
           _      <- applicationService.updateLanguage(payload)
@@ -74,8 +80,11 @@ class ApplicationController @Inject() (
     }
 
   def deleteLanguage =
-    authenticated.async(parse.json[DeleteLanguagePayload]) { implicit request =>
+    authenticated.async(parse.json[DeleteLanguagePayloadDto]) { implicit request =>
       val payload = request.body
+        .into[DeleteLanguagePayload]
+        .withFieldConst(_.deletedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheckAny(MAINTAIN_ALL_LANGUAGES) {
         for {
           _ <- applicationService.deleteLanguage(payload)
@@ -84,10 +93,12 @@ class ApplicationController @Inject() (
     }
 
   def getLanguage(id: LanguageId) =
-    Action.async { _ =>
-      for {
-        result <- applicationService.getLanguage(id)
-      } yield Ok(Json.toJson(result))
+    authenticated.async { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_LANGUAGES) {
+        for {
+          result <- applicationService.getLanguage(id)
+        } yield Ok(Json.toJson(result))
+      }
     }
 
   def getLanguages =
