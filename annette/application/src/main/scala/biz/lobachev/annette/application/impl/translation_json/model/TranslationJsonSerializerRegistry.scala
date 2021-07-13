@@ -14,29 +14,23 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.application.impl.translation.model
+package biz.lobachev.annette.application.impl.translation_json.model
 import biz.lobachev.annette.application.api.translation._
-import biz.lobachev.annette.application.impl.translation.TranslationEntity
+import biz.lobachev.annette.application.impl.translation_json.TranslationJsonEntity
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
-object TranslationSerializerRegistry extends JsonSerializerRegistry {
+object TranslationJsonSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
-      JsonSerializer[TranslationState],
-      JsonSerializer[Translation],
+      JsonSerializer[TranslationJsonState],
       JsonSerializer[TranslationJson],
       JsonSerializer[AnnettePrincipal],
-      JsonSerializer[DeleteTranslationPayload],
-      JsonSerializer[UpdateTranslationPayload],
-      JsonSerializer[CreateTranslationPayload],
-      JsonSerializer[TranslationEntity.Success.type],
-      JsonSerializer[TranslationEntity.SuccessTranslation],
-      JsonSerializer[TranslationEntity.TranslationAlreadyExist.type],
-      JsonSerializer[TranslationEntity.TranslationNotFound.type],
-      JsonSerializer[TranslationEntity.IncorrectTranslationId.type],
-      JsonSerializer[TranslationEntity.TranslationCreated],
-      JsonSerializer[TranslationEntity.TranslationUpdated],
-      JsonSerializer[TranslationEntity.TranslationDeleted]
+      JsonSerializer[DeleteTranslationJsonPayload],
+      JsonSerializer[UpdateTranslationJsonPayload],
+      JsonSerializer[TranslationJsonEntity.Success.type],
+      JsonSerializer[TranslationJsonEntity.SuccessTranslationJson],
+      JsonSerializer[TranslationJsonEntity.TranslationJsonUpdated],
+      JsonSerializer[TranslationJsonEntity.TranslationJsonDeleted]
     )
 }

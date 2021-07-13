@@ -23,7 +23,6 @@ import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.api.language.{
   CreateLanguagePayload,
   DeleteLanguagePayload,
-  LanguageId,
   UpdateLanguagePayload
 }
 import biz.lobachev.annette.application.api.translation._
@@ -32,6 +31,9 @@ import biz.lobachev.annette.application.gateway.Permissions.{
   MAINTAIN_ALL_LANGUAGES,
   MAINTAIN_ALL_TRANSLATIONS
 }
+import biz.lobachev.annette.application.gateway.dto.{DeleteTranslationJsonPayloadDto, UpdateTranslationJsonPayloadDto}
+import biz.lobachev.annette.core.model.LanguageId
+import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}
 
@@ -95,7 +97,7 @@ class ApplicationController @Inject() (
       } yield Ok(Json.toJson(result))
     }
 
-  def createTranslation     =
+  def createTranslation =
     authenticated.async(parse.json[CreateTranslationPayload]) { implicit request =>
       val payload = request.body
       authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
@@ -104,12 +106,12 @@ class ApplicationController @Inject() (
         } yield Ok("")
       }
     }
-  def updateTranslationName =
-    authenticated.async(parse.json[UpdateTranslationNamePayload]) { implicit request =>
+  def updateTranslation =
+    authenticated.async(parse.json[UpdateTranslationPayload]) { implicit request =>
       val payload = request.body
       authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
         for {
-          _ <- applicationService.updateTranslationName(payload)
+          _ <- applicationService.updateTranslation(payload)
         } yield Ok("")
       }
     }
@@ -124,73 +126,23 @@ class ApplicationController @Inject() (
       }
     }
 
-  def createTranslationBranch =
-    authenticated.async(parse.json[CreateTranslationBranchPayload]) { implicit request =>
-      val payload = request.body
+  def getTranslation(id: TranslationId) =
+    authenticated.async { implicit request =>
       authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
         for {
-          _ <- applicationService.createTranslationBranch(payload)
-        } yield Ok("")
+          result <- applicationService.getTranslation(id)
+        } yield Ok(Json.toJson(result))
       }
     }
 
-  def updateTranslationText =
-    authenticated.async(parse.json[UpdateTranslationTextPayload]) { implicit request =>
+  def getTranslations =
+    authenticated.async(parse.json[Set[TranslationId]]) { implicit request =>
       val payload = request.body
       authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
         for {
-          _ <- applicationService.updateTranslationText(payload)
-        } yield Ok("")
+          result <- applicationService.getTranslations(payload)
+        } yield Ok(Json.toJson(result))
       }
-    }
-
-  def deleteTranslationItem =
-    authenticated.async(parse.json[DeleteTranslationItemPayload]) { implicit request =>
-      val payload = request.body
-      authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
-        for {
-          _ <- applicationService.deleteTranslationItem(payload)
-        } yield Ok("")
-      }
-    }
-
-  def deleteTranslationText =
-    authenticated.async(parse.json[DeleteTranslationTextPayload]) { implicit request =>
-      val payload = request.body
-      authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
-        for {
-          _ <- applicationService.deleteTranslationText(payload)
-        } yield Ok("")
-      }
-    }
-
-  def getTranslationById(id: TranslationId) =
-    Action.async { _ =>
-      for {
-        result <- applicationService.getTranslationById(id)
-      } yield Ok(Json.toJson(result))
-    }
-
-  def getTranslationJsonById(
-    id: TranslationId,
-    languageId: LanguageId,
-    fromReadSide: Boolean = true
-  ) =
-    Action.async { _ =>
-      for {
-        result <- applicationService.getTranslationJsonById(id, languageId, fromReadSide)
-      } yield Ok(Json.toJson(result))
-    }
-
-  def getTranslationJsonsById(
-    languageId: LanguageId,
-    fromReadSide: Boolean = true
-  ) =
-    Action.async(parse.json[Set[TranslationId]]) { request =>
-      val ids = request.body
-      for {
-        result <- applicationService.getTranslationJsonsById(languageId, ids, fromReadSide)
-      } yield Ok(Json.toJson(result))
     }
 
   def findTranslations =
@@ -201,6 +153,63 @@ class ApplicationController @Inject() (
           result <- applicationService.findTranslations(payload)
         } yield Ok(Json.toJson(result))
       }
+    }
+
+  def updateTranslationJson =
+    authenticated.async(parse.json[UpdateTranslationJsonPayloadDto]) { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
+        val payload = request.body
+          .into[UpdateTranslationJsonPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _ <- applicationService.updateTranslationJson(payload)
+        } yield Ok("")
+      }
+    }
+
+  def deleteTranslationJson =
+    authenticated.async(parse.json[DeleteTranslationJsonPayloadDto]) { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
+        val payload = request.body
+          .into[DeleteTranslationJsonPayload]
+          .withFieldConst(_.deletedBy, request.subject.principals.head)
+          .transform
+        for {
+          _ <- applicationService.deleteTranslationJson(payload)
+        } yield Ok("")
+      }
+    }
+
+  def getTranslationLanguages(id: TranslationId) =
+    authenticated.async { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
+        for {
+          result <- applicationService.getTranslationLanguages(id)
+        } yield Ok(Json.toJson(result))
+      }
+    }
+
+  def getTranslationJson(
+    id: TranslationId,
+    languageId: LanguageId
+  ) =
+    authenticated.async { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
+        for {
+          result <- applicationService.getTranslationJson(id, languageId)
+        } yield Ok(Json.toJson(result))
+      }
+    }
+
+  def getTranslationJsons(
+    languageId: LanguageId
+  ) =
+    Action.async(parse.json[Set[TranslationId]]) { request =>
+      val ids = request.body
+      for {
+        result <- applicationService.getTranslationJsons(languageId, ids)
+      } yield Ok(Json.toJson(result))
     }
 
   def createApplication =
@@ -258,6 +267,14 @@ class ApplicationController @Inject() (
           result <- applicationService.findApplications(query)
         } yield Ok(Json.toJson(result))
       }
+    }
+
+  def getApplicationTranslations(id: ApplicationId, languageId: LanguageId) =
+    Action.async { _ =>
+      for {
+        result <- applicationService.getApplicationTranslations(id, languageId)
+      } yield Ok(result)
+
     }
 
 }

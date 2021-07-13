@@ -16,17 +16,16 @@
 
 package biz.lobachev.annette.application.api.translation
 
-import biz.lobachev.annette.application.api.language.LanguageId
+import biz.lobachev.annette.core.model.LanguageId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
-case class UpdateTranslationTextPayload(
-  id: TranslationId,
+case class DeleteTranslationJsonPayload(
+  translationId: TranslationId,
   languageId: LanguageId,
-  text: String,
-  updatedBy: AnnettePrincipal
+  deletedBy: AnnettePrincipal
 )
 
-object UpdateTranslationTextPayload {
-  implicit val format = Json.format[UpdateTranslationTextPayload]
+object DeleteTranslationJsonPayload {
+  implicit val format = Json.format[DeleteTranslationJsonPayload]
 }

@@ -31,8 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class TranslationElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: ElasticClient)(implicit
   override val ec: ExecutionContext
-) extends AbstractElasticIndexDao(elasticSettings, elasticClient)
-    with TranslationIndexDao {
+) extends AbstractElasticIndexDao(elasticSettings, elasticClient) {
 
   override val log = LoggerFactory.getLogger(this.getClass)
 
@@ -61,7 +60,7 @@ class TranslationElasticIndexDao(elasticSettings: ElasticSettings, elasticClient
     }
       .map(processResponse("createTranslation", event.id)(_))
 
-  def updateTranslation(event: TranslationEntity.TranslationNameUpdated): Future[Unit] =
+  def updateTranslation(event: TranslationEntity.TranslationUpdated): Future[Unit] =
     elasticClient.execute {
       updateById(indexName, event.id)
         .doc(

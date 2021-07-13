@@ -22,6 +22,7 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
 import biz.lobachev.annette.application.api.language._
 import biz.lobachev.annette.application.impl.language.dao.LanguageCassandraDbDao
+import biz.lobachev.annette.core.model.LanguageId
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 

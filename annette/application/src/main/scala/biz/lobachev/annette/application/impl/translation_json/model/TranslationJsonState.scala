@@ -14,9 +14,22 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.application.api
+package biz.lobachev.annette.application.impl.translation_json.model
 
-package object language {
-  type LanguageId = String
+import java.time.OffsetDateTime
+import biz.lobachev.annette.core.model.{LanguageId, TranslationId}
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import play.api.libs.json.{JsObject, Json}
 
+case class TranslationJsonState(
+  translationId: TranslationId,
+  languageId: LanguageId,
+  json: JsObject,
+  updatedBy: AnnettePrincipal,
+  updatedAt: OffsetDateTime = OffsetDateTime.now
+)
+
+object TranslationJsonState {
+
+  implicit val format = Json.format[TranslationJsonState]
 }

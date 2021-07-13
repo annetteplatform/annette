@@ -20,7 +20,9 @@ import akka.Done
 import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.api.language._
 import biz.lobachev.annette.application.api.translation._
+import biz.lobachev.annette.core.model.LanguageId
 import biz.lobachev.annette.core.model.elastic.FindResult
+import play.api.libs.json.JsObject
 
 import scala.collection.immutable.Map
 import scala.concurrent.Future
@@ -34,24 +36,17 @@ trait ApplicationService {
   def getLanguages(): Future[Seq[Language]]
 
   def createTranslation(payload: CreateTranslationPayload): Future[Done]
-  def updateTranslationName(payload: UpdateTranslationNamePayload): Future[Done]
+  def updateTranslation(payload: UpdateTranslationPayload): Future[Done]
   def deleteTranslation(payload: DeleteTranslationPayload): Future[Done]
-  def createTranslationBranch(payload: CreateTranslationBranchPayload): Future[Done]
-  def updateTranslationText(payload: UpdateTranslationTextPayload): Future[Done]
-  def deleteTranslationItem(payload: DeleteTranslationItemPayload): Future[Done]
-  def deleteTranslationText(payload: DeleteTranslationTextPayload): Future[Done]
-  def getTranslationById(id: TranslationId): Future[Translation]
-  def getTranslationJsonById(
-    id: TranslationId,
-    languageId: LanguageId,
-    fromReadSide: Boolean = true
-  ): Future[TranslationJson]
-  def getTranslationJsonsById(
-    languageId: LanguageId,
-    ids: Set[TranslationId],
-    fromReadSide: Boolean = true
-  ): Future[Map[TranslationId, TranslationJson]]
+  def getTranslation(id: TranslationId): Future[Translation]
+  def getTranslations(ids: Set[TranslationId]): Future[Seq[Translation]]
   def findTranslations(query: FindTranslationQuery): Future[FindResult]
+
+  def updateTranslationJson(payload: UpdateTranslationJsonPayload): Future[Done]
+  def deleteTranslationJson(payload: DeleteTranslationJsonPayload): Future[Done]
+  def getTranslationLanguages(id: TranslationId): Future[Seq[LanguageId]]
+  def getTranslationJson(id: TranslationId, languageId: LanguageId): Future[TranslationJson]
+  def getTranslationJsons(languageId: LanguageId, ids: Set[TranslationId]): Future[Seq[TranslationJson]]
 
   def createApplication(payload: CreateApplicationPayload): Future[Done]
   def updateApplication(payload: UpdateApplicationPayload): Future[Done]
@@ -62,5 +57,6 @@ trait ApplicationService {
     fromReadSide: Boolean = true
   ): Future[Map[ApplicationId, Application]]
   def findApplications(query: FindApplicationQuery): Future[FindResult]
+  def getApplicationTranslations(id: ApplicationId, languageId: LanguageId): Future[JsObject]
 
 }

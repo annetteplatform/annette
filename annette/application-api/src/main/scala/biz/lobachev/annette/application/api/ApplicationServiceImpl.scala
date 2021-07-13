@@ -20,7 +20,9 @@ import akka.Done
 import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.api.language._
 import biz.lobachev.annette.application.api.translation._
+import biz.lobachev.annette.core.model.LanguageId
 import biz.lobachev.annette.core.model.elastic.FindResult
+import play.api.libs.json.JsObject
 
 import scala.collection.immutable.Map
 import scala.concurrent.Future
@@ -45,43 +47,41 @@ class ApplicationServiceImpl(api: ApplicationServiceApi) extends ApplicationServ
   def createTranslation(payload: CreateTranslationPayload): Future[Done] =
     api.createTranslation.invoke(payload)
 
-  def updateTranslationName(payload: UpdateTranslationNamePayload): Future[Done] =
-    api.updateTranslationName.invoke(payload)
+  def updateTranslation(payload: UpdateTranslationPayload): Future[Done] =
+    api.updateTranslation.invoke(payload)
 
   def deleteTranslation(payload: DeleteTranslationPayload): Future[Done] =
     api.deleteTranslation.invoke(payload)
 
-  def createTranslationBranch(payload: CreateTranslationBranchPayload): Future[Done] =
-    api.createTranslationBranch.invoke(payload)
+  def getTranslation(id: TranslationId): Future[Translation] =
+    api.getTranslation(id).invoke()
 
-  def updateTranslationText(payload: UpdateTranslationTextPayload): Future[Done] =
-    api.updateTranslationText.invoke(payload)
-
-  def deleteTranslationItem(payload: DeleteTranslationItemPayload): Future[Done] =
-    api.deleteTranslationItem.invoke(payload)
-
-  def deleteTranslationText(payload: DeleteTranslationTextPayload): Future[Done] =
-    api.deleteTranslationText.invoke(payload)
-
-  def getTranslationById(id: TranslationId): Future[Translation] =
-    api.getTranslationById(id).invoke()
-
-  def getTranslationJsonById(
-    id: TranslationId,
-    languageId: LanguageId,
-    fromReadSide: Boolean = true
-  ): Future[TranslationJson] =
-    api.getTranslationJsonById(id, languageId, fromReadSide).invoke()
-
-  def getTranslationJsonsById(
-    languageId: LanguageId,
-    ids: Set[TranslationId],
-    fromReadSide: Boolean = true
-  ): Future[Map[TranslationId, TranslationJson]] =
-    api.getTranslationJsonsById(languageId, fromReadSide).invoke(ids)
+  def getTranslations(ids: Set[TranslationId]): Future[Seq[Translation]] =
+    api.getTranslations.invoke(ids)
 
   def findTranslations(query: FindTranslationQuery): Future[FindResult] =
     api.findTranslations.invoke(query)
+
+  def updateTranslationJson(payload: UpdateTranslationJsonPayload): Future[Done] =
+    api.updateTranslationJson.invoke(payload)
+
+  def deleteTranslationJson(payload: DeleteTranslationJsonPayload): Future[Done] =
+    api.deleteTranslationJson.invoke(payload)
+
+  def getTranslationLanguages(translationId: TranslationId): Future[Seq[LanguageId]] =
+    api.getTranslationLanguages(translationId).invoke()
+
+  def getTranslationJson(
+    translationId: TranslationId,
+    languageId: LanguageId
+  ): Future[TranslationJson] =
+    api.getTranslationJson(translationId, languageId).invoke()
+
+  def getTranslationJsons(
+    languageId: LanguageId,
+    ids: Set[TranslationId]
+  ): Future[Seq[TranslationJson]] =
+    api.getTranslationJsons(languageId).invoke(ids)
 
   def createApplication(payload: CreateApplicationPayload): Future[Done] =
     api.createApplication.invoke(payload)
@@ -103,5 +103,8 @@ class ApplicationServiceImpl(api: ApplicationServiceApi) extends ApplicationServ
 
   def findApplications(query: FindApplicationQuery): Future[FindResult] =
     api.findApplications.invoke(query)
+
+  def getApplicationTranslations(id: ApplicationId, languageId: LanguageId): Future[JsObject] =
+    api.getApplicationTranslations(id, languageId).invoke()
 
 }

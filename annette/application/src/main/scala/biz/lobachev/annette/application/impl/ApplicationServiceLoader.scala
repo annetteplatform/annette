@@ -28,6 +28,13 @@ import biz.lobachev.annette.application.impl.language.model.LanguageSerializerRe
 import biz.lobachev.annette.application.impl.translation._
 import biz.lobachev.annette.application.impl.translation.dao.{TranslationCassandraDbDao, TranslationElasticIndexDao}
 import biz.lobachev.annette.application.impl.translation.model.TranslationSerializerRegistry
+import biz.lobachev.annette.application.impl.translation_json.{
+  TranslationJsonDbEventProcessor,
+  TranslationJsonEntity,
+  TranslationJsonEntityService
+}
+import biz.lobachev.annette.application.impl.translation_json.dao.TranslationJsonCassandraDbDao
+import biz.lobachev.annette.application.impl.translation_json.model.TranslationJsonSerializerRegistry
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.microservice_core.elastic.ElasticModule
 import com.lightbend.lagom.scaladsl.api.LagomConfigComponent
@@ -99,6 +106,15 @@ trait ApplicationComponents
     }
   )
 
+  lazy val wiredTranslationJsonCasRepository = wire[TranslationJsonCassandraDbDao]
+  readSide.register(wire[TranslationJsonDbEventProcessor])
+  lazy val wiredTranslationJsonEntityService = wire[TranslationJsonEntityService]
+  clusterSharding.init(
+    Entity(TranslationJsonEntity.typeKey) { entityContext =>
+      TranslationJsonEntity(entityContext)
+    }
+  )
+
   lazy val wiredApplicationCassandraDbDao  = wire[ApplicationCassandraDbDao]
   lazy val wiredApplicationElasticIndexDao = wire[ApplicationElasticIndexDao]
   readSide.register(wire[ApplicationDbEventProcessor])
@@ -122,5 +138,6 @@ object ApplicationServiceSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: immutable.Seq[JsonSerializer[_]] =
     LanguageSerializerRegistry.serializers ++
       TranslationSerializerRegistry.serializers ++
+      TranslationJsonSerializerRegistry.serializers ++
       ApplicationSerializerRegistry.serializers
 }
