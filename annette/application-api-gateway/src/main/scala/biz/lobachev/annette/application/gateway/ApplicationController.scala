@@ -109,8 +109,11 @@ class ApplicationController @Inject() (
     }
 
   def createTranslation =
-    authenticated.async(parse.json[CreateTranslationPayload]) { implicit request =>
+    authenticated.async(parse.json[CreateTranslationPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[CreateTranslationPayload]
+        .withFieldConst(_.createdBy, request.subject.principals.head)
+        .transform
       authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
         for {
           _ <- applicationService.createTranslation(payload)
@@ -118,8 +121,11 @@ class ApplicationController @Inject() (
       }
     }
   def updateTranslation =
-    authenticated.async(parse.json[UpdateTranslationPayload]) { implicit request =>
+    authenticated.async(parse.json[UpdateTranslationPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[UpdateTranslationPayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
         for {
           _ <- applicationService.updateTranslation(payload)
@@ -128,8 +134,11 @@ class ApplicationController @Inject() (
     }
 
   def deleteTranslation =
-    authenticated.async(parse.json[DeleteTranslationPayload]) { implicit request =>
+    authenticated.async(parse.json[DeleteTranslationPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[DeleteTranslationPayload]
+        .withFieldConst(_.deletedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
         for {
           _ <- applicationService.deleteTranslation(payload)
