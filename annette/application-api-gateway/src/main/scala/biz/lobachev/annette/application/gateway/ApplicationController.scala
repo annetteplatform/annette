@@ -233,8 +233,11 @@ class ApplicationController @Inject() (
     }
 
   def createApplication =
-    authenticated.async(parse.json[CreateApplicationPayload]) { implicit request =>
+    authenticated.async(parse.json[CreateApplicationPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[CreateApplicationPayload]
+        .withFieldConst(_.createdBy, request.subject.principals.head)
+        .transform
       authorizer.performCheckAny(MAINTAIN_ALL_APPLICATIONS) {
         for {
           _      <- applicationService.createApplication(payload)
@@ -244,8 +247,11 @@ class ApplicationController @Inject() (
     }
 
   def updateApplication =
-    authenticated.async(parse.json[UpdateApplicationPayload]) { implicit request =>
+    authenticated.async(parse.json[UpdateApplicationPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[UpdateApplicationPayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheckAny(MAINTAIN_ALL_APPLICATIONS) {
         for {
           _      <- applicationService.updateApplication(payload)
@@ -255,8 +261,11 @@ class ApplicationController @Inject() (
     }
 
   def deleteApplication =
-    authenticated.async(parse.json[DeleteApplicationPayload]) { implicit request =>
+    authenticated.async(parse.json[DeleteApplicationPayloadDto]) { implicit request =>
       val payload = request.body
+        .into[DeleteApplicationPayload]
+        .withFieldConst(_.deletedBy, request.subject.principals.head)
+        .transform
       authorizer.performCheckAny(MAINTAIN_ALL_APPLICATIONS) {
         for {
           _ <- applicationService.deleteApplication(payload)
