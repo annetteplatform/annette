@@ -124,7 +124,7 @@ private[impl] class LanguageCassandraDbDao(session: CassandraSession)(implicit e
     for {
       stmt   <- session.prepare("SELECT * FROM languages")
       result <- session.selectAll(stmt.bind).map(_.map(convertLanguage))
-    } yield result
+    } yield result.sortBy(_.id)
 
   def convertLanguage(row: Row): Language =
     Language(
