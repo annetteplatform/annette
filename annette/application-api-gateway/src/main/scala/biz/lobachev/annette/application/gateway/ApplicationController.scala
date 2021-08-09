@@ -23,6 +23,7 @@ import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.api.language.{
   CreateLanguagePayload,
   DeleteLanguagePayload,
+  FindLanguageQuery,
   UpdateLanguagePayload
 }
 import biz.lobachev.annette.application.api.translation._
@@ -60,7 +61,7 @@ class ApplicationController @Inject() (
       authorizer.performCheckAny(MAINTAIN_ALL_LANGUAGES) {
         for {
           _      <- applicationService.createLanguage(payload)
-          result <- applicationService.getLanguage(payload.id)
+          result <- applicationService.getLanguageById(payload.id, false)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -74,7 +75,7 @@ class ApplicationController @Inject() (
       authorizer.performCheckAny(MAINTAIN_ALL_LANGUAGES) {
         for {
           _      <- applicationService.updateLanguage(payload)
-          result <- applicationService.getLanguage(payload.id)
+          result <- applicationService.getLanguageById(payload.id, false)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -92,20 +93,48 @@ class ApplicationController @Inject() (
       }
     }
 
-  def getLanguage(id: LanguageId) =
-    authenticated.async { implicit request =>
-      authorizer.performCheckAny(MAINTAIN_ALL_LANGUAGES) {
+  def getLanguageById(id: LanguageId, fromReadSide: Boolean = true) =
+    if (fromReadSide)
+      Action.async { _ =>
         for {
-          result <- applicationService.getLanguage(id)
+          result <- applicationService.getLanguageById(id, fromReadSide)
         } yield Ok(Json.toJson(result))
       }
-    }
+    else
+      authenticated.async { implicit request =>
+        authorizer.performCheckAny(MAINTAIN_ALL_LANGUAGES) {
+          for {
+            result <- applicationService.getLanguageById(id, fromReadSide)
+          } yield Ok(Json.toJson(result))
+        }
+      }
 
-  def getLanguages =
-    Action.async { _ =>
-      for {
-        result <- applicationService.getLanguages()
-      } yield Ok(Json.toJson(result))
+  def getLanguagesById(fromReadSide: Boolean = true) =
+    if (fromReadSide)
+      Action.async(parse.json[Set[LanguageId]]) { request =>
+        val ids = request.body
+        for {
+          result <- applicationService.getLanguagesById(ids, fromReadSide)
+        } yield Ok(Json.toJson(result))
+      }
+    else
+      authenticated.async(parse.json[Set[LanguageId]]) { implicit request =>
+        authorizer.performCheckAny(MAINTAIN_ALL_LANGUAGES) {
+          val ids = request.body
+          for {
+            result <- applicationService.getLanguagesById(ids, fromReadSide)
+          } yield Ok(Json.toJson(result))
+        }
+      }
+
+  def findLanguages =
+    authenticated.async(parse.json[FindLanguageQuery]) { implicit request =>
+      val query = request.body
+      authorizer.performCheckAny(MAINTAIN_ALL_LANGUAGES) {
+        for {
+          result <- applicationService.findLanguages(query)
+        } yield Ok(Json.toJson(result))
+      }
     }
 
   def createTranslation =
@@ -120,6 +149,7 @@ class ApplicationController @Inject() (
         } yield Ok("")
       }
     }
+
   def updateTranslation =
     authenticated.async(parse.json[UpdateTranslationPayloadDto]) { implicit request =>
       val payload = request.body

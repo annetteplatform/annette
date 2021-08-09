@@ -16,16 +16,19 @@
 
 package biz.lobachev.annette.application.impl.language
 
-import java.util.concurrent.TimeUnit
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.application.api.language._
-import biz.lobachev.annette.application.impl.language.dao.LanguageCassandraDbDao
+import biz.lobachev.annette.application.impl.language.dao.{LanguageCassandraDbDao, LanguageElasticIndexDao}
 import biz.lobachev.annette.core.model.LanguageId
+import biz.lobachev.annette.core.model.elastic.FindResult
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 
+import java.util.concurrent.TimeUnit
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -33,10 +36,13 @@ import scala.util.Try
 class LanguageEntityService(
   clusterSharding: ClusterSharding,
   dbDao: LanguageCassandraDbDao,
+  indexDao: LanguageElasticIndexDao,
   config: Config
 )(implicit
-  ec: ExecutionContext
+  ec: ExecutionContext,
+  materializer: Materializer
 ) {
+
   val log = LoggerFactory.getLogger(this.getClass)
 
   implicit val timeout =
@@ -78,11 +84,34 @@ class LanguageEntityService(
       .ask[LanguageEntity.Confirmation](LanguageEntity.DeleteLanguage(payload, _))
       .map(convertSuccess)
 
-  def getLanguage(id: LanguageId): Future[Language] =
-    refFor(id)
-      .ask[LanguageEntity.Confirmation](LanguageEntity.GetLanguage(id, _))
-      .map(convertSuccessLanguage)
+  def getLanguageById(id: LanguageId, fromReadSide: Boolean = true): Future[Language] =
+    if (fromReadSide)
+      dbDao
+        .getLanguageById(id)
+        .map(_.getOrElse(throw LanguageNotFound()))
+    else
+      refFor(id)
+        .ask[LanguageEntity.Confirmation](LanguageEntity.GetLanguage(id, _))
+        .map(convertSuccessLanguage)
 
-  def getLanguages: Future[Seq[Language]] = dbDao.getLanguages
+  def getLanguagesById(ids: Set[LanguageId], fromReadSide: Boolean): Future[Seq[Language]] =
+    if (fromReadSide)
+      dbDao
+        .getLanguagesById(ids)
+    else
+      Source(ids)
+        .mapAsync(1) { id =>
+          refFor(id)
+            .ask[LanguageEntity.Confirmation](LanguageEntity.GetLanguage(id, _))
+            .map {
+              case LanguageEntity.SuccessLanguage(language) => Some(language)
+              case _                                        => None
+            }
+        }
+        .runWith(Sink.seq)
+        .map(_.flatten)
+
+  def findLanguages(query: FindLanguageQuery): Future[FindResult] =
+    indexDao.findLanguages(query)
 
 }

@@ -20,12 +20,14 @@ import java.time.OffsetDateTime
 import akka.Done
 import biz.lobachev.annette.application.api.language._
 import biz.lobachev.annette.application.impl.language.LanguageEntity
+import biz.lobachev.annette.core.model.LanguageId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 
 import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.jdk.CollectionConverters._
 
 private[impl] class LanguageCassandraDbDao(session: CassandraSession)(implicit ec: ExecutionContext) {
 
@@ -120,11 +122,17 @@ private[impl] class LanguageCassandraDbDao(session: CassandraSession)(implicit e
         .setString("id", event.id)
     )
 
-  def getLanguages: Future[Seq[Language]] =
+  def getLanguageById(id: LanguageId): Future[Option[Language]] =
     for {
-      stmt   <- session.prepare("SELECT * FROM languages")
-      result <- session.selectAll(stmt.bind).map(_.map(convertLanguage))
-    } yield result.sortBy(_.id)
+      stmt   <- session.prepare("SELECT * FROM languages WHERE id=:id")
+      result <- session.selectOne(stmt.bind().setString("id", id)).map(_.map(convertLanguage))
+    } yield result
+
+  def getLanguagesById(ids: Set[LanguageId]): Future[Seq[Language]] =
+    for {
+      stmt   <- session.prepare("SELECT * FROM languages WHERE id IN ?")
+      result <- session.selectAll(stmt.bind(ids.toList.asJava)).map(_.map(convertLanguage))
+    } yield result
 
   def convertLanguage(row: Row): Language =
     Language(

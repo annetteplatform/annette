@@ -38,11 +38,14 @@ class ApplicationServiceImpl(api: ApplicationServiceApi) extends ApplicationServ
   def deleteLanguage(payload: DeleteLanguagePayload): Future[Done] =
     api.deleteLanguage.invoke(payload)
 
-  def getLanguage(id: LanguageId): Future[Language] =
-    api.getLanguage(id).invoke()
+  def getLanguageById(id: LanguageId, fromReadSide: Boolean = true): Future[Language] =
+    api.getLanguageById(id, fromReadSide).invoke()
 
-  def getLanguages(): Future[Seq[Language]] =
-    api.getLanguages.invoke()
+  def getLanguagesById(ids: Set[LanguageId], fromReadSide: Boolean = true): Future[Seq[Language]] =
+    api.getLanguagesById(fromReadSide).invoke(ids)
+
+  def findLanguages(query: FindLanguageQuery): Future[FindResult] =
+    api.findLanguages.invoke(query)
 
   def createTranslation(payload: CreateTranslationPayload): Future[Done] =
     api.createTranslation.invoke(payload)

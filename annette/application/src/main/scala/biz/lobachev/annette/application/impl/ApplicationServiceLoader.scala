@@ -23,7 +23,7 @@ import biz.lobachev.annette.application.impl.application._
 import biz.lobachev.annette.application.impl.application.dao.{ApplicationCassandraDbDao, ApplicationElasticIndexDao}
 import biz.lobachev.annette.application.impl.application.model.ApplicationSerializerRegistry
 import biz.lobachev.annette.application.impl.language._
-import biz.lobachev.annette.application.impl.language.dao.LanguageCassandraDbDao
+import biz.lobachev.annette.application.impl.language.dao.{LanguageCassandraDbDao, LanguageElasticIndexDao}
 import biz.lobachev.annette.application.impl.language.model.LanguageSerializerRegistry
 import biz.lobachev.annette.application.impl.translation._
 import biz.lobachev.annette.application.impl.translation.dao.{TranslationCassandraDbDao, TranslationElasticIndexDao}
@@ -79,16 +79,16 @@ trait ApplicationComponents
   implicit def materializer: Materializer
 
   val elasticModule = new ElasticModule(config)
-
   import elasticModule._
 
   override lazy val lagomServer = serverFor[ApplicationServiceApi](wire[ApplicationServiceApiImpl])
 
   lazy val jsonSerializerRegistry = ApplicationServiceSerializerRegistry
 
-  lazy val wiredLanguageCasRepository = wire[LanguageCassandraDbDao]
+  lazy val wiredLanguageCasRepository   = wire[LanguageCassandraDbDao]
+  lazy val wiredLanguageElasticIndexDao = wire[LanguageElasticIndexDao]
   readSide.register(wire[LanguageDbEventProcessor])
-  lazy val wiredLanguageEntityService = wire[LanguageEntityService]
+  lazy val wiredLanguageEntityService   = wire[LanguageEntityService]
   clusterSharding.init(
     Entity(LanguageEntity.typeKey) { entityContext =>
       LanguageEntity(entityContext)
