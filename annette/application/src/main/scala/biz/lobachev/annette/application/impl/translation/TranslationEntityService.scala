@@ -18,6 +18,8 @@ package biz.lobachev.annette.application.impl.translation
 
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.application.impl.translation.dao.{TranslationCassandraDbDao, TranslationElasticIndexDao}
@@ -36,7 +38,8 @@ class TranslationEntityService(
   indexDao: TranslationElasticIndexDao,
   config: Config
 )(implicit
-  ec: ExecutionContext
+  ec: ExecutionContext,
+  materializer: Materializer
 ) {
 
   val log = LoggerFactory.getLogger(this.getClass)
@@ -88,13 +91,31 @@ class TranslationEntityService(
       .ask[TranslationEntity.Confirmation](TranslationEntity.DeleteTranslation(payload, _))
       .map(convertSuccess)
 
-  def getTranslation(id: TranslationId): Future[Translation] =
-    refFor(checkId(id))
-      .ask[TranslationEntity.Confirmation](TranslationEntity.GetTranslation(id, _))
-      .map(convertSuccessTranslation)
+  def getTranslationById(id: TranslationId, fromReadSide: Boolean = true): Future[Translation] =
+    if (fromReadSide)
+      dbDao
+        .getTranslationById(id)
+        .map(_.getOrElse(throw TranslationNotFound()))
+    else
+      refFor(checkId(id))
+        .ask[TranslationEntity.Confirmation](TranslationEntity.GetTranslation(id, _))
+        .map(convertSuccessTranslation)
 
-  def getTranslations(ids: Set[TranslationId]): Future[Seq[Translation]] =
-    dbDao.getTranslations(ids)
+  def getTranslationsById(ids: Set[TranslationId], fromReadSide: Boolean = true): Future[Seq[Translation]] =
+    if (fromReadSide)
+      dbDao.getTranslationsById(ids)
+    else
+      Source(ids)
+        .mapAsync(1) { id =>
+          refFor(id)
+            .ask[TranslationEntity.Confirmation](TranslationEntity.GetTranslation(id, _))
+            .map {
+              case TranslationEntity.SuccessTranslation(translation) => Some(translation)
+              case _                                                 => None
+            }
+        }
+        .runWith(Sink.seq)
+        .map(_.flatten)
 
   def findTranslations(query: FindTranslationQuery): Future[FindResult] =
     indexDao.findTranslations(query)

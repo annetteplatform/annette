@@ -40,8 +40,8 @@ trait ApplicationServiceApi extends Service {
   def createTranslation: ServiceCall[CreateTranslationPayload, Done]
   def updateTranslation: ServiceCall[UpdateTranslationPayload, Done]
   def deleteTranslation: ServiceCall[DeleteTranslationPayload, Done]
-  def getTranslation(id: TranslationId): ServiceCall[NotUsed, Translation]
-  def getTranslations: ServiceCall[Set[TranslationId], Seq[Translation]]
+  def getTranslationById(id: TranslationId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Translation]
+  def getTranslationsById(fromReadSide: Boolean = true): ServiceCall[Set[TranslationId], Seq[Translation]]
   def findTranslations: ServiceCall[FindTranslationQuery, FindResult]
 
   def updateTranslationJson: ServiceCall[UpdateTranslationJsonPayload, Done]
@@ -73,8 +73,8 @@ trait ApplicationServiceApi extends Service {
         pathCall("/api/application/v1/createTranslation", createTranslation),
         pathCall("/api/application/v1/updateTranslation", updateTranslation),
         pathCall("/api/application/v1/deleteTranslation", deleteTranslation),
-        pathCall("/api/application/v1/getTranslation/:id", getTranslation _),
-        pathCall("/api/application/v1/getTranslations", getTranslations),
+        pathCall("/api/application/v1/getTranslationById/:id/:fromReadSide", getTranslationById _),
+        pathCall("/api/application/v1/getTranslationsById/:fromReadSide", getTranslationsById _),
         pathCall("/api/application/v1/findTranslations", findTranslations),
         pathCall("/api/application/v1/updateTranslationJson", updateTranslationJson),
         pathCall("/api/application/v1/deleteTranslationJson", deleteTranslationJson),

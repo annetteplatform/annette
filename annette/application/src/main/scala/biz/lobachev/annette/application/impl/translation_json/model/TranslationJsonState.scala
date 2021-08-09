@@ -30,6 +30,5 @@ case class TranslationJsonState(
 )
 
 object TranslationJsonState {
-
   implicit val format = Json.format[TranslationJsonState]
 }

@@ -16,12 +16,12 @@ GET     /api/annette/v1/application/findLanguages            biz.lobachev.annett
 POST    /api/annette/v1/application/createTranslation        biz.lobachev.annette.application.gateway.ApplicationController.createTranslation
 POST    /api/annette/v1/application/updateTranslation        biz.lobachev.annette.application.gateway.ApplicationController.updateTranslation
 POST    /api/annette/v1/application/deleteTranslation        biz.lobachev.annette.application.gateway.ApplicationController.deleteTranslation
-GET     /api/annette/v1/application/getTranslation/:id   biz.lobachev.annette.application.gateway.ApplicationController.getTranslation(id: String)
-GET     /api/annette/v1/application/getTranslations      biz.lobachev.annette.application.gateway.ApplicationController.getTranslations
+GET     /api/annette/v1/application/getTranslationById/:id/:fromReadSide biz.lobachev.annette.application.gateway.ApplicationController.getTranslationById(id: String, fromReadSide: Boolean)
+GET     /api/annette/v1/application/getTranslationsById/:fromReadSide    biz.lobachev.annette.application.gateway.ApplicationController.getTranslationsById(fromReadSide: Boolean)
 POST    /api/annette/v1/application/findTranslations         biz.lobachev.annette.application.gateway.ApplicationController.findTranslations
-GET     /api/annette/v1/application/updateTranslationJson  biz.lobachev.annette.application.gateway.ApplicationController.updateTranslationJson
-GET     /api/annette/v1/application/deleteTranslationJson  biz.lobachev.annette.application.gateway.ApplicationController.deleteTranslationJson
-GET     /api/annette/v1/application/getTranslationLanguages/:id  biz.lobachev.annette.application.gateway.ApplicationController.getTranslationLanguages(id: String)
+GET     /api/annette/v1/application/updateTranslationJson    biz.lobachev.annette.application.gateway.ApplicationController.updateTranslationJson
+GET     /api/annette/v1/application/deleteTranslationJson    biz.lobachev.annette.application.gateway.ApplicationController.deleteTranslationJson
+GET     /api/annette/v1/application/getTranslationLanguages/:id         biz.lobachev.annette.application.gateway.ApplicationController.getTranslationLanguages(id: String)
 GET     /api/annette/v1/application/getTranslationJson/:id/:languageId  biz.lobachev.annette.application.gateway.ApplicationController.getTranslationJson(id: String, languageId: String)
 POST    /api/annette/v1/application/getTranslationJsons/:languageId     biz.lobachev.annette.application.gateway.ApplicationController.getTranslationJsons(languageId: String)
 POST    /api/annette/v1/application/createApplication        biz.lobachev.annette.application.gateway.ApplicationController.createApplication

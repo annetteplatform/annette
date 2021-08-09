@@ -39,8 +39,8 @@ trait ApplicationService {
   def createTranslation(payload: CreateTranslationPayload): Future[Done]
   def updateTranslation(payload: UpdateTranslationPayload): Future[Done]
   def deleteTranslation(payload: DeleteTranslationPayload): Future[Done]
-  def getTranslation(id: TranslationId): Future[Translation]
-  def getTranslations(ids: Set[TranslationId]): Future[Seq[Translation]]
+  def getTranslationById(id: TranslationId, fromReadSide: Boolean = true): Future[Translation]
+  def getTranslationsById(ids: Set[TranslationId], fromReadSide: Boolean = true): Future[Seq[Translation]]
   def findTranslations(query: FindTranslationQuery): Future[FindResult]
 
   def updateTranslationJson(payload: UpdateTranslationJsonPayload): Future[Done]

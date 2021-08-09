@@ -101,14 +101,14 @@ class ApplicationServiceApiImpl(
       } yield Done
     }
 
-  override def getTranslation(id: TranslationId): ServiceCall[NotUsed, Translation] =
+  override def getTranslationById(id: TranslationId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Translation] =
     ServiceCall { _ =>
-      translationEntityService.getTranslation(id)
+      translationEntityService.getTranslationById(id, fromReadSide)
     }
 
-  def getTranslations: ServiceCall[Set[TranslationId], Seq[Translation]] =
+  override def getTranslationsById(fromReadSide: Boolean = true): ServiceCall[Set[TranslationId], Seq[Translation]] =
     ServiceCall { ids =>
-      translationEntityService.getTranslations(ids)
+      translationEntityService.getTranslationsById(ids, fromReadSide)
     }
 
   override def findTranslations: ServiceCall[FindTranslationQuery, FindResult] =

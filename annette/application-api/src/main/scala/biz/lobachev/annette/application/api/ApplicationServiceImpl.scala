@@ -56,11 +56,11 @@ class ApplicationServiceImpl(api: ApplicationServiceApi) extends ApplicationServ
   def deleteTranslation(payload: DeleteTranslationPayload): Future[Done] =
     api.deleteTranslation.invoke(payload)
 
-  def getTranslation(id: TranslationId): Future[Translation] =
-    api.getTranslation(id).invoke()
+  def getTranslationById(id: TranslationId, fromReadSide: Boolean = true): Future[Translation] =
+    api.getTranslationById(id, fromReadSide).invoke()
 
-  def getTranslations(ids: Set[TranslationId]): Future[Seq[Translation]] =
-    api.getTranslations.invoke(ids)
+  def getTranslationsById(ids: Set[TranslationId], fromReadSide: Boolean = true): Future[Seq[Translation]] =
+    api.getTranslationsById(fromReadSide).invoke(ids)
 
   def findTranslations(query: FindTranslationQuery): Future[FindResult] =
     api.findTranslations.invoke(query)

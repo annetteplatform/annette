@@ -126,7 +126,13 @@ private[impl] class TranslationCassandraDbDao(session: CassandraSession)(implici
         .setString("id", event.id)
     )
 
-  def getTranslations(ids: Set[TranslationId]): Future[Seq[Translation]] =
+  def getTranslationById(id: TranslationId): Future[Option[Translation]] =
+    for {
+      stmt   <- session.prepare("SELECT * FROM translations WHERE id=:id")
+      result <- session.selectOne(stmt.bind().setString("id", id)).map(_.map(convertTranslation))
+    } yield result
+
+  def getTranslationsById(ids: Set[TranslationId]): Future[Seq[Translation]] =
     for {
       stmt   <- session.prepare("SELECT * FROM translations WHERE id IN ?")
       result <- session.selectAll(stmt.bind(ids.toList.asJava)).map(_.map(convertTranslation))

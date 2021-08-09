@@ -176,21 +176,21 @@ class ApplicationController @Inject() (
       }
     }
 
-  def getTranslation(id: TranslationId) =
+  def getTranslationById(id: TranslationId, fromReadSide: Boolean = true) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
         for {
-          result <- applicationService.getTranslation(id)
+          result <- applicationService.getTranslationById(id, fromReadSide)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def getTranslations =
+  def getTranslationsById(fromReadSide: Boolean = true) =
     authenticated.async(parse.json[Set[TranslationId]]) { implicit request =>
-      val payload = request.body
       authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
+        val ids = request.body
         for {
-          result <- applicationService.getTranslations(payload)
+          result <- applicationService.getTranslationsById(ids, fromReadSide)
         } yield Ok(Json.toJson(result))
       }
     }
