@@ -78,7 +78,7 @@ class PersonElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Ela
             EdgeNGramTokenizer(
               "name_tokenizer",
               minGram = 2,
-              maxGram = 10
+              maxGram = 30
             )
           )
         )
