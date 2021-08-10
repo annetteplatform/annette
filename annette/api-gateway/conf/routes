@@ -11,8 +11,8 @@ POST    /api/annette/v1/application/createLanguage     biz.lobachev.annette.appl
 POST    /api/annette/v1/application/updateLanguage     biz.lobachev.annette.application.gateway.ApplicationController.updateLanguage
 POST    /api/annette/v1/application/deleteLanguage     biz.lobachev.annette.application.gateway.ApplicationController.deleteLanguage
 GET     /api/annette/v1/application/getLanguageById/:id/:fromReadSide biz.lobachev.annette.application.gateway.ApplicationController.getLanguageById(id: String, fromReadSide: Boolean)
-GET     /api/annette/v1/application/getLanguagesById/:fromReadSide    biz.lobachev.annette.application.gateway.ApplicationController.getLanguagesById(fromReadSide: Boolean)
-GET     /api/annette/v1/application/findLanguages            biz.lobachev.annette.application.gateway.ApplicationController.findLanguages
+POST    /api/annette/v1/application/getLanguagesById/:fromReadSide    biz.lobachev.annette.application.gateway.ApplicationController.getLanguagesById(fromReadSide: Boolean)
+POST    /api/annette/v1/application/findLanguages            biz.lobachev.annette.application.gateway.ApplicationController.findLanguages
 POST    /api/annette/v1/application/createTranslation        biz.lobachev.annette.application.gateway.ApplicationController.createTranslation
 POST    /api/annette/v1/application/updateTranslation        biz.lobachev.annette.application.gateway.ApplicationController.updateTranslation
 POST    /api/annette/v1/application/deleteTranslation        biz.lobachev.annette.application.gateway.ApplicationController.deleteTranslation

@@ -88,6 +88,7 @@ trait ApplicationComponents
   lazy val wiredLanguageCasRepository   = wire[LanguageCassandraDbDao]
   lazy val wiredLanguageElasticIndexDao = wire[LanguageElasticIndexDao]
   readSide.register(wire[LanguageDbEventProcessor])
+  readSide.register(wire[LanguageIndexEventProcessor])
   lazy val wiredLanguageEntityService   = wire[LanguageEntityService]
   clusterSharding.init(
     Entity(LanguageEntity.typeKey) { entityContext =>

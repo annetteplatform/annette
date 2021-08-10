@@ -35,7 +35,7 @@ private[impl] class ApplicationIndexEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[ApplicationEntity.Event] =
     readSide
-      .builder[ApplicationEntity.Event]("Application_Application_ElasticEventOffset")
+      .builder[ApplicationEntity.Event]("application-elastic")
       .setGlobalPrepare(indexDao.createEntityIndex)
       .setEventHandler[ApplicationEntity.ApplicationCreated](e => createApplication(e.event))
       .setEventHandler[ApplicationEntity.ApplicationNameUpdated](e => updateApplicationName(e.event))

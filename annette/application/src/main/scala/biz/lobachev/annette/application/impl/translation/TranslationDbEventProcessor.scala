@@ -36,7 +36,7 @@ private[impl] class TranslationDbEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[TranslationEntity.Event] =
     readSide
-      .builder[TranslationEntity.Event]("Application_Translation_CasEventOffset")
+      .builder[TranslationEntity.Event]("translation-cassandra")
       .setGlobalPrepare(globalPrepare)
       .setPrepare(_ => dbDao.prepareStatements())
       .setEventHandler[TranslationEntity.TranslationCreated](e => createTranslation(e.event))

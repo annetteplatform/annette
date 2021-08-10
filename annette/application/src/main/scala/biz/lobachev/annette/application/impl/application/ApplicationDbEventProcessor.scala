@@ -33,7 +33,7 @@ private[impl] class ApplicationDbEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[ApplicationEntity.Event] =
     readSide
-      .builder[ApplicationEntity.Event]("Application_Application_CasEventOffset")
+      .builder[ApplicationEntity.Event]("application-cassandra")
       .setGlobalPrepare(dbDao.createTables)
       .setPrepare(_ => dbDao.prepareStatements())
       .setEventHandler[ApplicationEntity.ApplicationCreated](e => createApplication(e.event))

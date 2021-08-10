@@ -16,8 +16,7 @@
 
 package biz.lobachev.annette.application.impl.language
 
-import akka.Done
-import biz.lobachev.annette.application.impl.language.dao.LanguageCassandraDbDao
+import biz.lobachev.annette.application.impl.language.dao.LanguageElasticIndexDao
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
@@ -25,9 +24,9 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 
-private[impl] class LanguageDbEventProcessor(
+private[impl] class LanguageIndexEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: LanguageCassandraDbDao
+  indexDao: LanguageElasticIndexDao
 )(implicit
   ec: ExecutionContext
 ) extends ReadSideProcessor[LanguageEntity.Event] {
@@ -36,9 +35,8 @@ private[impl] class LanguageDbEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[LanguageEntity.Event] =
     readSide
-      .builder[LanguageEntity.Event]("language-cassandra")
-      .setGlobalPrepare(globalPrepare)
-      .setPrepare(_ => dbDao.prepareStatements())
+      .builder[LanguageEntity.Event]("language-elastic")
+      .setGlobalPrepare(indexDao.createEntityIndex)
       .setEventHandler[LanguageEntity.LanguageCreated](e => createLanguage(e.event))
       .setEventHandler[LanguageEntity.LanguageUpdated](e => updateLanguage(e.event))
       .setEventHandler[LanguageEntity.LanguageDeleted](e => deleteLanguage(e.event))
@@ -46,24 +44,19 @@ private[impl] class LanguageDbEventProcessor(
 
   def aggregateTags: Set[AggregateEventTag[LanguageEntity.Event]] = LanguageEntity.Event.Tag.allTags
 
-  def globalPrepare(): Future[Done] =
-    dbDao
-      .createTables()
-      .map(_ => Done)
-
   def createLanguage(event: LanguageEntity.LanguageCreated): Future[Seq[BoundStatement]] =
-    Future.successful(
-      dbDao.createLanguage(event)
-    )
+    indexDao
+      .createLanguage(event)
+      .map(_ => Seq.empty)
 
   def updateLanguage(event: LanguageEntity.LanguageUpdated): Future[Seq[BoundStatement]] =
-    Future.successful(
-      dbDao.updateLanguage(event)
-    )
+    indexDao
+      .updateLanguage(event)
+      .map(_ => Seq.empty)
 
   def deleteLanguage(event: LanguageEntity.LanguageDeleted): Future[Seq[BoundStatement]] =
-    Future.successful(
-      dbDao.deleteLanguage(event)
-    )
+    indexDao
+      .deleteLanguage(event)
+      .map(_ => Seq.empty)
 
 }

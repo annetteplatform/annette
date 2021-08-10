@@ -36,7 +36,7 @@ private[impl] class TranslationJsonDbEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[TranslationJsonEntity.Event] =
     readSide
-      .builder[TranslationJsonEntity.Event]("Application_TranslationJson_CasEventOffset")
+      .builder[TranslationJsonEntity.Event]("translationJson-cassandra")
       .setGlobalPrepare(globalPrepare)
       .setPrepare(_ => dbDao.prepareStatements())
       .setEventHandler[TranslationJsonEntity.TranslationJsonUpdated](e => updateTranslationJson(e.event))

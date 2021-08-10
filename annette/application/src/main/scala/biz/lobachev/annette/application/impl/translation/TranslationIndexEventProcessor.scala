@@ -36,7 +36,7 @@ private[impl] class TranslationIndexEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[TranslationEntity.Event] =
     readSide
-      .builder[TranslationEntity.Event]("Application_Translation_ElasticEventOffset")
+      .builder[TranslationEntity.Event]("translation-elastic")
       .setGlobalPrepare(globalPrepare)
       .setEventHandler[TranslationEntity.TranslationCreated](e => createTranslation(e.event))
       .setEventHandler[TranslationEntity.TranslationUpdated](e => updateTranslation(e.event))
