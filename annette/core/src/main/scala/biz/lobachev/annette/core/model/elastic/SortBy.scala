@@ -20,7 +20,7 @@ import play.api.libs.json.{Format, Json}
 
 case class SortBy(
   field: String,
-  ascending: Option[Boolean] = None
+  descending: Option[Boolean] = None
 )
 
 object SortBy {
