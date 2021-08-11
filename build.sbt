@@ -1,14 +1,14 @@
 import com.typesafe.sbt.SbtNativePackager.autoImport.NativePackagerHelper._
-import com.typesafe.sbt.packager.docker.{DockerChmodType}
+import com.typesafe.sbt.packager.docker.DockerChmodType
 import play.sbt.routes.RoutesKeys
 
 scalaVersion := "2.13.3"
 maintainer := "valery@lobachev.biz"
 
-version in ThisBuild := "0.3.0-SNAPSHOT"
-scalaVersion in ThisBuild := "2.13.3"
+ThisBuild / version := "0.3.0-SNAPSHOT"
+ThisBuild / scalaVersion := "2.13.3"
 
-maintainer in ThisBuild := "valery@lobachev.biz"
+ThisBuild / maintainer := "valery@lobachev.biz"
 
 ThisBuild / organization := "biz.lobachev.annette"
 ThisBuild / organizationName := "Valery Lobachev"
@@ -43,9 +43,9 @@ ThisBuild / publishTo := {
 ThisBuild / publishMavenStyle := true
 
 // Use external Kafka
-lagomKafkaEnabled in ThisBuild := false
+ThisBuild / lagomKafkaEnabled := false
 // Use external Cassandra
-lagomCassandraEnabled in ThisBuild := false
+ThisBuild / lagomCassandraEnabled := false
 
 // Copyright settings
 def annetteSettings: Seq[Setting[_]] =
@@ -56,8 +56,8 @@ def annetteSettings: Seq[Setting[_]] =
 
 def confDirSettings: Seq[Setting[_]] =
   Seq(
-    unmanagedClasspath in Runtime += baseDirectory.value / "conf",
-    mappings in Universal ++= directory(baseDirectory.value / "conf"),
+    Runtime / unmanagedClasspath += baseDirectory.value / "conf",
+    Universal / mappings ++= directory(baseDirectory.value / "conf"),
     scriptClasspath := "../conf/" +: scriptClasspath.value
   )
 
@@ -80,7 +80,7 @@ lazy val root = (project in file("."))
     `api-gateway`,
     // initialization application
     `ignition-core`,
-//    `demo-ignition`,
+    // `demo-ignition`,
     // API gateways
     `application-api-gateway`,
     `authorization-api-gateway`,
@@ -561,7 +561,7 @@ lazy val `cms-api-gateway` = (project in file("annette/cms-api-gateway"))
     `subscriptions-api`
   )
 
-//lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/demo"))
+// lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/demo"))
 lazy val `application`      = applicationProject(project in file("annette/application"))
 lazy val `attributes`       = attributesProject(project in file("annette/attributes"))
 lazy val `authorization`    = authorizationProject(project in file("annette/authorization"))

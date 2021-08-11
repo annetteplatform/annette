@@ -16,11 +16,11 @@
 
 package biz.lobachev.annette.person.gateway.dto
 
-import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
+import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.Json
 
 case class PersonCategoryDto(
-  id: OrgCategoryId,
+  id: CategoryId,
   name: String
 )
 

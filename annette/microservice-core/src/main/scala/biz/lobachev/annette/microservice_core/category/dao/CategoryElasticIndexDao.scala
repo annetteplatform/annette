@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.impl.category.dao
+package biz.lobachev.annette.microservice_core.category.dao
 
 import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.microservice_core.elastic.{AbstractElasticIndexDao, ElasticSettings}
-import biz.lobachev.annette.persons.api.category.PersonCategoryFindQuery
-import biz.lobachev.annette.persons.impl.category.CategoryEntity
+import biz.lobachev.annette.core.model.category.CategoryFindQuery
+import biz.lobachev.annette.microservice_core.category.CategoryEntity
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.analysis.{Analysis, CustomAnalyzer, EdgeNGramTokenFilter}
@@ -30,14 +30,13 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CategoryElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: ElasticClient)(implicit
-  override val ec: ExecutionContext
-) extends AbstractElasticIndexDao(elasticSettings, elasticClient)
-    with CategoryIndexDao {
+class CategoryElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: ElasticClient, indexSuffixName: String)(
+  implicit override val ec: ExecutionContext
+) extends AbstractElasticIndexDao(elasticSettings, elasticClient) {
 
   override val log = LoggerFactory.getLogger(this.getClass)
 
-  override def indexSuffix = "persons-category"
+  override def indexSuffix = indexSuffixName
 
   def createIndexRequest: CreateIndexRequest =
     createIndex(indexName)
@@ -89,7 +88,7 @@ class CategoryElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: E
     }
       .map(processResponse("deleteCategory", event.id)(_))
 
-  def findCategories(query: PersonCategoryFindQuery): Future[FindResult] = {
+  def findCategories(query: CategoryFindQuery): Future[FindResult] = {
 
     val fieldQuery             = Seq(
       query.name.map(matchQuery("name", _))

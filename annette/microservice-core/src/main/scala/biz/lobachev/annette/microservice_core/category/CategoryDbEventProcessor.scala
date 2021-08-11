@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.impl.category
+package biz.lobachev.annette.microservice_core.category
 
-import biz.lobachev.annette.persons.impl.category.dao.CategoryIndexDao
+import biz.lobachev.annette.microservice_core.category.dao.CategoryCassandraDbDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 
-private[impl] class CategoryIndexEventProcessor(
+class CategoryDbEventProcessor(
   readSide: CassandraReadSide,
-  indexDao: CategoryIndexDao
-)(implicit
-  ec: ExecutionContext
+  dbDao: CategoryCassandraDbDao,
+  readSideId: String
 ) extends ReadSideProcessor[CategoryEntity.Event] {
 
   def buildHandler() =
     readSide
-      .builder[CategoryEntity.Event]("Person_Category_ElasticEventOffset")
-      .setGlobalPrepare(indexDao.createEntityIndex)
+      .builder[CategoryEntity.Event](readSideId)
+      .setGlobalPrepare(dbDao.createTables)
+      .setPrepare(_ => dbDao.prepareStatements())
       .setEventHandler[CategoryEntity.CategoryCreated](e => createCategory(e.event))
       .setEventHandler[CategoryEntity.CategoryUpdated](e => updateCategory(e.event))
       .setEventHandler[CategoryEntity.CategoryDeleted](e => deleteCategory(e.event))
@@ -41,18 +41,12 @@ private[impl] class CategoryIndexEventProcessor(
   def aggregateTags = CategoryEntity.Event.Tag.allTags
 
   private def createCategory(event: CategoryEntity.CategoryCreated) =
-    for {
-      _ <- indexDao.createCategory(event)
-    } yield List.empty
+    Future.successful(dbDao.createCategory(event))
 
   private def updateCategory(event: CategoryEntity.CategoryUpdated) =
-    for {
-      _ <- indexDao.updateCategory(event)
-    } yield List.empty
+    Future.successful(dbDao.updateCategory(event))
 
   private def deleteCategory(event: CategoryEntity.CategoryDeleted) =
-    for {
-      _ <- indexDao.deleteCategory(event)
-    } yield List.empty
+    Future.successful(dbDao.deleteCategory(event))
 
 }

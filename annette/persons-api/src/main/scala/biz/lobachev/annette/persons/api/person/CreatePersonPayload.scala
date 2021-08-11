@@ -18,7 +18,7 @@ package biz.lobachev.annette.persons.api.person
 
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.persons.api.category.PersonCategoryId
+import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.Json
 
 case class CreatePersonPayload(
@@ -26,7 +26,7 @@ case class CreatePersonPayload(
   lastname: String,           // last name of the person
   firstname: String,          // first name
   middlename: Option[String], // middle name
-  categoryId: PersonCategoryId,
+  categoryId: CategoryId,
   phone: Option[String],      // phone
   email: Option[String],      // email
   createdBy: AnnettePrincipal

@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.api.category
+package biz.lobachev.annette.core.model.category
 
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.elastic.SortBy
 import play.api.libs.json.Json
 
-case class CreateCategoryPayload(
-  id: PersonCategoryId,
-  name: String,
-  createdBy: AnnettePrincipal
+case class CategoryFindQuery(
+  offset: Int = 0,
+  size: Int,
+  filter: Option[String] = None,
+  name: Option[String] = None,
+  sortBy: Option[SortBy] = None
 )
 
-object CreateCategoryPayload {
-  implicit val format = Json.format[CreateCategoryPayload]
+object CategoryFindQuery {
+  implicit val format = Json.format[CategoryFindQuery]
 }

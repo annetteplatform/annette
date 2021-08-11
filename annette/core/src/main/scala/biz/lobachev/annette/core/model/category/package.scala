@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.api
+package biz.lobachev.annette.core.model
 
 package object category {
-  type PersonCategoryId = String
+  type CategoryId = String
 }

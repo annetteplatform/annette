@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.impl.category
+package biz.lobachev.annette.microservice_core.category
 
-import java.time.OffsetDateTime
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl._
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.persons.api.category._
-import biz.lobachev.annette.persons.impl.category.model.CategoryState
+import biz.lobachev.annette.core.model.category._
+import biz.lobachev.annette.microservice_core.category.model.CategoryState
 import com.lightbend.lagom.scaladsl.persistence._
 import io.scalaland.chimney.dsl._
-import play.api.libs.json.{Format, _}
+import play.api.libs.json._
+
+import java.time.OffsetDateTime
 
 object CategoryEntity {
 
@@ -37,13 +38,13 @@ object CategoryEntity {
   final case class CreateCategory(payload: CreateCategoryPayload, replyTo: ActorRef[Confirmation]) extends Command
   final case class UpdateCategory(payload: UpdateCategoryPayload, replyTo: ActorRef[Confirmation]) extends Command
   final case class DeleteCategory(payload: DeleteCategoryPayload, replyTo: ActorRef[Confirmation]) extends Command
-  final case class GetCategory(id: PersonCategoryId, replyTo: ActorRef[Confirmation])              extends Command
+  final case class GetCategory(id: CategoryId, replyTo: ActorRef[Confirmation])                    extends Command
 
   sealed trait Confirmation
-  final case object Success                                extends Confirmation
-  final case class SuccessCategory(entity: PersonCategory) extends Confirmation
-  final case object NotFound                               extends Confirmation
-  final case object AlreadyExist                           extends Confirmation
+  final case object Success                          extends Confirmation
+  final case class SuccessCategory(entity: Category) extends Confirmation
+  final case object NotFound                         extends Confirmation
+  final case object AlreadyExist                     extends Confirmation
 
   implicit val confirmationSuccessFormat: Format[Success.type]            = Json.format
   implicit val confirmationSuccessCategoryFormat: Format[SuccessCategory] = Json.format
@@ -61,19 +62,19 @@ object CategoryEntity {
   }
 
   final case class CategoryCreated(
-    id: PersonCategoryId,
+    id: CategoryId,
     name: String,
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
   final case class CategoryUpdated(
-    id: PersonCategoryId,
+    id: CategoryId,
     name: String,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
   final case class CategoryDeleted(
-    id: PersonCategoryId, // category id
+    id: CategoryId, // category id
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -82,8 +83,7 @@ object CategoryEntity {
   implicit val categoryUpdatedFormat: Format[CategoryUpdated]     = Json.format
   implicit val categoryDeactivatedFormat: Format[CategoryDeleted] = Json.format
 
-  val empty                           = CategoryEntity(None)
-  val typeKey: EntityTypeKey[Command] = EntityTypeKey[Command]("Category")
+  val empty = CategoryEntity(None)
 
   def apply(persistenceId: PersistenceId): EventSourcedBehavior[Command, Event, CategoryEntity] =
     EventSourcedBehavior

@@ -14,19 +14,19 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.api.category
+package biz.lobachev.annette.core.model.category
 
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionCompanion1
 import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
 
-object PersonCategoryNotFound extends AnnetteTransportExceptionCompanion1 {
+object CategoryNotFound extends AnnetteTransportExceptionCompanion1 {
   val ErrorCode       = TransportErrorCode.NotFound
-  val MessageCode     = "annette.personService.category.notFound"
+  val MessageCode     = "annette.core.category.notFound"
   val Arg1Key: String = "id"
 }
 
-object PersonCategoryAlreadyExist extends AnnetteTransportExceptionCompanion1 {
+object CategoryAlreadyExist extends AnnetteTransportExceptionCompanion1 {
   val ErrorCode       = TransportErrorCode.BadRequest
-  val MessageCode     = "annette.personService.category.alreadyExist"
+  val MessageCode     = "annette.core.category.alreadyExist"
   val Arg1Key: String = "id"
 }

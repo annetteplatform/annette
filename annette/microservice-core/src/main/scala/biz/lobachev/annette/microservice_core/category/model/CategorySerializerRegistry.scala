@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.impl.category.model
+package biz.lobachev.annette.microservice_core.category.model
 
 import biz.lobachev.annette.core.model.elastic.FindResult
-import biz.lobachev.annette.persons.api.category._
-import biz.lobachev.annette.persons.impl.category.CategoryEntity._
+import biz.lobachev.annette.core.model.category._
+import biz.lobachev.annette.microservice_core.category.CategoryEntity._
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
 object CategorySerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
       // state
-      JsonSerializer[PersonCategory],
+      JsonSerializer[Category],
       JsonSerializer[CategoryState],
       JsonSerializer[CreateCategoryPayload],
       JsonSerializer[UpdateCategoryPayload],
@@ -40,7 +40,7 @@ object CategorySerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[CategoryCreated],
       JsonSerializer[CategoryUpdated],
       JsonSerializer[CategoryDeleted],
-      JsonSerializer[PersonCategoryFindQuery],
+      JsonSerializer[CategoryFindQuery],
       JsonSerializer[FindResult]
     )
 }

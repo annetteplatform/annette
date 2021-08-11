@@ -14,22 +14,22 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.impl.category.dao
+package biz.lobachev.annette.microservice_core.category.dao
 
 import java.time.OffsetDateTime
 import akka.Done
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.persons.api.category.{PersonCategory, PersonCategoryId}
-import biz.lobachev.annette.persons.impl.category.CategoryEntity
+import biz.lobachev.annette.core.model.category.{Category, CategoryId}
+import biz.lobachev.annette.microservice_core.category.CategoryEntity
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 
-private[impl] class CategoryCassandraDbDao(session: CassandraSession)(implicit
+class CategoryCassandraDbDao(session: CassandraSession, tableName: String)(implicit
   ec: ExecutionContext
-) extends CategoryDbDao {
+) {
 
   private var insertCategoryStatement: PreparedStatement = null
   private var updateCategoryStatement: PreparedStatement = null
@@ -37,45 +37,45 @@ private[impl] class CategoryCassandraDbDao(session: CassandraSession)(implicit
 
   def createTables(): Future[Done] =
     for {
-      _ <- session.executeCreateTable("""
-                                        |CREATE TABLE IF NOT EXISTS categories (
-                                        |          id text PRIMARY KEY,
-                                        |          name text,
-                                        |          updated_at text,
-                                        |          updated_by_type text,
-                                        |          updated_by_id text,
-                                        |)
-                                        |""".stripMargin)
+      _ <- session.executeCreateTable(s"""
+                                         |CREATE TABLE IF NOT EXISTS ${tableName} (
+                                         |          id text PRIMARY KEY,
+                                         |          name text,
+                                         |          updated_at text,
+                                         |          updated_by_type text,
+                                         |          updated_by_id text,
+                                         |)
+                                         |""".stripMargin)
 
     } yield Done
 
   def prepareStatements(): Future[Done] =
     for {
       insertCategoryStmt <- session.prepare(
-                              """
-                                | INSERT  INTO categories (id, name,
-                                |     updated_at, updated_by_type, updated_by_id
-                                |    )
-                                |   VALUES (:id, :name,
-                                |     :updated_at, :updated_by_type, :updated_by_id
-                                |    )
-                                |""".stripMargin
+                              s"""
+                                 | INSERT  INTO ${tableName} (id, name,
+                                 |     updated_at, updated_by_type, updated_by_id
+                                 |    )
+                                 |   VALUES (:id, :name,
+                                 |     :updated_at, :updated_by_type, :updated_by_id
+                                 |    )
+                                 |""".stripMargin
                             )
       updateCategoryStmt <- session.prepare(
-                              """
-                                | UPDATE categories SET
-                                |   name = :name,
-                                |   updated_at = :updated_at,
-                                |   updated_by_type = :updated_by_type,
-                                |   updated_by_id = :updated_by_id
-                                | WHERE id = :id
-                                |""".stripMargin
+                              s"""
+                                 | UPDATE ${tableName} SET
+                                 |   name = :name,
+                                 |   updated_at = :updated_at,
+                                 |   updated_by_type = :updated_by_type,
+                                 |   updated_by_id = :updated_by_id
+                                 | WHERE id = :id
+                                 |""".stripMargin
                             )
       deleteCategoryStmt <- session.prepare(
-                              """
-                                | DELETE FROM categories
-                                |   WHERE id = :id
-                                |""".stripMargin
+                              s"""
+                                 | DELETE FROM ${tableName}
+                                 |   WHERE id = :id
+                                 |""".stripMargin
                             )
     } yield {
       insertCategoryStatement = insertCategoryStmt
@@ -113,27 +113,24 @@ private[impl] class CategoryCassandraDbDao(session: CassandraSession)(implicit
         .setString("id", event.id)
     )
 
-  def getCategoryById(id: PersonCategoryId): Future[Option[PersonCategory]] =
+  def getCategoryById(id: CategoryId): Future[Option[Category]] =
     for {
-      stmt   <- session.prepare("SELECT * FROM categories WHERE id = ?")
+      stmt   <- session.prepare(s"SELECT * FROM ${tableName} WHERE id = ?")
       result <- session.selectOne(stmt.bind(id)).map(_.map(convertCategory))
     } yield result
 
-  def getCategoriesById(ids: Set[PersonCategoryId]): Future[Map[PersonCategoryId, PersonCategory]] =
+  def getCategoriesById(ids: Set[CategoryId]): Future[Seq[Category]] =
     for {
-      stmt   <- session.prepare("SELECT * FROM categories WHERE id IN ?")
+      stmt   <- session.prepare(s"SELECT * FROM ${tableName} WHERE id IN ?")
       result <- session
                   .selectAll(stmt.bind(ids.toList.asJava))
                   .map(
-                    _.map { row =>
-                      val category = convertCategory(row)
-                      category.id -> category
-                    }.toMap
+                    _.map(convertCategory)
                   )
     } yield result
 
-  private def convertCategory(row: Row): PersonCategory =
-    PersonCategory(
+  private def convertCategory(row: Row): Category =
+    Category(
       id = row.getString("id"),
       name = row.getString("name"),
       updatedAt = OffsetDateTime.parse(row.getString("updated_at")),

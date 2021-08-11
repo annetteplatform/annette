@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.impl.category
+package biz.lobachev.annette.microservice_core.category
 
 import java.util.concurrent.TimeUnit
 import akka.Done
-import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef, EntityTypeKey}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.core.model.elastic.FindResult
-import biz.lobachev.annette.persons.api.category._
-import biz.lobachev.annette.persons.impl.category.dao.{CategoryDbDao, CategoryIndexDao}
+import biz.lobachev.annette.core.model.category._
+import biz.lobachev.annette.microservice_core.category.CategoryEntity.Command
+import biz.lobachev.annette.microservice_core.category.dao.{CategoryCassandraDbDao, CategoryElasticIndexDao}
 import com.typesafe.config.Config
 
 import scala.concurrent.duration._
@@ -33,9 +34,10 @@ import scala.util.Try
 
 class CategoryEntityService(
   clusterSharding: ClusterSharding,
-  dbDao: CategoryDbDao,
-  indexDao: CategoryIndexDao,
-  config: Config
+  dbDao: CategoryCassandraDbDao,
+  indexDao: CategoryElasticIndexDao,
+  config: Config,
+  typeKey: EntityTypeKey[Command]
 )(implicit
   ec: ExecutionContext,
   val materializer: Materializer
@@ -46,14 +48,14 @@ class CategoryEntityService(
       .map(d => Timeout(FiniteDuration(d.toNanos, TimeUnit.NANOSECONDS)))
       .getOrElse(Timeout(60.seconds))
 
-  private def refFor(id: PersonCategoryId): EntityRef[CategoryEntity.Command] =
-    clusterSharding.entityRefFor(CategoryEntity.typeKey, id)
+  private def refFor(id: CategoryId): EntityRef[CategoryEntity.Command] =
+    clusterSharding.entityRefFor(typeKey, id)
 
-  private def convertSuccess(id: PersonCategoryId, confirmation: CategoryEntity.Confirmation): Done =
+  private def convertSuccess(id: CategoryId, confirmation: CategoryEntity.Confirmation): Done =
     confirmation match {
       case CategoryEntity.Success      => Done
-      case CategoryEntity.NotFound     => throw PersonCategoryNotFound(id)
-      case CategoryEntity.AlreadyExist => throw PersonCategoryAlreadyExist(id)
+      case CategoryEntity.NotFound     => throw CategoryNotFound(id)
+      case CategoryEntity.AlreadyExist => throw CategoryAlreadyExist(id)
       case _                           => throw new RuntimeException("Match fail")
     }
 
@@ -72,30 +74,26 @@ class CategoryEntityService(
       .ask[CategoryEntity.Confirmation](CategoryEntity.DeleteCategory(payload, _))
       .map(res => convertSuccess(payload.id, res))
 
-  def getCategoryById(id: PersonCategoryId, fromReadSide: Boolean): Future[PersonCategory] =
-    if (fromReadSide) getCategoryByIdFromReadSide(id)
-    else getCategoryById(id)
-
-  def getCategoryById(id: PersonCategoryId): Future[PersonCategory] =
-    refFor(id)
-      .ask[CategoryEntity.Confirmation](CategoryEntity.GetCategory(id, _))
-      .map {
-        case CategoryEntity.SuccessCategory(entity) => entity
-        case _                                      => throw PersonCategoryNotFound(id)
+  def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category] =
+    if (fromReadSide)
+      for {
+        maybeCategory <- dbDao.getCategoryById(id)
+      } yield maybeCategory match {
+        case Some(category) => category
+        case None           => throw CategoryNotFound(id)
       }
-
-  def getCategoryByIdFromReadSide(id: PersonCategoryId): Future[PersonCategory] =
-    for {
-      maybeCategory <- dbDao.getCategoryById(id)
-    } yield maybeCategory match {
-      case Some(category) => category
-      case None           => throw PersonCategoryNotFound(id)
-    }
+    else
+      refFor(id)
+        .ask[CategoryEntity.Confirmation](CategoryEntity.GetCategory(id, _))
+        .map {
+          case CategoryEntity.SuccessCategory(entity) => entity
+          case _                                      => throw CategoryNotFound(id)
+        }
 
   def getCategoriesById(
-    ids: Set[PersonCategoryId],
+    ids: Set[CategoryId],
     fromReadSide: Boolean
-  ): Future[Map[PersonCategoryId, PersonCategory]]                       =
+  ): Future[Seq[Category]] =
     if (fromReadSide) dbDao.getCategoriesById(ids)
     else
       Source(ids)
@@ -108,8 +106,8 @@ class CategoryEntityService(
             }
         }
         .runWith(Sink.seq)
-        .map(seq => seq.flatten.map(category => category.id -> category).toMap)
+        .map(seq => seq.flatten)
 
-  def findCategories(query: PersonCategoryFindQuery): Future[FindResult] =
+  def findCategories(query: CategoryFindQuery): Future[FindResult] =
     indexDao.findCategories(query)
 }

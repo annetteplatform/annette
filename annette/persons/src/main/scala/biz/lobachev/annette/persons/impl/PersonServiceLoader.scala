@@ -19,16 +19,10 @@ package biz.lobachev.annette.persons.impl
 import akka.cluster.sharding.typed.scaladsl.Entity
 import biz.lobachev.annette.attributes.api.AttributeServiceApi
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
+import biz.lobachev.annette.microservice_core.category.{CategoryEntity, CategoryProvider}
+import biz.lobachev.annette.microservice_core.category.model.CategorySerializerRegistry
 import biz.lobachev.annette.microservice_core.elastic.ElasticModule
 import biz.lobachev.annette.persons.api.PersonServiceApi
-import biz.lobachev.annette.persons.impl.category.{
-  CategoryDbEventProcessor,
-  CategoryEntity,
-  CategoryEntityService,
-  CategoryIndexEventProcessor
-}
-import biz.lobachev.annette.persons.impl.category.dao.{CategoryCassandraDbDao, CategoryElasticIndexDao}
-import biz.lobachev.annette.persons.impl.category.model.CategorySerializerRegistry
 import biz.lobachev.annette.persons.impl.person._
 import biz.lobachev.annette.persons.impl.person.dao.{PersonCassandraDbDao, PersonElasticIndexDao}
 import biz.lobachev.annette.persons.impl.person.model.PersonSerializerRegistry
@@ -84,16 +78,25 @@ abstract class PersonServiceApplication(context: LagomApplicationContext)
     }
   )
 
-  lazy val categoryElastic       = wire[CategoryElasticIndexDao]
-  lazy val categoryEntityService = wire[CategoryEntityService]
-  lazy val categoryRepository    = wire[CategoryCassandraDbDao]
-  readSide.register(wire[CategoryDbEventProcessor])
-  readSide.register(wire[CategoryIndexEventProcessor])
+  val categoryProvider = new CategoryProvider(
+    typeKeyName = "Category",
+    tableName = "categories",
+    dbReadSideId = "category-cassandra",
+    indexName = "persons-category",
+    indexReadSideId = "category-elastic"
+  )
+
+  // wireWith(ElasticProvider.create _)
+  lazy val categoryElastic    = wireWith(categoryProvider.createIndexDao _) // wire[CategoryElasticIndexDao]
+  lazy val categoryRepository = wireWith(categoryProvider.createDbDao _)    // wire[CategoryCassandraDbDao]
+  readSide.register(wireWith(categoryProvider.createDbProcessor _))    // wire[CategoryDbEventProcessor])
+  readSide.register(wireWith(categoryProvider.createIndexProcessor _)) // wire[CategoryIndexEventProcessor])
   clusterSharding.init(
-    Entity(CategoryEntity.typeKey) { entityContext =>
+    Entity(categoryProvider.typeKey) { entityContext =>
       CategoryEntity(entityContext)
     }
   )
+  lazy val categoryEntityService = wireWith(categoryProvider.createEntityService _) // wire[CategoryEntityService]
 
   lazy val attributeService       = serviceClient.implement[AttributeServiceApi]
   val enableAttributeSubscription =

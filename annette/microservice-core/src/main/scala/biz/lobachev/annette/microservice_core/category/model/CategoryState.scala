@@ -14,17 +14,27 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.api.category
+package biz.lobachev.annette.microservice_core.category.model
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+
+import java.time.OffsetDateTime
+import biz.lobachev.annette.core.model.category.{Category, CategoryId}
+import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 
-case class UpdateCategoryPayload(
-  id: PersonCategoryId,
+case class CategoryState(
+  id: CategoryId,
   name: String,
+  updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
-)
+) {
 
-object UpdateCategoryPayload {
-  implicit val format = Json.format[UpdateCategoryPayload]
+  def toCategory: Category =
+    this.into[Category].transform
+
+}
+
+object CategoryState {
+  implicit val format = Json.format[CategoryState]
 }

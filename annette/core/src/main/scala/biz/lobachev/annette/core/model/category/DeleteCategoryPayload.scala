@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.api.category
+package biz.lobachev.annette.core.model.category
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class DeleteCategoryPayload(
-  id: PersonCategoryId, // category id
+  id: CategoryId, // category id
   updatedBy: AnnettePrincipal
 )
 
