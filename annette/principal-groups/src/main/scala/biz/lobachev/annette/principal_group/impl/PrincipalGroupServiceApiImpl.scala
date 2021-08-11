@@ -20,7 +20,8 @@ import akka.{Done, NotUsed}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.principal_group.api.PrincipalGroupServiceApi
-import biz.lobachev.annette.principal_group.api.category._
+import biz.lobachev.annette.core.model.category._
+import biz.lobachev.annette.microservice_core.category.CategoryEntityService
 import biz.lobachev.annette.principal_group.api.group.{
   AssignPrincipalPayload,
   CreatePrincipalGroupPayload,
@@ -33,7 +34,6 @@ import biz.lobachev.annette.principal_group.api.group.{
   UpdatePrincipalGroupDescriptionPayload,
   UpdatePrincipalGroupNamePayload
 }
-import biz.lobachev.annette.principal_group.impl.category.CategoryEntityService
 import biz.lobachev.annette.principal_group.impl.group.PrincipalGroupEntityService
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 
@@ -126,7 +126,7 @@ class PrincipalGroupServiceApiImpl(
 
   override def getCategoriesById(
     fromReadSide: Boolean
-  ): ServiceCall[Set[CategoryId], Map[CategoryId, Category]] =
+  ): ServiceCall[Set[CategoryId], Seq[Category]] =
     ServiceCall { ids =>
       categoryEntityService.getCategoriesById(ids, fromReadSide)
     }

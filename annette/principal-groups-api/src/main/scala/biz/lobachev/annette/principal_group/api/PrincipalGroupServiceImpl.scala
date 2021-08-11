@@ -20,7 +20,7 @@ import akka.Done
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.principal_group.api.group._
-import biz.lobachev.annette.principal_group.api.category._
+import biz.lobachev.annette.core.model.category._
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -74,13 +74,13 @@ class PrincipalGroupServiceImpl(api: PrincipalGroupServiceApi, implicit val ec: 
 
   def createOrUpdateCategory(payload: CreateCategoryPayload): Future[Done] =
     createCategory(payload).recoverWith {
-      case PrincipalGroupCategoryAlreadyExist(_) =>
+      case CategoryAlreadyExist(_) =>
         val updatePayload = payload
           .into[UpdateCategoryPayload]
           .withFieldComputed(_.updatedBy, _.createdBy)
           .transform
         updateCategory(updatePayload)
-      case th                                    => Future.failed(th)
+      case th                      => Future.failed(th)
     }
 
   def deleteCategory(payload: DeleteCategoryPayload): Future[Done] =
@@ -89,10 +89,7 @@ class PrincipalGroupServiceImpl(api: PrincipalGroupServiceApi, implicit val ec: 
   def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category] =
     api.getCategoryById(id, fromReadSide).invoke()
 
-  def getCategoriesById(
-    ids: Set[CategoryId],
-    fromReadSide: Boolean
-  ): Future[Map[CategoryId, Category]] =
+  def getCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean): Future[Seq[Category]] =
     api.getCategoriesById(fromReadSide).invoke(ids)
 
   def findCategories(query: CategoryFindQuery): Future[FindResult] =

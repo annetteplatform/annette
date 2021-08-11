@@ -21,7 +21,7 @@ import akka.cluster.sharding.typed.scaladsl._
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.principal_group.api.category.CategoryId
+import biz.lobachev.annette.core.model.category.CategoryId
 import biz.lobachev.annette.principal_group.api.group._
 import biz.lobachev.annette.principal_group.impl.group.model.PrincipalGroupState
 import com.lightbend.lagom.scaladsl.persistence._

@@ -18,7 +18,7 @@ package biz.lobachev.annette.principal_group.api
 import akka.Done
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.elastic.FindResult
-import biz.lobachev.annette.principal_group.api.category._
+import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.principal_group.api.group._
 
 import scala.concurrent.Future
@@ -47,9 +47,6 @@ trait PrincipalGroupService {
   def updateCategory(payload: UpdateCategoryPayload): Future[Done]
   def deleteCategory(payload: DeleteCategoryPayload): Future[Done]
   def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category]
-  def getCategoriesById(
-    ids: Set[CategoryId],
-    fromReadSide: Boolean
-  ): Future[Map[CategoryId, Category]]
+  def getCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean): Future[Seq[Category]]
   def findCategories(query: CategoryFindQuery): Future[FindResult]
 }
