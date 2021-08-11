@@ -17,9 +17,9 @@
 package biz.lobachev.annette.cms.api
 
 import akka.Done
-import biz.lobachev.annette.cms.api.category._
 import biz.lobachev.annette.cms.api.post._
 import biz.lobachev.annette.cms.api.space._
+import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.elastic.FindResult
 
 import scala.collection.immutable.Map
@@ -31,7 +31,7 @@ trait CmsService {
   def updateCategory(payload: UpdateCategoryPayload): Future[Done]
   def deleteCategory(payload: DeleteCategoryPayload): Future[Done]
   def getCategoryById(id: CategoryId, fromReadSide: Boolean = true): Future[Category]
-  def getCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean = true): Future[Map[CategoryId, Category]]
+  def getCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean = true): Future[Seq[Category]]
   def findCategories(payload: CategoryFindQuery): Future[FindResult]
 
   def createSpace(payload: CreateSpacePayload): Future[Done]

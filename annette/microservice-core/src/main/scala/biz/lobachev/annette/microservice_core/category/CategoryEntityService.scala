@@ -16,18 +16,19 @@
 
 package biz.lobachev.annette.microservice_core.category
 
-import java.util.concurrent.TimeUnit
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef, EntityTypeKey}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
-import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.core.model.category._
+import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.microservice_core.category.CategoryEntity.Command
 import biz.lobachev.annette.microservice_core.category.dao.{CategoryCassandraDbDao, CategoryElasticIndexDao}
 import com.typesafe.config.Config
+import io.scalaland.chimney.dsl._
 
+import java.util.concurrent.TimeUnit
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -61,17 +62,32 @@ class CategoryEntityService(
 
   def createCategory(payload: CreateCategoryPayload): Future[Done] =
     refFor(payload.id)
-      .ask[CategoryEntity.Confirmation](CategoryEntity.CreateCategory(payload, _))
+      .ask[CategoryEntity.Confirmation] { replyTo =>
+        payload
+          .into[CategoryEntity.CreateCategory]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      }
       .map(res => convertSuccess(payload.id, res))
 
   def updateCategory(payload: UpdateCategoryPayload): Future[Done] =
     refFor(payload.id)
-      .ask[CategoryEntity.Confirmation](CategoryEntity.UpdateCategory(payload, _))
+      .ask[CategoryEntity.Confirmation] { replyTo =>
+        payload
+          .into[CategoryEntity.UpdateCategory]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      }
       .map(res => convertSuccess(payload.id, res))
 
   def deleteCategory(payload: DeleteCategoryPayload): Future[Done] =
     refFor(payload.id)
-      .ask[CategoryEntity.Confirmation](CategoryEntity.DeleteCategory(payload, _))
+      .ask[CategoryEntity.Confirmation] { replyTo =>
+        payload
+          .into[CategoryEntity.DeleteCategory]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      }
       .map(res => convertSuccess(payload.id, res))
 
   def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category] =

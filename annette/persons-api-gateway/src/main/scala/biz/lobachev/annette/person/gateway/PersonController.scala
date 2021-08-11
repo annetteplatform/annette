@@ -162,7 +162,7 @@ class PersonController @Inject() (
       authorizer.performCheckAny(MAINTAIN_ALL_PERSON_CATEGORIES) {
         val payload = request.body
           .into[DeleteCategoryPayload]
-          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .withFieldConst(_.deletedBy, request.subject.principals.head)
           .transform
         for {
           _ <- personService.deleteCategory(payload)

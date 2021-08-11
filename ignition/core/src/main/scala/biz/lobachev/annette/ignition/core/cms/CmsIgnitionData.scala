@@ -16,11 +16,11 @@
 
 package biz.lobachev.annette.ignition.core.cms
 
-import biz.lobachev.annette.cms.api.category.CategoryId
 import biz.lobachev.annette.cms.api.post.{PostContent, PostId}
 import biz.lobachev.annette.cms.api.space.SpaceId
 import biz.lobachev.annette.cms.api.space.SpaceType.SpaceType
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.Json
 
 case class PersonIgnitionData(

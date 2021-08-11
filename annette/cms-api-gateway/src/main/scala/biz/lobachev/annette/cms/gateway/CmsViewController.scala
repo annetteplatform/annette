@@ -19,12 +19,12 @@ package biz.lobachev.annette.cms.gateway
 import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.CmsService
-import biz.lobachev.annette.cms.api.category._
 import biz.lobachev.annette.cms.api.post._
 import biz.lobachev.annette.cms.api.space._
 import biz.lobachev.annette.cms.gateway.Permissions.{MAINTAIN_ALL_SPACE_CATEGORIES, VIEW_ALL_SPACE_CATEGORIES}
 import biz.lobachev.annette.cms.gateway.dto._
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.elastic.{FindResult, SortBy}
 import biz.lobachev.annette.subscription.api.SubscriptionService
 import biz.lobachev.annette.subscription.api.subscription.{

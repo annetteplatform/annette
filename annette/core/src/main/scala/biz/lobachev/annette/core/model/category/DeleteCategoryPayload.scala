@@ -20,8 +20,8 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class DeleteCategoryPayload(
-  id: CategoryId, // category id
-  updatedBy: AnnettePrincipal
+  id: CategoryId,
+  deletedBy: AnnettePrincipal
 )
 
 object DeleteCategoryPayload {

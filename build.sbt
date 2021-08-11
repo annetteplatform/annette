@@ -561,7 +561,7 @@ lazy val `cms-api-gateway` = (project in file("annette/cms-api-gateway"))
     `subscriptions-api`
   )
 
-// lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/demo"))
+//lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/demo"))
 lazy val `application`      = applicationProject(project in file("annette/application"))
 lazy val `attributes`       = attributesProject(project in file("annette/attributes"))
 lazy val `authorization`    = authorizationProject(project in file("annette/authorization"))

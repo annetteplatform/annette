@@ -86,17 +86,16 @@ abstract class PersonServiceApplication(context: LagomApplicationContext)
     indexReadSideId = "category-elastic"
   )
 
-  // wireWith(ElasticProvider.create _)
-  lazy val categoryElastic    = wireWith(categoryProvider.createIndexDao _) // wire[CategoryElasticIndexDao]
-  lazy val categoryRepository = wireWith(categoryProvider.createDbDao _)    // wire[CategoryCassandraDbDao]
-  readSide.register(wireWith(categoryProvider.createDbProcessor _))    // wire[CategoryDbEventProcessor])
-  readSide.register(wireWith(categoryProvider.createIndexProcessor _)) // wire[CategoryIndexEventProcessor])
+  lazy val categoryElastic       = wireWith(categoryProvider.createIndexDao _)
+  lazy val categoryRepository    = wireWith(categoryProvider.createDbDao _)
+  readSide.register(wireWith(categoryProvider.createDbProcessor _))
+  readSide.register(wireWith(categoryProvider.createIndexProcessor _))
+  lazy val categoryEntityService = wireWith(categoryProvider.createEntityService _)
   clusterSharding.init(
     Entity(categoryProvider.typeKey) { entityContext =>
       CategoryEntity(entityContext)
     }
   )
-  lazy val categoryEntityService = wireWith(categoryProvider.createEntityService _) // wire[CategoryEntityService]
 
   lazy val attributeService       = serviceClient.implement[AttributeServiceApi]
   val enableAttributeSubscription =

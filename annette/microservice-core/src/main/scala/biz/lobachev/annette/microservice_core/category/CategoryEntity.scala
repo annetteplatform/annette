@@ -35,10 +35,24 @@ object CategoryEntity {
 
   sealed trait Command extends CommandSerializable
 
-  final case class CreateCategory(payload: CreateCategoryPayload, replyTo: ActorRef[Confirmation]) extends Command
-  final case class UpdateCategory(payload: UpdateCategoryPayload, replyTo: ActorRef[Confirmation]) extends Command
-  final case class DeleteCategory(payload: DeleteCategoryPayload, replyTo: ActorRef[Confirmation]) extends Command
-  final case class GetCategory(id: CategoryId, replyTo: ActorRef[Confirmation])                    extends Command
+  final case class CreateCategory(
+    id: CategoryId,
+    name: String,
+    createdBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  ) extends Command
+  final case class UpdateCategory(
+    id: CategoryId,
+    name: String,
+    updatedBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  ) extends Command
+  final case class DeleteCategory(
+    id: CategoryId, // category id
+    deletedBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  )                                                                             extends Command
+  final case class GetCategory(id: CategoryId, replyTo: ActorRef[Confirmation]) extends Command
 
   sealed trait Confirmation
   final case object Success                          extends Confirmation
@@ -75,8 +89,8 @@ object CategoryEntity {
   ) extends Event
   final case class CategoryDeleted(
     id: CategoryId, // category id
-    updatedBy: AnnettePrincipal,
-    updatedAt: OffsetDateTime = OffsetDateTime.now
+    deletedBy: AnnettePrincipal,
+    deletedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
 
   implicit val categoryCreatedFormat: Format[CategoryCreated]     = Json.format
@@ -108,49 +122,46 @@ final case class CategoryEntity(maybeState: Option[CategoryState]) {
 
   def applyCommand(cmd: Command): ReplyEffect[Event, CategoryEntity] =
     cmd match {
-      case CreateCategory(payload, replyTo) => createCategory(payload, replyTo)
-      case UpdateCategory(payload, replyTo) => updateCategory(payload, replyTo)
-      case DeleteCategory(payload, replyTo) => deleteCategory(payload, replyTo)
-      case GetCategory(_, replyTo)          => getCategory(replyTo)
+      case cmd: CreateCategory     => createCategory(cmd)
+      case cmd: UpdateCategory     => updateCategory(cmd)
+      case cmd: DeleteCategory     => deleteCategory(cmd)
+      case GetCategory(_, replyTo) => getCategory(replyTo)
     }
 
   def createCategory(
-    payload: CreateCategoryPayload,
-    replyTo: ActorRef[Confirmation]
+    cmd: CreateCategory
   ): ReplyEffect[Event, CategoryEntity] =
     maybeState match {
       case None    =>
-        val event = payload.transformInto[CategoryCreated]
+        val event = cmd.transformInto[CategoryCreated]
         Effect
           .persist(event)
-          .thenReply(replyTo)(_ => Success)
-      case Some(_) => Effect.reply(replyTo)(AlreadyExist)
+          .thenReply(cmd.replyTo)(_ => Success)
+      case Some(_) => Effect.reply(cmd.replyTo)(AlreadyExist)
     }
 
   def updateCategory(
-    payload: UpdateCategoryPayload,
-    replyTo: ActorRef[Confirmation]
+    cmd: UpdateCategory
   ): ReplyEffect[Event, CategoryEntity] =
     maybeState match {
-      case None    => Effect.reply(replyTo)(NotFound)
+      case None    => Effect.reply(cmd.replyTo)(NotFound)
       case Some(_) =>
-        val event = payload.transformInto[CategoryUpdated]
+        val event = cmd.transformInto[CategoryUpdated]
         Effect
           .persist(event)
-          .thenReply(replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success)
     }
 
   def deleteCategory(
-    payload: DeleteCategoryPayload,
-    replyTo: ActorRef[Confirmation]
+    cmd: DeleteCategory
   ): ReplyEffect[Event, CategoryEntity] =
     maybeState match {
-      case None    => Effect.reply(replyTo)(NotFound)
+      case None    => Effect.reply(cmd.replyTo)(NotFound)
       case Some(_) =>
-        val event = payload.transformInto[CategoryDeleted]
+        val event = cmd.transformInto[CategoryDeleted]
         Effect
           .persist(event)
-          .thenReply(replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success)
     }
 
   def getCategory(replyTo: ActorRef[Confirmation]): ReplyEffect[Event, CategoryEntity] =
