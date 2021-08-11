@@ -17,7 +17,7 @@
 package biz.lobachev.annette.person.gateway.dto
 
 import biz.lobachev.annette.core.model.PersonId
-import biz.lobachev.annette.persons.api.category.PersonCategoryId
+import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.Json
 
 case class PersonPayloadDto(
@@ -25,7 +25,7 @@ case class PersonPayloadDto(
   lastname: String,           // last name of the person
   firstname: String,          // first name
   middlename: Option[String], // middle name
-  categoryId: PersonCategoryId,
+  categoryId: CategoryId,
   phone: Option[String],      // phone
   email: Option[String]       // email
 )

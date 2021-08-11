@@ -18,8 +18,8 @@ package biz.lobachev.annette.cms.api
 
 import akka.Done
 import biz.lobachev.annette.cms.api.space._
-import biz.lobachev.annette.cms.api.category._
 import biz.lobachev.annette.cms.api.post._
+import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.elastic.FindResult
 
 import scala.collection.immutable.Map
@@ -38,7 +38,7 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category] =
     api.getCategoryById(id, fromReadSide).invoke()
 
-  override def getCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean): Future[Map[CategoryId, Category]] =
+  override def getCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean): Future[Seq[Category]] =
     api.getCategoriesById(fromReadSide).invoke(ids)
 
   override def findCategories(query: CategoryFindQuery): Future[FindResult] =

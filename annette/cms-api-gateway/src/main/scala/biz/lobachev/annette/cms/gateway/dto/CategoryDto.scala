@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.cms.gateway.dto
 
-import biz.lobachev.annette.cms.api.category.CategoryId
+import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.{Format, Json}
 
 case class CategoryDto(

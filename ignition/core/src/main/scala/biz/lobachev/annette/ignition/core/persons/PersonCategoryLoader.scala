@@ -20,8 +20,8 @@ import akka.Done
 import biz.lobachev.annette.ignition.core.EntityLoader
 import akka.stream.Materializer
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.category.CreateCategoryPayload
 import biz.lobachev.annette.persons.api.PersonService
-import biz.lobachev.annette.persons.api.category.CreateCategoryPayload
 import io.scalaland.chimney.dsl._
 import org.slf4j.{Logger, LoggerFactory}
 

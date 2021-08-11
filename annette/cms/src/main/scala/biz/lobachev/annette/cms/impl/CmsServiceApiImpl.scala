@@ -20,13 +20,13 @@ import akka.util.Timeout
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.cms.api._
 import biz.lobachev.annette.cms.api.space._
-import biz.lobachev.annette.cms.api.category._
 import biz.lobachev.annette.cms.api.post._
 import biz.lobachev.annette.cms.impl.space._
-import biz.lobachev.annette.cms.impl.category._
 import biz.lobachev.annette.cms.impl.hierarchy.HierarchyEntityService
 import biz.lobachev.annette.cms.impl.post._
+import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.microservice_core.category.CategoryEntityService
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import org.slf4j.LoggerFactory
 
@@ -69,7 +69,7 @@ class CmsServiceApiImpl(
 
   override def getCategoriesById(
     fromReadSide: Boolean = true
-  ): ServiceCall[Set[CategoryId], Map[CategoryId, Category]] =
+  ): ServiceCall[Set[CategoryId], Seq[Category]] =
     ServiceCall { ids =>
       categoryEntityService.getCategoriesById(ids, fromReadSide)
     }

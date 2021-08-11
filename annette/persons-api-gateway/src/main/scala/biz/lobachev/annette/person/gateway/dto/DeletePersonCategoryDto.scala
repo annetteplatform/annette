@@ -16,11 +16,11 @@
 
 package biz.lobachev.annette.person.gateway.dto
 
-import biz.lobachev.annette.persons.api.category.PersonCategoryId
+import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.Json
 
 case class DeletePersonCategoryDto(
-  id: PersonCategoryId
+  id: CategoryId
 )
 
 object DeletePersonCategoryDto {

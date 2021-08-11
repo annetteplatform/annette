@@ -18,9 +18,9 @@ package biz.lobachev.annette.cms.api
 
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.cms.api.space._
-import biz.lobachev.annette.cms.api.category._
 import biz.lobachev.annette.cms.api.post._
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
+import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.elastic.FindResult
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 
@@ -32,7 +32,7 @@ trait CmsServiceApi extends Service {
   def updateCategory: ServiceCall[UpdateCategoryPayload, Done]
   def deleteCategory: ServiceCall[DeleteCategoryPayload, Done]
   def getCategoryById(id: CategoryId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Category]
-  def getCategoriesById(fromReadSide: Boolean = true): ServiceCall[Set[CategoryId], Map[CategoryId, Category]]
+  def getCategoriesById(fromReadSide: Boolean = true): ServiceCall[Set[CategoryId], Seq[Category]]
   def findCategories: ServiceCall[CategoryFindQuery, FindResult]
 
   def createSpace: ServiceCall[CreateSpacePayload, Done]

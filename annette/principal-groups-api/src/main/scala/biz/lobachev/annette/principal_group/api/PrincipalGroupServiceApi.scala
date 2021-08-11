@@ -20,7 +20,7 @@ import akka.{Done, NotUsed}
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.elastic.FindResult
-import biz.lobachev.annette.principal_group.api.category.{
+import biz.lobachev.annette.core.model.category.{
   Category,
   CategoryFindQuery,
   CategoryId,
@@ -53,9 +53,7 @@ trait PrincipalGroupServiceApi extends Service {
   def updateCategory: ServiceCall[UpdateCategoryPayload, Done]
   def deleteCategory: ServiceCall[DeleteCategoryPayload, Done]
   def getCategoryById(id: CategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, Category]
-  def getCategoriesById(
-    fromReadSide: Boolean
-  ): ServiceCall[Set[CategoryId], Map[CategoryId, Category]]
+  def getCategoriesById(fromReadSide: Boolean): ServiceCall[Set[CategoryId], Seq[Category]]
   def findCategories: ServiceCall[CategoryFindQuery, FindResult]
 
   final override def descriptor = {

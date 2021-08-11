@@ -20,11 +20,11 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
-import biz.lobachev.annette.cms.api.category.CategoryId
 import biz.lobachev.annette.cms.api.space.SpaceType.SpaceType
 import biz.lobachev.annette.cms.api.space._
 import biz.lobachev.annette.cms.impl.space.model.SpaceState
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.category.CategoryId
 import com.lightbend.lagom.scaladsl.persistence._
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory

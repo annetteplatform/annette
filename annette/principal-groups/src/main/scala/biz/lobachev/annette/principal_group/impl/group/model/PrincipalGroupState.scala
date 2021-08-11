@@ -18,7 +18,7 @@ package biz.lobachev.annette.principal_group.impl.group.model
 
 import java.time.OffsetDateTime
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.principal_group.api.category.CategoryId
+import biz.lobachev.annette.core.model.category.CategoryId
 import biz.lobachev.annette.principal_group.api.group.{PrincipalGroup, PrincipalGroupId}
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json

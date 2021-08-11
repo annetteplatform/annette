@@ -17,8 +17,8 @@
 package biz.lobachev.annette.ignition.core.persons
 
 import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.core.model.category.CategoryId
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
-import biz.lobachev.annette.persons.api.category.PersonCategoryId
 import play.api.libs.json.Json
 
 case class PersonIgnitionData(
@@ -36,7 +36,7 @@ case class PersonData(
   lastname: String,                  // last name of the person
   firstname: String,                 // first name
   middlename: Option[String] = None, // middle name
-  categoryId: PersonCategoryId,
+  categoryId: CategoryId,
   phone: Option[String] = None,      // phone
   email: Option[String] = None       // email
 )

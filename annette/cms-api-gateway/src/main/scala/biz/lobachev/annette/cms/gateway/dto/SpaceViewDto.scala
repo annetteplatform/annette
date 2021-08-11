@@ -16,10 +16,10 @@
 
 package biz.lobachev.annette.cms.gateway.dto
 
-import biz.lobachev.annette.cms.api.category.CategoryId
 import biz.lobachev.annette.cms.api.space.SpaceId
 import biz.lobachev.annette.cms.api.space.SpaceType.SpaceType
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.{Format, Json}
 
 import java.time.OffsetDateTime
