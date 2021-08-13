@@ -145,8 +145,9 @@ class ApplicationController @Inject() (
         .transform
       authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
         for {
-          _ <- applicationService.createTranslation(payload)
-        } yield Ok("")
+          _      <- applicationService.createTranslation(payload)
+          result <- applicationService.getTranslationById(payload.id, false)
+        } yield Ok(Json.toJson(result))
       }
     }
 
@@ -158,8 +159,9 @@ class ApplicationController @Inject() (
         .transform
       authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
         for {
-          _ <- applicationService.updateTranslation(payload)
-        } yield Ok("")
+          _      <- applicationService.updateTranslation(payload)
+          result <- applicationService.getTranslationById(payload.id, false)
+        } yield Ok(Json.toJson(result))
       }
     }
 
