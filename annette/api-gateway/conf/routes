@@ -19,8 +19,8 @@ POST    /api/annette/v1/application/deleteTranslation        biz.lobachev.annett
 GET     /api/annette/v1/application/getTranslationById/:id/:fromReadSide biz.lobachev.annette.application.gateway.ApplicationController.getTranslationById(id: String, fromReadSide: Boolean)
 POST    /api/annette/v1/application/getTranslationsById/:fromReadSide    biz.lobachev.annette.application.gateway.ApplicationController.getTranslationsById(fromReadSide: Boolean)
 POST    /api/annette/v1/application/findTranslations         biz.lobachev.annette.application.gateway.ApplicationController.findTranslations
-GET     /api/annette/v1/application/updateTranslationJson    biz.lobachev.annette.application.gateway.ApplicationController.updateTranslationJson
-GET     /api/annette/v1/application/deleteTranslationJson    biz.lobachev.annette.application.gateway.ApplicationController.deleteTranslationJson
+POST    /api/annette/v1/application/updateTranslationJson    biz.lobachev.annette.application.gateway.ApplicationController.updateTranslationJson
+POST    /api/annette/v1/application/deleteTranslationJson    biz.lobachev.annette.application.gateway.ApplicationController.deleteTranslationJson
 GET     /api/annette/v1/application/getTranslationLanguages/:id         biz.lobachev.annette.application.gateway.ApplicationController.getTranslationLanguages(id: String)
 GET     /api/annette/v1/application/getTranslationJson/:id/:languageId  biz.lobachev.annette.application.gateway.ApplicationController.getTranslationJson(id: String, languageId: String)
 POST    /api/annette/v1/application/getTranslationJsons/:languageId     biz.lobachev.annette.application.gateway.ApplicationController.getTranslationJsons(languageId: String)

@@ -120,6 +120,22 @@ private[impl] class TranslationJsonCassandraDbDao(session: CassandraSession)(imp
                       .setString("translation_id", translationId)
                   )
                   .map(_.map(_.getString("language_id")))
+    } yield result.sorted
+
+  def getTranslationLanguages(ids: Set[TranslationId]): Future[Map[TranslationId, Seq[LanguageId]]] =
+    for {
+      stmt   <- session.prepare("SELECT translation_id, language_id FROM translation_jsons WHERE translation_id IN :ids")
+      result <- session
+                  .selectAll(
+                    stmt
+                      .bind()
+                      .setList("ids", ids.toList.asJava)
+                  )
+                  .map(
+                    _.map(row => row.getString("translation_id") -> row.getString("language_id"))
+                      .groupMap(_._1)(_._2)
+                      .map { case (k, v) => k -> v.sorted }
+                  )
     } yield result
 
   def getTranslationJsonById(id: TranslationId, languageId: LanguageId): Future[Option[TranslationJson]] =

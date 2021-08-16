@@ -142,7 +142,7 @@ final case class TranslationJsonEntity(maybeState: Option[TranslationJsonState] 
   def applyEvent(event: Event): TranslationJsonEntity =
     event match {
       case event: TranslationJsonUpdated => onTranslationJsonUpdated(event)
-      case _: TranslationJsonDeleted     => this
+      case _: TranslationJsonDeleted     => onTranslationDeleted()
     }
 
   def onTranslationJsonUpdated(event: TranslationJsonUpdated): TranslationJsonEntity =
