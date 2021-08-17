@@ -52,18 +52,11 @@ class TranslationJsonEntityService(
   private def refFor(id: TranslationId, languageId: LanguageId): EntityRef[TranslationJsonEntity.Command] =
     clusterSharding.entityRefFor(TranslationJsonEntity.typeKey, s"$id~$languageId")
 
-  private def checkId(id: TranslationId): TranslationId = {
-    val splitted = id.split("\\.")
-    if (splitted.length != 2 || splitted(0).trim.isEmpty || splitted(1).trim.isEmpty) throw IncorrectTranslationId()
-    else id
-  }
-
   private def convertSuccess(confirmation: TranslationJsonEntity.Confirmation): Done =
     confirmation match {
-      case TranslationJsonEntity.Success                => Done
-      case TranslationJsonEntity.TranslationNotFound    => throw TranslationNotFound()
-      case TranslationJsonEntity.IncorrectTranslationId => throw IncorrectTranslationId()
-      case _                                            => throw new RuntimeException("Match fail")
+      case TranslationJsonEntity.Success             => Done
+      case TranslationJsonEntity.TranslationNotFound => throw TranslationNotFound()
+      case _                                         => throw new RuntimeException("Match fail")
     }
 
   private def convertSuccessTranslationJson(confirmation: TranslationJsonEntity.Confirmation): TranslationJson =
@@ -74,12 +67,12 @@ class TranslationJsonEntityService(
     }
 
   def updateTranslationJson(payload: UpdateTranslationJsonPayload): Future[Done] =
-    refFor(checkId(payload.translationId), payload.languageId)
+    refFor(payload.translationId, payload.languageId)
       .ask[TranslationJsonEntity.Confirmation](TranslationJsonEntity.UpdateTranslationJson(payload, _))
       .map(convertSuccess)
 
   def deleteTranslationJson(payload: DeleteTranslationJsonPayload): Future[Done] =
-    refFor(checkId(payload.translationId), payload.languageId)
+    refFor(payload.translationId, payload.languageId)
       .ask[TranslationJsonEntity.Confirmation](TranslationJsonEntity.DeleteTranslationJson(payload, _))
       .map(convertSuccess)
 
@@ -106,7 +99,7 @@ class TranslationJsonEntityService(
     dbDao.getTranslationLanguages(ids)
 
   def getTranslationJson(id: TranslationId, languageId: LanguageId): Future[TranslationJson] =
-    refFor(checkId(id), languageId)
+    refFor(id, languageId)
       .ask[TranslationJsonEntity.Confirmation](TranslationJsonEntity.GetTranslationJson(id, languageId, _))
       .map(convertSuccessTranslationJson)
 

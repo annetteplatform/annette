@@ -43,13 +43,11 @@ object TranslationEntity {
   final case class SuccessTranslation(translation: Translation) extends Confirmation
   final case object TranslationAlreadyExist                     extends Confirmation
   final case object TranslationNotFound                         extends Confirmation
-  final case object IncorrectTranslationId                      extends Confirmation
 
   implicit val confirmationSuccessFormat: Format[Success.type]                                 = Json.format
   implicit val confirmationSuccessTranslationFormat: Format[SuccessTranslation]                = Json.format
   implicit val confirmationTranslationAlreadyExistFormat: Format[TranslationAlreadyExist.type] = Json.format
   implicit val confirmationTranslationNotFoundFormat: Format[TranslationNotFound.type]         = Json.format
-  implicit val confirmationIncorrectTranslationIdFormat: Format[IncorrectTranslationId.type]   = Json.format
   implicit val confirmationFormat: Format[Confirmation]                                        = Json.format
 
   sealed trait Event extends AggregateEvent[Event] {

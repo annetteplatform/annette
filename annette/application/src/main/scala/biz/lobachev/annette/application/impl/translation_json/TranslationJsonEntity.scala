@@ -47,13 +47,11 @@ object TranslationJsonEntity {
   final case object Success                                                 extends Confirmation
   final case class SuccessTranslationJson(translationJson: TranslationJson) extends Confirmation
   final case object TranslationNotFound                                     extends Confirmation
-  final case object IncorrectTranslationId                                  extends Confirmation
 
-  implicit val confirmationSuccessFormat: Format[Success.type]                               = Json.format
-  implicit val confirmationSuccessTranslationJsonFormat: Format[SuccessTranslationJson]      = Json.format
-  implicit val confirmationTranslationNotFoundFormat: Format[TranslationNotFound.type]       = Json.format
-  implicit val confirmationIncorrectTranslationIdFormat: Format[IncorrectTranslationId.type] = Json.format
-  implicit val confirmationFormat: Format[Confirmation]                                      = Json.format
+  implicit val confirmationSuccessFormat: Format[Success.type]                          = Json.format
+  implicit val confirmationSuccessTranslationJsonFormat: Format[SuccessTranslationJson] = Json.format
+  implicit val confirmationTranslationNotFoundFormat: Format[TranslationNotFound.type]  = Json.format
+  implicit val confirmationFormat: Format[Confirmation]                                 = Json.format
 
   sealed trait Event extends AggregateEvent[Event] {
     override def aggregateTag: AggregateEventTagger[Event] = Event.Tag

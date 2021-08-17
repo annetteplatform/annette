@@ -52,18 +52,11 @@ class TranslationEntityService(
   private def refFor(id: TranslationId): EntityRef[TranslationEntity.Command] =
     clusterSharding.entityRefFor(TranslationEntity.typeKey, id)
 
-  private def checkId(id: TranslationId): TranslationId = {
-    val splitted = id.split("\\.")
-    if (splitted.length != 2 || splitted(0).trim.isEmpty || splitted(1).trim.isEmpty) throw IncorrectTranslationId()
-    else id
-  }
-
   private def convertSuccess(confirmation: TranslationEntity.Confirmation): Done =
     confirmation match {
       case TranslationEntity.Success                 => Done
       case TranslationEntity.TranslationAlreadyExist => throw TranslationAlreadyExist()
       case TranslationEntity.TranslationNotFound     => throw TranslationNotFound()
-      case TranslationEntity.IncorrectTranslationId  => throw IncorrectTranslationId()
       case _                                         => throw new RuntimeException("Match fail")
     }
 
@@ -72,22 +65,21 @@ class TranslationEntityService(
       case TranslationEntity.SuccessTranslation(translation) => translation
       case TranslationEntity.TranslationAlreadyExist         => throw TranslationAlreadyExist()
       case TranslationEntity.TranslationNotFound             => throw TranslationNotFound()
-      case TranslationEntity.IncorrectTranslationId          => throw IncorrectTranslationId()
       case _                                                 => throw new RuntimeException("Match fail")
     }
 
   def createTranslation(payload: CreateTranslationPayload): Future[Done] =
-    refFor(checkId(payload.id))
+    refFor(payload.id)
       .ask[TranslationEntity.Confirmation](TranslationEntity.CreateTranslation(payload, _))
       .map(convertSuccess)
 
   def updateTranslationName(payload: UpdateTranslationPayload): Future[Done] =
-    refFor(checkId(payload.id))
+    refFor(payload.id)
       .ask[TranslationEntity.Confirmation](TranslationEntity.UpdateTranslation(payload, _))
       .map(convertSuccess)
 
   def deleteTranslation(payload: DeleteTranslationPayload): Future[Done] =
-    refFor(checkId(payload.id))
+    refFor(payload.id)
       .ask[TranslationEntity.Confirmation](TranslationEntity.DeleteTranslation(payload, _))
       .map(convertSuccess)
 
@@ -97,7 +89,7 @@ class TranslationEntityService(
         .getTranslationById(id)
         .map(_.getOrElse(throw TranslationNotFound()))
     else
-      refFor(checkId(id))
+      refFor(id)
         .ask[TranslationEntity.Confirmation](TranslationEntity.GetTranslation(id, _))
         .map(convertSuccessTranslation)
 

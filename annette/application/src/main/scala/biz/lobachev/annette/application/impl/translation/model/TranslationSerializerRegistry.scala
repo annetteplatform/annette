@@ -34,7 +34,6 @@ object TranslationSerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[TranslationEntity.SuccessTranslation],
       JsonSerializer[TranslationEntity.TranslationAlreadyExist.type],
       JsonSerializer[TranslationEntity.TranslationNotFound.type],
-      JsonSerializer[TranslationEntity.IncorrectTranslationId.type],
       JsonSerializer[TranslationEntity.TranslationCreated],
       JsonSerializer[TranslationEntity.TranslationUpdated],
       JsonSerializer[TranslationEntity.TranslationDeleted]
