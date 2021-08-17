@@ -229,11 +229,11 @@ private[impl] class ApplicationCassandraDbDao(session: CassandraSession)(implici
       maybeEntity <- session.selectOne(stmt.bind().setString("id", id)).map(_.map(convertApplication))
     } yield maybeEntity
 
-  override def getApplicationsById(ids: Set[ApplicationId]): Future[Map[ApplicationId, Application]] =
+  override def getApplicationsById(ids: Set[ApplicationId]): Future[Seq[Application]] =
     for {
       stmt   <- session.prepare("SELECT * FROM applications WHERE id IN ?")
       result <- session.selectAll(stmt.bind(ids.toList.asJava)).map(_.map(convertApplication))
-    } yield result.map(a => a.id -> a).toMap
+    } yield result
 
   def convertApplication(row: Row): Application = {
     val caption: Caption = Option(row.getString("caption_text"))

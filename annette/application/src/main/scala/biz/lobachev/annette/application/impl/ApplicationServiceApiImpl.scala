@@ -165,9 +165,7 @@ class ApplicationServiceApiImpl(
       applicationEntityService.getApplicationById(id, fromReadSide)
     }
 
-  override def getApplicationsById(
-    fromReadSide: Boolean = true
-  ): ServiceCall[Set[ApplicationId], Map[ApplicationId, Application]] =
+  override def getApplicationsById(fromReadSide: Boolean = true): ServiceCall[Set[ApplicationId], Seq[Application]] =
     ServiceCall { ids =>
       applicationEntityService.getApplicationsById(ids, fromReadSide)
     }

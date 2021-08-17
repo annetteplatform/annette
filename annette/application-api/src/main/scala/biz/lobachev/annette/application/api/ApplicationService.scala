@@ -24,7 +24,6 @@ import biz.lobachev.annette.core.model.LanguageId
 import biz.lobachev.annette.core.model.elastic.FindResult
 import play.api.libs.json.JsObject
 
-import scala.collection.immutable.Map
 import scala.concurrent.Future
 
 trait ApplicationService {
@@ -53,10 +52,7 @@ trait ApplicationService {
   def updateApplication(payload: UpdateApplicationPayload): Future[Done]
   def deleteApplication(payload: DeleteApplicationPayload): Future[Done]
   def getApplicationById(id: ApplicationId, fromReadSide: Boolean = true): Future[Application]
-  def getApplicationsById(
-    ids: Set[ApplicationId],
-    fromReadSide: Boolean = true
-  ): Future[Map[ApplicationId, Application]]
+  def getApplicationsById(ids: Set[ApplicationId], fromReadSide: Boolean = true): Future[Seq[Application]]
   def findApplications(query: FindApplicationQuery): Future[FindResult]
   def getApplicationTranslations(id: ApplicationId, languageId: LanguageId): Future[JsObject]
 

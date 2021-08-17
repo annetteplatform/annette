@@ -26,8 +26,6 @@ import biz.lobachev.annette.core.model.elastic.FindResult
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 import play.api.libs.json.JsObject
 
-import scala.collection.immutable.Map
-
 trait ApplicationServiceApi extends Service {
 
   def createLanguage: ServiceCall[CreateLanguagePayload, Done]
@@ -54,9 +52,7 @@ trait ApplicationServiceApi extends Service {
   def updateApplication: ServiceCall[UpdateApplicationPayload, Done]
   def deleteApplication: ServiceCall[DeleteApplicationPayload, Done]
   def getApplicationById(id: ApplicationId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Application]
-  def getApplicationsById(
-    fromReadSide: Boolean = true
-  ): ServiceCall[Set[ApplicationId], Map[ApplicationId, Application]]
+  def getApplicationsById(fromReadSide: Boolean = true): ServiceCall[Set[ApplicationId], Seq[Application]]
   def findApplications: ServiceCall[FindApplicationQuery, FindResult]
   def getApplicationTranslations(id: ApplicationId, languageId: LanguageId): ServiceCall[NotUsed, JsObject]
 

@@ -24,7 +24,6 @@ import biz.lobachev.annette.core.model.LanguageId
 import biz.lobachev.annette.core.model.elastic.FindResult
 import play.api.libs.json.JsObject
 
-import scala.collection.immutable.Map
 import scala.concurrent.Future
 
 class ApplicationServiceImpl(api: ApplicationServiceApi) extends ApplicationService {
@@ -98,10 +97,7 @@ class ApplicationServiceImpl(api: ApplicationServiceApi) extends ApplicationServ
   def getApplicationById(id: ApplicationId, fromReadSide: Boolean = true): Future[Application] =
     api.getApplicationById(id, fromReadSide).invoke()
 
-  def getApplicationsById(
-    ids: Set[ApplicationId],
-    fromReadSide: Boolean = true
-  ): Future[Map[ApplicationId, Application]] =
+  def getApplicationsById(ids: Set[ApplicationId], fromReadSide: Boolean = true): Future[Seq[Application]] =
     api.getApplicationsById(fromReadSide).invoke(ids)
 
   def findApplications(query: FindApplicationQuery): Future[FindResult] =

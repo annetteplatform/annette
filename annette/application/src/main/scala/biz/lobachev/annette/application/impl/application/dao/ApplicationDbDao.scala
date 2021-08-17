@@ -44,5 +44,5 @@ trait ApplicationDbDao {
 
   def getApplicationById(id: ApplicationId): Future[Option[Application]]
 
-  def getApplicationsById(ids: Set[ApplicationId]): Future[Map[ApplicationId, Application]]
+  def getApplicationsById(ids: Set[ApplicationId]): Future[Seq[Application]]
 }
