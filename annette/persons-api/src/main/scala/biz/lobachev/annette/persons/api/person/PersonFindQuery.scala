@@ -32,7 +32,7 @@ case class PersonFindQuery(
   email: Option[String] = None,      //search in email
   categories: Option[Set[CategoryId]] = None,
   attributes: Option[AttributeQuery] = None,
-  sortBy: Option[Seq[SortBy]] = None //sort results by field provided
+  sortBy: Option[Seq[SortBy]] = None
 )
 
 object PersonFindQuery {

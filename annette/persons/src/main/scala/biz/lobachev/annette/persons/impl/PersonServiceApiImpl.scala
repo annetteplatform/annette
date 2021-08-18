@@ -58,7 +58,7 @@ class PersonServiceApiImpl(
       personEntityService.getPersonById(id, fromReadSide)
     }
 
-  override def getPersonsById(fromReadSide: Boolean): ServiceCall[Set[PersonId], Map[PersonId, Person]] =
+  override def getPersonsById(fromReadSide: Boolean): ServiceCall[Set[PersonId], Seq[Person]] =
     ServiceCall { ids =>
       personEntityService.getPersonsById(ids, fromReadSide)
     }

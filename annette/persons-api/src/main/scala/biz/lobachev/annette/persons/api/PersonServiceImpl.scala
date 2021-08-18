@@ -54,7 +54,7 @@ class PersonServiceImpl(api: PersonServiceApi, implicit val ec: ExecutionContext
   override def getPersonById(id: PersonId, fromReadSide: Boolean): Future[Person] =
     api.getPersonById(id, fromReadSide).invoke()
 
-  override def getPersonsById(ids: Set[PersonId], fromReadSide: Boolean): Future[Map[PersonId, Person]] =
+  override def getPersonsById(ids: Set[PersonId], fromReadSide: Boolean): Future[Seq[Person]] =
     api.getPersonsById(fromReadSide).invoke(ids)
 
   override def findPersons(query: PersonFindQuery): Future[FindResult] = api.findPersons.invoke(query)

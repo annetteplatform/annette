@@ -72,7 +72,7 @@ trait PersonServiceApi extends Service {
    *
    * @return
    */
-  def getPersonsById(fromReadSide: Boolean = true): ServiceCall[Set[PersonId], Map[PersonId, Person]]
+  def getPersonsById(fromReadSide: Boolean = true): ServiceCall[Set[PersonId], Seq[Person]]
 
   /**
    * Search person using particular query.

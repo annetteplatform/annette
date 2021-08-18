@@ -37,7 +37,7 @@ trait PersonService {
   def createOrUpdatePerson(payload: CreatePersonPayload): Future[Done]
   def deletePerson(payload: DeletePersonPayload): Future[Done]
   def getPersonById(id: PersonId, fromReadSide: Boolean): Future[Person]
-  def getPersonsById(ids: Set[PersonId], fromReadSide: Boolean): Future[Map[PersonId, Person]]
+  def getPersonsById(ids: Set[PersonId], fromReadSide: Boolean): Future[Seq[Person]]
   def findPersons(query: PersonFindQuery): Future[FindResult]
 
   // category methods
