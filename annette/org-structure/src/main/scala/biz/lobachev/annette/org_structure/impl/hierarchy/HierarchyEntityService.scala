@@ -217,7 +217,7 @@ class HierarchyEntityService(
       .ask[HierarchyEntity.Confirmation](HierarchyEntity.ChangeItemOrder(payload, _))
       .map(successToResult)
 
-  def getOrgItemsById(orgId: OrgItemId, ids: Set[OrgItemId]): Future[Map[OrgItemId, OrgItem]] =
+  def getOrgItemsById(orgId: OrgItemId, ids: Set[OrgItemId]): Future[Seq[OrgItem]] =
     Source(ids)
       .mapAsync(1) { id =>
         refFor(orgId)
@@ -230,9 +230,9 @@ class HierarchyEntityService(
           }
       }
       .runWith(Sink.seq)
-      .map(_.flatten.map(item => item.id -> item).toMap)
+      .map(_.flatten)
 
-  def getOrgItemById(orgId: OrgItemId, id: OrgItemId): Future[OrgItem]                        =
+  def getOrgItemById(orgId: OrgItemId, id: OrgItemId): Future[OrgItem] =
     refFor(orgId)
       .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrgItem(id, _))
       .map {
@@ -245,7 +245,7 @@ class HierarchyEntityService(
   def getOrgItemByIdFromReadSide(id: OrgItemId): Future[OrgItem] =
     dbDao.getOrgItemById(id).map(_.getOrElse(throw ItemNotFound()))
 
-  def getOrgItemsByIdFromReadSide(ids: Set[OrgItemId]): Future[Map[OrgItemId, OrgItem]] =
+  def getOrgItemsByIdFromReadSide(ids: Set[OrgItemId]): Future[Seq[OrgItem]] =
     dbDao.getOrgItemsById(ids)
 
   def findOrgItems(payload: OrgItemFindQuery): Future[FindResult] =

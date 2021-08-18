@@ -59,9 +59,9 @@ trait OrgStructureServiceApi extends Service {
   def unassignOrgRole: ServiceCall[UnassignOrgRolePayload, Done]
 
   def getOrgItemById(orgId: OrgItemId, id: OrgItemId): ServiceCall[NotUsed, OrgItem]
-  def getOrgItemsById(orgId: OrgItemId): ServiceCall[Set[OrgItemId], Map[OrgItemId, OrgItem]]
+  def getOrgItemsById(orgId: OrgItemId): ServiceCall[Set[OrgItemId], Seq[OrgItem]]
   def getOrgItemByIdFromReadSide(id: OrgItemId): ServiceCall[NotUsed, OrgItem]
-  def getOrgItemsByIdFromReadSide: ServiceCall[Set[OrgItemId], Map[OrgItemId, OrgItem]]
+  def getOrgItemsByIdFromReadSide: ServiceCall[Set[OrgItemId], Seq[OrgItem]]
   def findOrgItems: ServiceCall[OrgItemFindQuery, FindResult]
 
   def moveItem: ServiceCall[MoveItemPayload, Done]
@@ -76,7 +76,7 @@ trait OrgStructureServiceApi extends Service {
   def updateOrgRole: ServiceCall[UpdateOrgRolePayload, Done]
   def deleteOrgRole: ServiceCall[DeleteOrgRolePayload, Done]
   def getOrgRoleById(id: OrgRoleId, fromReadSide: Boolean): ServiceCall[NotUsed, OrgRole]
-  def getOrgRolesById(fromReadSide: Boolean): ServiceCall[Set[OrgRoleId], Map[OrgRoleId, OrgRole]]
+  def getOrgRolesById(fromReadSide: Boolean): ServiceCall[Set[OrgRoleId], Seq[OrgRole]]
   def findOrgRoles: ServiceCall[OrgRoleFindQuery, FindResult]
 
   // org item category
@@ -85,9 +85,7 @@ trait OrgStructureServiceApi extends Service {
   def updateCategory: ServiceCall[UpdateCategoryPayload, Done]
   def deleteCategory: ServiceCall[DeleteCategoryPayload, Done]
   def getCategoryById(id: OrgCategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, OrgCategory]
-  def getCategoriesById(
-    fromReadSide: Boolean
-  ): ServiceCall[Set[OrgCategoryId], Map[OrgCategoryId, OrgCategory]]
+  def getCategoriesById(fromReadSide: Boolean): ServiceCall[Set[OrgCategoryId], Seq[OrgCategory]]
   def findCategories: ServiceCall[OrgCategoryFindQuery, FindResult]
 
   final override def descriptor = {

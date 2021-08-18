@@ -37,6 +37,6 @@ trait OrgRoleDbDao {
 
   def getOrgRoleById(id: OrgRoleId): Future[Option[OrgRole]]
 
-  def getOrgRolesById(ids: Set[OrgRoleId]): Future[Map[OrgRoleId, OrgRole]]
+  def getOrgRolesById(ids: Set[OrgRoleId]): Future[Seq[OrgRole]]
 
 }

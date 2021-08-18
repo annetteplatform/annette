@@ -137,17 +137,12 @@ private[impl] class CategoryCassandraDbDao(session: CassandraSession)(implicit
       result <- session.selectOne(stmt.bind(id)).map(_.map(convertCategory))
     } yield result
 
-  def getCategoriesById(ids: Set[OrgCategoryId]): Future[Map[OrgCategoryId, OrgCategory]] =
+  def getCategoriesById(ids: Set[OrgCategoryId]): Future[Seq[OrgCategory]] =
     for {
       stmt   <- session.prepare("SELECT * FROM categories WHERE id IN ?")
       result <- session
                   .selectAll(stmt.bind(ids.toList.asJava))
-                  .map(
-                    _.map { row =>
-                      val category = convertCategory(row)
-                      category.id -> category
-                    }.toMap
-                  )
+                  .map(_.map(convertCategory))
     } yield result
 
   private def convertCategory(row: Row): OrgCategory =
@@ -163,5 +158,4 @@ private[impl] class CategoryCassandraDbDao(session: CassandraSession)(implicit
         principalId = row.getString("updated_by_id")
       )
     )
-
 }

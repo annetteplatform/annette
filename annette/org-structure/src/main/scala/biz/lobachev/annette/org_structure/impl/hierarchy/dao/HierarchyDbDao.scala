@@ -91,7 +91,7 @@ trait HierarchyDbDao {
 
   def getOrgItemById(id: OrgItemId): Future[Option[OrgItem]]
 
-  def getOrgItemsById(ids: Set[OrgItemId]): Future[Map[OrgItemId, OrgItem]]
+  def getOrgItemsById(ids: Set[OrgItemId]): Future[Seq[OrgItem]]
 
   def getPersonPrincipals(personId: PersonId): Future[Set[AnnettePrincipal]]
 

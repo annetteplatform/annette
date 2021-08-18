@@ -489,11 +489,11 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       result <- session.selectOne(stmt.bind(id)).map(_.map(convertToOrgItem))
     } yield result
 
-  def getOrgItemsById(ids: Set[OrgItemId]): Future[Map[OrgItemId, OrgItem]]  =
+  def getOrgItemsById(ids: Set[OrgItemId]): Future[Seq[OrgItem]] =
     for {
       stmt   <- session.prepare("SELECT * FROM org_items WHERE id IN ?")
       result <- session.selectAll(stmt.bind(ids.toList.asJava)).map(_.map(convertToOrgItem))
-    } yield result.map(item => item.id -> item).toMap
+    } yield result
 
   def getPersonPrincipals(personId: PersonId): Future[Set[AnnettePrincipal]] =
     for {

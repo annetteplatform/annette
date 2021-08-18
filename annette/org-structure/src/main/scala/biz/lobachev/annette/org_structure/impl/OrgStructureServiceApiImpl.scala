@@ -181,12 +181,12 @@ class OrgStructureServiceApiImpl(
       hierarchyEntityService.getOrgItemByIdFromReadSide(id)
     }
 
-  override def getOrgItemsById(orgId: OrgItemId): ServiceCall[Set[OrgItemId], Map[OrgItemId, OrgItem]] =
+  override def getOrgItemsById(orgId: OrgItemId): ServiceCall[Set[OrgItemId], Seq[OrgItem]] =
     ServiceCall { ids =>
       hierarchyEntityService.getOrgItemsById(orgId, ids)
     }
 
-  override def getOrgItemsByIdFromReadSide: ServiceCall[Set[OrgItemId], Map[OrgItemId, OrgItem]] =
+  override def getOrgItemsByIdFromReadSide: ServiceCall[Set[OrgItemId], Seq[OrgItem]] =
     ServiceCall { ids =>
       hierarchyEntityService.getOrgItemsByIdFromReadSide(ids)
     }
@@ -228,7 +228,7 @@ class OrgStructureServiceApiImpl(
       orgRoleEntityService.getOrgRoleById(id, fromReadSide)
     }
 
-  override def getOrgRolesById(fromReadSide: Boolean): ServiceCall[Set[OrgRoleId], Map[OrgRoleId, OrgRole]] =
+  override def getOrgRolesById(fromReadSide: Boolean): ServiceCall[Set[OrgRoleId], Seq[OrgRole]] =
     ServiceCall { ids =>
       orgRoleEntityService.getOrgRolesById(ids, fromReadSide)
     }
@@ -260,9 +260,7 @@ class OrgStructureServiceApiImpl(
       categoryEntityService.getCategoryById(id, fromReadSide)
     }
 
-  override def getCategoriesById(
-    fromReadSide: Boolean
-  ): ServiceCall[Set[OrgCategoryId], Map[OrgCategoryId, OrgCategory]] =
+  override def getCategoriesById(fromReadSide: Boolean): ServiceCall[Set[OrgCategoryId], Seq[OrgCategory]] =
     ServiceCall { ids =>
       categoryEntityService.getCategoriesById(ids, fromReadSide)
     }

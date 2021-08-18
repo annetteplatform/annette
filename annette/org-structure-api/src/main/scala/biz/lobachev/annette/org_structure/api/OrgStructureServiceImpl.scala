@@ -97,13 +97,13 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
   def getOrgItemById(orgId: OrgItemId, id: OrgItemId): Future[OrgItem] =
     api.getOrgItemById(orgId, id).invoke()
 
-  def getOrgItemsById(orgId: OrgItemId, ids: Set[OrgItemId]): Future[Map[OrgItemId, OrgItem]] =
+  def getOrgItemsById(orgId: OrgItemId, ids: Set[OrgItemId]): Future[Seq[OrgItem]] =
     api.getOrgItemsById(orgId).invoke(ids)
 
   def getOrgItemByIdFromReadSide(id: OrgItemId): Future[OrgItem] =
     api.getOrgItemByIdFromReadSide(id).invoke()
 
-  def getOrgItemsByIdFromReadSide(ids: Set[OrgItemId]): Future[Map[OrgItemId, OrgItem]] =
+  def getOrgItemsByIdFromReadSide(ids: Set[OrgItemId]): Future[Seq[OrgItem]] =
     api.getOrgItemsByIdFromReadSide.invoke(ids)
 
   def findOrgItems(query: OrgItemFindQuery): Future[FindResult] =
@@ -146,7 +146,7 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
   def getOrgRoleById(id: OrgRoleId, fromReadSide: Boolean): Future[OrgRole] =
     api.getOrgRoleById(id, fromReadSide).invoke()
 
-  def getOrgRolesById(ids: Set[OrgRoleId], fromReadSide: Boolean): Future[Map[OrgRoleId, OrgRole]] =
+  def getOrgRolesById(ids: Set[OrgRoleId], fromReadSide: Boolean): Future[Seq[OrgRole]] =
     api.getOrgRolesById(fromReadSide).invoke(ids)
 
   def findOrgRoles(query: OrgRoleFindQuery): Future[FindResult] =
@@ -177,7 +177,7 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
   def getCategoryById(id: OrgCategoryId, fromReadSide: Boolean): Future[OrgCategory] =
     api.getCategoryById(id, fromReadSide).invoke()
 
-  def getCategoriesById(ids: Set[OrgCategoryId], fromReadSide: Boolean): Future[Map[OrgCategoryId, OrgCategory]] =
+  def getCategoriesById(ids: Set[OrgCategoryId], fromReadSide: Boolean): Future[Seq[OrgCategory]] =
     api.getCategoriesById(fromReadSide).invoke(ids)
 
   def findCategories(query: OrgCategoryFindQuery): Future[FindResult] =

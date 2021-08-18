@@ -24,7 +24,7 @@ case class CategoryFindQuery(
   size: Int,
   filter: Option[String] = None,
   name: Option[String] = None,
-  sortBy: Option[SortBy] = None
+  sortBy: Option[Seq[SortBy]] = None
 )
 
 object CategoryFindQuery {

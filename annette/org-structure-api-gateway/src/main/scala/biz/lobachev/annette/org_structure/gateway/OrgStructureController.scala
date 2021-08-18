@@ -324,7 +324,7 @@ class OrgStructureController @Inject() (
                            orgStructureService
                              .getOrgItemsByIdFromReadSide(ids)
                              .map(
-                               _.filter { case (_, item) => orgs.contains(item.orgId) }
+                               _.filter(item => orgs.contains(item.orgId))
                              )
                          case AllowedNone         => Future.failed(AuthorizationFailedException())
 
