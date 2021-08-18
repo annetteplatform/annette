@@ -23,7 +23,7 @@ case class FindApplicationQuery(
   offset: Int = 0,
   size: Int,
   filter: Option[String] = None,
-  sortBy: Option[SortBy] = None
+  sortBy: Option[Seq[SortBy]] = None
 )
 
 object FindApplicationQuery {
