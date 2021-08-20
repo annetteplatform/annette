@@ -51,8 +51,6 @@ trait HierarchyIndexDao extends AttributeIndexDao {
 
   def updateName(event: HierarchyEntity.NameUpdated): Future[Unit]
 
-  def updateShortName(event: HierarchyEntity.ShortNameUpdated): Future[Unit]
-
   def changePositionLimit(event: HierarchyEntity.PositionLimitChanged): Future[Unit]
 
   def updatePersons(positionId: OrgItemId, persons: Set[OrgItemId], updatedAt: OffsetDateTime): Future[Unit]

@@ -200,20 +200,6 @@ class OrgStructureController @Inject() (
       }
     }
 
-  def updateShortName =
-    authenticated.async(parse.json[UpdateShortNamePayloadDto]) { implicit request =>
-      val payload = request.body
-        .into[UpdateShortNamePayload]
-        .withFieldConst(_.updatedBy, request.subject.principals.head)
-        .transform
-      authorizer.performCheck(canMaintainOrg(payload.orgId)) {
-        for {
-          _      <- orgStructureService.updateShortName(payload)
-          result <- orgStructureService.getOrgItemById(payload.orgId, payload.orgItemId)
-        } yield Ok(Json.toJson(result))
-      }
-    }
-
   def changePositionLimit =
     authenticated.async(parse.json[ChangePositionLimitPayloadDto]) { implicit request =>
       val payload = request.body

@@ -26,9 +26,8 @@ import play.api.libs.json.{Format, Json}
 case class OrgItemFindQuery(
   offset: Int = 0,
   size: Int,
-  filter: Option[String] = None,                     // search by name & shortName
+  filter: Option[String] = None,                     // search by name
   name: Option[String] = None,                       // search by name
-  shortName: Option[String] = None,                  // search by name
   orgUnits: Option[Set[OrgItemId]] = None,           // search descendants of specified  org units
   persons: Option[Set[PersonId]] = None,             // search descendants of specified  org units
   orgRoles: Option[Set[OrgRoleId]] = None,           // search positions contains roles

@@ -1,7 +1,6 @@
 {
   "id": "ANSOFT",
   "name": "Annette Software",
-  "shortName": "Annette Software",
   "type": "U",
   "categoryId": "ORG",
   "chief": "ANSOFT-CEO",
@@ -9,7 +8,6 @@
     {
       "id": "ANSOFT-CEO",
       "name": "Chief Executive Officer",
-      "shortName": "CEO",
       "type": "P",
       "categoryId": "POSITION",
       "limit": 1,
@@ -18,7 +16,6 @@
     {
       "id": "ANSOFT-CA",
       "name": "Chief Accountant",
-      "shortName": "Chief Accountant",
       "type": "P",
       "categoryId": "POSITION",
       "limit": 1,
@@ -27,7 +24,6 @@
     {
       "id": "ANSOFT-SM",
       "name": "Sales & Marketing Department",
-      "shortName": "S&M Dept.",
       "type": "U",
       "categoryId": "UNIT",
       "chief": "ANSOFT-SM-HEAD",
@@ -35,7 +31,6 @@
         {
           "id": "ANSOFT-SM-HEAD",
           "name": "Head of Sales & Marketing Dept.",
-          "shortName": "Head of S&M Dept.",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -44,7 +39,6 @@
         {
           "id": "ANSOFT-SM-SM",
           "name": "Sales Manager",
-          "shortName": "Sales Manager",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -55,7 +49,6 @@
     {
       "id": "ANSOFT-DEV",
       "name": "Development Department",
-      "shortName": "DevelopmentDept.",
       "type": "U",
       "categoryId": "UNIT",
       "chief": "ANSOFT-DEV-CTO",
@@ -63,7 +56,6 @@
         {
           "id": "ANSOFT-DEV-CTO",
           "name": "Chief Technical Officer",
-          "shortName": "CTO",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -72,7 +64,6 @@
         {
           "id": "ANSOFT-DEV-PM-1",
           "name": "Project Manager",
-          "shortName": "PM",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -81,7 +72,6 @@
         {
           "id": "ANSOFT-DEV-PM-2",
           "name": "Project Manager",
-          "shortName": "PM",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -90,7 +80,6 @@
         {
           "id": "ANSOFT-DEV-SBD-1",
           "name": "Senior Backend Developer",
-          "shortName": "Sen. Backend Dev.",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -99,7 +88,6 @@
         {
           "id": "ANSOFT-DEV-SBD-2",
           "name": "Senior Backend Developer",
-          "shortName": "Sen. Backend Dev.",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -108,7 +96,6 @@
         {
           "id": "ANSOFT-DEV-BD-1",
           "name": "Backend Developer",
-          "shortName": "Backend Dev.",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -117,7 +104,6 @@
         {
           "id": "ANSOFT-DEV-BD-2",
           "name": "Backend Developer",
-          "shortName": "Backend Dev.",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -126,7 +112,6 @@
         {
           "id": "ANSOFT-DEV-BD-3",
           "name": "Backend Developer",
-          "shortName": "Backend Dev.",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -135,7 +120,6 @@
         {
           "id": "ANSOFT-DEV-SFD-1",
           "name": "Senior Frontend Developer",
-          "shortName": "Sen. Frontend Dev.",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -144,7 +128,6 @@
         {
           "id": "ANSOFT-DEV-SFD-2",
           "name": "Senior Frontend Developer",
-          "shortName": "Sen. Frontend Dev.",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -153,7 +136,6 @@
         {
           "id": "ANSOFT-DEV-FD-1",
           "name": "Frontend Developer",
-          "shortName": "Frontend Dev.",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -162,7 +144,6 @@
         {
           "id": "ANSOFT-DEV-FD-2",
           "name": "Frontend Developer",
-          "shortName": "Frontend Dev.",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -171,7 +152,6 @@
         {
           "id": "ANSOFT-DEV-FD-3",
           "name": "Frontend Developer",
-          "shortName": "Frontend Dev.",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -180,7 +160,6 @@
         {
           "id": "ANSOFT-DEV-MD-1",
           "name": "Mobile Developer",
-          "shortName": "Mobile Dev.",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -189,7 +168,6 @@
         {
           "id": "ANSOFT-DEV-MD-2",
           "name": "Mobile Developer",
-          "shortName": "Mobile Dev.",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -198,7 +176,6 @@
         {
           "id": "ANSOFT-DEV-DES-1",
           "name": "Designer",
-          "shortName": "Designer",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -207,7 +184,6 @@
         {
           "id": "ANSOFT-DEV-DES-2",
           "name": "Designer",
-          "shortName": "Designer",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -216,7 +192,6 @@
         {
           "id": "ANSOFT-DEV-DEVOPS-1",
           "name": "DevOps Engineer",
-          "shortName": "DevOps Engineer",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -225,7 +200,6 @@
         {
           "id": "ANSOFT-DEV-DEVOPS-2",
           "name": "DevOps Engineer",
-          "shortName": "DevOps Engineer",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,

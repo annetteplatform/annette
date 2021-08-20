@@ -53,7 +53,6 @@ object HierarchyEntity {
   final case class CreatePosition(payload: CreatePositionPayload, replyTo: ActorRef[Confirmation])   extends Command
   final case class DeletePosition(payload: DeletePositionPayload, replyTo: ActorRef[Confirmation])   extends Command
   final case class UpdateName(payload: UpdateNamePayload, replyTo: ActorRef[Confirmation])           extends Command
-  final case class UpdateShortName(payload: UpdateShortNamePayload, replyTo: ActorRef[Confirmation]) extends Command
   final case class ChangePositionLimit(payload: ChangePositionLimitPayload, replyTo: ActorRef[Confirmation])
       extends Command
   final case class AssignPerson(payload: AssignPersonPayload, replyTo: ActorRef[Confirmation])       extends Command
@@ -138,7 +137,6 @@ object HierarchyEntity {
   final case class OrganizationCreated(
     orgId: OrgItemId,
     name: String,
-    shortName: String,
     categoryId: OrgCategoryId,
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
@@ -153,7 +151,6 @@ object HierarchyEntity {
     parentId: OrgItemId,
     unitId: OrgItemId,
     name: String,
-    shortName: String,
     order: Option[Int],
     rootPath: Seq[OrgItemId],
     categoryId: OrgCategoryId,
@@ -193,7 +190,6 @@ object HierarchyEntity {
     parentId: OrgItemId,
     positionId: OrgItemId,
     name: String,
-    shortName: String,
     order: Option[Int],
     rootPath: Seq[OrgItemId],
     limit: Int,
@@ -213,14 +209,6 @@ object HierarchyEntity {
     orgId: OrgItemId,
     orgItemId: OrgItemId,
     name: String,
-    updatedBy: AnnettePrincipal,
-    updatedAt: OffsetDateTime = OffsetDateTime.now
-  ) extends Event
-
-  final case class ShortNameUpdated(
-    orgId: OrgItemId,
-    orgItemId: OrgItemId,
-    shortName: String,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -290,7 +278,6 @@ object HierarchyEntity {
   implicit val positionCreatedFormat: Format[PositionCreated]           = Json.format
   implicit val positionDeletedFormat: Format[PositionDeleted]           = Json.format
   implicit val nameUpdatedFormat: Format[NameUpdated]                   = Json.format
-  implicit val shortNameUpdatedFormat: Format[ShortNameUpdated]         = Json.format
   implicit val positionLimitChangedFormat: Format[PositionLimitChanged] = Json.format
   implicit val personAssignedFormat: Format[PersonAssigned]             = Json.format
   implicit val personUnassignedFormat: Format[PersonUnassigned]         = Json.format
@@ -332,7 +319,6 @@ final case class HierarchyEntity(
       case cmd: CreateOrganization  => createOrganization(cmd)
       case cmd: DeleteOrganization  => deleteOrganization(cmd)
       case cmd: UpdateName          => updateName(cmd)
-      case cmd: UpdateShortName     => updateShortName(cmd)
       case cmd: CreateUnit          => createUnit(cmd)
       case cmd: DeleteUnit          => deleteUnit(cmd)
       case cmd: AssignCategory      => assignCategory(cmd)
@@ -560,23 +546,6 @@ final case class HierarchyEntity(
           if state.positions.isDefinedAt(payload.orgItemId) || state.units.isDefinedAt(cmd.payload.orgItemId) =>
         val event = payload
           .into[NameUpdated]
-          .transform
-        Effect
-          .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
-      case _    => Effect.reply(cmd.replyTo)(ItemNotFound)
-    }
-  }
-
-  def updateShortName(cmd: UpdateShortName): ReplyEffect[Event, HierarchyEntity] = {
-    val replyTo = cmd.replyTo
-    val payload = cmd.payload
-    maybeState match {
-      case None => Effect.reply(replyTo)(OrganizationNotFound)
-      case Some(state)
-          if state.positions.isDefinedAt(payload.orgItemId) || state.units.isDefinedAt(cmd.payload.orgItemId) =>
-        val event = payload
-          .into[ShortNameUpdated]
           .transform
         Effect
           .persist(event)
@@ -836,7 +805,6 @@ final case class HierarchyEntity(
       case event: OrganizationCreated  => onOrganizationCreated(event)
       case _: OrganizationDeleted      => onOrganizationDeleted()
       case event: NameUpdated          => onNameUpdated(event)
-      case event: ShortNameUpdated     => onShortNameUpdated(event)
       case event: UnitCreated          => onUnitCreated(event)
       case event: UnitDeleted          => onUnitDeleted(event)
       case event: CategoryAssigned     => onCategoryAssigned(event)
@@ -859,7 +827,6 @@ final case class HierarchyEntity(
       id = event.orgId,
       parentId = ROOT,
       name = event.name,
-      shortName = event.shortName,
       categoryId = event.categoryId,
       updatedAt = event.createdAt,
       updatedBy = event.createdBy
@@ -889,7 +856,6 @@ final case class HierarchyEntity(
           id = event.unitId,
           parentId = event.parentId,
           name = event.name,
-          shortName = event.shortName,
           categoryId = event.categoryId,
           updatedAt = event.createdAt,
           updatedBy = event.createdBy
@@ -1017,7 +983,6 @@ final case class HierarchyEntity(
           id = event.positionId,
           parentId = event.parentId,
           name = event.name,
-          shortName = event.shortName,
           limit = event.limit,
           categoryId = event.categoryId,
           updatedAt = event.createdAt,
@@ -1088,43 +1053,6 @@ final case class HierarchyEntity(
               .map { unit =>
                 val updatedUnit = unit.copy(
                   name = event.name,
-                  updatedAt = event.updatedAt,
-                  updatedBy = event.updatedBy
-                )
-                state.copy(
-                  units = state.units + (updatedUnit.id -> updatedUnit),
-                  updatedAt = event.updatedAt,
-                  updatedBy = event.updatedBy
-                )
-              }
-              .getOrElse(state)
-          }
-      }
-    )
-
-  def onShortNameUpdated(event: ShortNameUpdated): HierarchyEntity =
-    HierarchyEntity(
-      maybeState.map { state =>
-        state.positions
-          .get(event.orgItemId)
-          .map { position =>
-            val updatedPosition = position.copy(
-              shortName = event.shortName,
-              updatedAt = event.updatedAt,
-              updatedBy = event.updatedBy
-            )
-            state.copy(
-              positions = state.positions + (updatedPosition.id -> updatedPosition),
-              updatedAt = event.updatedAt,
-              updatedBy = event.updatedBy
-            )
-          }
-          .getOrElse {
-            state.units
-              .get(event.orgItemId)
-              .map { unit =>
-                val updatedUnit = unit.copy(
-                  shortName = event.shortName,
                   updatedAt = event.updatedAt,
                   updatedBy = event.updatedBy
                 )

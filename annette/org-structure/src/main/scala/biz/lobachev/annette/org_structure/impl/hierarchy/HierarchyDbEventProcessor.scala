@@ -43,7 +43,6 @@ private[impl] class HierarchyDbEventProcessor(
       .setEventHandler[HierarchyEntity.OrganizationCreated](e => createOrganization(e.event))
       .setEventHandler[HierarchyEntity.OrganizationDeleted](e => deleteOrganization(e.event))
       .setEventHandler[HierarchyEntity.NameUpdated](e => updateName(e.event))
-      .setEventHandler[HierarchyEntity.ShortNameUpdated](e => updateShortName(e.event))
       .setEventHandler[HierarchyEntity.UnitCreated](e => createUnit(e.event))
       .setEventHandler[HierarchyEntity.UnitDeleted](e => deleteUnit(e.event))
       .setEventHandler[HierarchyEntity.PositionCreated](e => createPosition(e.event))
@@ -131,13 +130,6 @@ private[impl] class HierarchyDbEventProcessor(
     Future.successful(
       List(
         dbDao.updateName(event)
-      )
-    )
-
-  def updateShortName(event: HierarchyEntity.ShortNameUpdated): Future[Seq[BoundStatement]] =
-    Future.successful(
-      List(
-        dbDao.updateShortName(event)
       )
     )
 

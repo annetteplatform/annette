@@ -61,8 +61,6 @@ trait HierarchyDbDao {
 
   def updateName(event: HierarchyEntity.NameUpdated): BoundStatement
 
-  def updateShortName(event: HierarchyEntity.ShortNameUpdated): BoundStatement
-
   def changePositionLimit(event: HierarchyEntity.PositionLimitChanged): BoundStatement
 
   def assignPerson(event: HierarchyEntity.PersonAssigned, persons: Set[OrgItemId]): List[BoundStatement]

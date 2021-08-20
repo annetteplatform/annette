@@ -1,7 +1,6 @@
 {
   "id": "AR-0001",
   "name": "Annette Retail",
-  "shortName": "Annette Retail",
   "type": "U",
   "categoryId": "ORG",
   "chief": "AR-0002",
@@ -9,7 +8,6 @@
     {
       "id": "AR-0002",
       "name": "Chief Executive Officer",
-      "shortName": "CEO",
       "type": "P",
       "categoryId": "POSITION",
       "limit": 1,
@@ -18,7 +16,6 @@
     {
       "id": "AR-0003",
       "name": "Administration",
-      "shortName": "Administration",
       "type": "U",
       "categoryId": "UNIT",
       "chief": "AR-0004",
@@ -26,7 +23,6 @@
         {
           "id": "AR-0004",
           "name": "Head of Administration",
-          "shortName": "Admin Head",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -35,7 +31,6 @@
         {
           "id": "AR-0005",
           "name": "Assistant",
-          "shortName": "Assistant ",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -44,7 +39,6 @@
         {
           "id": "AR-0006",
           "name": "Assistant",
-          "shortName": "Assistant",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -55,7 +49,6 @@
     {
       "id": "AR-0007",
       "name": "Finance Department",
-      "shortName": "Finance Dept.",
       "type": "U",
       "categoryId": "UNIT",
       "chief": "AR-0008",
@@ -63,7 +56,6 @@
         {
           "id": "AR-0008",
           "name": "Chief Financial Officer",
-          "shortName": "CFO",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -72,7 +64,6 @@
         {
           "id": "AR-0009",
           "name": "CFO Assistant",
-          "shortName": "CFO Assistant",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -81,7 +72,6 @@
         {
           "id": "AR-0010",
           "name": "CFO Assistant",
-          "shortName": "CFO Assistant",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -90,7 +80,6 @@
         {
           "id": "AR-0011",
           "name": "Accounting Department",
-          "shortName": "Accounting Dept.",
           "type": "U",
           "categoryId": "UNIT",
           "chief": "AR-0012",
@@ -98,7 +87,6 @@
             {
               "id": "AR-0012",
               "name": "Chief Accountant",
-              "shortName": "Chief Accountant",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -107,7 +95,6 @@
             {
               "id": "AR-0013",
               "name": "Lead accountant",
-              "shortName": "Lead accountant",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -116,7 +103,6 @@
             {
               "id": "AR-0014",
               "name": "Lead accountant",
-              "shortName": "Lead accountant",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -125,7 +111,6 @@
             {
               "id": "AR-0015",
               "name": "Accountant",
-              "shortName": "Accountant",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -134,7 +119,6 @@
             {
               "id": "AR-0016",
               "name": "Accountant",
-              "shortName": "Accountant",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -143,7 +127,6 @@
             {
               "id": "AR-0017",
               "name": "Accountant",
-              "shortName": "Accountant",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -152,7 +135,6 @@
             {
               "id": "AR-0018",
               "name": "Accountant",
-              "shortName": "Accountant",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -161,7 +143,6 @@
             {
               "id": "AR-0019",
               "name": "Accountant",
-              "shortName": "Accountant",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -172,7 +153,6 @@
         {
           "id": "AR-0020",
           "name": "Management Accounting Department",
-          "shortName": "MA Dept.",
           "type": "U",
           "categoryId": "UNIT",
           "chief": "AR-0021",
@@ -180,7 +160,6 @@
             {
               "id": "AR-0021",
               "name": "Chief Management Accountant",
-              "shortName": "CManA",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -189,7 +168,6 @@
             {
               "id": "AR-0022",
               "name": "Managerial Accountant",
-              "shortName": "Man. Accountant",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -198,7 +176,6 @@
             {
               "id": "AR-0023",
               "name": "Managerial Accountant",
-              "shortName": "Man. Accountant",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -207,7 +184,6 @@
             {
               "id": "AR-0024",
               "name": "Managerial Accountant",
-              "shortName": "Man. Accountant",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -218,7 +194,6 @@
         {
           "id": "AR-0025",
           "name": "Treasure",
-          "shortName": "Treasure",
           "type": "U",
           "categoryId": "UNIT",
           "chief": "AR-0026",
@@ -226,7 +201,6 @@
             {
               "id": "AR-0026",
               "name": "Chief Treasurer Officer",
-              "shortName": "CTrO",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -235,7 +209,6 @@
             {
               "id": "AR-0027",
               "name": "Treasure Officer",
-              "shortName": "Treasure Officer",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -244,7 +217,6 @@
             {
               "id": "AR-0028",
               "name": "Treasure Officer",
-              "shortName": "Treasure Officer",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -253,7 +225,6 @@
             {
               "id": "AR-0029",
               "name": "Treasure Officer",
-              "shortName": "Treasure Officer",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -264,7 +235,6 @@
         {
           "id": "AR-0030",
           "name": "Analysis and Reporting Department",
-          "shortName": "A&R Dept.",
           "type": "U",
           "categoryId": "UNIT",
           "chief": "AR-0031",
@@ -272,7 +242,6 @@
             {
               "id": "AR-0031",
               "name": "Head of A&R Department",
-              "shortName": "Head of A&R Dept.",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -281,7 +250,6 @@
             {
               "id": "AR-0032",
               "name": "Analyst",
-              "shortName": "Analyst",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -290,7 +258,6 @@
             {
               "id": "AR-0033",
               "name": "Analyst",
-              "shortName": "Analyst",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -299,7 +266,6 @@
             {
               "id": "AR-0034",
               "name": "Analyst",
-              "shortName": "Analyst",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -312,7 +278,6 @@
     {
       "id": "AR-0035",
       "name": "IT Department",
-      "shortName": "IT Dept.",
       "type": "U",
       "categoryId": "UNIT",
       "chief": "AR-0036",
@@ -320,7 +285,6 @@
         {
           "id": "AR-0036",
           "name": "Chief IT Officer",
-          "shortName": "CIO",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -329,7 +293,6 @@
         {
           "id": "AR-0037",
           "name": "CIO Assistant",
-          "shortName": "CIO Assistant",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -338,7 +301,6 @@
         {
           "id": "AR-0038",
           "name": "Project Unit",
-          "shortName": "Project Unit",
           "type": "U",
           "categoryId": "UNIT",
           "chief": "AR-0039",
@@ -346,7 +308,6 @@
             {
               "id": "AR-0039",
               "name": "Head of Project Unit",
-              "shortName": "Head of Project Unit",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -355,7 +316,6 @@
             {
               "id": "AR-0040",
               "name": "Project Manager",
-              "shortName": "PM",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -364,7 +324,6 @@
             {
               "id": "AR-0041",
               "name": "Project Manager",
-              "shortName": "PM",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -373,7 +332,6 @@
             {
               "id": "AR-0042",
               "name": "Project Manager",
-              "shortName": "PM",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -382,7 +340,6 @@
             {
               "id": "AR-0043",
               "name": "Project Administrator",
-              "shortName": "PA",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -391,7 +348,6 @@
             {
               "id": "AR-0044",
               "name": "Project Administrator",
-              "shortName": "PA",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -400,7 +356,6 @@
             {
               "id": "AR-0045",
               "name": "Project Administrator",
-              "shortName": "PA",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -409,7 +364,6 @@
             {
               "id": "AR-0046",
               "name": "Project Administrator",
-              "shortName": "PA",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -420,7 +374,6 @@
         {
           "id": "AR-0047",
           "name": "Infrastructure Department",
-          "shortName": "Infrastructure Dept.",
           "type": "U",
           "categoryId": "UNIT",
           "chief": "AR-0048",
@@ -428,7 +381,6 @@
             {
               "id": "AR-0048",
               "name": "Head of Infrastructure",
-              "shortName": "Head of Infrastructure",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -437,7 +389,6 @@
             {
               "id": "AR-0049",
               "name": "Hardware Engineer",
-              "shortName": "Hardware Engineer",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -446,7 +397,6 @@
             {
               "id": "AR-0050",
               "name": "Hardware Engineer",
-              "shortName": "Hardware Engineer",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -455,7 +405,6 @@
             {
               "id": "AR-0051",
               "name": "Hardware Engineer",
-              "shortName": "Hardware Engineer",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -464,7 +413,6 @@
             {
               "id": "AR-0052",
               "name": "Network Engineer",
-              "shortName": "Network Engineer",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -473,7 +421,6 @@
             {
               "id": "AR-0053",
               "name": "Network Engineer",
-              "shortName": "Network Engineer",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -482,7 +429,6 @@
             {
               "id": "AR-0054",
               "name": "Network Engineer",
-              "shortName": "Network Engineer",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -491,7 +437,6 @@
             {
               "id": "AR-0055",
               "name": "System Administrator",
-              "shortName": "System Administrator",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -500,7 +445,6 @@
             {
               "id": "AR-0056",
               "name": "System Administrator",
-              "shortName": "System Administrator",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -509,7 +453,6 @@
             {
               "id": "AR-0057",
               "name": "System Administrator",
-              "shortName": "System Administrator",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -518,7 +461,6 @@
             {
               "id": "AR-0058",
               "name": "Data Base Administrator",
-              "shortName": "DBA",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -527,7 +469,6 @@
             {
               "id": "AR-0059",
               "name": "Data Base Administrator",
-              "shortName": "DBA",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -540,7 +481,6 @@
     {
       "id": "AR-0060",
       "name": "Marketing Department",
-      "shortName": "Marketing Dept.",
       "type": "U",
       "categoryId": "UNIT",
       "chief": "AR-0061",
@@ -548,7 +488,6 @@
         {
           "id": "AR-0061",
           "name": "Chief Marketing Officer",
-          "shortName": "CMA",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -557,7 +496,6 @@
         {
           "id": "AR-0062",
           "name": "CMA Assistant",
-          "shortName": "CMA Assistant",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -566,7 +504,6 @@
         {
           "id": "AR-0063",
           "name": "Brand Manager",
-          "shortName": "Brand Manager",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -575,7 +512,6 @@
         {
           "id": "AR-0064",
           "name": "Brand Manager",
-          "shortName": "Brand Manager",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -584,7 +520,6 @@
         {
           "id": "AR-0065",
           "name": "Brand Manager",
-          "shortName": "Brand Manager",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -593,7 +528,6 @@
         {
           "id": "AR-0066",
           "name": "Brand Manager",
-          "shortName": "Brand Manager",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -602,7 +536,6 @@
         {
           "id": "AR-0067",
           "name": "Advertising Manager",
-          "shortName": "Advertising Manager",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -611,7 +544,6 @@
         {
           "id": "AR-0068",
           "name": "Advertising Manager",
-          "shortName": "Advertising Manager",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -622,7 +554,6 @@
     {
       "id": "AR-0069",
       "name": "Human Resource Department",
-      "shortName": "HR Dept.",
       "type": "U",
       "categoryId": "UNIT",
       "chief": "AR-0070",
@@ -630,7 +561,6 @@
         {
           "id": "AR-0070",
           "name": "Chief Human Resources Officer",
-          "shortName": "CHRO",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -639,7 +569,6 @@
         {
           "id": "AR-0071",
           "name": "CHRO Assostant",
-          "shortName": "CHRO Assostant",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -648,7 +577,6 @@
         {
           "id": "AR-0072",
           "name": "Human Resurces Officer",
-          "shortName": "HR Officer",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -657,7 +585,6 @@
         {
           "id": "AR-0073",
           "name": "Human Resurces Officer",
-          "shortName": "HR Officer",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -666,7 +593,6 @@
         {
           "id": "AR-0074",
           "name": "Human Resurces Officer",
-          "shortName": "HR Officer",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -675,7 +601,6 @@
         {
           "id": "AR-0075",
           "name": "Human Resurces Officer",
-          "shortName": "HR Officer",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -686,7 +611,6 @@
     {
       "id": "AR-0076",
       "name": "Operation Department",
-      "shortName": "Operation Dept.",
       "type": "U",
       "categoryId": "UNIT",
       "chief": "AR-0077",
@@ -694,7 +618,6 @@
         {
           "id": "AR-0077",
           "name": "Chief Operation Officer",
-          "shortName": "COO",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -703,7 +626,6 @@
         {
           "id": "AR-0078",
           "name": "COO Assistant",
-          "shortName": "COO Assistant",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -712,7 +634,6 @@
         {
           "id": "AR-0079",
           "name": "COO Assistant",
-          "shortName": "COO Assistant",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -721,7 +642,6 @@
         {
           "id": "AR-0080",
           "name": "COO Assistant",
-          "shortName": "COO Assistant",
           "type": "P",
           "categoryId": "POSITION",
           "limit": 1,
@@ -730,7 +650,6 @@
         {
           "id": "AR-0081",
           "name": "Purchase Department",
-          "shortName": "Purchase Dept",
           "type": "U",
           "categoryId": "UNIT",
           "chief": "AR-0082",
@@ -738,7 +657,6 @@
             {
               "id": "AR-0082",
               "name": "Head of Purchase Department",
-              "shortName": "Head of Purchase Dept.",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -747,7 +665,6 @@
             {
               "id": "AR-0083",
               "name": "Purchaser",
-              "shortName": "Purchaser",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -756,7 +673,6 @@
             {
               "id": "AR-0084",
               "name": "Purchaser",
-              "shortName": "Purchaser",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -765,7 +681,6 @@
             {
               "id": "AR-0085",
               "name": "Purchaser",
-              "shortName": "Purchaser",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -774,7 +689,6 @@
             {
               "id": "AR-0086",
               "name": "Purchaser",
-              "shortName": "Purchaser",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -783,7 +697,6 @@
             {
               "id": "AR-0087",
               "name": "Purchaser",
-              "shortName": "Purchaser",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -794,7 +707,6 @@
         {
           "id": "AR-0088",
           "name": "Warehouse Department",
-          "shortName": "Warehouse Dept.",
           "type": "U",
           "categoryId": "UNIT",
           "chief": "AR-0089",
@@ -802,7 +714,6 @@
             {
               "id": "AR-0089",
               "name": "Head of Warehouse Department",
-              "shortName": "Head of Warehouse Dept.",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -811,7 +722,6 @@
             {
               "id": "AR-0090",
               "name": "Warehouse Head Assistant",
-              "shortName": "Warehouse Head Assistant",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -820,7 +730,6 @@
             {
               "id": "AR-0091",
               "name": "Warehouse Head Assistant",
-              "shortName": "Warehouse Head Assistant",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -829,7 +738,6 @@
             {
               "id": "AR-0092",
               "name": "North Warehouse",
-              "shortName": "North WH",
               "type": "U",
               "categoryId": "UNIT",
               "chief": "AR-0093",
@@ -837,7 +745,6 @@
                 {
                   "id": "AR-0093",
                   "name": "Head of North WH",
-                  "shortName": "Head of North WH",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -846,7 +753,6 @@
                 {
                   "id": "AR-0094",
                   "name": "Warehouse Clerk",
-                  "shortName": "Warehouse Clerk",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -855,7 +761,6 @@
                 {
                   "id": "AR-0095",
                   "name": "Warehouse Clerk",
-                  "shortName": "Warehouse Clerk",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -864,7 +769,6 @@
                 {
                   "id": "AR-0096",
                   "name": "Stockman",
-                  "shortName": "Stockman",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -873,7 +777,6 @@
                 {
                   "id": "AR-0097",
                   "name": "Stockman",
-                  "shortName": "Stockman",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -882,7 +785,6 @@
                 {
                   "id": "AR-0098",
                   "name": "Stockman",
-                  "shortName": "Stockman",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -891,7 +793,6 @@
                 {
                   "id": "AR-0099",
                   "name": "Stockman",
-                  "shortName": "Stockman",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -902,7 +803,6 @@
             {
               "id": "AR-0100",
               "name": "East Warehouse",
-              "shortName": "East WH",
               "type": "U",
               "categoryId": "UNIT",
               "chief": "AR-0101",
@@ -910,7 +810,6 @@
                 {
                   "id": "AR-0101",
                   "name": "Head of East WH",
-                  "shortName": "Head of East WH",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -919,7 +818,6 @@
                 {
                   "id": "AR-0102",
                   "name": "Warehouse Clerk",
-                  "shortName": "Warehouse Clerk",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -928,7 +826,6 @@
                 {
                   "id": "AR-0103",
                   "name": "Warehouse Clerk",
-                  "shortName": "Warehouse Clerk",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -937,7 +834,6 @@
                 {
                   "id": "AR-0104",
                   "name": "Stockman",
-                  "shortName": "Stockman",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -946,7 +842,6 @@
                 {
                   "id": "AR-0105",
                   "name": "Stockman",
-                  "shortName": "Stockman",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -955,7 +850,6 @@
                 {
                   "id": "AR-0106",
                   "name": "Stockman",
-                  "shortName": "Stockman",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -964,7 +858,6 @@
                 {
                   "id": "AR-0107",
                   "name": "Stockman",
-                  "shortName": "Stockman",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -975,7 +868,6 @@
             {
               "id": "AR-0108",
               "name": "South Warehouse",
-              "shortName": "South WH",
               "type": "U",
               "categoryId": "UNIT",
               "chief": "AR-0109",
@@ -983,7 +875,6 @@
                 {
                   "id": "AR-0109",
                   "name": "Head of South WH",
-                  "shortName": "Head of South WH",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -992,7 +883,6 @@
                 {
                   "id": "AR-0110",
                   "name": "Warehouse Clerk",
-                  "shortName": "Warehouse Clerk",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -1001,7 +891,6 @@
                 {
                   "id": "AR-0111",
                   "name": "Warehouse Clerk",
-                  "shortName": "Warehouse Clerk",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -1010,7 +899,6 @@
                 {
                   "id": "AR-0112",
                   "name": "Stockman",
-                  "shortName": "Stockman",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -1019,7 +907,6 @@
                 {
                   "id": "AR-0113",
                   "name": "Stockman",
-                  "shortName": "Stockman",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -1028,7 +915,6 @@
                 {
                   "id": "AR-0114",
                   "name": "Stockman",
-                  "shortName": "Stockman",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -1037,7 +923,6 @@
                 {
                   "id": "AR-0115",
                   "name": "Stockman",
-                  "shortName": "Stockman",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -1048,7 +933,6 @@
             {
               "id": "AR-0116",
               "name": "West Warehouse",
-              "shortName": "West WH",
               "type": "U",
               "categoryId": "UNIT",
               "chief": "AR-0117",
@@ -1056,7 +940,6 @@
                 {
                   "id": "AR-0117",
                   "name": "Head of West WH",
-                  "shortName": "Head of West WH",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -1065,7 +948,6 @@
                 {
                   "id": "AR-0118",
                   "name": "Warehouse Clerk",
-                  "shortName": "Warehouse Clerk",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -1074,7 +956,6 @@
                 {
                   "id": "AR-0119",
                   "name": "Warehouse Clerk",
-                  "shortName": "Warehouse Clerk",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -1083,7 +964,6 @@
                 {
                   "id": "AR-0120",
                   "name": "Stockman",
-                  "shortName": "Stockman",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -1092,7 +972,6 @@
                 {
                   "id": "AR-0121",
                   "name": "Stockman",
-                  "shortName": "Stockman",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -1101,7 +980,6 @@
                 {
                   "id": "AR-0122",
                   "name": "Stockman",
-                  "shortName": "Stockman",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -1110,7 +988,6 @@
                 {
                   "id": "AR-0123",
                   "name": "Stockman",
-                  "shortName": "Stockman",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -1123,7 +1000,6 @@
         {
           "id": "AR-0124",
           "name": "Retail Department",
-          "shortName": "Retail Dept.",
           "type": "U",
           "categoryId": "UNIT",
           "chief": "AR-0125",
@@ -1131,7 +1007,6 @@
             {
               "id": "AR-0125",
               "name": "Head of Retail Department",
-              "shortName": "Head of Retail Dept.",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -1140,7 +1015,6 @@
             {
               "id": "AR-0126",
               "name": "Retail Head Assistant",
-              "shortName": "Retail Head Assistant",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -1149,7 +1023,6 @@
             {
               "id": "AR-0127",
               "name": "Retail Head Assistant",
-              "shortName": "Retail Head Assistant",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -1158,7 +1031,6 @@
             {
               "id": "AR-0128",
               "name": "Retail Head Assistant",
-              "shortName": "Retail Head Assistant",
               "type": "P",
               "categoryId": "POSITION",
               "limit": 1,
@@ -1167,7 +1039,6 @@
             {
               "id": "AR-0129",
               "name": "North Region",
-              "shortName": "North Region",
               "type": "U",
               "categoryId": "UNIT",
               "chief": "AR-0130",
@@ -1175,7 +1046,6 @@
                 {
                   "id": "AR-0130",
                   "name": "North Region Head",
-                  "shortName": "North Region Head",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -1184,7 +1054,6 @@
                 {
                   "id": "AR-0131",
                   "name": "Region Head Assistant",
-                  "shortName": "Region Head Assistant",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -1193,7 +1062,6 @@
                 {
                   "id": "AR-0132",
                   "name": "Region Head Assistant",
-                  "shortName": "Region Head Assistant",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -1202,7 +1070,6 @@
                 {
                   "id": "AR-0133",
                   "name": "Store N1",
-                  "shortName": "Store N1",
                   "type": "U",
                   "categoryId": "UNIT",
                   "chief": "AR-0134",
@@ -1210,7 +1077,6 @@
                     {
                       "id": "AR-0134",
                       "name": "Store Manager",
-                      "shortName": "Store Manager",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -1219,7 +1085,6 @@
                     {
                       "id": "AR-0135",
                       "name": "Store Manager Assistant",
-                      "shortName": "Store Manager Assistant",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -1228,7 +1093,6 @@
                     {
                       "id": "AR-0136",
                       "name": "Sales",
-                      "shortName": "Sales",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0137",
@@ -1236,7 +1100,6 @@
                         {
                           "id": "AR-0137",
                           "name": "Chief Salesman",
-                          "shortName": "Chief Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1245,7 +1108,6 @@
                         {
                           "id": "AR-0138",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1254,7 +1116,6 @@
                         {
                           "id": "AR-0139",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1263,7 +1124,6 @@
                         {
                           "id": "AR-0140",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1272,7 +1132,6 @@
                         {
                           "id": "AR-0141",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1283,7 +1142,6 @@
                     {
                       "id": "AR-0142",
                       "name": "Cashiers",
-                      "shortName": "Cashiers",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0143",
@@ -1291,7 +1149,6 @@
                         {
                           "id": "AR-0143",
                           "name": "Chief Cashier",
-                          "shortName": "Chief Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1300,7 +1157,6 @@
                         {
                           "id": "AR-0144",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1309,7 +1165,6 @@
                         {
                           "id": "AR-0145",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1320,7 +1175,6 @@
                     {
                       "id": "AR-0146",
                       "name": "Service",
-                      "shortName": "Service",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -1329,7 +1183,6 @@
                     {
                       "id": "AR-0147",
                       "name": "Service Head",
-                      "shortName": "Service Head",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0148",
@@ -1337,7 +1190,6 @@
                         {
                           "id": "AR-0148",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1346,7 +1198,6 @@
                         {
                           "id": "AR-0149",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1357,7 +1208,6 @@
                     {
                       "id": "AR-0150",
                       "name": "Stock",
-                      "shortName": "Stock",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0151",
@@ -1365,7 +1215,6 @@
                         {
                           "id": "AR-0151",
                           "name": "Chief Stockkeeper",
-                          "shortName": "Chief Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1374,7 +1223,6 @@
                         {
                           "id": "AR-0152",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1383,7 +1231,6 @@
                         {
                           "id": "AR-0153",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1396,7 +1243,6 @@
                 {
                   "id": "AR-0154",
                   "name": "Store N2",
-                  "shortName": "Store N2",
                   "type": "U",
                   "categoryId": "UNIT",
                   "chief": "AR-0155",
@@ -1404,7 +1250,6 @@
                     {
                       "id": "AR-0155",
                       "name": "Store Manager",
-                      "shortName": "Store Manager",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -1413,7 +1258,6 @@
                     {
                       "id": "AR-0156",
                       "name": "Store Manager Assistant",
-                      "shortName": "Store Manager Assistant",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -1422,7 +1266,6 @@
                     {
                       "id": "AR-0157",
                       "name": "Sales",
-                      "shortName": "Sales",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0158",
@@ -1430,7 +1273,6 @@
                         {
                           "id": "AR-0158",
                           "name": "Chief Salesman",
-                          "shortName": "Chief Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1439,7 +1281,6 @@
                         {
                           "id": "AR-0159",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1448,7 +1289,6 @@
                         {
                           "id": "AR-0160",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1457,7 +1297,6 @@
                         {
                           "id": "AR-0161",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1466,7 +1305,6 @@
                         {
                           "id": "AR-0162",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1477,7 +1315,6 @@
                     {
                       "id": "AR-0163",
                       "name": "Cashiers",
-                      "shortName": "Cashiers",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0164",
@@ -1485,7 +1322,6 @@
                         {
                           "id": "AR-0164",
                           "name": "Chief Cashier",
-                          "shortName": "Chief Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1494,7 +1330,6 @@
                         {
                           "id": "AR-0165",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1503,7 +1338,6 @@
                         {
                           "id": "AR-0166",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1514,7 +1348,6 @@
                     {
                       "id": "AR-0167",
                       "name": "Service",
-                      "shortName": "Service",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -1523,7 +1356,6 @@
                     {
                       "id": "AR-0168",
                       "name": "Service Head",
-                      "shortName": "Service Head",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0169",
@@ -1531,7 +1363,6 @@
                         {
                           "id": "AR-0169",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1540,7 +1371,6 @@
                         {
                           "id": "AR-0170",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1551,7 +1381,6 @@
                     {
                       "id": "AR-0171",
                       "name": "Stock",
-                      "shortName": "Stock",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0172",
@@ -1559,7 +1388,6 @@
                         {
                           "id": "AR-0172",
                           "name": "Chief Stockkeeper",
-                          "shortName": "Chief Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1568,7 +1396,6 @@
                         {
                           "id": "AR-0173",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1577,7 +1404,6 @@
                         {
                           "id": "AR-0174",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1590,7 +1416,6 @@
                 {
                   "id": "AR-0175",
                   "name": "Store N3",
-                  "shortName": "Store N3",
                   "type": "U",
                   "categoryId": "UNIT",
                   "chief": "AR-0176",
@@ -1598,7 +1423,6 @@
                     {
                       "id": "AR-0176",
                       "name": "Store Manager",
-                      "shortName": "Store Manager",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -1607,7 +1431,6 @@
                     {
                       "id": "AR-0177",
                       "name": "Store Manager Assistant",
-                      "shortName": "Store Manager Assistant",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -1616,7 +1439,6 @@
                     {
                       "id": "AR-0178",
                       "name": "Sales",
-                      "shortName": "Sales",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0179",
@@ -1624,7 +1446,6 @@
                         {
                           "id": "AR-0179",
                           "name": "Chief Salesman",
-                          "shortName": "Chief Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1633,7 +1454,6 @@
                         {
                           "id": "AR-0180",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1642,7 +1462,6 @@
                         {
                           "id": "AR-0181",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1651,7 +1470,6 @@
                         {
                           "id": "AR-0182",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1660,7 +1478,6 @@
                         {
                           "id": "AR-0183",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1671,7 +1488,6 @@
                     {
                       "id": "AR-0184",
                       "name": "Cashiers",
-                      "shortName": "Cashiers",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0185",
@@ -1679,7 +1495,6 @@
                         {
                           "id": "AR-0185",
                           "name": "Chief Cashier",
-                          "shortName": "Chief Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1688,7 +1503,6 @@
                         {
                           "id": "AR-0186",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1697,7 +1511,6 @@
                         {
                           "id": "AR-0187",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1708,7 +1521,6 @@
                     {
                       "id": "AR-0188",
                       "name": "Service",
-                      "shortName": "Service",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -1717,7 +1529,6 @@
                     {
                       "id": "AR-0189",
                       "name": "Service Head",
-                      "shortName": "Service Head",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0190",
@@ -1725,7 +1536,6 @@
                         {
                           "id": "AR-0190",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1734,7 +1544,6 @@
                         {
                           "id": "AR-0191",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1745,7 +1554,6 @@
                     {
                       "id": "AR-0192",
                       "name": "Stock",
-                      "shortName": "Stock",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0193",
@@ -1753,7 +1561,6 @@
                         {
                           "id": "AR-0193",
                           "name": "Chief Stockkeeper",
-                          "shortName": "Chief Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1762,7 +1569,6 @@
                         {
                           "id": "AR-0194",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1771,7 +1577,6 @@
                         {
                           "id": "AR-0195",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1786,7 +1591,6 @@
             {
               "id": "AR-0196",
               "name": "East Region",
-              "shortName": "East Region",
               "type": "U",
               "categoryId": "UNIT",
               "chief": "AR-0197",
@@ -1794,7 +1598,6 @@
                 {
                   "id": "AR-0197",
                   "name": "East Region Head",
-                  "shortName": "East Region Head",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -1803,7 +1606,6 @@
                 {
                   "id": "AR-0198",
                   "name": "Region Head Assistant",
-                  "shortName": "Region Head Assistant",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -1812,7 +1614,6 @@
                 {
                   "id": "AR-0199",
                   "name": "Region Head Assistant",
-                  "shortName": "Region Head Assistant",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -1821,7 +1622,6 @@
                 {
                   "id": "AR-0200",
                   "name": "Store E1",
-                  "shortName": "Store E1",
                   "type": "U",
                   "categoryId": "UNIT",
                   "chief": "AR-0201",
@@ -1829,7 +1629,6 @@
                     {
                       "id": "AR-0201",
                       "name": "Store Manager",
-                      "shortName": "Store Manager",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -1838,7 +1637,6 @@
                     {
                       "id": "AR-0202",
                       "name": "Store Manager Assistant",
-                      "shortName": "Store Manager Assistant",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -1847,7 +1645,6 @@
                     {
                       "id": "AR-0203",
                       "name": "Sales",
-                      "shortName": "Sales",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0204",
@@ -1855,7 +1652,6 @@
                         {
                           "id": "AR-0204",
                           "name": "Chief Salesman",
-                          "shortName": "Chief Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1864,7 +1660,6 @@
                         {
                           "id": "AR-0205",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1873,7 +1668,6 @@
                         {
                           "id": "AR-0206",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1882,7 +1676,6 @@
                         {
                           "id": "AR-0207",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1891,7 +1684,6 @@
                         {
                           "id": "AR-0208",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1902,7 +1694,6 @@
                     {
                       "id": "AR-0209",
                       "name": "Cashiers",
-                      "shortName": "Cashiers",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0210",
@@ -1910,7 +1701,6 @@
                         {
                           "id": "AR-0210",
                           "name": "Chief Cashier",
-                          "shortName": "Chief Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1919,7 +1709,6 @@
                         {
                           "id": "AR-0211",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1928,7 +1717,6 @@
                         {
                           "id": "AR-0212",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1939,7 +1727,6 @@
                     {
                       "id": "AR-0213",
                       "name": "Service",
-                      "shortName": "Service",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -1948,7 +1735,6 @@
                     {
                       "id": "AR-0214",
                       "name": "Service Head",
-                      "shortName": "Service Head",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0215",
@@ -1956,7 +1742,6 @@
                         {
                           "id": "AR-0215",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1965,7 +1750,6 @@
                         {
                           "id": "AR-0216",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1976,7 +1760,6 @@
                     {
                       "id": "AR-0217",
                       "name": "Stock",
-                      "shortName": "Stock",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0218",
@@ -1984,7 +1767,6 @@
                         {
                           "id": "AR-0218",
                           "name": "Chief Stockkeeper",
-                          "shortName": "Chief Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -1993,7 +1775,6 @@
                         {
                           "id": "AR-0219",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2002,7 +1783,6 @@
                         {
                           "id": "AR-0220",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2015,7 +1795,6 @@
                 {
                   "id": "AR-0221",
                   "name": "Store E2",
-                  "shortName": "Store E2",
                   "type": "U",
                   "categoryId": "UNIT",
                   "chief": "AR-0222",
@@ -2023,7 +1802,6 @@
                     {
                       "id": "AR-0222",
                       "name": "Store Manager",
-                      "shortName": "Store Manager",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -2032,7 +1810,6 @@
                     {
                       "id": "AR-0223",
                       "name": "Store Manager Assistant",
-                      "shortName": "Store Manager Assistant",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -2041,7 +1818,6 @@
                     {
                       "id": "AR-0224",
                       "name": "Sales",
-                      "shortName": "Sales",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0225",
@@ -2049,7 +1825,6 @@
                         {
                           "id": "AR-0225",
                           "name": "Chief Salesman",
-                          "shortName": "Chief Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2058,7 +1833,6 @@
                         {
                           "id": "AR-0226",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2067,7 +1841,6 @@
                         {
                           "id": "AR-0227",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2076,7 +1849,6 @@
                         {
                           "id": "AR-0228",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2085,7 +1857,6 @@
                         {
                           "id": "AR-0229",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2096,7 +1867,6 @@
                     {
                       "id": "AR-0230",
                       "name": "Cashiers",
-                      "shortName": "Cashiers",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0231",
@@ -2104,7 +1874,6 @@
                         {
                           "id": "AR-0231",
                           "name": "Chief Cashier",
-                          "shortName": "Chief Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2113,7 +1882,6 @@
                         {
                           "id": "AR-0232",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2122,7 +1890,6 @@
                         {
                           "id": "AR-0233",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2133,7 +1900,6 @@
                     {
                       "id": "AR-0234",
                       "name": "Service",
-                      "shortName": "Service",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -2142,7 +1908,6 @@
                     {
                       "id": "AR-0235",
                       "name": "Service Head",
-                      "shortName": "Service Head",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0236",
@@ -2150,7 +1915,6 @@
                         {
                           "id": "AR-0236",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2159,7 +1923,6 @@
                         {
                           "id": "AR-0237",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2170,7 +1933,6 @@
                     {
                       "id": "AR-0238",
                       "name": "Stock",
-                      "shortName": "Stock",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0239",
@@ -2178,7 +1940,6 @@
                         {
                           "id": "AR-0239",
                           "name": "Chief Stockkeeper",
-                          "shortName": "Chief Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2187,7 +1948,6 @@
                         {
                           "id": "AR-0240",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2196,7 +1956,6 @@
                         {
                           "id": "AR-0241",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2209,7 +1968,6 @@
                 {
                   "id": "AR-0242",
                   "name": "Store E3",
-                  "shortName": "Store E3",
                   "type": "U",
                   "categoryId": "UNIT",
                   "chief": "AR-0243",
@@ -2217,7 +1975,6 @@
                     {
                       "id": "AR-0243",
                       "name": "Store Manager",
-                      "shortName": "Store Manager",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -2226,7 +1983,6 @@
                     {
                       "id": "AR-0244",
                       "name": "Store Manager Assistant",
-                      "shortName": "Store Manager Assistant",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -2235,7 +1991,6 @@
                     {
                       "id": "AR-0245",
                       "name": "Sales",
-                      "shortName": "Sales",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0246",
@@ -2243,7 +1998,6 @@
                         {
                           "id": "AR-0246",
                           "name": "Chief Salesman",
-                          "shortName": "Chief Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2252,7 +2006,6 @@
                         {
                           "id": "AR-0247",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2261,7 +2014,6 @@
                         {
                           "id": "AR-0248",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2270,7 +2022,6 @@
                         {
                           "id": "AR-0249",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2279,7 +2030,6 @@
                         {
                           "id": "AR-0250",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2290,7 +2040,6 @@
                     {
                       "id": "AR-0251",
                       "name": "Cashiers",
-                      "shortName": "Cashiers",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0252",
@@ -2298,7 +2047,6 @@
                         {
                           "id": "AR-0252",
                           "name": "Chief Cashier",
-                          "shortName": "Chief Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2307,7 +2055,6 @@
                         {
                           "id": "AR-0253",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2316,7 +2063,6 @@
                         {
                           "id": "AR-0254",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2327,7 +2073,6 @@
                     {
                       "id": "AR-0255",
                       "name": "Service",
-                      "shortName": "Service",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -2336,7 +2081,6 @@
                     {
                       "id": "AR-0256",
                       "name": "Service Head",
-                      "shortName": "Service Head",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0257",
@@ -2344,7 +2088,6 @@
                         {
                           "id": "AR-0257",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2353,7 +2096,6 @@
                         {
                           "id": "AR-0258",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2364,7 +2106,6 @@
                     {
                       "id": "AR-0259",
                       "name": "Stock",
-                      "shortName": "Stock",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0260",
@@ -2372,7 +2113,6 @@
                         {
                           "id": "AR-0260",
                           "name": "Chief Stockkeeper",
-                          "shortName": "Chief Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2381,7 +2121,6 @@
                         {
                           "id": "AR-0261",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2390,7 +2129,6 @@
                         {
                           "id": "AR-0262",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2405,7 +2143,6 @@
             {
               "id": "AR-0263",
               "name": "South Region",
-              "shortName": "South Region",
               "type": "U",
               "categoryId": "UNIT",
               "chief": "AR-0264",
@@ -2413,7 +2150,6 @@
                 {
                   "id": "AR-0264",
                   "name": "South Region Head",
-                  "shortName": "South Region Head",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -2422,7 +2158,6 @@
                 {
                   "id": "AR-0265",
                   "name": "Region Head Assistant",
-                  "shortName": "Region Head Assistant",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -2431,7 +2166,6 @@
                 {
                   "id": "AR-0266",
                   "name": "Region Head Assistant",
-                  "shortName": "Region Head Assistant",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -2440,7 +2174,6 @@
                 {
                   "id": "AR-0267",
                   "name": "Store S1",
-                  "shortName": "Store S1",
                   "type": "U",
                   "categoryId": "UNIT",
                   "chief": "AR-0268",
@@ -2448,7 +2181,6 @@
                     {
                       "id": "AR-0268",
                       "name": "Store Manager",
-                      "shortName": "Store Manager",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -2457,7 +2189,6 @@
                     {
                       "id": "AR-0269",
                       "name": "Store Manager Assistant",
-                      "shortName": "Store Manager Assistant",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -2466,7 +2197,6 @@
                     {
                       "id": "AR-0270",
                       "name": "Sales",
-                      "shortName": "Sales",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0271",
@@ -2474,7 +2204,6 @@
                         {
                           "id": "AR-0271",
                           "name": "Chief Salesman",
-                          "shortName": "Chief Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2483,7 +2212,6 @@
                         {
                           "id": "AR-0272",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2492,7 +2220,6 @@
                         {
                           "id": "AR-0273",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2501,7 +2228,6 @@
                         {
                           "id": "AR-0274",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2510,7 +2236,6 @@
                         {
                           "id": "AR-0275",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2521,7 +2246,6 @@
                     {
                       "id": "AR-0276",
                       "name": "Cashiers",
-                      "shortName": "Cashiers",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0277",
@@ -2529,7 +2253,6 @@
                         {
                           "id": "AR-0277",
                           "name": "Chief Cashier",
-                          "shortName": "Chief Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2538,7 +2261,6 @@
                         {
                           "id": "AR-0278",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2547,7 +2269,6 @@
                         {
                           "id": "AR-0279",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2558,7 +2279,6 @@
                     {
                       "id": "AR-0280",
                       "name": "Service",
-                      "shortName": "Service",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -2567,7 +2287,6 @@
                     {
                       "id": "AR-0281",
                       "name": "Service Head",
-                      "shortName": "Service Head",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0282",
@@ -2575,7 +2294,6 @@
                         {
                           "id": "AR-0282",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2584,7 +2302,6 @@
                         {
                           "id": "AR-0283",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2595,7 +2312,6 @@
                     {
                       "id": "AR-0284",
                       "name": "Stock",
-                      "shortName": "Stock",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0285",
@@ -2603,7 +2319,6 @@
                         {
                           "id": "AR-0285",
                           "name": "Chief Stockkeeper",
-                          "shortName": "Chief Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2612,7 +2327,6 @@
                         {
                           "id": "AR-0286",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2621,7 +2335,6 @@
                         {
                           "id": "AR-0287",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2634,7 +2347,6 @@
                 {
                   "id": "AR-0288",
                   "name": "Store S2",
-                  "shortName": "Store S2",
                   "type": "U",
                   "categoryId": "UNIT",
                   "chief": "AR-0289",
@@ -2642,7 +2354,6 @@
                     {
                       "id": "AR-0289",
                       "name": "Store Manager",
-                      "shortName": "Store Manager",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -2651,7 +2362,6 @@
                     {
                       "id": "AR-0290",
                       "name": "Store Manager Assistant",
-                      "shortName": "Store Manager Assistant",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -2660,7 +2370,6 @@
                     {
                       "id": "AR-0291",
                       "name": "Sales",
-                      "shortName": "Sales",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0292",
@@ -2668,7 +2377,6 @@
                         {
                           "id": "AR-0292",
                           "name": "Chief Salesman",
-                          "shortName": "Chief Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2677,7 +2385,6 @@
                         {
                           "id": "AR-0293",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2686,7 +2393,6 @@
                         {
                           "id": "AR-0294",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2695,7 +2401,6 @@
                         {
                           "id": "AR-0295",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2704,7 +2409,6 @@
                         {
                           "id": "AR-0296",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2715,7 +2419,6 @@
                     {
                       "id": "AR-0297",
                       "name": "Cashiers",
-                      "shortName": "Cashiers",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0298",
@@ -2723,7 +2426,6 @@
                         {
                           "id": "AR-0298",
                           "name": "Chief Cashier",
-                          "shortName": "Chief Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2732,7 +2434,6 @@
                         {
                           "id": "AR-0299",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2741,7 +2442,6 @@
                         {
                           "id": "AR-0300",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2752,7 +2452,6 @@
                     {
                       "id": "AR-0301",
                       "name": "Service",
-                      "shortName": "Service",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -2761,7 +2460,6 @@
                     {
                       "id": "AR-0302",
                       "name": "Service Head",
-                      "shortName": "Service Head",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0303",
@@ -2769,7 +2467,6 @@
                         {
                           "id": "AR-0303",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2778,7 +2475,6 @@
                         {
                           "id": "AR-0304",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2789,7 +2485,6 @@
                     {
                       "id": "AR-0305",
                       "name": "Stock",
-                      "shortName": "Stock",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0306",
@@ -2797,7 +2492,6 @@
                         {
                           "id": "AR-0306",
                           "name": "Chief Stockkeeper",
-                          "shortName": "Chief Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2806,7 +2500,6 @@
                         {
                           "id": "AR-0307",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2815,7 +2508,6 @@
                         {
                           "id": "AR-0308",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2828,7 +2520,6 @@
                 {
                   "id": "AR-0309",
                   "name": "Store S3",
-                  "shortName": "Store S3",
                   "type": "U",
                   "categoryId": "UNIT",
                   "chief": "AR-0310",
@@ -2836,7 +2527,6 @@
                     {
                       "id": "AR-0310",
                       "name": "Store Manager",
-                      "shortName": "Store Manager",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -2845,7 +2535,6 @@
                     {
                       "id": "AR-0311",
                       "name": "Store Manager Assistant",
-                      "shortName": "Store Manager Assistant",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -2854,7 +2543,6 @@
                     {
                       "id": "AR-0312",
                       "name": "Sales",
-                      "shortName": "Sales",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0313",
@@ -2862,7 +2550,6 @@
                         {
                           "id": "AR-0313",
                           "name": "Chief Salesman",
-                          "shortName": "Chief Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2871,7 +2558,6 @@
                         {
                           "id": "AR-0314",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2880,7 +2566,6 @@
                         {
                           "id": "AR-0315",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2889,7 +2574,6 @@
                         {
                           "id": "AR-0316",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2898,7 +2582,6 @@
                         {
                           "id": "AR-0317",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2909,7 +2592,6 @@
                     {
                       "id": "AR-0318",
                       "name": "Cashiers",
-                      "shortName": "Cashiers",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0319",
@@ -2917,7 +2599,6 @@
                         {
                           "id": "AR-0319",
                           "name": "Chief Cashier",
-                          "shortName": "Chief Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2926,7 +2607,6 @@
                         {
                           "id": "AR-0320",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2935,7 +2615,6 @@
                         {
                           "id": "AR-0321",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2946,7 +2625,6 @@
                     {
                       "id": "AR-0322",
                       "name": "Service",
-                      "shortName": "Service",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -2955,7 +2633,6 @@
                     {
                       "id": "AR-0323",
                       "name": "Service Head",
-                      "shortName": "Service Head",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0324",
@@ -2963,7 +2640,6 @@
                         {
                           "id": "AR-0324",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2972,7 +2648,6 @@
                         {
                           "id": "AR-0325",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -2983,7 +2658,6 @@
                     {
                       "id": "AR-0326",
                       "name": "Stock",
-                      "shortName": "Stock",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0327",
@@ -2991,7 +2665,6 @@
                         {
                           "id": "AR-0327",
                           "name": "Chief Stockkeeper",
-                          "shortName": "Chief Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3000,7 +2673,6 @@
                         {
                           "id": "AR-0328",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3009,7 +2681,6 @@
                         {
                           "id": "AR-0329",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3024,7 +2695,6 @@
             {
               "id": "AR-0330",
               "name": "West Region",
-              "shortName": "West Region",
               "type": "U",
               "categoryId": "UNIT",
               "chief": "AR-0331",
@@ -3032,7 +2702,6 @@
                 {
                   "id": "AR-0331",
                   "name": "West Region Head",
-                  "shortName": "West Region Head",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -3041,7 +2710,6 @@
                 {
                   "id": "AR-0332",
                   "name": "Region Head Assistant",
-                  "shortName": "Region Head Assistant",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -3050,7 +2718,6 @@
                 {
                   "id": "AR-0333",
                   "name": "Region Head Assistant",
-                  "shortName": "Region Head Assistant",
                   "type": "P",
                   "categoryId": "POSITION",
                   "limit": 1,
@@ -3059,7 +2726,6 @@
                 {
                   "id": "AR-0334",
                   "name": "Store W1",
-                  "shortName": "Store W1",
                   "type": "U",
                   "categoryId": "UNIT",
                   "chief": "AR-0335",
@@ -3067,7 +2733,6 @@
                     {
                       "id": "AR-0335",
                       "name": "Store Manager",
-                      "shortName": "Store Manager",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -3076,7 +2741,6 @@
                     {
                       "id": "AR-0336",
                       "name": "Store Manager Assistant",
-                      "shortName": "Store Manager Assistant",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -3085,7 +2749,6 @@
                     {
                       "id": "AR-0337",
                       "name": "Sales",
-                      "shortName": "Sales",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0338",
@@ -3093,7 +2756,6 @@
                         {
                           "id": "AR-0338",
                           "name": "Chief Salesman",
-                          "shortName": "Chief Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3102,7 +2764,6 @@
                         {
                           "id": "AR-0339",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3111,7 +2772,6 @@
                         {
                           "id": "AR-0340",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3120,7 +2780,6 @@
                         {
                           "id": "AR-0341",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3129,7 +2788,6 @@
                         {
                           "id": "AR-0342",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3140,7 +2798,6 @@
                     {
                       "id": "AR-0343",
                       "name": "Cashiers",
-                      "shortName": "Cashiers",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0344",
@@ -3148,7 +2805,6 @@
                         {
                           "id": "AR-0344",
                           "name": "Chief Cashier",
-                          "shortName": "Chief Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3157,7 +2813,6 @@
                         {
                           "id": "AR-0345",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3166,7 +2821,6 @@
                         {
                           "id": "AR-0346",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3177,7 +2831,6 @@
                     {
                       "id": "AR-0347",
                       "name": "Service",
-                      "shortName": "Service",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -3186,7 +2839,6 @@
                     {
                       "id": "AR-0348",
                       "name": "Service Head",
-                      "shortName": "Service Head",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0349",
@@ -3194,7 +2846,6 @@
                         {
                           "id": "AR-0349",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3203,7 +2854,6 @@
                         {
                           "id": "AR-0350",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3214,7 +2864,6 @@
                     {
                       "id": "AR-0351",
                       "name": "Stock",
-                      "shortName": "Stock",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0352",
@@ -3222,7 +2871,6 @@
                         {
                           "id": "AR-0352",
                           "name": "Chief Stockkeeper",
-                          "shortName": "Chief Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3231,7 +2879,6 @@
                         {
                           "id": "AR-0353",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3240,7 +2887,6 @@
                         {
                           "id": "AR-0354",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3253,7 +2899,6 @@
                 {
                   "id": "AR-0355",
                   "name": "Store W2",
-                  "shortName": "Store W2",
                   "type": "U",
                   "categoryId": "UNIT",
                   "chief": "AR-0356",
@@ -3261,7 +2906,6 @@
                     {
                       "id": "AR-0356",
                       "name": "Store Manager",
-                      "shortName": "Store Manager",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -3270,7 +2914,6 @@
                     {
                       "id": "AR-0357",
                       "name": "Store Manager Assistant",
-                      "shortName": "Store Manager Assistant",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -3279,7 +2922,6 @@
                     {
                       "id": "AR-0358",
                       "name": "Sales",
-                      "shortName": "Sales",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0359",
@@ -3287,7 +2929,6 @@
                         {
                           "id": "AR-0359",
                           "name": "Chief Salesman",
-                          "shortName": "Chief Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3296,7 +2937,6 @@
                         {
                           "id": "AR-0360",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3305,7 +2945,6 @@
                         {
                           "id": "AR-0361",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3314,7 +2953,6 @@
                         {
                           "id": "AR-0362",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3323,7 +2961,6 @@
                         {
                           "id": "AR-0363",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3334,7 +2971,6 @@
                     {
                       "id": "AR-0364",
                       "name": "Cashiers",
-                      "shortName": "Cashiers",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0365",
@@ -3342,7 +2978,6 @@
                         {
                           "id": "AR-0365",
                           "name": "Chief Cashier",
-                          "shortName": "Chief Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3351,7 +2986,6 @@
                         {
                           "id": "AR-0366",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3360,7 +2994,6 @@
                         {
                           "id": "AR-0367",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3371,7 +3004,6 @@
                     {
                       "id": "AR-0368",
                       "name": "Service",
-                      "shortName": "Service",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -3380,7 +3012,6 @@
                     {
                       "id": "AR-0369",
                       "name": "Service Head",
-                      "shortName": "Service Head",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0370",
@@ -3388,7 +3019,6 @@
                         {
                           "id": "AR-0370",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3397,7 +3027,6 @@
                         {
                           "id": "AR-0371",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3408,7 +3037,6 @@
                     {
                       "id": "AR-0372",
                       "name": "Stock",
-                      "shortName": "Stock",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0373",
@@ -3416,7 +3044,6 @@
                         {
                           "id": "AR-0373",
                           "name": "Chief Stockkeeper",
-                          "shortName": "Chief Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3425,7 +3052,6 @@
                         {
                           "id": "AR-0374",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3434,7 +3060,6 @@
                         {
                           "id": "AR-0375",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3447,7 +3072,6 @@
                 {
                   "id": "AR-0376",
                   "name": "Store W3",
-                  "shortName": "Store W3",
                   "type": "U",
                   "categoryId": "UNIT",
                   "chief": "AR-0377",
@@ -3455,7 +3079,6 @@
                     {
                       "id": "AR-0377",
                       "name": "Store Manager",
-                      "shortName": "Store Manager",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -3464,7 +3087,6 @@
                     {
                       "id": "AR-0378",
                       "name": "Store Manager Assistant",
-                      "shortName": "Store Manager Assistant",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -3473,7 +3095,6 @@
                     {
                       "id": "AR-0379",
                       "name": "Sales",
-                      "shortName": "Sales",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0380",
@@ -3481,7 +3102,6 @@
                         {
                           "id": "AR-0380",
                           "name": "Chief Salesman",
-                          "shortName": "Chief Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3490,7 +3110,6 @@
                         {
                           "id": "AR-0381",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3499,7 +3118,6 @@
                         {
                           "id": "AR-0382",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3508,7 +3126,6 @@
                         {
                           "id": "AR-0383",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3517,7 +3134,6 @@
                         {
                           "id": "AR-0384",
                           "name": "Salesman",
-                          "shortName": "Salesman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3528,7 +3144,6 @@
                     {
                       "id": "AR-0385",
                       "name": "Cashiers",
-                      "shortName": "Cashiers",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0386",
@@ -3536,7 +3151,6 @@
                         {
                           "id": "AR-0386",
                           "name": "Chief Cashier",
-                          "shortName": "Chief Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3545,7 +3159,6 @@
                         {
                           "id": "AR-0387",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3554,7 +3167,6 @@
                         {
                           "id": "AR-0388",
                           "name": "Cashier",
-                          "shortName": "Cashier",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3565,7 +3177,6 @@
                     {
                       "id": "AR-0389",
                       "name": "Service",
-                      "shortName": "Service",
                       "type": "P",
                       "categoryId": "POSITION",
                       "limit": 1,
@@ -3574,7 +3185,6 @@
                     {
                       "id": "AR-0390",
                       "name": "Service Head",
-                      "shortName": "Service Head",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0391",
@@ -3582,7 +3192,6 @@
                         {
                           "id": "AR-0391",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3591,7 +3200,6 @@
                         {
                           "id": "AR-0392",
                           "name": "Serviceman",
-                          "shortName": "Serviceman",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3602,7 +3210,6 @@
                     {
                       "id": "AR-0393",
                       "name": "Stock",
-                      "shortName": "Stock",
                       "type": "U",
                       "categoryId": "UNIT",
                       "chief": "AR-0394",
@@ -3610,7 +3217,6 @@
                         {
                           "id": "AR-0394",
                           "name": "Chief Stockkeeper",
-                          "shortName": "Chief Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3619,7 +3225,6 @@
                         {
                           "id": "AR-0395",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,
@@ -3628,7 +3233,6 @@
                         {
                           "id": "AR-0396",
                           "name": "Stockkeeper",
-                          "shortName": "Stockkeeper",
                           "type": "P",
                           "categoryId": "POSITION",
                           "limit": 1,

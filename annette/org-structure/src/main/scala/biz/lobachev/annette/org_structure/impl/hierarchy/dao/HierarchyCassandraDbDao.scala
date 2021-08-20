@@ -44,7 +44,6 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
   private var insertStatement: PreparedStatement              = _
   private var deleteStatement: PreparedStatement              = _
   private var updateNameStatement: PreparedStatement          = _
-  private var updateShortNameStatement: PreparedStatement     = _
   private var assignCategoryStatement: PreparedStatement      = _
   private var assignChiefStatement: PreparedStatement         = _
   private var assignChiefUnitStatement: PreparedStatement     = _
@@ -66,7 +65,6 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
                                         |          parent_id        text,
                                         |          root_path        list<text>,
                                         |          name             text,
-                                        |          shortname        text,
                                         |          type             text,
                                         |          category_id      text,
                                         |
@@ -105,12 +103,12 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
     for {
       insertStmt              <- session.prepare(
                                    """
-                        | INSERT  INTO org_items (id, org_id, parent_id, root_path, name, shortname, type, category_id,
+                        | INSERT  INTO org_items (id, org_id, parent_id, root_path, name, type, category_id,
                         |     children, chief,
                         |     lim, persons, org_roles,
                         |     updated_at, updated_by_type, updated_by_id
                         |    )
-                        |   VALUES (:id, :org_id, :parent_id, :root_path, :name, :shortname, :type, :category_id,
+                        |   VALUES (:id, :org_id, :parent_id, :root_path, :name, :type, :category_id,
                         |     :children, :chief,
                         |     :lim, :persons, :org_roles,
                         |     :updated_at, :updated_by_type, :updated_by_id
@@ -190,16 +188,6 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
                             | WHERE id = :id
                             |""".stripMargin
                                  )
-      updateShortNameStmt     <- session.prepare(
-                                   """
-                                 | UPDATE org_items SET
-                                 |   shortname = :shortname,
-                                 |   updated_at = :updated_at,
-                                 |   updated_by_type = :updated_by_type,
-                                 |   updated_by_id = :updated_by_id
-                                 | WHERE id = :id
-                                 |""".stripMargin
-                                 )
 
       updatePersonsStmt       <- session.prepare(
                                    """
@@ -253,7 +241,6 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       updateChildrenStatement = updateChildrenStmt
       changePositionLimitStatement = changePositionLimitStmt
       updateNameStatement = updateNameStmt
-      updateShortNameStatement = updateShortNameStmt
       updatePersonsStatement = updatePersonsStmt
       updateRolesStatement = updateRolesStmt
       updateRootPathStatement = updateRootPathStmt
@@ -270,7 +257,6 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .setString("parent_id", hierarchy.ROOT)
       .setList[String]("root_path", Seq(event.orgId).asJava)
       .setString("name", event.name)
-      .setString("shortname", event.shortName)
       .setString("type", ItemTypes.Unit.toString)
       .setString("category_id", event.categoryId)
       .setList[String]("children", Seq.empty.asJava)
@@ -295,7 +281,6 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .setString("parent_id", event.parentId)
       .setList[String]("root_path", event.rootPath.asJava)
       .setString("name", event.name)
-      .setString("shortname", event.shortName)
       .setString("type", ItemTypes.Unit.toString)
       .setString("category_id", event.categoryId)
       .setList[String]("children", Seq.empty.asJava)
@@ -376,7 +361,6 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .setString("parent_id", event.parentId)
       .setList[String]("root_path", event.rootPath.asJava)
       .setString("name", event.name)
-      .setString("shortname", event.shortName)
       .setString("type", ItemTypes.Position.toString)
       .setString("category_id", event.categoryId)
       .setList[String]("children", null)
@@ -398,15 +382,6 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .bind()
       .setString("id", event.orgItemId)
       .setString("name", event.name)
-      .setString("updated_at", event.updatedAt.toString)
-      .setString("updated_by_type", event.updatedBy.principalType)
-      .setString("updated_by_id", event.updatedBy.principalId)
-
-  def updateShortName(event: HierarchyEntity.ShortNameUpdated): BoundStatement =
-    updateShortNameStatement
-      .bind()
-      .setString("id", event.orgItemId)
-      .setString("shortname", event.shortName)
       .setString("updated_at", event.updatedAt.toString)
       .setString("updated_by_type", event.updatedBy.principalType)
       .setString("updated_by_id", event.updatedBy.principalId)
@@ -544,7 +519,6 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
           rootPath = rootPath,
           id = row.getString("id"),
           name = row.getString("name"),
-          shortName = row.getString("shortname"),
           children = row.getList[String]("children", classOf[String]).asScala.toSeq,
           chief = Option(row.getString("chief")),
           level = level,
@@ -562,7 +536,6 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
           rootPath = rootPath,
           id = row.getString("id"),
           name = row.getString("name"),
-          shortName = row.getString("shortname"),
           persons = row.getList[String]("persons", classOf[String]).asScala.toSet,
           limit = row.getInt("lim"),
           orgRoles = row.getList[String]("org_roles", classOf[String]).asScala.toSet,

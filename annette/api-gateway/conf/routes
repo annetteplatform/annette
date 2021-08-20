@@ -59,7 +59,6 @@ POST    /api/annette/v1/orgStructure/unassignChief                       biz.lob
 POST    /api/annette/v1/orgStructure/createPosition                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.createPosition
 POST    /api/annette/v1/orgStructure/deletePosition                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.deletePosition
 POST    /api/annette/v1/orgStructure/updateName                          biz.lobachev.annette.org_structure.gateway.OrgStructureController.updateName
-POST    /api/annette/v1/orgStructure/updateShortName                     biz.lobachev.annette.org_structure.gateway.OrgStructureController.updateShortName
 POST    /api/annette/v1/orgStructure/changePositionLimit                 biz.lobachev.annette.org_structure.gateway.OrgStructureController.changePositionLimit
 POST    /api/annette/v1/orgStructure/assignPerson                        biz.lobachev.annette.org_structure.gateway.OrgStructureController.assignPerson
 POST    /api/annette/v1/orgStructure/unassignPerson                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.unassignPerson

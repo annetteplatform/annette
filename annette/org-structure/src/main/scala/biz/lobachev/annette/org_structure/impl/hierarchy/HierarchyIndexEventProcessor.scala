@@ -41,7 +41,6 @@ private[impl] class HierarchyIndexEventProcessor(
       .setEventHandler[HierarchyEntity.OrganizationCreated](e => createOrganization(e.event))
       .setEventHandler[HierarchyEntity.OrganizationDeleted](e => deleteOrganization(e.event))
       .setEventHandler[HierarchyEntity.NameUpdated](e => updateName(e.event))
-      .setEventHandler[HierarchyEntity.ShortNameUpdated](e => updateShortName(e.event))
       .setEventHandler[HierarchyEntity.UnitCreated](e => createUnit(e.event))
       .setEventHandler[HierarchyEntity.UnitDeleted](e => deleteUnit(e.event))
       .setEventHandler[HierarchyEntity.PositionCreated](e => createPosition(e.event))
@@ -120,11 +119,6 @@ private[impl] class HierarchyIndexEventProcessor(
   def updateName(event: HierarchyEntity.NameUpdated): Future[Seq[BoundStatement]] =
     for {
       _ <- indexDao.updateName(event)
-    } yield List.empty
-
-  def updateShortName(event: HierarchyEntity.ShortNameUpdated): Future[Seq[BoundStatement]] =
-    for {
-      _ <- indexDao.updateShortName(event)
     } yield List.empty
 
   def changePositionLimit(event: HierarchyEntity.PositionLimitChanged): Future[Seq[BoundStatement]] =

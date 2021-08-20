@@ -25,7 +25,6 @@ case class CreateUnitPayload(
   parentId: OrgItemId,
   unitId: OrgItemId,
   name: String,
-  shortName: String,
   categoryId: OrgCategoryId,
   order: Option[Int],
   createdBy: AnnettePrincipal

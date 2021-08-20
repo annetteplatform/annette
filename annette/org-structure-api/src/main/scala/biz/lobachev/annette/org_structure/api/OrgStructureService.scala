@@ -50,7 +50,6 @@ trait OrgStructureService {
   def createPosition(payload: CreatePositionPayload): Future[Done]
   def deletePosition(payload: DeletePositionPayload): Future[Done]
   def updateName(payload: UpdateNamePayload): Future[Done]
-  def updateShortName(payload: UpdateShortNamePayload): Future[Done]
   def assignCategory(payload: AssignCategoryPayload): Future[Done]
   def changePositionLimit(payload: ChangePositionLimitPayload): Future[Done]
   def assignPerson(payload: AssignPersonPayload): Future[Done]

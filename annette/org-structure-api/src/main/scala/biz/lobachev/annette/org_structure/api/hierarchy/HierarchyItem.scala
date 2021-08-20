@@ -27,7 +27,6 @@ sealed trait HierarchyItem {
   val id: OrgItemId
   val parentId: OrgItemId
   val name: String
-  val shortName: String
   val categoryId: OrgCategoryId
   val updatedAt: OffsetDateTime
   val updatedBy: AnnettePrincipal
@@ -37,7 +36,6 @@ case class HierarchyPosition(
   id: OrgItemId,
   parentId: OrgItemId,
   name: String,
-  shortName: String,
   limit: Int = 1,
   persons: Set[PersonId] = Set.empty,
   orgRoles: Set[OrgRoleId] = Set.empty,
@@ -54,7 +52,6 @@ case class HierarchyUnit(
   id: OrgItemId,
   parentId: OrgItemId,
   name: String,
-  shortName: String,
   children: Seq[OrgItemId] = Seq.empty,
   chief: Option[OrgItemId] = None,
   categoryId: OrgCategoryId,

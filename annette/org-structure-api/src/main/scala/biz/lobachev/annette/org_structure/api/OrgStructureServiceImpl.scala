@@ -73,9 +73,6 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
   def updateName(payload: UpdateNamePayload): Future[Done] =
     api.updateName.invoke(payload)
 
-  def updateShortName(payload: UpdateShortNamePayload): Future[Done] =
-    api.updateShortName.invoke(payload)
-
   def assignCategory(payload: AssignCategoryPayload): Future[Done] =
     api.assignCategory.invoke(payload)
 

@@ -137,11 +137,6 @@ class HierarchyEntityService(
         case _                                           => Map.empty.empty
       }
 
-  def updateShortName(payload: UpdateShortNamePayload): Future[Done] =
-    refFor(payload.orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.UpdateShortName(payload, _))
-      .map(successToResult)
-
   def assignCategory(payload: AssignCategoryPayload, category: OrgCategory): Future[Done] =
     refFor(payload.orgId)
       .ask[HierarchyEntity.Confirmation](HierarchyEntity.AssignCategory(payload, category, _))

@@ -29,7 +29,6 @@ sealed trait OrgItem {
   val rootPath: Seq[OrgItemId]
   val id: OrgItemId
   val name: String
-  val shortName: String
   val level: Int
   val categoryId: OrgCategoryId
   val updatedAt: OffsetDateTime
@@ -42,7 +41,6 @@ case class OrgUnit(
   rootPath: Seq[OrgItemId],
   id: OrgItemId,
   name: String,
-  shortName: String,
   children: Seq[OrgItemId],
   chief: Option[OrgItemId],
   level: Int,
@@ -61,7 +59,6 @@ case class OrgPosition(
   rootPath: Seq[OrgItemId],
   id: OrgItemId,
   name: String,
-  shortName: String,
   persons: Set[PersonId],
   limit: Int,
   orgRoles: Set[OrgRoleId] = Set.empty,

@@ -22,14 +22,12 @@ import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 sealed trait OrgItemIgnitionData {
   val id: String
   val name: String
-  val shortName: String
   val categoryId: OrgCategoryId
 }
 
 case class PositionIgnitionData(
   id: String,
   name: String,
-  shortName: String,
   limit: Int = 1,
   categoryId: OrgCategoryId,
   person: Option[String] = None
@@ -42,7 +40,6 @@ object PositionIgnitionData {
 case class UnitIgnitionData(
   id: String,
   name: String,
-  shortName: String,
   chief: Option[String] = None,
   children: Seq[OrgItemIgnitionData] = Seq.empty,
   categoryId: OrgCategoryId

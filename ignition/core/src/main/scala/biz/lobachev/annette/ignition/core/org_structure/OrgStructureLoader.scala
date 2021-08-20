@@ -226,9 +226,6 @@ class OrgStructureLoader(
       _                 <- if (currentOrg.name != org.name)
                              orgStructureService.updateName(UpdateNamePayload(orgId, orgId, org.name, updatedBy))
                            else Future.successful(())
-      _                 <- if (currentOrg.shortName != org.shortName)
-                             orgStructureService.updateShortName(UpdateShortNamePayload(orgId, orgId, org.shortName, updatedBy))
-                           else Future.successful(())
       _                 <- if (currentOrg.categoryId != org.categoryId)
                              orgStructureService.assignCategory(AssignCategoryPayload(orgId, orgId, org.categoryId, updatedBy))
                            else Future.successful(())
@@ -238,7 +235,6 @@ class OrgStructureLoader(
                                parentId = orgId,
                                unitId = disposedUnitId,
                                name = disposedUnitName,
-                               shortName = disposedUnitName,
                                categoryId = disposedCategory,
                                order = None,
                                createdBy = updatedBy
@@ -402,10 +398,6 @@ class OrgStructureLoader(
       _ <- if (currentItem.name != newItem.name)
              orgStructureService.updateName(UpdateNamePayload(orgId, newItem.id, newItem.name, updatedBy))
            else Future.successful(())
-      _ <-
-        if (currentItem.shortName != newItem.shortName)
-          orgStructureService.updateShortName(UpdateShortNamePayload(orgId, newItem.id, newItem.shortName, updatedBy))
-        else Future.successful(())
 
     } yield ()
 

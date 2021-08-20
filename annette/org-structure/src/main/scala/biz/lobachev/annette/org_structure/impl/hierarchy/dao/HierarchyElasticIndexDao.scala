@@ -57,7 +57,6 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
           keywordField("parentId"),
           keywordField("rootPath"),
           textField("name").fielddata(true),
-          textField("shortName").fielddata(true),
           keywordField("type"),
           keywordField("children"),
           keywordField("chief"),
@@ -80,7 +79,6 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
           "parentId"   -> hierarchy.ROOT,
           "rootPath"   -> Seq(event.orgId),
           "name"       -> event.name,
-          "shortName"  -> event.shortName,
           "type"       -> ItemTypes.Unit.toString,
           "children"   -> Seq.empty,
           "categoryId" -> event.categoryId,
@@ -105,7 +103,6 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
           "parentId"   -> event.parentId,
           "rootPath"   -> event.rootPath,
           "name"       -> event.name,
-          "shortName"  -> event.shortName,
           "type"       -> ItemTypes.Unit.toString,
           "children"   -> Seq.empty,
           "categoryId" -> event.categoryId,
@@ -151,7 +148,6 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
           "parentId"   -> event.parentId,
           "rootPath"   -> event.rootPath,
           "name"       -> event.name,
-          "shortName"  -> event.shortName,
           "type"       -> ItemTypes.Position.toString,
           "categoryId" -> event.categoryId,
           "limit"      -> event.limit,
@@ -175,13 +171,6 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
         )
         .refresh(RefreshPolicy.Immediate)
     }.map(processResponse("updateName", event.orgItemId)(_))
-
-  def updateShortName(event: HierarchyEntity.ShortNameUpdated): Future[Unit] =
-    elasticClient.execute {
-      updateById(indexName, event.orgItemId)
-        .doc("shortName" -> event.shortName, "updatedAt" -> event.updatedAt)
-        .refresh(RefreshPolicy.Immediate)
-    }.map(processResponse("updateShortName", event.orgItemId)(_))
 
   def changePositionLimit(event: HierarchyEntity.PositionLimitChanged): Future[Unit] =
     elasticClient.execute {
@@ -243,9 +232,8 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
 
   def findOrgItem(query: OrgItemFindQuery): Future[FindResult] = {
 
-    val filterQuery        = buildFilterQuery(query.filter, Seq("name" -> 3.0, "shortName" -> 2.0))
-    val fieldQuery         = query.name.map(matchQuery("name", _)).toSeq ++
-      query.shortName.map(matchQuery("shortName", _)).toSeq
+    val filterQuery        = buildFilterQuery(query.filter, Seq("name" -> 3.0))
+    val fieldQuery         = query.name.map(matchQuery("name", _)).toSeq
     val orgUnitsQuery      = query.orgUnits.map(units => termsSetQuery("rootPath", units, script("1"))).toSeq
     val personsQuery       = query.persons.map(persons => termsSetQuery("persons", persons, script("1"))).toSeq
     val orgRolesQuery      = query.orgRoles.map(roles => termsSetQuery("orgRoles", roles, script("1"))).toSeq

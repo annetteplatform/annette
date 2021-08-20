@@ -121,11 +121,6 @@ class OrgStructureServiceApiImpl(
       hierarchyEntityService.updateName(payload)
     }
 
-  override def updateShortName: ServiceCall[UpdateShortNamePayload, Done] =
-    ServiceCall { payload =>
-      hierarchyEntityService.updateShortName(payload)
-    }
-
   override def assignCategory: ServiceCall[AssignCategoryPayload, Done] =
     ServiceCall { payload =>
       for {

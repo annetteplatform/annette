@@ -50,7 +50,6 @@ trait OrgStructureServiceApi extends Service {
   def createPosition: ServiceCall[CreatePositionPayload, Done]
   def deletePosition: ServiceCall[DeletePositionPayload, Done]
   def updateName: ServiceCall[UpdateNamePayload, Done]
-  def updateShortName: ServiceCall[UpdateShortNamePayload, Done]
   def assignCategory: ServiceCall[AssignCategoryPayload, Done]
   def changePositionLimit: ServiceCall[ChangePositionLimitPayload, Done]
   def assignPerson: ServiceCall[AssignPersonPayload, Done]
@@ -112,7 +111,6 @@ trait OrgStructureServiceApi extends Service {
         pathCall("/api/org-structure/v1/changeItemOrder",                    changeItemOrder),
 
         pathCall("/api/org-structure/v1/updateName",                     updateName ),
-        pathCall("/api/org-structure/v1/updateShortName",                updateShortName ),
         pathCall("/api/org-structure/v1/assignCategory",                 assignCategory),
         pathCall("/api/org-structure/v1/getOrgItemById/:orgId/:id",      getOrgItemById _),
         pathCall("/api/org-structure/v1/getOrgItemByIdFromReadSide/:id", getOrgItemByIdFromReadSide _),
