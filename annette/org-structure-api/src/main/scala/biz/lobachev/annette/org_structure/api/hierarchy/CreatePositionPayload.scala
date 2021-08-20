@@ -28,6 +28,8 @@ case class CreatePositionPayload(
   limit: Int = 1,
   categoryId: OrgCategoryId,
   order: Option[Int] = None,
+  source: Option[String] = None,
+  externalId: Option[String] = None,
   createdBy: AnnettePrincipal
 )
 

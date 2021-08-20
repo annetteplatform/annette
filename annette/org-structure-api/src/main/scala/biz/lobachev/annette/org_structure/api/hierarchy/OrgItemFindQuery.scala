@@ -38,6 +38,8 @@ case class OrgItemFindQuery(
   parents: Option[Set[OrgItemId]] = None,
   chiefs: Option[Set[OrgItemId]] = None,
   categories: Option[Set[OrgCategoryId]] = None,
+  sources: Option[Set[String]] = None,
+  externalIds: Option[Set[String]] = None,
   attributes: Option[AttributeQuery] = None,
   sortBy: Option[Seq[SortBy]] = None                 //sort results by field provided
 )

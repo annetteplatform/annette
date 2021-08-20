@@ -23,6 +23,8 @@ import play.api.libs.json.Json
 case class CreateOrganizationPayloadDto(
   orgId: OrgItemId,
   name: String,
+  source: Option[String],
+  externalId: Option[String],
   categoryId: OrgCategoryId
 )
 

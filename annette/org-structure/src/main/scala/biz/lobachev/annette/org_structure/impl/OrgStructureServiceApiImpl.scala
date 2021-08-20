@@ -39,6 +39,7 @@ import biz.lobachev.annette.org_structure.impl.role.OrgRoleEntityService
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.typesafe.config.Config
 
+import scala.collection.immutable.Map
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 import scala.util.Try
@@ -129,6 +130,16 @@ class OrgStructureServiceApiImpl(
       } yield result
     }
 
+  override def updateSource: ServiceCall[UpdateSourcePayload, Done] =
+    ServiceCall { payload =>
+      hierarchyEntityService.updateSource(payload)
+    }
+
+  override def updateExternalId: ServiceCall[UpdateExternalIdPayload, Done] =
+    ServiceCall { payload =>
+      hierarchyEntityService.updateExternalId(payload)
+    }
+
   def changePositionLimit: ServiceCall[ChangePositionLimitPayload, Done] =
     ServiceCall { payload =>
       hierarchyEntityService.changePositionLimit(payload)
@@ -189,6 +200,11 @@ class OrgStructureServiceApiImpl(
   override def findOrgItems: ServiceCall[OrgItemFindQuery, FindResult] =
     ServiceCall { payload =>
       hierarchyEntityService.findOrgItems(payload)
+    }
+
+  override def getItemIdsByExternalId: ServiceCall[Set[String], Map[String, OrgItemId]] =
+    ServiceCall { externalIds =>
+      hierarchyEntityService.getItemIdsByExternalId(externalIds)
     }
 
   override def getPersonPrincipals(personId: PersonId): ServiceCall[NotUsed, Set[AnnettePrincipal]] =

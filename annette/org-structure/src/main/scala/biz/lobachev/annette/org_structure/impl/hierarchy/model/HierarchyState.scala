@@ -15,12 +15,13 @@
  */
 
 package biz.lobachev.annette.org_structure.impl.hierarchy.model
-import java.time.OffsetDateTime
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import play.api.libs.json.Json
+
+import java.time.OffsetDateTime
 
 final case class HierarchyState(
   orgId: OrgItemId,
@@ -32,6 +33,12 @@ final case class HierarchyState(
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) {
+
+  def hasItem(itemId: OrgItemId) = positions.isDefinedAt(itemId) || units.isDefinedAt(itemId)
+
+  def hasPosition(itemId: OrgItemId) = positions.isDefinedAt(itemId)
+
+  def hasUnit(itemId: OrgItemId) = units.isDefinedAt(itemId)
 
   def getOrgTreeItem(itemId: OrgItemId): OrgTreeItem =
     units

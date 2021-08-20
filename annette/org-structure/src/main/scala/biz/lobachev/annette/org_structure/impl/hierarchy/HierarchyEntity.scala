@@ -16,7 +16,6 @@
 
 package biz.lobachev.annette.org_structure.impl.hierarchy
 
-import java.time.OffsetDateTime
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl._
 import akka.persistence.typed.PersistenceId
@@ -29,7 +28,9 @@ import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import biz.lobachev.annette.org_structure.impl.hierarchy.model.HierarchyState
 import com.lightbend.lagom.scaladsl.persistence._
 import io.scalaland.chimney.dsl._
-import play.api.libs.json.{Format, _}
+import play.api.libs.json._
+
+import java.time.OffsetDateTime
 
 object HierarchyEntity {
 
@@ -53,6 +54,20 @@ object HierarchyEntity {
   final case class CreatePosition(payload: CreatePositionPayload, replyTo: ActorRef[Confirmation])   extends Command
   final case class DeletePosition(payload: DeletePositionPayload, replyTo: ActorRef[Confirmation])   extends Command
   final case class UpdateName(payload: UpdateNamePayload, replyTo: ActorRef[Confirmation])           extends Command
+  final case class UpdateSource(
+    orgId: OrgItemId,
+    orgItemId: OrgItemId,
+    source: Option[String],
+    updatedBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  )                                                                                                  extends Command
+  final case class UpdateExternalId(
+    orgId: OrgItemId,
+    orgItemId: OrgItemId,
+    externalId: Option[String],
+    updatedBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  )                                                                                                  extends Command
   final case class ChangePositionLimit(payload: ChangePositionLimitPayload, replyTo: ActorRef[Confirmation])
       extends Command
   final case class AssignPerson(payload: AssignPersonPayload, replyTo: ActorRef[Confirmation])       extends Command
@@ -137,6 +152,8 @@ object HierarchyEntity {
   final case class OrganizationCreated(
     orgId: OrgItemId,
     name: String,
+    source: Option[String],
+    externalId: Option[String],
     categoryId: OrgCategoryId,
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
@@ -154,6 +171,8 @@ object HierarchyEntity {
     order: Option[Int],
     rootPath: Seq[OrgItemId],
     categoryId: OrgCategoryId,
+    source: Option[String],
+    externalId: Option[String],
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -194,6 +213,8 @@ object HierarchyEntity {
     rootPath: Seq[OrgItemId],
     limit: Int,
     categoryId: OrgCategoryId,
+    source: Option[String],
+    externalId: Option[String],
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -212,6 +233,24 @@ object HierarchyEntity {
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
+
+  final case class SourceUpdated(
+    orgId: OrgItemId,
+    orgItemId: OrgItemId,
+    source: Option[String],
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+
+  final case class ExternalIdUpdated(
+    orgId: OrgItemId,
+    orgItemId: OrgItemId,
+    externalId: Option[String],
+    oldExternalId: Option[String],
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+
   final case class PositionLimitChanged(
     orgId: OrgItemId,
     positionId: OrgItemId,
@@ -278,6 +317,8 @@ object HierarchyEntity {
   implicit val positionCreatedFormat: Format[PositionCreated]           = Json.format
   implicit val positionDeletedFormat: Format[PositionDeleted]           = Json.format
   implicit val nameUpdatedFormat: Format[NameUpdated]                   = Json.format
+  implicit val sourceUpdatedFormat: Format[SourceUpdated]               = Json.format
+  implicit val externalIdUpdatedFormat: Format[ExternalIdUpdated]       = Json.format
   implicit val positionLimitChangedFormat: Format[PositionLimitChanged] = Json.format
   implicit val personAssignedFormat: Format[PersonAssigned]             = Json.format
   implicit val personUnassignedFormat: Format[PersonUnassigned]         = Json.format
@@ -319,6 +360,8 @@ final case class HierarchyEntity(
       case cmd: CreateOrganization  => createOrganization(cmd)
       case cmd: DeleteOrganization  => deleteOrganization(cmd)
       case cmd: UpdateName          => updateName(cmd)
+      case cmd: UpdateSource        => updateSource(cmd)
+      case cmd: UpdateExternalId    => updateExternalId(cmd)
       case cmd: CreateUnit          => createUnit(cmd)
       case cmd: DeleteUnit          => deleteUnit(cmd)
       case cmd: AssignCategory      => assignCategory(cmd)
@@ -365,7 +408,7 @@ final case class HierarchyEntity(
     maybeState match {
       case None => Effect.reply(cmd.replyTo)(OrganizationNotFound)
 
-      case Some(state) if state.units.size == 1 && state.units.isDefinedAt(state.orgId) && state.positions.isEmpty =>
+      case Some(state) if state.units.size == 1 && state.hasUnit(state.orgId) && state.positions.isEmpty =>
         val event = cmd.payload
           .into[OrganizationDeleted]
           .transform
@@ -373,7 +416,7 @@ final case class HierarchyEntity(
           .persist(event)
           .thenReply(cmd.replyTo)(_ => Success)
 
-      case _                                                                                                       =>
+      case _                                                                                             =>
         Effect.reply(cmd.replyTo)(OrganizationNotEmpty)
     }
 
@@ -381,13 +424,10 @@ final case class HierarchyEntity(
     cmd: CreateUnit
   ): ReplyEffect[Event, HierarchyEntity] =
     maybeState match {
-      case None                                                          => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case Some(state)
-          if state.units.isDefinedAt(cmd.payload.unitId) ||
-            state.positions.isDefinedAt(cmd.payload.unitId) =>
-        Effect.reply(cmd.replyTo)(AlreadyExist)
-      case Some(state) if !state.units.isDefinedAt(cmd.payload.parentId) => Effect.reply(cmd.replyTo)(ParentNotFound)
-      case Some(state)                                                   =>
+      case None                                                => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case Some(state) if state.hasItem(cmd.payload.unitId)    => Effect.reply(cmd.replyTo)(AlreadyExist)
+      case Some(state) if !state.hasUnit(cmd.payload.parentId) => Effect.reply(cmd.replyTo)(ParentNotFound)
+      case Some(state)                                         =>
         val event = cmd.payload
           .into[UnitCreated]
           .withFieldConst(_.rootPath, state.getRootPath(cmd.payload.parentId) :+ cmd.payload.unitId)
@@ -402,9 +442,9 @@ final case class HierarchyEntity(
   ): ReplyEffect[Event, HierarchyEntity] = {
     val replyTo = cmd.replyTo
     maybeState match {
-      case None                                                        => Effect.reply(replyTo)(OrganizationNotFound)
-      case Some(state) if !state.units.isDefinedAt(cmd.payload.unitId) => Effect.reply(replyTo)(ItemNotFound)
-      case Some(state) if state.units.isDefinedAt(cmd.payload.unitId)  =>
+      case None                                              => Effect.reply(replyTo)(OrganizationNotFound)
+      case Some(state) if !state.hasUnit(cmd.payload.unitId) => Effect.reply(replyTo)(ItemNotFound)
+      case Some(state) if state.hasUnit(cmd.payload.unitId)  =>
         val unit = state.units(cmd.payload.unitId)
         if (unit.children.nonEmpty) Effect.reply(replyTo)(UnitNotEmpty)
         else if (unit.chief.nonEmpty) Effect.reply(replyTo)(ChiefAlreadyAssigned)
@@ -422,8 +462,8 @@ final case class HierarchyEntity(
 
   def assignCategory(cmd: AssignCategory): ReplyEffect[Event, HierarchyEntity] =
     maybeState match {
-      case None                                                           => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case Some(state) if state.units.isDefinedAt(cmd.payload.itemId)     =>
+      case None                                                 => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case Some(state) if state.hasUnit(cmd.payload.itemId)     =>
         val unit = state.units(cmd.payload.itemId)
         if (
           (unit.parentId == ROOT && cmd.category.forOrganization) ||
@@ -438,7 +478,7 @@ final case class HierarchyEntity(
         } else
           Effect.reply(cmd.replyTo)(IncorrectCategory)
 
-      case Some(state) if state.positions.isDefinedAt(cmd.payload.itemId) =>
+      case Some(state) if state.hasPosition(cmd.payload.itemId) =>
         if (cmd.category.forPosition) {
           val event = cmd.payload
             .into[CategoryAssigned]
@@ -448,17 +488,17 @@ final case class HierarchyEntity(
             .thenReply(cmd.replyTo)(_ => Success)
         } else
           Effect.reply(cmd.replyTo)(IncorrectCategory)
-      case _                                                              =>
+      case _                                                    =>
         Effect.reply(cmd.replyTo)(ItemNotFound)
     }
   def assignChief(cmd: AssignChief): ReplyEffect[Event, HierarchyEntity]       =
     maybeState match {
-      case None                                                             => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case Some(state) if !state.units.isDefinedAt(cmd.payload.unitId)      => Effect.reply(cmd.replyTo)(ItemNotFound)
-      case Some(state) if !state.positions.isDefinedAt(cmd.payload.chiefId) => Effect.reply(cmd.replyTo)(ChiefNotFound)
-      case Some(state) if state.positions(cmd.payload.chiefId).limit != 1   =>
+      case None                                                           => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case Some(state) if !state.hasUnit(cmd.payload.unitId)              => Effect.reply(cmd.replyTo)(ItemNotFound)
+      case Some(state) if !state.hasPosition(cmd.payload.chiefId)         => Effect.reply(cmd.replyTo)(ChiefNotFound)
+      case Some(state) if state.positions(cmd.payload.chiefId).limit != 1 =>
         Effect.reply(cmd.replyTo)(PositionLimitExceeded)
-      case Some(state)                                                      =>
+      case Some(state)                                                    =>
         if (state.units(cmd.payload.unitId).chief.isEmpty) {
           val event = cmd.payload
             .into[ChiefAssigned]
@@ -474,9 +514,9 @@ final case class HierarchyEntity(
     cmd: UnassignChief
   ): ReplyEffect[Event, HierarchyEntity] =
     maybeState match {
-      case None                                                        => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case Some(state) if !state.units.isDefinedAt(cmd.payload.unitId) => Effect.reply(cmd.replyTo)(ItemNotFound)
-      case Some(state)                                                 =>
+      case None                                              => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case Some(state) if !state.hasUnit(cmd.payload.unitId) => Effect.reply(cmd.replyTo)(ItemNotFound)
+      case Some(state)                                       =>
         state
           .units(cmd.payload.unitId)
           .chief
@@ -498,13 +538,10 @@ final case class HierarchyEntity(
     cmd: CreatePosition
   ): ReplyEffect[Event, HierarchyEntity] =
     maybeState match {
-      case None                                                          => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case Some(state)
-          if state.units.isDefinedAt(cmd.payload.positionId) ||
-            state.positions.isDefinedAt(cmd.payload.positionId) =>
-        Effect.reply(cmd.replyTo)(AlreadyExist)
-      case Some(state) if !state.units.isDefinedAt(cmd.payload.parentId) => Effect.reply(cmd.replyTo)(ParentNotFound)
-      case Some(state)                                                   =>
+      case None                                                 => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case Some(state) if state.hasItem(cmd.payload.positionId) => Effect.reply(cmd.replyTo)(AlreadyExist)
+      case Some(state) if !state.hasUnit(cmd.payload.parentId)  => Effect.reply(cmd.replyTo)(ParentNotFound)
+      case Some(state)                                          =>
         val event = cmd.payload
           .into[PositionCreated]
           .withFieldConst(_.rootPath, state.getRootPath(cmd.payload.parentId) :+ cmd.payload.positionId)
@@ -519,11 +556,11 @@ final case class HierarchyEntity(
   ): ReplyEffect[Event, HierarchyEntity] =
     maybeState match {
       case None                                                                      => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case Some(state) if !state.positions.isDefinedAt(cmd.payload.positionId)       =>
+      case Some(state) if !state.hasPosition(cmd.payload.positionId)                 =>
         Effect.reply(cmd.replyTo)(ItemNotFound)
       case Some(state) if state.chiefAssignments.isDefinedAt(cmd.payload.positionId) =>
         Effect.reply(cmd.replyTo)(ChiefAlreadyAssigned)
-      case Some(state) if state.positions.isDefinedAt(cmd.payload.positionId)        =>
+      case Some(state) if state.hasPosition(cmd.payload.positionId)                  =>
         val position = state.positions(cmd.payload.positionId)
         if (position.persons.isEmpty) {
           val event = cmd.payload
@@ -541,25 +578,64 @@ final case class HierarchyEntity(
     val replyTo = cmd.replyTo
     val payload = cmd.payload
     maybeState match {
-      case None => Effect.reply(replyTo)(OrganizationNotFound)
-      case Some(state)
-          if state.positions.isDefinedAt(payload.orgItemId) || state.units.isDefinedAt(cmd.payload.orgItemId) =>
-        val event = payload
-          .into[NameUpdated]
-          .transform
-        Effect
-          .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
-      case _    => Effect.reply(cmd.replyTo)(ItemNotFound)
+      case None                                            => Effect.reply(replyTo)(OrganizationNotFound)
+      case Some(state) if state.hasItem(payload.orgItemId) =>
+        val item = state.positions.getOrElse(payload.orgItemId, state.units(payload.orgItemId))
+        if (item.name != payload.name) {
+          val event = payload
+            .into[NameUpdated]
+            .transform
+          Effect
+            .persist(event)
+            .thenReply(cmd.replyTo)(_ => Success)
+        } else
+          Effect.reply(cmd.replyTo)(Success)
+
+      case _                                               => Effect.reply(cmd.replyTo)(ItemNotFound)
     }
   }
+
+  def updateExternalId(cmd: UpdateExternalId): ReplyEffect[Event, HierarchyEntity] =
+    maybeState match {
+      case None                                        => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case Some(state) if state.hasItem(cmd.orgItemId) =>
+        val item = state.positions.getOrElse(cmd.orgItemId, state.units(cmd.orgItemId))
+        if (item.externalId != cmd.externalId) {
+          val event = cmd
+            .into[ExternalIdUpdated]
+            .withFieldConst(_.oldExternalId, item.externalId)
+            .transform
+          Effect
+            .persist(event)
+            .thenReply(cmd.replyTo)(_ => Success)
+        } else
+          Effect.reply(cmd.replyTo)(Success)
+      case _                                           => Effect.reply(cmd.replyTo)(ItemNotFound)
+    }
+
+  def updateSource(cmd: UpdateSource): ReplyEffect[Event, HierarchyEntity] =
+    maybeState match {
+      case None                                        => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case Some(state) if state.hasItem(cmd.orgItemId) =>
+        val item = state.positions.getOrElse(cmd.orgItemId, state.units(cmd.orgItemId))
+        if (item.source != cmd.source) {
+          val event = cmd
+            .into[SourceUpdated]
+            .transform
+          Effect
+            .persist(event)
+            .thenReply(cmd.replyTo)(_ => Success)
+        } else
+          Effect.reply(cmd.replyTo)(Success)
+      case _                                           => Effect.reply(cmd.replyTo)(ItemNotFound)
+    }
 
   def changePositionLimit(
     cmd: ChangePositionLimit
   ): ReplyEffect[Event, HierarchyEntity] =
     maybeState match {
       case None                                                                                    => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case Some(state) if !state.positions.isDefinedAt(cmd.payload.positionId)                     =>
+      case Some(state) if !state.hasPosition(cmd.payload.positionId)                               =>
         Effect.reply(cmd.replyTo)(ItemNotFound)
       case Some(state) if state.chiefAssignments.isDefinedAt(cmd.payload.positionId)               =>
         Effect.reply(cmd.replyTo)(PositionLimitExceeded)
@@ -578,7 +654,7 @@ final case class HierarchyEntity(
   def assignPerson(cmd: AssignPerson): ReplyEffect[Event, HierarchyEntity] =
     maybeState match {
       case None                                                                                          => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case Some(state) if !state.positions.isDefinedAt(cmd.payload.positionId)                           =>
+      case Some(state) if !state.hasPosition(cmd.payload.positionId)                                     =>
         Effect.reply(cmd.replyTo)(ItemNotFound)
       case Some(state) if state.positions(cmd.payload.positionId).persons.contains(cmd.payload.personId) =>
         Effect.reply(cmd.replyTo)(PersonAlreadyAssigned)
@@ -598,10 +674,10 @@ final case class HierarchyEntity(
     cmd: UnassignPerson
   ): ReplyEffect[Event, HierarchyEntity] =
     maybeState match {
-      case None                                                                => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case Some(state) if !state.positions.isDefinedAt(cmd.payload.positionId) =>
+      case None                                                      => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case Some(state) if !state.hasPosition(cmd.payload.positionId) =>
         Effect.reply(cmd.replyTo)(ItemNotFound)
-      case Some(state)                                                         =>
+      case Some(state)                                               =>
         if (state.positions(cmd.payload.positionId).persons.contains(cmd.payload.personId)) {
           val event = cmd.payload
             .into[PersonUnassigned]
@@ -615,10 +691,9 @@ final case class HierarchyEntity(
 
   def assignOrgRole(cmd: AssignOrgRole): ReplyEffect[Event, HierarchyEntity] =
     maybeState match {
-      case None                                                                => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case Some(state) if !state.positions.isDefinedAt(cmd.payload.positionId) =>
-        Effect.reply(cmd.replyTo)(ItemNotFound)
-      case Some(_)                                                             =>
+      case None                                                      => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case Some(state) if !state.hasPosition(cmd.payload.positionId) => Effect.reply(cmd.replyTo)(ItemNotFound)
+      case Some(_)                                                   =>
         val event = cmd.payload
           .into[OrgRoleAssigned]
           .transform
@@ -629,10 +704,9 @@ final case class HierarchyEntity(
 
   def unassignOrgRole(cmd: UnassignOrgRole): ReplyEffect[Event, HierarchyEntity] =
     maybeState match {
-      case None                                                                => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case Some(state) if !state.positions.isDefinedAt(cmd.payload.positionId) =>
-        Effect.reply(cmd.replyTo)(ItemNotFound)
-      case Some(state)                                                         =>
+      case None                                                      => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case Some(state) if !state.hasPosition(cmd.payload.positionId) => Effect.reply(cmd.replyTo)(ItemNotFound)
+      case Some(state)                                               =>
         if (state.positions(cmd.payload.positionId).orgRoles.contains(cmd.payload.orgRoleId)) {
           val event = cmd.payload
             .into[OrgRoleUnassigned]
@@ -648,12 +722,9 @@ final case class HierarchyEntity(
     val replyTo = cmd.replyTo
     val payload = cmd.payload
     maybeState match {
-      case None                                                            => Effect.reply(replyTo)(OrganizationNotFound)
-      case Some(state) if state.positions.isDefinedAt(payload.newParentId) =>
-        Effect.reply(replyTo)(IncorrectMoveItemArguments)
-      case Some(state)
-          if state.positions.isDefinedAt(payload.orgItemId) ||
-            state.units.isDefinedAt(payload.orgItemId) =>
+      case None                                                  => Effect.reply(replyTo)(OrganizationNotFound)
+      case Some(state) if state.hasPosition(payload.newParentId) => Effect.reply(replyTo)(IncorrectMoveItemArguments)
+      case Some(state) if state.hasItem(payload.orgItemId)       =>
         val oldParentId = state.units
           .get(payload.orgItemId)
           .map(_.parentId)
@@ -673,7 +744,7 @@ final case class HierarchyEntity(
             .persist(event)
             .thenReply(replyTo)(_ => Success)
         }
-      case _                                                               => Effect.reply(replyTo)(ItemNotFound)
+      case _                                                     => Effect.reply(replyTo)(ItemNotFound)
     }
   }
 
@@ -683,10 +754,8 @@ final case class HierarchyEntity(
     val replyTo = cmd.replyTo
     val payload = cmd.payload
     maybeState match {
-      case None => Effect.reply(replyTo)(OrganizationNotFound)
-      case Some(state)
-          if state.positions.isDefinedAt(payload.orgItemId) ||
-            state.units.isDefinedAt(payload.orgItemId) =>
+      case None                                            => Effect.reply(replyTo)(OrganizationNotFound)
+      case Some(state) if state.hasItem(payload.orgItemId) =>
         val parentId = state.positions
           .get(payload.orgItemId)
           .map(_.parentId)
@@ -706,15 +775,15 @@ final case class HierarchyEntity(
             .thenReply(replyTo)(_ => Success)
         } else
           Effect.reply(replyTo)(IncorrectOrder)
-      case _    => Effect.reply(replyTo)(ItemNotFound)
+      case _                                               => Effect.reply(replyTo)(ItemNotFound)
 
     }
   }
 
   def getOrgItem(cmd: GetOrgItem): ReplyEffect[Event, HierarchyEntity] =
     maybeState match {
-      case None                                               => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case Some(state) if state.positions.isDefinedAt(cmd.id) =>
+      case None                                     => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case Some(state) if state.hasPosition(cmd.id) =>
         val position = state.positions(cmd.id)
         val rootPath = state.getRootPath(cmd.id)
         val orgItem  = position
@@ -724,7 +793,7 @@ final case class HierarchyEntity(
           .withFieldConst(_.level, rootPath.length - 1)
           .transform
         Effect.reply(cmd.replyTo)(SuccessOrgItem(orgItem))
-      case Some(state) if state.units.isDefinedAt(cmd.id)     =>
+      case Some(state) if state.hasUnit(cmd.id)     =>
         val unit     = state.units(cmd.id)
         val rootPath = state.getRootPath(cmd.id)
         val orgItem  = unit
@@ -734,7 +803,7 @@ final case class HierarchyEntity(
           .withFieldConst(_.level, rootPath.length - 1)
           .transform
         Effect.reply(cmd.replyTo)(SuccessOrgItem(orgItem))
-      case _                                                  => Effect.reply(cmd.replyTo)(ItemNotFound)
+      case _                                        => Effect.reply(cmd.replyTo)(ItemNotFound)
     }
 
   def getOrganization(
@@ -755,35 +824,35 @@ final case class HierarchyEntity(
     cmd: GetOrganizationTree
   ): ReplyEffect[Event, HierarchyEntity] =
     maybeState match {
-      case None                                               => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case Some(state) if state.units.isDefinedAt(cmd.itemId) =>
+      case None                                     => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case Some(state) if state.hasUnit(cmd.itemId) =>
         val organizationTree = OrganizationTree(state.orgId, state.getOrgTreeItem(cmd.itemId))
         Effect.reply(cmd.replyTo)(SuccessOrganizationTree(organizationTree))
-      case _                                                  => Effect.reply(cmd.replyTo)(ItemNotFound)
+      case _                                        => Effect.reply(cmd.replyTo)(ItemNotFound)
     }
 
   def getChildren(cmd: GetChildren): ReplyEffect[Event, HierarchyEntity] =
     maybeState match {
-      case None                                               => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case Some(state) if state.units.isDefinedAt(cmd.unitId) =>
+      case None                                     => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case Some(state) if state.hasUnit(cmd.unitId) =>
         Effect.reply(cmd.replyTo)(SuccessChildren(state.units(cmd.unitId).children))
-      case _                                                  => Effect.reply(cmd.replyTo)(ItemNotFound)
+      case _                                        => Effect.reply(cmd.replyTo)(ItemNotFound)
     }
 
   def getPersons(cmd: GetPersons): ReplyEffect[Event, HierarchyEntity] =
     maybeState match {
-      case None                                                       => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case Some(state) if state.positions.isDefinedAt(cmd.positionId) =>
+      case None                                             => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case Some(state) if state.hasPosition(cmd.positionId) =>
         Effect.reply(cmd.replyTo)(SuccessPersons(state.positions(cmd.positionId).persons))
-      case _                                                          => Effect.reply(cmd.replyTo)(ItemNotFound)
+      case _                                                => Effect.reply(cmd.replyTo)(ItemNotFound)
     }
 
   def getRoles(cmd: GetRoles): ReplyEffect[Event, HierarchyEntity] =
     maybeState match {
-      case None                                                       => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case Some(state) if state.positions.isDefinedAt(cmd.positionId) =>
+      case None                                             => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case Some(state) if state.hasPosition(cmd.positionId) =>
         Effect.reply(cmd.replyTo)(SuccessRoles(state.positions(cmd.positionId).orgRoles))
-      case _                                                          => Effect.reply(cmd.replyTo)(ItemNotFound)
+      case _                                                => Effect.reply(cmd.replyTo)(ItemNotFound)
     }
 
   def getRootPaths(cmd: GetRootPaths): ReplyEffect[Event, HierarchyEntity] =
@@ -805,6 +874,8 @@ final case class HierarchyEntity(
       case event: OrganizationCreated  => onOrganizationCreated(event)
       case _: OrganizationDeleted      => onOrganizationDeleted()
       case event: NameUpdated          => onNameUpdated(event)
+      case event: SourceUpdated        => onSourceUpdated(event)
+      case event: ExternalIdUpdated    => onExternalIdUpdated(event)
       case event: UnitCreated          => onUnitCreated(event)
       case event: UnitDeleted          => onUnitDeleted(event)
       case event: CategoryAssigned     => onCategoryAssigned(event)
@@ -1067,6 +1138,80 @@ final case class HierarchyEntity(
       }
     )
 
+  def onSourceUpdated(event: SourceUpdated): HierarchyEntity =
+    HierarchyEntity(
+      maybeState.map { state =>
+        state.positions
+          .get(event.orgItemId)
+          .map { position =>
+            val updatedPosition = position.copy(
+              source = event.source,
+              updatedAt = event.updatedAt,
+              updatedBy = event.updatedBy
+            )
+            state.copy(
+              positions = state.positions + (updatedPosition.id -> updatedPosition),
+              updatedAt = event.updatedAt,
+              updatedBy = event.updatedBy
+            )
+          }
+          .getOrElse {
+            state.units
+              .get(event.orgItemId)
+              .map { unit =>
+                val updatedUnit = unit.copy(
+                  source = event.source,
+                  updatedAt = event.updatedAt,
+                  updatedBy = event.updatedBy
+                )
+                state.copy(
+                  units = state.units + (updatedUnit.id -> updatedUnit),
+                  updatedAt = event.updatedAt,
+                  updatedBy = event.updatedBy
+                )
+              }
+              .getOrElse(state)
+          }
+      }
+    )
+
+  def onExternalIdUpdated(event: ExternalIdUpdated): HierarchyEntity =
+    HierarchyEntity(
+      maybeState.map { state =>
+        state.positions
+          .get(event.orgItemId)
+          .map { position =>
+            val updatedPosition = position.copy(
+              externalId = event.externalId,
+              updatedAt = event.updatedAt,
+              updatedBy = event.updatedBy
+            )
+            state.copy(
+              positions = state.positions + (updatedPosition.id -> updatedPosition),
+              updatedAt = event.updatedAt,
+              updatedBy = event.updatedBy
+            )
+          }
+          .getOrElse {
+            state.units
+              .get(event.orgItemId)
+              .map { unit =>
+                val updatedUnit = unit.copy(
+                  externalId = event.externalId,
+                  updatedAt = event.updatedAt,
+                  updatedBy = event.updatedBy
+                )
+                state.copy(
+                  units = state.units + (updatedUnit.id -> updatedUnit),
+                  updatedAt = event.updatedAt,
+                  updatedBy = event.updatedBy
+                )
+              }
+              .getOrElse(state)
+          }
+      }
+    )
+
   def onPositionLimitChanged(event: PositionLimitChanged): HierarchyEntity =
     HierarchyEntity(
       maybeState.map { state =>
@@ -1194,7 +1339,7 @@ final case class HierarchyEntity(
           updatedAt = event.updatedAt,
           updatedBy = event.updatedBy
         )
-        val (newUnits, newPositions) = if (state.units.isDefinedAt(event.orgItemId)) {
+        val (newUnits, newPositions) = if (state.hasUnit(event.orgItemId)) {
           val updatedUnit = state
             .units(event.orgItemId)
             .copy(

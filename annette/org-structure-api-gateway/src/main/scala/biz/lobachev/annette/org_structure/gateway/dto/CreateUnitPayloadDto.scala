@@ -26,6 +26,8 @@ case class CreateUnitPayloadDto(
   unitId: OrgItemId,
   name: String,
   categoryId: OrgCategoryId,
+  source: Option[String],
+  externalId: Option[String],
   order: Option[Int]
 )
 

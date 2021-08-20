@@ -31,6 +31,7 @@ import biz.lobachev.annette.org_structure.api.category.{
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.{OrgRoleId, _}
 
+import scala.collection.immutable.Map
 import scala.concurrent.Future
 
 trait OrgStructureService {
@@ -49,19 +50,24 @@ trait OrgStructureService {
 
   def createPosition(payload: CreatePositionPayload): Future[Done]
   def deletePosition(payload: DeletePositionPayload): Future[Done]
-  def updateName(payload: UpdateNamePayload): Future[Done]
-  def assignCategory(payload: AssignCategoryPayload): Future[Done]
   def changePositionLimit(payload: ChangePositionLimitPayload): Future[Done]
   def assignPerson(payload: AssignPersonPayload): Future[Done]
   def unassignPerson(payload: UnassignPersonPayload): Future[Done]
   def assignOrgRole(payload: AssignOrgRolePayload): Future[Done]
   def unassignOrgRole(payload: UnassignOrgRolePayload): Future[Done]
 
+  def updateName(payload: UpdateNamePayload): Future[Done]
+  def assignCategory(payload: AssignCategoryPayload): Future[Done]
+  def updateSource(payload: UpdateSourcePayload): Future[Done]
+  def updateExternalId(payload: UpdateExternalIdPayload): Future[Done]
+
   def getOrgItemById(orgId: OrgItemId, id: OrgItemId): Future[OrgItem]
   def getOrgItemsById(orgId: OrgItemId, ids: Set[OrgItemId]): Future[Seq[OrgItem]]
   def getOrgItemByIdFromReadSide(id: OrgItemId): Future[OrgItem]
   def getOrgItemsByIdFromReadSide(ids: Set[OrgItemId]): Future[Seq[OrgItem]]
   def findOrgItems(query: OrgItemFindQuery): Future[FindResult]
+
+  def getItemIdsByExternalId(externalIds: Set[String]): Future[Map[String, OrgItemId]]
 
   def moveItem(payload: MoveItemPayload): Future[Done]
   def changeItemOrder(payload: ChangeItemOrderPayload): Future[Done]

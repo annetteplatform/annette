@@ -27,6 +27,8 @@ case class CreatePositionPayloadDto(
   name: String,
   limit: Int = 1,
   categoryId: OrgCategoryId,
+  source: Option[String],
+  externalId: Option[String],
   order: Option[Int] = None
 )
 

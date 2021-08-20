@@ -30,7 +30,7 @@ private[impl] class CategoryDbEventProcessor(
 
   def buildHandler() =
     readSide
-      .builder[CategoryEntity.Event]("OrgStructure_Category_CasEventOffset")
+      .builder[CategoryEntity.Event]("category-casssandra")
       .setGlobalPrepare(dbDao.createTables)
       .setPrepare(_ => dbDao.prepareStatements())
       .setEventHandler[CategoryEntity.CategoryCreated](e => createCategory(e.event))

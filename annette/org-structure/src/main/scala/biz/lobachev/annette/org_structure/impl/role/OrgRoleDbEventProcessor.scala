@@ -30,7 +30,7 @@ private[impl] class OrgRoleDbEventProcessor(
 
   def buildHandler() =
     readSide
-      .builder[OrgRoleEntity.Event]("OrgStructure_OrgRole_CasEventOffset")
+      .builder[OrgRoleEntity.Event]("role-cassandra")
       .setGlobalPrepare(dbDao.createTables)
       .setPrepare(_ => dbDao.prepareStatements())
       .setEventHandler[OrgRoleEntity.OrgRoleCreated](e => createOrgRole(e.event))

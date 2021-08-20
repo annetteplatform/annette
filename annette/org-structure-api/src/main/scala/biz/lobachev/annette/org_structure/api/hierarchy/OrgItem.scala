@@ -31,6 +31,8 @@ sealed trait OrgItem {
   val name: String
   val level: Int
   val categoryId: OrgCategoryId
+  val source: Option[String]
+  val externalId: Option[String]
   val updatedAt: OffsetDateTime
   val updatedBy: AnnettePrincipal
 }
@@ -45,6 +47,8 @@ case class OrgUnit(
   chief: Option[OrgItemId],
   level: Int,
   categoryId: OrgCategoryId,
+  source: Option[String] = None,
+  externalId: Option[String] = None,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) extends OrgItem
@@ -64,6 +68,8 @@ case class OrgPosition(
   orgRoles: Set[OrgRoleId] = Set.empty,
   level: Int,
   categoryId: OrgCategoryId,
+  source: Option[String] = None,
+  externalId: Option[String] = None,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) extends OrgItem

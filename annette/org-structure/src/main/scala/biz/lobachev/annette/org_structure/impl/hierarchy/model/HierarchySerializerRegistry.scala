@@ -65,6 +65,8 @@ object HierarchySerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[HierarchyEntity.PositionCreated],
       JsonSerializer[HierarchyEntity.PositionDeleted],
       JsonSerializer[HierarchyEntity.NameUpdated],
+      JsonSerializer[HierarchyEntity.SourceUpdated],
+      JsonSerializer[HierarchyEntity.ExternalIdUpdated],
       JsonSerializer[HierarchyEntity.PositionLimitChanged],
       JsonSerializer[HierarchyEntity.PersonAssigned],
       JsonSerializer[HierarchyEntity.PersonUnassigned],

@@ -28,17 +28,19 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.category.OrgCategory
 import biz.lobachev.annette.org_structure.api.hierarchy.{OrgItem, _}
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
-import biz.lobachev.annette.org_structure.impl.hierarchy.dao.{HierarchyDbDao, HierarchyIndexDao}
+import biz.lobachev.annette.org_structure.impl.hierarchy.dao.{HierarchyCassandraDbDao, HierarchyElasticIndexDao}
 import com.typesafe.config.Config
+import io.scalaland.chimney.dsl._
 
+import scala.collection.immutable.Map
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class HierarchyEntityService(
   clusterSharding: ClusterSharding,
-  dbDao: HierarchyDbDao,
-  indexDao: HierarchyIndexDao,
+  dbDao: HierarchyCassandraDbDao,
+  indexDao: HierarchyElasticIndexDao,
   config: Config
 )(implicit
   ec: ExecutionContext,
@@ -147,6 +149,11 @@ class HierarchyEntityService(
       .ask[HierarchyEntity.Confirmation](HierarchyEntity.AssignPerson(payload, _))
       .map(successToResult)
 
+  def unassignPerson(payload: UnassignPersonPayload): Future[Done] =
+    refFor(payload.orgId)
+      .ask[HierarchyEntity.Confirmation](HierarchyEntity.UnassignPerson(payload, _))
+      .map(successToResult)
+
   def createUnit(payload: CreateUnitPayload): Future[Done] =
     refFor(payload.orgId)
       .ask[HierarchyEntity.Confirmation](HierarchyEntity.CreateUnit(payload, _))
@@ -182,9 +189,24 @@ class HierarchyEntityService(
       .ask[HierarchyEntity.Confirmation](HierarchyEntity.UpdateName(payload, _))
       .map(successToResult)
 
-  def unassignPerson(payload: UnassignPersonPayload): Future[Done] =
+  def updateSource(payload: UpdateSourcePayload): Future[Done] =
     refFor(payload.orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.UnassignPerson(payload, _))
+      .ask[HierarchyEntity.Confirmation](replyTo =>
+        payload
+          .into[HierarchyEntity.UpdateSource]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
+      .map(successToResult)
+
+  def updateExternalId(payload: UpdateExternalIdPayload): Future[Done] =
+    refFor(payload.orgId)
+      .ask[HierarchyEntity.Confirmation](replyTo =>
+        payload
+          .into[HierarchyEntity.UpdateExternalId]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
       .map(successToResult)
 
   def assignOrgRole(payload: AssignOrgRolePayload): Future[Done] =
@@ -245,6 +267,9 @@ class HierarchyEntityService(
 
   def findOrgItems(payload: OrgItemFindQuery): Future[FindResult] =
     indexDao.findOrgItem(payload)
+
+  def getItemIdsByExternalId(externalIds: Set[String]): Future[Map[String, OrgItemId]] =
+    dbDao.getItemIdsByExternalId(externalIds)
 
   def getPersonPrincipals(personId: PersonId): Future[Set[AnnettePrincipal]] =
     dbDao.getPersonPrincipals(personId)

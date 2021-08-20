@@ -33,6 +33,8 @@ import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.{OrgRoleId, _}
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 
+import scala.collection.immutable.Map
+
 trait OrgStructureServiceApi extends Service {
 
   // hierarchy methods
@@ -49,19 +51,24 @@ trait OrgStructureServiceApi extends Service {
 
   def createPosition: ServiceCall[CreatePositionPayload, Done]
   def deletePosition: ServiceCall[DeletePositionPayload, Done]
-  def updateName: ServiceCall[UpdateNamePayload, Done]
-  def assignCategory: ServiceCall[AssignCategoryPayload, Done]
   def changePositionLimit: ServiceCall[ChangePositionLimitPayload, Done]
   def assignPerson: ServiceCall[AssignPersonPayload, Done]
   def unassignPerson: ServiceCall[UnassignPersonPayload, Done]
   def assignOrgRole: ServiceCall[AssignOrgRolePayload, Done]
   def unassignOrgRole: ServiceCall[UnassignOrgRolePayload, Done]
 
+  def updateName: ServiceCall[UpdateNamePayload, Done]
+  def assignCategory: ServiceCall[AssignCategoryPayload, Done]
+  def updateSource: ServiceCall[UpdateSourcePayload, Done]
+  def updateExternalId: ServiceCall[UpdateExternalIdPayload, Done]
+
   def getOrgItemById(orgId: OrgItemId, id: OrgItemId): ServiceCall[NotUsed, OrgItem]
   def getOrgItemsById(orgId: OrgItemId): ServiceCall[Set[OrgItemId], Seq[OrgItem]]
   def getOrgItemByIdFromReadSide(id: OrgItemId): ServiceCall[NotUsed, OrgItem]
   def getOrgItemsByIdFromReadSide: ServiceCall[Set[OrgItemId], Seq[OrgItem]]
   def findOrgItems: ServiceCall[OrgItemFindQuery, FindResult]
+
+  def getItemIdsByExternalId: ServiceCall[Set[String], Map[String, OrgItemId]]
 
   def moveItem: ServiceCall[MoveItemPayload, Done]
   def changeItemOrder: ServiceCall[ChangeItemOrderPayload, Done]
@@ -107,18 +114,25 @@ trait OrgStructureServiceApi extends Service {
         pathCall("/api/org-structure/v1/unassignPerson",                     unassignPerson),
         pathCall("/api/org-structure/v1/assignOrgRole",                      assignOrgRole),
         pathCall("/api/org-structure/v1/unassignOrgRole",                    unassignOrgRole),
+
         pathCall("/api/org-structure/v1/moveItem",                           moveItem),
         pathCall("/api/org-structure/v1/changeItemOrder",                    changeItemOrder),
 
         pathCall("/api/org-structure/v1/updateName",                     updateName ),
         pathCall("/api/org-structure/v1/assignCategory",                 assignCategory),
+        pathCall("/api/org-structure/v1/updateSource",                   updateSource ),
+        pathCall("/api/org-structure/v1/updateExternalId",               updateExternalId ),
+
         pathCall("/api/org-structure/v1/getOrgItemById/:orgId/:id",      getOrgItemById _),
         pathCall("/api/org-structure/v1/getOrgItemByIdFromReadSide/:id", getOrgItemByIdFromReadSide _),
         pathCall("/api/org-structure/v1/getOrgItemsById/:orgId",         getOrgItemsById _ ),
         pathCall("/api/org-structure/v1/getOrgItemsByIdFromReadSide",    getOrgItemsByIdFromReadSide  ),
+        pathCall("/api/org-structure/v1/findOrgItems",                   findOrgItems ),
+
+        pathCall("/api/org-structure/v1/getItemIdsByExternalId",         getItemIdsByExternalId  ),
+
         pathCall("/api/org-structure/v1/getPersonPrincipals/:personId",  getPersonPrincipals _),
         pathCall("/api/org-structure/v1/getPersonPositions/:personId",   getPersonPositions _),
-        pathCall("/api/org-structure/v1/findOrgItems",                   findOrgItems ),
 
         pathCall("/api/org-structure/v1/createOrgRole",                createOrgRole),
         pathCall("/api/org-structure/v1/updateOrgRole",                updateOrgRole),

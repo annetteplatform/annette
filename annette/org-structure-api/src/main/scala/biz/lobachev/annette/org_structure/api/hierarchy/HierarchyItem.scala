@@ -28,6 +28,8 @@ sealed trait HierarchyItem {
   val parentId: OrgItemId
   val name: String
   val categoryId: OrgCategoryId
+  val source: Option[String]
+  val externalId: Option[String]
   val updatedAt: OffsetDateTime
   val updatedBy: AnnettePrincipal
 }
@@ -40,6 +42,8 @@ case class HierarchyPosition(
   persons: Set[PersonId] = Set.empty,
   orgRoles: Set[OrgRoleId] = Set.empty,
   categoryId: OrgCategoryId,
+  source: Option[String] = None,
+  externalId: Option[String] = None,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) extends HierarchyItem
@@ -55,6 +59,8 @@ case class HierarchyUnit(
   children: Seq[OrgItemId] = Seq.empty,
   chief: Option[OrgItemId] = None,
   categoryId: OrgCategoryId,
+  source: Option[String] = None,
+  externalId: Option[String] = None,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) extends HierarchyItem

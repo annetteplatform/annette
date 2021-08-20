@@ -33,6 +33,7 @@ import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.{OrgRoleId, _}
 import io.scalaland.chimney.dsl._
 
+import scala.collection.immutable.Map
 import scala.concurrent.{ExecutionContext, Future}
 
 class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: ExecutionContext)
@@ -76,6 +77,12 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
   def assignCategory(payload: AssignCategoryPayload): Future[Done] =
     api.assignCategory.invoke(payload)
 
+  def updateSource(payload: UpdateSourcePayload): Future[Done] =
+    api.updateSource.invoke(payload)
+
+  def updateExternalId(payload: UpdateExternalIdPayload): Future[Done] =
+    api.updateExternalId.invoke(payload)
+
   def changePositionLimit(payload: ChangePositionLimitPayload): Future[Done] =
     api.changePositionLimit.invoke(payload)
 
@@ -105,6 +112,9 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
 
   def findOrgItems(query: OrgItemFindQuery): Future[FindResult] =
     api.findOrgItems.invoke(query)
+
+  def getItemIdsByExternalId(externalIds: Set[String]): Future[Map[String, OrgItemId]] =
+    api.getItemIdsByExternalId.invoke(externalIds)
 
   def moveItem(payload: MoveItemPayload): Future[Done] =
     api.moveItem.invoke(payload)

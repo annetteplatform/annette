@@ -20,7 +20,7 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 
 import java.time.OffsetDateTime
 import biz.lobachev.annette.org_structure.api.hierarchy.OrgItemId
-import biz.lobachev.annette.org_structure.impl.hierarchy.dao.HierarchyDbDao
+import biz.lobachev.annette.org_structure.impl.hierarchy.dao.HierarchyCassandraDbDao
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
@@ -29,7 +29,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class HierarchyDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: HierarchyDbDao,
+  dbDao: HierarchyCassandraDbDao,
   hierarchyEntityService: HierarchyEntityService
 )(implicit
   ec: ExecutionContext
@@ -37,12 +37,14 @@ private[impl] class HierarchyDbEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[HierarchyEntity.Event] =
     readSide
-      .builder[HierarchyEntity.Event]("OrgStructure_Hierarchy_CasEventOffset")
+      .builder[HierarchyEntity.Event]("hierarchy-cassandra")
       .setGlobalPrepare(dbDao.createTables)
       .setPrepare(_ => dbDao.prepareStatements())
       .setEventHandler[HierarchyEntity.OrganizationCreated](e => createOrganization(e.event))
       .setEventHandler[HierarchyEntity.OrganizationDeleted](e => deleteOrganization(e.event))
       .setEventHandler[HierarchyEntity.NameUpdated](e => updateName(e.event))
+      .setEventHandler[HierarchyEntity.SourceUpdated](e => updateSource(e.event))
+      .setEventHandler[HierarchyEntity.ExternalIdUpdated](e => updateExternalId(e.event))
       .setEventHandler[HierarchyEntity.UnitCreated](e => createUnit(e.event))
       .setEventHandler[HierarchyEntity.UnitDeleted](e => deleteUnit(e.event))
       .setEventHandler[HierarchyEntity.PositionCreated](e => createPosition(e.event))
@@ -131,6 +133,18 @@ private[impl] class HierarchyDbEventProcessor(
       List(
         dbDao.updateName(event)
       )
+    )
+
+  def updateSource(event: HierarchyEntity.SourceUpdated): Future[Seq[BoundStatement]] =
+    Future.successful(
+      List(
+        dbDao.updateSource(event)
+      )
+    )
+
+  def updateExternalId(event: HierarchyEntity.ExternalIdUpdated): Future[Seq[BoundStatement]] =
+    Future.successful(
+      dbDao.updateExternalId(event)
     )
 
   def changePositionLimit(event: HierarchyEntity.PositionLimitChanged): Future[Seq[BoundStatement]] =

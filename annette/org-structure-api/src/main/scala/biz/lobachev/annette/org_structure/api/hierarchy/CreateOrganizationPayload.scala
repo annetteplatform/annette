@@ -24,6 +24,8 @@ case class CreateOrganizationPayload(
   orgId: OrgItemId,
   name: String,
   categoryId: OrgCategoryId,
+  source: Option[String] = None,
+  externalId: Option[String] = None,
   createdBy: AnnettePrincipal
 )
 

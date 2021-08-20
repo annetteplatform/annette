@@ -26,7 +26,9 @@ case class CreateUnitPayload(
   unitId: OrgItemId,
   name: String,
   categoryId: OrgCategoryId,
-  order: Option[Int],
+  order: Option[Int] = None,
+  source: Option[String] = None,
+  externalId: Option[String] = None,
   createdBy: AnnettePrincipal
 )
 
