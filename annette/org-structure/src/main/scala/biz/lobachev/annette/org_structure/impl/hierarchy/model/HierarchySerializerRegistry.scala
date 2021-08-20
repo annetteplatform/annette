@@ -24,7 +24,7 @@ object HierarchySerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
       // state
-      JsonSerializer[HierarchyEntity],
+      JsonSerializer.compressed[HierarchyEntity],
       JsonSerializer[HierarchyUnit],
       JsonSerializer[HierarchyPosition],
       JsonSerializer[AnnettePrincipal],
