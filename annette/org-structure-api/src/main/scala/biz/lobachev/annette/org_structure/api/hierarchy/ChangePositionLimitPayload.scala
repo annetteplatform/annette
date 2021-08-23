@@ -20,8 +20,7 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class ChangePositionLimitPayload(
-  orgId: OrgItemId,
-  positionId: OrgItemId,
+  positionId: CompositeOrgItemId,
   limit: Int,
   updatedBy: AnnettePrincipal
 )

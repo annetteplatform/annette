@@ -4,8 +4,7 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class UpdateExternalIdPayload(
-  orgId: OrgItemId,
-  orgItemId: OrgItemId,
+  itemId: CompositeOrgItemId,
   externalId: Option[String],
   updatedBy: AnnettePrincipal
 )

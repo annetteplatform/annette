@@ -20,7 +20,7 @@ import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
 import play.api.libs.json._
 
 case class OrganizationTree(
-  orgId: OrgItemId,
+  orgId: CompositeOrgItemId,
   root: OrgTreeItem
 )
 
@@ -29,13 +29,13 @@ object OrganizationTree {
 }
 
 sealed trait OrgTreeItem {
-  val id: OrgItemId
+  val id: CompositeOrgItemId
 }
 
 final case class UnitTreeItem(
-  id: OrgItemId,
+  id: CompositeOrgItemId,
   children: Seq[OrgTreeItem],
-  chief: Option[OrgItemId],
+  chief: Option[CompositeOrgItemId],
   categoryId: OrgCategoryId
 ) extends OrgTreeItem
 
@@ -44,8 +44,8 @@ object UnitTreeItem {
 }
 
 final case class PositionTreeItem(
-  id: OrgItemId,
-  persons: Set[OrgItemId],
+  id: CompositeOrgItemId,
+  persons: Set[CompositeOrgItemId],
   categoryId: OrgCategoryId
 ) extends OrgTreeItem
 

@@ -16,22 +16,22 @@
 
 package biz.lobachev.annette.org_structure.impl.hierarchy
 
-import java.util.concurrent.TimeUnit
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
-import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.org_structure.api.category.OrgCategory
-import biz.lobachev.annette.org_structure.api.hierarchy.{OrgItem, _}
+import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import biz.lobachev.annette.org_structure.impl.hierarchy.dao.{HierarchyCassandraDbDao, HierarchyElasticIndexDao}
 import com.typesafe.config.Config
 import io.scalaland.chimney.dsl._
 
+import java.util.concurrent.TimeUnit
 import scala.collection.immutable.Map
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
@@ -52,8 +52,8 @@ class HierarchyEntityService(
       .map(d => Timeout(FiniteDuration(d.toNanos, TimeUnit.NANOSECONDS)))
       .getOrElse(Timeout(60.seconds))
 
-  private def refFor(id: OrgItemId): EntityRef[HierarchyEntity.Command] =
-    clusterSharding.entityRefFor(HierarchyEntity.typeKey, id)
+  private def refFor(itemId: CompositeOrgItemId): EntityRef[HierarchyEntity.Command] =
+    clusterSharding.entityRefFor(HierarchyEntity.typeKey, OrgItemKey.extractOrgId(itemId))
 
   private def successToResult(confirmation: HierarchyEntity.Confirmation): Done =
     confirmation match {
@@ -79,118 +79,34 @@ class HierarchyEntityService(
     }
 
   def createOrganization(payload: CreateOrganizationPayload): Future[Done] =
-    refFor(payload.orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.CreateOrganization(payload, _))
-      .map(successToResult)
-
-  def deleteOrganization(payload: DeleteOrganizationPayload): Future[Done] =
-    refFor(payload.orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.DeleteOrganization(payload, _))
-      .map(successToResult)
-
-  def getOrganizationById(orgId: OrgItemId): Future[Organization] =
-    refFor(orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrganization(orgId, _))
-      .map {
-        case HierarchyEntity.SuccessOrganization(organization) => organization
-        case HierarchyEntity.OrganizationNotFound              => throw OrganizationNotFound()
-        case _                                                 => throw new RuntimeException("Match fail")
-      }
-
-  def getOrganizationTree(orgId: OrgItemId, itemId: OrgItemId): Future[OrganizationTree] =
-    refFor(orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrganizationTree(orgId, itemId, _))
-      .map {
-        case HierarchyEntity.SuccessOrganizationTree(organizationTree) => organizationTree
-        case HierarchyEntity.OrganizationNotFound                      => throw OrganizationNotFound()
-        case HierarchyEntity.ItemNotFound                              => throw ItemNotFound()
-        case _                                                         => throw new RuntimeException("Match fail")
-      }
-
-  def getChildren(orgId: OrgItemId, unitId: OrgItemId): Future[Seq[OrgItemId]] =
-    refFor(orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetChildren(unitId, _))
-      .map {
-        case HierarchyEntity.SuccessChildren(children) => children
-        case _                                         => Seq.empty
-      }
-
-  def getPersons(orgId: OrgItemId, positionId: OrgItemId): Future[Set[OrgItemId]] =
-    refFor(orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetPersons(positionId, _))
-      .map {
-        case HierarchyEntity.SuccessPersons(persons) => persons
-        case _                                       => Set.empty
-      }
-
-  def getRoles(orgId: OrgItemId, positionId: OrgItemId): Future[Set[OrgRoleId]] =
-    refFor(orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetRoles(positionId, _))
-      .map {
-        case HierarchyEntity.SuccessRoles(roles) => roles
-        case _                                   => Set.empty
-      }
-
-  def getRootPaths(orgId: OrgItemId, itemIds: Set[OrgItemId]): Future[Map[OrgItemId, Seq[OrgItemId]]] =
-    refFor(orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetRootPaths(itemIds, _))
-      .map {
-        case HierarchyEntity.SuccessRootPaths(rootPaths) => rootPaths
-        case _                                           => Map.empty.empty
-      }
-
-  def assignCategory(payload: AssignCategoryPayload, category: OrgCategory): Future[Done] =
-    refFor(payload.orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.AssignCategory(payload, category, _))
-      .map(successToResult)
-
-  def assignPerson(payload: AssignPersonPayload): Future[Done] =
-    refFor(payload.orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.AssignPerson(payload, _))
-      .map(successToResult)
-
-  def unassignPerson(payload: UnassignPersonPayload): Future[Done] =
-    refFor(payload.orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.UnassignPerson(payload, _))
-      .map(successToResult)
+    if (OrgItemKey.isOrg(payload.orgId))
+      refFor(payload.orgId)
+        .ask[HierarchyEntity.Confirmation](HierarchyEntity.CreateOrganization(payload, _))
+        .map(successToResult)
+    else throw InvalidCompositeId(payload.orgId)
 
   def createUnit(payload: CreateUnitPayload): Future[Done] =
-    refFor(payload.orgId)
+    refFor(payload.unitId)
       .ask[HierarchyEntity.Confirmation](HierarchyEntity.CreateUnit(payload, _))
       .map(successToResult)
 
-  def deleteUnit(payload: DeleteUnitPayload): Future[Done] =
-    refFor(payload.orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.DeleteUnit(payload, _))
-      .map(successToResult)
-
-  def assignChief(payload: AssignChiefPayload): Future[Done] =
-    refFor(payload.orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.AssignChief(payload, _))
-      .map(successToResult)
-
-  def unassignChief(payload: UnassignChiefPayload): Future[Done] =
-    refFor(payload.orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.UnassignChief(payload, _))
-      .map(successToResult)
-
   def createPosition(payload: CreatePositionPayload): Future[Done] =
-    refFor(payload.orgId)
+    refFor(payload.positionId)
       .ask[HierarchyEntity.Confirmation](HierarchyEntity.CreatePosition(payload, _))
       .map(successToResult)
 
-  def deletePosition(payload: DeletePositionPayload): Future[Done] =
-    refFor(payload.orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.DeletePosition(payload, _))
-      .map(successToResult)
-
   def updateName(payload: UpdateNamePayload): Future[Done] =
-    refFor(payload.orgId)
+    refFor(payload.itemId)
       .ask[HierarchyEntity.Confirmation](HierarchyEntity.UpdateName(payload, _))
       .map(successToResult)
 
+  def assignCategory(payload: AssignCategoryPayload, category: OrgCategory): Future[Done] =
+    refFor(payload.itemId)
+      .ask[HierarchyEntity.Confirmation](HierarchyEntity.AssignCategory(payload, category, _))
+      .map(successToResult)
+
   def updateSource(payload: UpdateSourcePayload): Future[Done] =
-    refFor(payload.orgId)
+    refFor(payload.itemId)
       .ask[HierarchyEntity.Confirmation](replyTo =>
         payload
           .into[HierarchyEntity.UpdateSource]
@@ -200,7 +116,7 @@ class HierarchyEntityService(
       .map(successToResult)
 
   def updateExternalId(payload: UpdateExternalIdPayload): Future[Done] =
-    refFor(payload.orgId)
+    refFor(payload.itemId)
       .ask[HierarchyEntity.Confirmation](replyTo =>
         payload
           .into[HierarchyEntity.UpdateExternalId]
@@ -209,66 +125,105 @@ class HierarchyEntityService(
       )
       .map(successToResult)
 
+  def moveItem(payload: MoveItemPayload): Future[Done] =
+    refFor(payload.itemId)
+      .ask[HierarchyEntity.Confirmation](HierarchyEntity.MoveItem(payload, _))
+      .map(successToResult)
+
+  def assignChief(payload: AssignChiefPayload): Future[Done] =
+    refFor(payload.unitId)
+      .ask[HierarchyEntity.Confirmation](HierarchyEntity.AssignChief(payload, _))
+      .map(successToResult)
+
+  def unassignChief(payload: UnassignChiefPayload): Future[Done] =
+    refFor(payload.unitId)
+      .ask[HierarchyEntity.Confirmation](HierarchyEntity.UnassignChief(payload, _))
+      .map(successToResult)
+
+  def changePositionLimit(payload: ChangePositionLimitPayload): Future[Done] =
+    refFor(payload.positionId)
+      .ask[HierarchyEntity.Confirmation](HierarchyEntity.ChangePositionLimit(payload, _))
+      .map(successToResult)
+
+  def assignPerson(payload: AssignPersonPayload): Future[Done] =
+    refFor(payload.positionId)
+      .ask[HierarchyEntity.Confirmation](HierarchyEntity.AssignPerson(payload, _))
+      .map(successToResult)
+
+  def unassignPerson(payload: UnassignPersonPayload): Future[Done] =
+    refFor(payload.positionId)
+      .ask[HierarchyEntity.Confirmation](HierarchyEntity.UnassignPerson(payload, _))
+      .map(successToResult)
+
   def assignOrgRole(payload: AssignOrgRolePayload): Future[Done] =
-    refFor(payload.orgId)
+    refFor(payload.positionId)
       .ask[HierarchyEntity.Confirmation](HierarchyEntity.AssignOrgRole(payload, _))
       .map(successToResult)
 
   def unassignOrgRole(payload: UnassignOrgRolePayload): Future[Done] =
-    refFor(payload.orgId)
+    refFor(payload.positionId)
       .ask[HierarchyEntity.Confirmation](HierarchyEntity.UnassignOrgRole(payload, _))
       .map(successToResult)
 
-  def changePositionLimit(payload: ChangePositionLimitPayload): Future[Done] =
-    refFor(payload.orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.ChangePositionLimit(payload, _))
+  def deleteOrgItem(payload: DeleteOrgItemPayload): Future[Done] =
+    refFor(payload.itemId)
+      .ask[HierarchyEntity.Confirmation](HierarchyEntity.DeleteOrgItem(payload, _))
       .map(successToResult)
 
-  def moveItem(payload: MoveItemPayload): Future[Done] =
-    refFor(payload.orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.MoveItem(payload, _))
-      .map(successToResult)
-
-  def changeItemOrder(payload: ChangeItemOrderPayload): Future[Done] =
-    refFor(payload.orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.ChangeItemOrder(payload, _))
-      .map(successToResult)
-
-  def getOrgItemsById(orgId: OrgItemId, ids: Set[OrgItemId]): Future[Seq[OrgItem]] =
-    Source(ids)
-      .mapAsync(1) { id =>
-        refFor(orgId)
-          .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrgItem(id, _))
-          .map {
-            case HierarchyEntity.SuccessOrgItem(orgItem) => Some(orgItem)
-            case HierarchyEntity.OrganizationNotFound    => None
-            case HierarchyEntity.ItemNotFound            => None
-            case _                                       => None
-          }
-      }
-      .runWith(Sink.seq)
-      .map(_.flatten)
-
-  def getOrgItemById(orgId: OrgItemId, id: OrgItemId): Future[OrgItem] =
+  def getOrganizationById(orgId: CompositeOrgItemId): Future[Organization] =
     refFor(orgId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrgItem(id, _))
+      .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrganization(orgId, _))
       .map {
-        case HierarchyEntity.SuccessOrgItem(orgItem) => orgItem
-        case HierarchyEntity.OrganizationNotFound    => throw OrganizationNotFound()
-        case HierarchyEntity.ItemNotFound            => throw ItemNotFound()
-        case _                                       => throw new RuntimeException("Match fail")
+        case HierarchyEntity.SuccessOrganization(organization) => organization
+        case HierarchyEntity.OrganizationNotFound              => throw OrganizationNotFound()
+        case _                                                 => throw new RuntimeException("Match fail")
       }
 
-  def getOrgItemByIdFromReadSide(id: OrgItemId): Future[OrgItem] =
-    dbDao.getOrgItemById(id).map(_.getOrElse(throw ItemNotFound()))
+  def getOrganizationTree(itemId: CompositeOrgItemId): Future[OrganizationTree] =
+    refFor(itemId)
+      .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrganizationTree(itemId, _))
+      .map {
+        case HierarchyEntity.SuccessOrganizationTree(organizationTree) => organizationTree
+        case HierarchyEntity.OrganizationNotFound                      => throw OrganizationNotFound()
+        case HierarchyEntity.ItemNotFound                              => throw ItemNotFound()
+        case _                                                         => throw new RuntimeException("Match fail")
+      }
 
-  def getOrgItemsByIdFromReadSide(ids: Set[OrgItemId]): Future[Seq[OrgItem]] =
-    dbDao.getOrgItemsById(ids)
+  def getOrgItemById(id: CompositeOrgItemId, fromReadSide: Boolean): Future[OrgItem] =
+    if (fromReadSide)
+      dbDao
+        .getOrgItemById(id)
+        .map(_.getOrElse(throw ItemNotFound()))
+    else
+      refFor(id)
+        .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrgItem(id, _))
+        .map {
+          case HierarchyEntity.SuccessOrgItem(orgItem) => orgItem
+          case HierarchyEntity.OrganizationNotFound    => throw OrganizationNotFound()
+          case HierarchyEntity.ItemNotFound            => throw ItemNotFound()
+          case _                                       => throw new RuntimeException("Match fail")
+        }
 
-  def findOrgItems(payload: OrgItemFindQuery): Future[FindResult] =
-    indexDao.findOrgItem(payload)
+  def getOrgItemsById(ids: Set[CompositeOrgItemId], fromReadSide: Boolean): Future[Seq[OrgItem]] =
+    if (fromReadSide)
+      dbDao.getOrgItemsById(ids)
+    else
+      // TODO: group by orgId and create message HierarchyEntity.GetOrgItems
+      Source(ids)
+        .mapAsync(1) { id =>
+          refFor(id)
+            .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrgItem(id, _))
+            .map {
+              case HierarchyEntity.SuccessOrgItem(orgItem) => Some(orgItem)
+              case HierarchyEntity.OrganizationNotFound    => None
+              case HierarchyEntity.ItemNotFound            => None
+              case _                                       => None
+            }
+        }
+        .runWith(Sink.seq)
+        .map(_.flatten)
 
-  def getItemIdsByExternalId(externalIds: Set[String]): Future[Map[String, OrgItemId]] =
+  def getItemIdsByExternalId(externalIds: Set[String]): Future[Map[String, CompositeOrgItemId]] =
     dbDao.getItemIdsByExternalId(externalIds)
 
   def getPersonPrincipals(personId: PersonId): Future[Set[AnnettePrincipal]] =
@@ -276,5 +231,43 @@ class HierarchyEntityService(
 
   def getPersonPositions(personId: PersonId): Future[Set[PersonPosition]] =
     dbDao.getPersonPositions(personId)
+
+  def findOrgItems(payload: OrgItemFindQuery): Future[FindResult] =
+    indexDao.findOrgItem(payload)
+
+  def getChildren(unitId: CompositeOrgItemId): Future[Seq[CompositeOrgItemId]] =
+    refFor(unitId)
+      .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetChildren(unitId, _))
+      .map {
+        case HierarchyEntity.SuccessChildren(children) => children
+        case _                                         => Seq.empty
+      }
+
+  def getPersons(positionId: CompositeOrgItemId): Future[Set[CompositeOrgItemId]] =
+    refFor(positionId)
+      .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetPersons(positionId, _))
+      .map {
+        case HierarchyEntity.SuccessPersons(persons) => persons
+        case _                                       => Set.empty
+      }
+
+  def getRoles(positionId: CompositeOrgItemId): Future[Set[OrgRoleId]] =
+    refFor(positionId)
+      .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetRoles(positionId, _))
+      .map {
+        case HierarchyEntity.SuccessRoles(roles) => roles
+        case _                                   => Set.empty
+      }
+
+  def getRootPaths(
+    orgId: CompositeOrgItemId,
+    itemIds: Set[CompositeOrgItemId]
+  ): Future[Map[CompositeOrgItemId, Seq[CompositeOrgItemId]]] =
+    refFor(orgId)
+      .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetRootPaths(itemIds, _))
+      .map {
+        case HierarchyEntity.SuccessRootPaths(rootPaths) => rootPaths
+        case _                                           => Map.empty.empty
+      }
 
 }

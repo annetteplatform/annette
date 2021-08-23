@@ -24,8 +24,8 @@ import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 
 sealed trait HierarchyItem {
-  val id: OrgItemId
-  val parentId: OrgItemId
+  val id: CompositeOrgItemId
+  val parentId: CompositeOrgItemId
   val name: String
   val categoryId: OrgCategoryId
   val source: Option[String]
@@ -35,8 +35,8 @@ sealed trait HierarchyItem {
 }
 
 case class HierarchyPosition(
-  id: OrgItemId,
-  parentId: OrgItemId,
+  id: CompositeOrgItemId,
+  parentId: CompositeOrgItemId,
   name: String,
   limit: Int = 1,
   persons: Set[PersonId] = Set.empty,
@@ -53,11 +53,11 @@ object HierarchyPosition {
 }
 
 case class HierarchyUnit(
-  id: OrgItemId,
-  parentId: OrgItemId,
+  id: CompositeOrgItemId,
+  parentId: CompositeOrgItemId,
   name: String,
-  children: Seq[OrgItemId] = Seq.empty,
-  chief: Option[OrgItemId] = None,
+  children: Seq[CompositeOrgItemId] = Seq.empty,
+  chief: Option[CompositeOrgItemId] = None,
   categoryId: OrgCategoryId,
   source: Option[String] = None,
   externalId: Option[String] = None,

@@ -22,7 +22,7 @@ import biz.lobachev.annette.attributes.api.query.AttributeElastic
 import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.microservice_core.elastic.{AbstractElasticIndexDao, ElasticSettings}
 import biz.lobachev.annette.org_structure.api.hierarchy
-import biz.lobachev.annette.org_structure.api.hierarchy.{ItemTypes, OrgItemFindQuery, OrgItemId}
+import biz.lobachev.annette.org_structure.api.hierarchy.{CompositeOrgItemId, ItemTypes, OrgItemFindQuery, OrgItemKey}
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import biz.lobachev.annette.org_structure.impl.hierarchy.HierarchyEntity
 import com.sksamuel.elastic4s.ElasticDsl._
@@ -101,7 +101,7 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
         .id(event.unitId)
         .fields(
           "id"         -> event.unitId,
-          "orgId"      -> event.orgId,
+          "orgId"      -> OrgItemKey.extractOrgId(event.unitId),
           "parentId"   -> event.parentId,
           "rootPath"   -> event.rootPath,
           "name"       -> event.name,
@@ -148,7 +148,7 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
         .id(event.positionId)
         .fields(
           "id"         -> event.positionId,
-          "orgId"      -> event.orgId,
+          "orgId"      -> OrgItemKey.extractOrgId(event.positionId),
           "parentId"   -> event.parentId,
           "rootPath"   -> event.rootPath,
           "name"       -> event.name,
@@ -170,33 +170,33 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
 
   def updateName(event: HierarchyEntity.NameUpdated): Future[Unit] =
     elasticClient.execute {
-      updateById(indexName, event.orgItemId)
+      updateById(indexName, event.itemId)
         .doc(
           "name"      -> event.name,
           "updatedAt" -> event.updatedAt
         )
         .refresh(RefreshPolicy.Immediate)
-    }.map(processResponse("updateName", event.orgItemId)(_))
+    }.map(processResponse("updateName", event.itemId)(_))
 
   def updateSource(event: HierarchyEntity.SourceUpdated) =
     elasticClient.execute {
-      updateById(indexName, event.orgItemId)
+      updateById(indexName, event.itemId)
         .doc(
           "source"    -> event.source,
           "updatedAt" -> event.updatedAt
         )
         .refresh(RefreshPolicy.Immediate)
-    }.map(processResponse("updateSource", event.orgItemId)(_))
+    }.map(processResponse("updateSource", event.itemId)(_))
 
   def updateExternalId(event: HierarchyEntity.ExternalIdUpdated) =
     elasticClient.execute {
-      updateById(indexName, event.orgItemId)
+      updateById(indexName, event.itemId)
         .doc(
           "externalId" -> event.externalId,
           "updatedAt"  -> event.updatedAt
         )
         .refresh(RefreshPolicy.Immediate)
-    }.map(processResponse("updateExternalId", event.orgItemId)(_))
+    }.map(processResponse("updateExternalId", event.itemId)(_))
 
   def changePositionLimit(event: HierarchyEntity.PositionLimitChanged): Future[Unit] =
     elasticClient.execute {
@@ -206,8 +206,8 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
     }.map(processResponse("changePositionLimit", event.positionId)(_))
 
   def updatePersons(
-    positionId: OrgItemId,
-    persons: Set[OrgItemId],
+    positionId: CompositeOrgItemId,
+    persons: Set[CompositeOrgItemId],
     updatedAt: OffsetDateTime
   ): Future[Unit] =
     elasticClient.execute {
@@ -217,7 +217,7 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
     }.map(processResponse("updatePersons", positionId)(_))
 
   def updateRoles(
-    positionId: OrgItemId,
+    positionId: CompositeOrgItemId,
     roles: Set[OrgRoleId],
     updatedAt: OffsetDateTime
   ): Future[Unit] =
@@ -228,8 +228,8 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
     }.map(processResponse("updateRoles", positionId)(_))
 
   def updateChildren(
-    itemId: OrgItemId,
-    children: Seq[OrgItemId],
+    itemId: CompositeOrgItemId,
+    children: Seq[CompositeOrgItemId],
     updatedAt: OffsetDateTime
   ): Future[Unit] =
     elasticClient.execute {
@@ -239,7 +239,7 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
     }.map(processResponse("updateChildren", itemId)(_))
 
   def updateRootPaths(
-    rootPaths: Map[OrgItemId, Seq[OrgItemId]],
+    rootPaths: Map[CompositeOrgItemId, Seq[CompositeOrgItemId]],
     updatedAt: OffsetDateTime
   ): Future[Unit] =
     Source(rootPaths.toSeq)

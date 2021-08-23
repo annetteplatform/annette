@@ -17,11 +17,11 @@
 package biz.lobachev.annette.org_structure.gateway.dto
 
 import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
-import biz.lobachev.annette.org_structure.api.hierarchy.OrgItemId
+import biz.lobachev.annette.org_structure.api.hierarchy.CompositeOrgItemId
 import play.api.libs.json.Json
 
 case class CreateOrganizationPayloadDto(
-  orgId: OrgItemId,
+  orgId: CompositeOrgItemId,
   name: String,
   source: Option[String],
   externalId: Option[String],

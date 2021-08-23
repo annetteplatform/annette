@@ -16,10 +16,10 @@
 
 package biz.lobachev.annette.org_structure.gateway
 
-import biz.lobachev.annette.org_structure.api.hierarchy.OrgItemId
+import biz.lobachev.annette.org_structure.api.hierarchy.CompositeOrgItemId
 
 sealed trait AllowedOrgs
 
-case object AllowedAll                         extends AllowedOrgs
-case class AllowedOrgSet(orgs: Set[OrgItemId]) extends AllowedOrgs
-case object AllowedNone                        extends AllowedOrgs
+case object AllowedAll                                  extends AllowedOrgs
+case class AllowedOrgSet(orgs: Set[CompositeOrgItemId]) extends AllowedOrgs
+case object AllowedNone                                 extends AllowedOrgs

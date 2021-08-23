@@ -21,9 +21,8 @@ import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
 import play.api.libs.json.Json
 
 case class CreateUnitPayload(
-  orgId: OrgItemId,
-  parentId: OrgItemId,
-  unitId: OrgItemId,
+  unitId: CompositeOrgItemId,
+  parentId: CompositeOrgItemId,
   name: String,
   categoryId: OrgCategoryId,
   order: Option[Int] = None,

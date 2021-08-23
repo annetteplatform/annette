@@ -16,21 +16,13 @@
 
 package biz.lobachev.annette.org_structure.impl
 
-import java.util.concurrent.TimeUnit
 import akka.util.Timeout
 import akka.{Done, NotUsed}
-import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.org_structure.api.OrgStructureServiceApi
-import biz.lobachev.annette.org_structure.api.category.{
-  CreateCategoryPayload,
-  DeleteCategoryPayload,
-  OrgCategory,
-  OrgCategoryFindQuery,
-  OrgCategoryId,
-  UpdateCategoryPayload
-}
+import biz.lobachev.annette.org_structure.api.category._
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role._
 import biz.lobachev.annette.org_structure.impl.category.CategoryEntityService
@@ -39,9 +31,10 @@ import biz.lobachev.annette.org_structure.impl.role.OrgRoleEntityService
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.typesafe.config.Config
 
+import java.util.concurrent.TimeUnit
 import scala.collection.immutable.Map
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 class OrgStructureServiceApiImpl(
@@ -67,18 +60,6 @@ class OrgStructureServiceApiImpl(
       } yield result
     }
 
-  override def deleteOrganization: ServiceCall[DeleteOrganizationPayload, Done] = { payload =>
-    hierarchyEntityService.deleteOrganization(payload)
-  }
-
-  override def getOrganizationById(orgId: OrgItemId): ServiceCall[NotUsed, Organization] = { _ =>
-    hierarchyEntityService.getOrganizationById(orgId)
-  }
-
-  override def getOrganizationTree(orgId: OrgItemId, itemId: OrgItemId): ServiceCall[NotUsed, OrganizationTree] = { _ =>
-    hierarchyEntityService.getOrganizationTree(orgId, itemId)
-  }
-
   override def createUnit: ServiceCall[CreateUnitPayload, Done] =
     ServiceCall { payload =>
       for {
@@ -88,21 +69,6 @@ class OrgStructureServiceApiImpl(
       } yield result
     }
 
-  override def deleteUnit: ServiceCall[DeleteUnitPayload, Done] =
-    ServiceCall { payload =>
-      hierarchyEntityService.deleteUnit(payload)
-    }
-
-  override def assignChief: ServiceCall[AssignChiefPayload, Done] =
-    ServiceCall { payload =>
-      hierarchyEntityService.assignChief(payload)
-    }
-
-  override def unassignChief: ServiceCall[UnassignChiefPayload, Done] =
-    ServiceCall { payload =>
-      hierarchyEntityService.unassignChief(payload)
-    }
-
   override def createPosition: ServiceCall[CreatePositionPayload, Done] =
     ServiceCall { payload =>
       for {
@@ -110,11 +76,6 @@ class OrgStructureServiceApiImpl(
         result   <- if (category.forPosition) hierarchyEntityService.createPosition(payload)
                     else Future.failed(IncorrectCategory())
       } yield result
-    }
-
-  override def deletePosition: ServiceCall[DeletePositionPayload, Done] =
-    ServiceCall { payload =>
-      hierarchyEntityService.deletePosition(payload)
     }
 
   override def updateName: ServiceCall[UpdateNamePayload, Done] =
@@ -138,6 +99,21 @@ class OrgStructureServiceApiImpl(
   override def updateExternalId: ServiceCall[UpdateExternalIdPayload, Done] =
     ServiceCall { payload =>
       hierarchyEntityService.updateExternalId(payload)
+    }
+
+  override def moveItem: ServiceCall[MoveItemPayload, Done] =
+    ServiceCall { payload =>
+      hierarchyEntityService.moveItem(payload)
+    }
+
+  override def assignChief: ServiceCall[AssignChiefPayload, Done] =
+    ServiceCall { payload =>
+      hierarchyEntityService.assignChief(payload)
+    }
+
+  override def unassignChief: ServiceCall[UnassignChiefPayload, Done] =
+    ServiceCall { payload =>
+      hierarchyEntityService.unassignChief(payload)
     }
 
   def changePositionLimit: ServiceCall[ChangePositionLimitPayload, Done] =
@@ -165,44 +141,31 @@ class OrgStructureServiceApiImpl(
       hierarchyEntityService.unassignOrgRole(payload)
     }
 
-  override def moveItem: ServiceCall[MoveItemPayload, Done] =
+  override def deleteOrgItem: ServiceCall[DeleteOrgItemPayload, Done] =
     ServiceCall { payload =>
-      hierarchyEntityService.moveItem(payload)
+      hierarchyEntityService.deleteOrgItem(payload)
     }
 
-  override def changeItemOrder: ServiceCall[ChangeItemOrderPayload, Done] =
-    ServiceCall { payload =>
-      hierarchyEntityService.changeItemOrder(payload)
-    }
-
-  // ****************************** OrgItem methods ******************************
-
-  override def getOrgItemById(orgId: OrgItemId, id: OrgItemId): ServiceCall[NotUsed, OrgItem] =
+  override def getOrganizationById(orgId: CompositeOrgItemId): ServiceCall[NotUsed, Organization] =
     ServiceCall { _ =>
-      hierarchyEntityService.getOrgItemById(orgId, id)
+      hierarchyEntityService.getOrganizationById(orgId)
     }
 
-  override def getOrgItemByIdFromReadSide(id: OrgItemId): ServiceCall[NotUsed, OrgItem] =
+  override def getOrganizationTree(itemId: CompositeOrgItemId): ServiceCall[NotUsed, OrganizationTree] = { _ =>
+    hierarchyEntityService.getOrganizationTree(itemId)
+  }
+
+  override def getOrgItemById(itemId: CompositeOrgItemId, fromReadSide: Boolean): ServiceCall[NotUsed, OrgItem] =
     ServiceCall { _ =>
-      hierarchyEntityService.getOrgItemByIdFromReadSide(id)
+      hierarchyEntityService.getOrgItemById(itemId, fromReadSide)
     }
 
-  override def getOrgItemsById(orgId: OrgItemId): ServiceCall[Set[OrgItemId], Seq[OrgItem]] =
+  override def getOrgItemsById(fromReadSide: Boolean): ServiceCall[Set[CompositeOrgItemId], Seq[OrgItem]] =
     ServiceCall { ids =>
-      hierarchyEntityService.getOrgItemsById(orgId, ids)
+      hierarchyEntityService.getOrgItemsById(ids, fromReadSide)
     }
 
-  override def getOrgItemsByIdFromReadSide: ServiceCall[Set[OrgItemId], Seq[OrgItem]] =
-    ServiceCall { ids =>
-      hierarchyEntityService.getOrgItemsByIdFromReadSide(ids)
-    }
-
-  override def findOrgItems: ServiceCall[OrgItemFindQuery, FindResult] =
-    ServiceCall { payload =>
-      hierarchyEntityService.findOrgItems(payload)
-    }
-
-  override def getItemIdsByExternalId: ServiceCall[Set[String], Map[String, OrgItemId]] =
+  override def getItemIdsByExternalId: ServiceCall[Set[String], Map[String, CompositeOrgItemId]] =
     ServiceCall { externalIds =>
       hierarchyEntityService.getItemIdsByExternalId(externalIds)
     }
@@ -215,6 +178,11 @@ class OrgStructureServiceApiImpl(
   override def getPersonPositions(personId: PersonId): ServiceCall[NotUsed, Set[PersonPosition]] =
     ServiceCall { _ =>
       hierarchyEntityService.getPersonPositions(personId)
+    }
+
+  override def findOrgItems: ServiceCall[OrgItemFindQuery, FindResult] =
+    ServiceCall { payload =>
+      hierarchyEntityService.findOrgItems(payload)
     }
 
   // ****************************** OrgRoles methods ******************************

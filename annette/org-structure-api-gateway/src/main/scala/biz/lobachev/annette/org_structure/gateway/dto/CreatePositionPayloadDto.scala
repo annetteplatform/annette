@@ -17,13 +17,12 @@
 package biz.lobachev.annette.org_structure.gateway.dto
 
 import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
-import biz.lobachev.annette.org_structure.api.hierarchy.OrgItemId
+import biz.lobachev.annette.org_structure.api.hierarchy.CompositeOrgItemId
 import play.api.libs.json.Json
 
 case class CreatePositionPayloadDto(
-  orgId: OrgItemId,
-  parentId: OrgItemId,
-  positionId: OrgItemId,
+  parentId: CompositeOrgItemId,
+  positionId: CompositeOrgItemId,
   name: String,
   limit: Int = 1,
   categoryId: OrgCategoryId,

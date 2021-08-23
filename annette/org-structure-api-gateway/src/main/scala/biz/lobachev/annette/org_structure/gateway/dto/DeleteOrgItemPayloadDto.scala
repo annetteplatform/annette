@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.org_structure.api.hierarchy
+package biz.lobachev.annette.org_structure.gateway.dto
 
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.org_structure.api.hierarchy.CompositeOrgItemId
 import play.api.libs.json.Json
 
-case class ChangeItemOrderPayload(
-  orgId: OrgItemId,
-  orgItemId: OrgItemId,
-  order: Int,
-  updatedBy: AnnettePrincipal
+case class DeleteOrgItemPayloadDto(
+  itemId: CompositeOrgItemId
 )
 
-object ChangeItemOrderPayload {
-  implicit val format = Json.format[ChangeItemOrderPayload]
+object DeleteOrgItemPayloadDto {
+  implicit val format = Json.format[DeleteOrgItemPayloadDto]
 }

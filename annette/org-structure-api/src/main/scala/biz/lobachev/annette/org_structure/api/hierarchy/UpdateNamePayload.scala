@@ -20,8 +20,7 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class UpdateNamePayload(
-  orgId: OrgItemId,
-  orgItemId: OrgItemId,
+  itemId: CompositeOrgItemId,
   name: String,
   updatedBy: AnnettePrincipal
 )

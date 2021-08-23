@@ -24,23 +24,23 @@ import play.api.libs.json.Json
 import java.time.OffsetDateTime
 
 final case class HierarchyState(
-  orgId: OrgItemId,
-  units: Map[OrgItemId, HierarchyUnit],
-  positions: Map[OrgItemId, HierarchyPosition],
-  chiefAssignments: Map[OrgItemId, Set[OrgItemId]],
-  personAssignments: Map[PersonId, Set[OrgItemId]],
-  orgRoleAssignments: Map[OrgRoleId, Set[OrgItemId]],
+  orgId: CompositeOrgItemId,
+  units: Map[CompositeOrgItemId, HierarchyUnit],
+  positions: Map[CompositeOrgItemId, HierarchyPosition],
+  chiefAssignments: Map[CompositeOrgItemId, Set[CompositeOrgItemId]],
+  personAssignments: Map[PersonId, Set[CompositeOrgItemId]],
+  orgRoleAssignments: Map[OrgRoleId, Set[CompositeOrgItemId]],
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) {
 
-  def hasItem(itemId: OrgItemId) = positions.isDefinedAt(itemId) || units.isDefinedAt(itemId)
+  def hasItem(itemId: CompositeOrgItemId) = positions.isDefinedAt(itemId) || units.isDefinedAt(itemId)
 
-  def hasPosition(itemId: OrgItemId) = positions.isDefinedAt(itemId)
+  def hasPosition(itemId: CompositeOrgItemId) = positions.isDefinedAt(itemId)
 
-  def hasUnit(itemId: OrgItemId) = units.isDefinedAt(itemId)
+  def hasUnit(itemId: CompositeOrgItemId) = units.isDefinedAt(itemId)
 
-  def getOrgTreeItem(itemId: OrgItemId): OrgTreeItem =
+  def getOrgTreeItem(itemId: CompositeOrgItemId): OrgTreeItem =
     units
       .get(itemId)
       .map { unit =>
@@ -64,7 +64,7 @@ final case class HierarchyState(
           .get
       }
 
-  def getRootPath(itemId: OrgItemId): Seq[OrgItemId] = {
+  def getRootPath(itemId: CompositeOrgItemId): Seq[CompositeOrgItemId] = {
     val maybeParentId = units.get(itemId).map(u => Some(u.parentId)).getOrElse(positions.get(itemId).map(_.parentId))
     maybeParentId match {
       case None                      => Seq()
@@ -74,7 +74,7 @@ final case class HierarchyState(
     }
   }
 
-  def getDescendants(itemId: OrgItemId): Set[OrgItemId] = {
+  def getDescendants(itemId: CompositeOrgItemId): Set[CompositeOrgItemId] = {
     val children    = units.get(itemId).map(u => u.children.toSet).getOrElse(Set.empty)
     val descendants = for {
       childId <- children

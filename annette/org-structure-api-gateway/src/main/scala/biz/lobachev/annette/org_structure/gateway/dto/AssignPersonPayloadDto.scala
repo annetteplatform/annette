@@ -17,12 +17,11 @@
 package biz.lobachev.annette.org_structure.gateway.dto
 
 import biz.lobachev.annette.core.model.{PersonId}
-import biz.lobachev.annette.org_structure.api.hierarchy.OrgItemId
+import biz.lobachev.annette.org_structure.api.hierarchy.CompositeOrgItemId
 import play.api.libs.json.Json
 
 case class AssignPersonPayloadDto(
-  orgId: OrgItemId,
-  positionId: OrgItemId,
+  positionId: CompositeOrgItemId,
   personId: PersonId
 )
 
