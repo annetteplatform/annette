@@ -19,6 +19,7 @@ package biz.lobachev.annette.org_structure.impl.hierarchy
 import java.time.OffsetDateTime
 import biz.lobachev.annette.org_structure.api.hierarchy.{CompositeOrgItemId, OrgItemKey}
 import biz.lobachev.annette.org_structure.impl.hierarchy.dao.HierarchyElasticIndexDao
+import biz.lobachev.annette.org_structure.impl.hierarchy.entity.HierarchyEntity
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}

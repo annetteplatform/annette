@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.org_structure.impl.hierarchy.model
+package biz.lobachev.annette.org_structure.impl.hierarchy.entity
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.hierarchy._
-import biz.lobachev.annette.org_structure.impl.hierarchy.HierarchyEntity
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
 object HierarchySerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
       // state
-      JsonSerializer.compressed[HierarchyEntity],
+      JsonSerializer.compressed[HierarchyState],
+      JsonSerializer.compressed[ActiveHierarchy],
+      JsonSerializer[EmptyHierarchy.type],
       JsonSerializer[HierarchyUnit],
       JsonSerializer[HierarchyPosition],
       JsonSerializer[AnnettePrincipal],

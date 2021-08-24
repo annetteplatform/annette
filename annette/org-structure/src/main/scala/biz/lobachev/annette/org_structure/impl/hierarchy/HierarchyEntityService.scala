@@ -28,6 +28,7 @@ import biz.lobachev.annette.org_structure.api.category.OrgCategory
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import biz.lobachev.annette.org_structure.impl.hierarchy.dao.{HierarchyCassandraDbDao, HierarchyElasticIndexDao}
+import biz.lobachev.annette.org_structure.impl.hierarchy.entity.HierarchyEntity
 import com.typesafe.config.Config
 import io.scalaland.chimney.dsl._
 

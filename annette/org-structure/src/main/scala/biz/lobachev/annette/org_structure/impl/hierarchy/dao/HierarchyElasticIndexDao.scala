@@ -24,7 +24,7 @@ import biz.lobachev.annette.microservice_core.elastic.{AbstractElasticIndexDao, 
 import biz.lobachev.annette.org_structure.api.hierarchy
 import biz.lobachev.annette.org_structure.api.hierarchy.{CompositeOrgItemId, ItemTypes, OrgItemFindQuery, OrgItemKey}
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
-import biz.lobachev.annette.org_structure.impl.hierarchy.HierarchyEntity
+import biz.lobachev.annette.org_structure.impl.hierarchy.entity.HierarchyEntity
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.requests.common.RefreshPolicy
