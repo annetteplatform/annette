@@ -17,14 +17,13 @@
 package biz.lobachev.annette.org_structure.impl.hierarchy
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-
-import java.time.OffsetDateTime
 import biz.lobachev.annette.org_structure.api.hierarchy.{CompositeOrgItemId, OrgItemKey}
 import biz.lobachev.annette.org_structure.impl.hierarchy.dao.HierarchyCassandraDbDao
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
 
+import java.time.OffsetDateTime
 import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class HierarchyDbEventProcessor(
@@ -184,13 +183,15 @@ private[impl] class HierarchyDbEventProcessor(
 
   def moveItem(event: HierarchyEntity.ItemMoved): Future[Seq[BoundStatement]] =
     for {
-      childrenFrom <- hierarchyEntityService.getChildren(event.oldParentId)
-      childrenTo   <- hierarchyEntityService.getChildren(event.newParentId)
-      rootPaths    <- hierarchyEntityService.getRootPaths(OrgItemKey.extractOrgId(event.itemId), event.affectedItemIds)
-    } yield List(
-      dbDao.updateChildren(event.oldParentId, childrenFrom, event.updatedBy, event.updatedAt),
-      dbDao.updateChildren(event.newParentId, childrenTo, event.updatedBy, event.updatedAt)
-    ) ++
+      maybeChildrenFrom <- if (event.oldParentId != event.newParentId)
+                             hierarchyEntityService.getChildren(event.oldParentId).map(Some(_))
+                           else Future.successful(None)
+      childrenTo        <- hierarchyEntityService.getChildren(event.newParentId)
+      rootPaths         <- hierarchyEntityService.getRootPaths(OrgItemKey.extractOrgId(event.itemId), event.affectedItemIds)
+    } yield maybeChildrenFrom
+      .map(childrenFrom => dbDao.updateChildren(event.oldParentId, childrenFrom, event.updatedBy, event.updatedAt))
+      .toSeq ++
+      Seq(dbDao.updateChildren(event.newParentId, childrenTo, event.updatedBy, event.updatedAt)) ++
       dbDao.updateRootPaths(rootPaths, event.updatedBy, event.updatedAt)
 
 }

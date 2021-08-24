@@ -1309,10 +1309,11 @@ final case class HierarchyEntity(
           updatedBy = event.updatedBy
         )
         val newParent                = state.units(event.newParentId)
+        val newParentChildren        = newParent.children.filter(_ != event.itemId)
         val updatedNewChildren       = event.order match {
-          case Some(pos) if pos >= 0 && pos < newParent.children.size =>
-            (newParent.children.take(pos) :+ event.itemId) ++ newParent.children.drop(pos)
-          case _                                                      => newParent.children :+ event.itemId
+          case Some(pos) if pos >= 0 && pos < newParentChildren.size =>
+            (newParentChildren.take(pos) :+ event.itemId) ++ newParentChildren.drop(pos)
+          case _                                                     => newParentChildren :+ event.itemId
         }
         val updatedNewParent         = newParent.copy(
           children = updatedNewChildren,
@@ -1328,8 +1329,8 @@ final case class HierarchyEntity(
               updatedBy = event.updatedBy
             )
           val newUnits    = state.units +
-            (updatedNewParent.id -> updatedNewParent) +
             (updatedOldParent.id -> updatedOldParent) +
+            (updatedNewParent.id -> updatedNewParent) +
             (updatedUnit.id      -> updatedUnit)
 
           (newUnits, state.positions)
@@ -1343,8 +1344,8 @@ final case class HierarchyEntity(
               updatedBy = event.updatedBy
             )
           val newUnits        = state.units +
-            (updatedNewParent.id -> updatedNewParent) +
-            (updatedOldParent.id -> updatedOldParent)
+            (updatedOldParent.id -> updatedOldParent) +
+            (updatedNewParent.id -> updatedNewParent)
           val newPositions = state.positions + (updatedPosition.id -> updatedPosition)
           (newUnits, newPositions)
         }

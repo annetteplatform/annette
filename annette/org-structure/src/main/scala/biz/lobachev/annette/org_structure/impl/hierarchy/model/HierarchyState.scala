@@ -19,6 +19,7 @@ import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
+import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 
 import java.time.OffsetDateTime
@@ -43,24 +44,16 @@ final case class HierarchyState(
   def getOrgTreeItem(itemId: CompositeOrgItemId): OrgTreeItem =
     units
       .get(itemId)
-      .map { unit =>
-        UnitTreeItem(
-          unit.id,
-          unit.children.map(getOrgTreeItem),
-          unit.chief,
-          unit.categoryId
-        )
-      }
+      .map(unit =>
+        unit
+          .into[UnitTreeItem]
+          .withFieldConst(_.children, unit.children.map(getOrgTreeItem))
+          .transform
+      )
       .getOrElse {
         positions
           .get(itemId)
-          .map { position =>
-            PositionTreeItem(
-              position.id,
-              position.persons,
-              position.categoryId
-            )
-          }
+          .map(_.transformInto[PositionTreeItem])
           .get
       }
 

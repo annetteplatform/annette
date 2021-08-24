@@ -217,7 +217,7 @@ class OrgStructureLoader(
     val timestamp        = LocalDateTime.now().toString
     val disposedUnitName = s"[DISPOSED $timestamp]"
     for {
-      currentOrg        <- orgStructureService.getOrgItemById(orgId).map(_.asInstanceOf[OrgUnit])
+      currentOrg        <- orgStructureService.getOrgItemById(orgId, false).map(_.asInstanceOf[OrgUnit])
       _                 <- if (currentOrg.name != org.name)
                              orgStructureService.updateName(UpdateNamePayload(orgId, org.name, updatedBy))
                            else Future.successful(())
@@ -295,7 +295,7 @@ class OrgStructureLoader(
 
   private def getCurrentItem(item: OrgItemIgnitionData) =
     orgStructureService
-      .getOrgItemById(item.id)
+      .getOrgItemById(item.id, false)
       .map {
         case currentUnit: OrgUnit if item.isInstanceOf[PositionIgnitionData]     =>
           throw new IllegalArgumentException(
@@ -390,7 +390,7 @@ class OrgStructureLoader(
     for {
       _ <- unit.chief.map { chiefId =>
              for {
-               currentItem <- orgStructureService.getOrgItemById(unit.id)
+               currentItem <- orgStructureService.getOrgItemById(unit.id, false)
                _           <- currentItem match {
                                 case currentUnit: OrgUnit if currentUnit.chief.isEmpty          =>
                                   orgStructureService
