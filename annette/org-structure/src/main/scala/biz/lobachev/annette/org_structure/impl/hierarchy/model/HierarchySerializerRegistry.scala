@@ -72,22 +72,6 @@ object HierarchySerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[HierarchyEntity.PersonUnassigned],
       JsonSerializer[HierarchyEntity.OrgRoleAssigned],
       JsonSerializer[HierarchyEntity.OrgRoleUnassigned],
-      JsonSerializer[HierarchyEntity.ItemMoved],
-//      JsonSerializer[HierarchyEntity.ItemOrderChanged],
-      // event payloads
-      JsonSerializer[CreateOrganizationPayload],
-      JsonSerializer[DeleteOrgItemPayload],
-      JsonSerializer[CreateUnitPayload],
-      JsonSerializer[AssignChiefPayload],
-      JsonSerializer[UnassignChiefPayload],
-      JsonSerializer[CreatePositionPayload],
-      JsonSerializer[UpdateNamePayload],
-      JsonSerializer[ChangePositionLimitPayload],
-      JsonSerializer[AssignPersonPayload],
-      JsonSerializer[UnassignPersonPayload],
-      JsonSerializer[AssignOrgRolePayload],
-      JsonSerializer[UnassignOrgRolePayload],
-      JsonSerializer[MoveItemPayload]
-//      JsonSerializer[ChangeItemOrderPayload]
+      JsonSerializer[HierarchyEntity.ItemMoved]
     )
 }

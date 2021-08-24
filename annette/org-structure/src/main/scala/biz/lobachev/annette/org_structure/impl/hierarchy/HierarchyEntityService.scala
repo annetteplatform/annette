@@ -81,28 +81,54 @@ class HierarchyEntityService(
   def createOrganization(payload: CreateOrganizationPayload): Future[Done] =
     if (OrgItemKey.isOrg(payload.orgId))
       refFor(payload.orgId)
-        .ask[HierarchyEntity.Confirmation](HierarchyEntity.CreateOrganization(payload, _))
+        .ask[HierarchyEntity.Confirmation](replyTo =>
+          payload
+            .into[HierarchyEntity.CreateOrganization]
+            .withFieldConst(_.replyTo, replyTo)
+            .transform
+        )
         .map(successToResult)
     else throw InvalidCompositeId(payload.orgId)
 
   def createUnit(payload: CreateUnitPayload): Future[Done] =
     refFor(payload.unitId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.CreateUnit(payload, _))
+      .ask[HierarchyEntity.Confirmation](replyTo =>
+        payload
+          .into[HierarchyEntity.CreateUnit]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
       .map(successToResult)
 
   def createPosition(payload: CreatePositionPayload): Future[Done] =
     refFor(payload.positionId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.CreatePosition(payload, _))
+      .ask[HierarchyEntity.Confirmation](replyTo =>
+        payload
+          .into[HierarchyEntity.CreatePosition]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
       .map(successToResult)
 
   def updateName(payload: UpdateNamePayload): Future[Done] =
     refFor(payload.itemId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.UpdateName(payload, _))
+      .ask[HierarchyEntity.Confirmation](replyTo =>
+        payload
+          .into[HierarchyEntity.UpdateName]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
       .map(successToResult)
 
   def assignCategory(payload: AssignCategoryPayload, category: OrgCategory): Future[Done] =
     refFor(payload.itemId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.AssignCategory(payload, category, _))
+      .ask[HierarchyEntity.Confirmation](replyTo =>
+        payload
+          .into[HierarchyEntity.AssignCategory]
+          .withFieldConst(_.replyTo, replyTo)
+          .withFieldConst(_.category, category)
+          .transform
+      )
       .map(successToResult)
 
   def updateSource(payload: UpdateSourcePayload): Future[Done] =
@@ -127,47 +153,92 @@ class HierarchyEntityService(
 
   def moveItem(payload: MoveItemPayload): Future[Done] =
     refFor(payload.itemId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.MoveItem(payload, _))
+      .ask[HierarchyEntity.Confirmation](replyTo =>
+        payload
+          .into[HierarchyEntity.MoveItem]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
       .map(successToResult)
 
   def assignChief(payload: AssignChiefPayload): Future[Done] =
     refFor(payload.unitId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.AssignChief(payload, _))
+      .ask[HierarchyEntity.Confirmation](replyTo =>
+        payload
+          .into[HierarchyEntity.AssignChief]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
       .map(successToResult)
 
   def unassignChief(payload: UnassignChiefPayload): Future[Done] =
     refFor(payload.unitId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.UnassignChief(payload, _))
+      .ask[HierarchyEntity.Confirmation](replyTo =>
+        payload
+          .into[HierarchyEntity.UnassignChief]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
       .map(successToResult)
 
   def changePositionLimit(payload: ChangePositionLimitPayload): Future[Done] =
     refFor(payload.positionId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.ChangePositionLimit(payload, _))
+      .ask[HierarchyEntity.Confirmation](replyTo =>
+        payload
+          .into[HierarchyEntity.ChangePositionLimit]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
       .map(successToResult)
 
   def assignPerson(payload: AssignPersonPayload): Future[Done] =
     refFor(payload.positionId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.AssignPerson(payload, _))
+      .ask[HierarchyEntity.Confirmation](replyTo =>
+        payload
+          .into[HierarchyEntity.AssignPerson]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
       .map(successToResult)
 
   def unassignPerson(payload: UnassignPersonPayload): Future[Done] =
     refFor(payload.positionId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.UnassignPerson(payload, _))
+      .ask[HierarchyEntity.Confirmation](replyTo =>
+        payload
+          .into[HierarchyEntity.UnassignPerson]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
       .map(successToResult)
 
   def assignOrgRole(payload: AssignOrgRolePayload): Future[Done] =
     refFor(payload.positionId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.AssignOrgRole(payload, _))
+      .ask[HierarchyEntity.Confirmation](replyTo =>
+        payload
+          .into[HierarchyEntity.AssignOrgRole]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
       .map(successToResult)
 
   def unassignOrgRole(payload: UnassignOrgRolePayload): Future[Done] =
     refFor(payload.positionId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.UnassignOrgRole(payload, _))
+      .ask[HierarchyEntity.Confirmation](replyTo =>
+        payload
+          .into[HierarchyEntity.UnassignOrgRole]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
       .map(successToResult)
 
   def deleteOrgItem(payload: DeleteOrgItemPayload): Future[Done] =
     refFor(payload.itemId)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.DeleteOrgItem(payload, _))
+      .ask[HierarchyEntity.Confirmation](replyTo =>
+        payload
+          .into[HierarchyEntity.DeleteOrgItem]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
       .map(successToResult)
 
   def getOrganizationById(orgId: CompositeOrgItemId): Future[Organization] =
