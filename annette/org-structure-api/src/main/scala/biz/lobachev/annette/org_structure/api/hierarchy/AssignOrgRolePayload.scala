@@ -21,8 +21,7 @@ import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import play.api.libs.json.Json
 
 case class AssignOrgRolePayload(
-  orgId: OrgItemId,
-  positionId: OrgItemId,
+  positionId: CompositeOrgItemId,
   orgRoleId: OrgRoleId,
   updatedBy: AnnettePrincipal
 )

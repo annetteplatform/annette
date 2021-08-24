@@ -22,7 +22,7 @@ import biz.lobachev.annette.core.model.auth._
 import biz.lobachev.annette.org_structure.api.hierarchy
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
-import biz.lobachev.annette.org_structure.impl.hierarchy.HierarchyEntity
+import biz.lobachev.annette.org_structure.impl.hierarchy.entity.HierarchyEntity
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 
@@ -325,7 +325,7 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
     insertStatement
       .bind()
       .setString("id", event.unitId)
-      .setString("org_id", event.orgId)
+      .setString("org_id", OrgItemKey.extractOrgId(event.unitId))
       .setString("parent_id", event.parentId)
       .setList[String]("root_path", event.rootPath.asJava)
       .setString("name", event.name)
@@ -348,8 +348,8 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .setString("id", event.unitId)
 
   def updateChildren(
-    unitId: OrgItemId,
-    children: Seq[OrgItemId],
+    unitId: CompositeOrgItemId,
+    children: Seq[CompositeOrgItemId],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime
   ): BoundStatement =
@@ -385,7 +385,7 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
         .bind()
         .setString("position_id", event.chiefId)
         .setString("unit_id", event.unitId)
-        .setString("org_id", event.orgId)
+        .setString("org_id", OrgItemKey.extractOrgId(event.unitId))
     )
 
   def unassignChief(event: HierarchyEntity.ChiefUnassigned): List[BoundStatement] =
@@ -407,7 +407,7 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
     insertStatement
       .bind()
       .setString("id", event.positionId)
-      .setString("org_id", event.orgId)
+      .setString("org_id", OrgItemKey.extractOrgId(event.positionId))
       .setString("parent_id", event.parentId)
       .setList[String]("root_path", event.rootPath.asJava)
       .setString("name", event.name)
@@ -432,7 +432,7 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
   def updateName(event: HierarchyEntity.NameUpdated): BoundStatement =
     updateNameStatement
       .bind()
-      .setString("id", event.orgItemId)
+      .setString("id", event.itemId)
       .setString("name", event.name)
       .setString("updated_at", event.updatedAt.toString)
       .setString("updated_by_type", event.updatedBy.principalType)
@@ -441,7 +441,7 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
   def updateSource(event: HierarchyEntity.SourceUpdated): BoundStatement =
     updateSourceStatement
       .bind()
-      .setString("id", event.orgItemId)
+      .setString("id", event.itemId)
       .setString("source", event.source.orNull)
       .setString("updated_at", event.updatedAt.toString)
       .setString("updated_by_type", event.updatedBy.principalType)
@@ -451,7 +451,7 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
     Seq(
       updateExternalIdStatement
         .bind()
-        .setString("id", event.orgItemId)
+        .setString("id", event.itemId)
         .setString("external_id", event.externalId.orNull)
         .setString("updated_at", event.updatedAt.toString)
         .setString("updated_by_type", event.updatedBy.principalType)
@@ -460,7 +460,7 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       createExternalIdMappingStatement
         .bind()
         .setString("external_id", externalId)
-        .setString("item_id", event.orgItemId)
+        .setString("item_id", event.itemId)
     ) ++
       event.oldExternalId.map(oldExternalId =>
         deleteExternalIdMappingStatement
@@ -477,17 +477,17 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .setString("updated_by_type", event.updatedBy.principalType)
       .setString("updated_by_id", event.updatedBy.principalId)
 
-  def assignPerson(event: HierarchyEntity.PersonAssigned, persons: Set[OrgItemId]): List[BoundStatement] =
+  def assignPerson(event: HierarchyEntity.PersonAssigned, persons: Set[CompositeOrgItemId]): List[BoundStatement] =
     List(
       updatePersons(event.positionId, persons, event.updatedBy, event.updatedAt),
       assignPersonStatement
         .bind()
         .setString("person_id", event.personId)
         .setString("position_id", event.positionId)
-        .setString("org_id", event.orgId)
+        .setString("org_id", OrgItemKey.extractOrgId(event.positionId))
     )
 
-  def unassignPerson(event: HierarchyEntity.PersonUnassigned, persons: Set[OrgItemId]): List[BoundStatement] =
+  def unassignPerson(event: HierarchyEntity.PersonUnassigned, persons: Set[CompositeOrgItemId]): List[BoundStatement] =
     List(
       updatePersons(event.positionId, persons, event.updatedBy, event.updatedAt),
       unassignPersonStatement
@@ -497,8 +497,8 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
     )
 
   def updatePersons(
-    positionId: OrgItemId,
-    persons: Set[OrgItemId],
+    positionId: CompositeOrgItemId,
+    persons: Set[CompositeOrgItemId],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime
   ): BoundStatement =
@@ -511,7 +511,7 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .setString("updated_by_id", updatedBy.principalId)
 
   def updateRoles(
-    positionId: OrgItemId,
+    positionId: CompositeOrgItemId,
     roles: Set[OrgRoleId],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime
@@ -525,7 +525,7 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .setString("updated_by_id", updatedBy.principalId)
 
   def updateRootPaths(
-    rootPaths: Map[OrgItemId, Seq[OrgItemId]],
+    rootPaths: Map[CompositeOrgItemId, Seq[CompositeOrgItemId]],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime
   ): Seq[BoundStatement] =
@@ -540,19 +540,19 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
           .setString("updated_by_id", updatedBy.principalId)
     }.toList
 
-  def getOrgItemById(id: OrgItemId): Future[Option[OrgItem]] =
+  def getOrgItemById(id: CompositeOrgItemId): Future[Option[OrgItem]] =
     for {
       stmt   <- session.prepare("SELECT * FROM org_items WHERE id = ?")
       result <- session.selectOne(stmt.bind(id)).map(_.map(convertToOrgItem))
     } yield result
 
-  def getOrgItemsById(ids: Set[OrgItemId]): Future[Seq[OrgItem]] =
+  def getOrgItemsById(ids: Set[CompositeOrgItemId]): Future[Seq[OrgItem]] =
     for {
       stmt   <- session.prepare("SELECT * FROM org_items WHERE id IN ?")
       result <- session.selectAll(stmt.bind(ids.toList.asJava)).map(_.map(convertToOrgItem))
     } yield result
 
-  def getItemIdsByExternalId(externalIds: Set[String]): Future[Map[String, OrgItemId]] =
+  def getItemIdsByExternalId(externalIds: Set[String]): Future[Map[String, CompositeOrgItemId]] =
     for {
       stmt   <- session.prepare("SELECT * FROM external_ids WHERE external_id IN ?")
       result <- session

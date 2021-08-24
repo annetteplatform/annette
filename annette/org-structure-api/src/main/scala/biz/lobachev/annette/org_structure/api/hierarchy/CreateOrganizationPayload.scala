@@ -21,7 +21,7 @@ import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
 import play.api.libs.json.Json
 
 case class CreateOrganizationPayload(
-  orgId: OrgItemId,
+  orgId: CompositeOrgItemId,
   name: String,
   categoryId: OrgCategoryId,
   source: Option[String] = None,

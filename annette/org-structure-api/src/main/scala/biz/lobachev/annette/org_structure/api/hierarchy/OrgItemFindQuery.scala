@@ -26,22 +26,22 @@ import play.api.libs.json.{Format, Json}
 case class OrgItemFindQuery(
   offset: Int = 0,
   size: Int,
-  filter: Option[String] = None,                     // search by name
-  name: Option[String] = None,                       // search by name
-  orgUnits: Option[Set[OrgItemId]] = None,           // search descendants of specified  org units
-  persons: Option[Set[PersonId]] = None,             // search descendants of specified  org units
-  orgRoles: Option[Set[OrgRoleId]] = None,           // search positions contains roles
+  filter: Option[String] = None,                         // search by name
+  name: Option[String] = None,                           // search by name
+  orgUnits: Option[Set[CompositeOrgItemId]] = None,      // search descendants of specified  org units
+  persons: Option[Set[PersonId]] = None,                 // search descendants of specified  org units
+  orgRoles: Option[Set[OrgRoleId]] = None,               // search positions contains roles
   fromLevel: Option[Int] = None,
   toLevel: Option[Int] = None,
-  itemTypes: Option[Set[ItemTypes.ItemType]] = None, // search units, positions or both (if None)
-  organizations: Option[Set[OrgItemId]] = None,      // search in organizations specified
-  parents: Option[Set[OrgItemId]] = None,
-  chiefs: Option[Set[OrgItemId]] = None,
+  itemTypes: Option[Set[ItemTypes.ItemType]] = None,     // search units, positions or both (if None)
+  organizations: Option[Set[CompositeOrgItemId]] = None, // search in organizations specified
+  parents: Option[Set[CompositeOrgItemId]] = None,
+  chiefs: Option[Set[CompositeOrgItemId]] = None,
   categories: Option[Set[OrgCategoryId]] = None,
   sources: Option[Set[String]] = None,
   externalIds: Option[Set[String]] = None,
   attributes: Option[AttributeQuery] = None,
-  sortBy: Option[Seq[SortBy]] = None                 //sort results by field provided
+  sortBy: Option[Seq[SortBy]] = None                     //sort results by field provided
 )
 
 object OrgItemFindQuery {

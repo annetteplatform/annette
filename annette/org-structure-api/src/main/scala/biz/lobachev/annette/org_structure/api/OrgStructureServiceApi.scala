@@ -38,43 +38,39 @@ import scala.collection.immutable.Map
 trait OrgStructureServiceApi extends Service {
 
   // hierarchy methods
-
   def createOrganization: ServiceCall[CreateOrganizationPayload, Done]
-  def deleteOrganization: ServiceCall[DeleteOrganizationPayload, Done]
-  def getOrganizationById(orgId: OrgItemId): ServiceCall[NotUsed, Organization]
-  def getOrganizationTree(orgId: OrgItemId, itemId: OrgItemId): ServiceCall[NotUsed, OrganizationTree]
-
   def createUnit: ServiceCall[CreateUnitPayload, Done]
-  def deleteUnit: ServiceCall[DeleteUnitPayload, Done]
+  def createPosition: ServiceCall[CreatePositionPayload, Done]
+
+  def updateName: ServiceCall[UpdateNamePayload, Done]
+  def assignCategory: ServiceCall[AssignCategoryPayload, Done]
+  def updateSource: ServiceCall[UpdateSourcePayload, Done]
+  def updateExternalId: ServiceCall[UpdateExternalIdPayload, Done]
+  def moveItem: ServiceCall[MoveItemPayload, Done]
+
   def assignChief: ServiceCall[AssignChiefPayload, Done]
   def unassignChief: ServiceCall[UnassignChiefPayload, Done]
 
-  def createPosition: ServiceCall[CreatePositionPayload, Done]
-  def deletePosition: ServiceCall[DeletePositionPayload, Done]
   def changePositionLimit: ServiceCall[ChangePositionLimitPayload, Done]
   def assignPerson: ServiceCall[AssignPersonPayload, Done]
   def unassignPerson: ServiceCall[UnassignPersonPayload, Done]
   def assignOrgRole: ServiceCall[AssignOrgRolePayload, Done]
   def unassignOrgRole: ServiceCall[UnassignOrgRolePayload, Done]
 
-  def updateName: ServiceCall[UpdateNamePayload, Done]
-  def assignCategory: ServiceCall[AssignCategoryPayload, Done]
-  def updateSource: ServiceCall[UpdateSourcePayload, Done]
-  def updateExternalId: ServiceCall[UpdateExternalIdPayload, Done]
+  def deleteOrgItem: ServiceCall[DeleteOrgItemPayload, Done]
 
-  def getOrgItemById(orgId: OrgItemId, id: OrgItemId): ServiceCall[NotUsed, OrgItem]
-  def getOrgItemsById(orgId: OrgItemId): ServiceCall[Set[OrgItemId], Seq[OrgItem]]
-  def getOrgItemByIdFromReadSide(id: OrgItemId): ServiceCall[NotUsed, OrgItem]
-  def getOrgItemsByIdFromReadSide: ServiceCall[Set[OrgItemId], Seq[OrgItem]]
-  def findOrgItems: ServiceCall[OrgItemFindQuery, FindResult]
+  def getOrganizationById(orgId: CompositeOrgItemId): ServiceCall[NotUsed, Organization]
+  def getOrganizationTree(itemId: CompositeOrgItemId): ServiceCall[NotUsed, OrganizationTree]
 
-  def getItemIdsByExternalId: ServiceCall[Set[String], Map[String, OrgItemId]]
+  def getOrgItemById(itemId: CompositeOrgItemId, fromReadSide: Boolean): ServiceCall[NotUsed, OrgItem]
+  def getOrgItemsById(fromReadSide: Boolean): ServiceCall[Set[CompositeOrgItemId], Seq[OrgItem]]
 
-  def moveItem: ServiceCall[MoveItemPayload, Done]
-  def changeItemOrder: ServiceCall[ChangeItemOrderPayload, Done]
+  def getItemIdsByExternalId: ServiceCall[Set[String], Map[String, CompositeOrgItemId]]
 
   def getPersonPrincipals(personId: PersonId): ServiceCall[NotUsed, Set[AnnettePrincipal]]
   def getPersonPositions(personId: PersonId): ServiceCall[NotUsed, Set[PersonPosition]]
+
+  def findOrgItems: ServiceCall[OrgItemFindQuery, FindResult]
 
   // org role methods
 
@@ -99,40 +95,30 @@ trait OrgStructureServiceApi extends Service {
     // @formatter:off
     named("org-structure")
       .withCalls(
-        pathCall("/api/org-structure/v1/createOrganization",                 createOrganization),
-        pathCall("/api/org-structure/v1/deleteOrganization",                 deleteOrganization),
-        pathCall("/api/org-structure/v1/getOrganizationById/:orgId",         getOrganizationById _),
-        pathCall("/api/org-structure/v1/getOrganizationTree/:orgId/:itemId", getOrganizationTree _),
-        pathCall("/api/org-structure/v1/createUnit",                         createUnit),
-        pathCall("/api/org-structure/v1/deleteUnit",                         deleteUnit),
-        pathCall("/api/org-structure/v1/assignChief",                        assignChief),
-        pathCall("/api/org-structure/v1/unassignChief",                      unassignChief),
-        pathCall("/api/org-structure/v1/createPosition",                     createPosition),
-        pathCall("/api/org-structure/v1/deletePosition",                     deletePosition),
-        pathCall("/api/org-structure/v1/changePositionLimit",                changePositionLimit),
-        pathCall("/api/org-structure/v1/assignPerson",                       assignPerson),
-        pathCall("/api/org-structure/v1/unassignPerson",                     unassignPerson),
-        pathCall("/api/org-structure/v1/assignOrgRole",                      assignOrgRole),
-        pathCall("/api/org-structure/v1/unassignOrgRole",                    unassignOrgRole),
-
-        pathCall("/api/org-structure/v1/moveItem",                           moveItem),
-        pathCall("/api/org-structure/v1/changeItemOrder",                    changeItemOrder),
-
-        pathCall("/api/org-structure/v1/updateName",                     updateName ),
-        pathCall("/api/org-structure/v1/assignCategory",                 assignCategory),
-        pathCall("/api/org-structure/v1/updateSource",                   updateSource ),
-        pathCall("/api/org-structure/v1/updateExternalId",               updateExternalId ),
-
-        pathCall("/api/org-structure/v1/getOrgItemById/:orgId/:id",      getOrgItemById _),
-        pathCall("/api/org-structure/v1/getOrgItemByIdFromReadSide/:id", getOrgItemByIdFromReadSide _),
-        pathCall("/api/org-structure/v1/getOrgItemsById/:orgId",         getOrgItemsById _ ),
-        pathCall("/api/org-structure/v1/getOrgItemsByIdFromReadSide",    getOrgItemsByIdFromReadSide  ),
-        pathCall("/api/org-structure/v1/findOrgItems",                   findOrgItems ),
-
+        pathCall("/api/org-structure/v1/createOrganization",   createOrganization),
+        pathCall("/api/org-structure/v1/createUnit",           createUnit),
+        pathCall("/api/org-structure/v1/createPosition",       createPosition),
+        pathCall("/api/org-structure/v1/updateName",           updateName ),
+        pathCall("/api/org-structure/v1/assignCategory",       assignCategory),
+        pathCall("/api/org-structure/v1/updateSource",         updateSource ),
+        pathCall("/api/org-structure/v1/updateExternalId",     updateExternalId ),
+        pathCall("/api/org-structure/v1/moveItem",             moveItem),
+        pathCall("/api/org-structure/v1/assignChief",          assignChief),
+        pathCall("/api/org-structure/v1/unassignChief",        unassignChief),
+        pathCall("/api/org-structure/v1/changePositionLimit",  changePositionLimit),
+        pathCall("/api/org-structure/v1/assignPerson",         assignPerson),
+        pathCall("/api/org-structure/v1/unassignPerson",       unassignPerson),
+        pathCall("/api/org-structure/v1/assignOrgRole",        assignOrgRole),
+        pathCall("/api/org-structure/v1/unassignOrgRole",      unassignOrgRole),
+        pathCall("/api/org-structure/v1/deleteOrgItem",        deleteOrgItem),
+        pathCall("/api/org-structure/v1/getOrganizationById/:orgId",            getOrganizationById _),
+        pathCall("/api/org-structure/v1/getOrganizationTree/:itemId",           getOrganizationTree _),
+        pathCall("/api/org-structure/v1/getOrgItemById/:itemId/:fromReadSide",  getOrgItemById _),
+        pathCall("/api/org-structure/v1/getOrgItemsById/:fromReadSide",         getOrgItemsById _ ),
         pathCall("/api/org-structure/v1/getItemIdsByExternalId",         getItemIdsByExternalId  ),
-
         pathCall("/api/org-structure/v1/getPersonPrincipals/:personId",  getPersonPrincipals _),
         pathCall("/api/org-structure/v1/getPersonPositions/:personId",   getPersonPositions _),
+        pathCall("/api/org-structure/v1/findOrgItems",                   findOrgItems ),
 
         pathCall("/api/org-structure/v1/createOrgRole",                createOrgRole),
         pathCall("/api/org-structure/v1/updateOrgRole",                updateOrgRole),

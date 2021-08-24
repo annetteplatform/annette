@@ -16,13 +16,12 @@
 
 package biz.lobachev.annette.org_structure.gateway.dto
 
-import biz.lobachev.annette.org_structure.api.hierarchy.OrgItemId
+import biz.lobachev.annette.org_structure.api.hierarchy.CompositeOrgItemId
 import play.api.libs.json.Json
 
 case class MoveItemPayloadDto(
-  orgId: OrgItemId,
-  orgItemId: OrgItemId,
-  newParentId: OrgItemId,
+  itemId: CompositeOrgItemId,
+  newParentId: CompositeOrgItemId,
   order: Option[Int] = None
 )
 

@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.org_structure.impl.hierarchy.model
+package biz.lobachev.annette.org_structure.impl.hierarchy.entity
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.hierarchy._
-import biz.lobachev.annette.org_structure.impl.hierarchy.HierarchyEntity
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
 object HierarchySerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
       // state
-      JsonSerializer.compressed[HierarchyEntity],
+      JsonSerializer.compressed[HierarchyState],
+      JsonSerializer.compressed[ActiveHierarchy],
+      JsonSerializer[EmptyHierarchy.type],
       JsonSerializer[HierarchyUnit],
       JsonSerializer[HierarchyPosition],
       JsonSerializer[AnnettePrincipal],
@@ -72,24 +73,6 @@ object HierarchySerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[HierarchyEntity.PersonUnassigned],
       JsonSerializer[HierarchyEntity.OrgRoleAssigned],
       JsonSerializer[HierarchyEntity.OrgRoleUnassigned],
-      JsonSerializer[HierarchyEntity.ItemMoved],
-      JsonSerializer[HierarchyEntity.ItemOrderChanged],
-      // event payloads
-      JsonSerializer[CreateOrganizationPayload],
-      JsonSerializer[DeleteOrganizationPayload],
-      JsonSerializer[CreateUnitPayload],
-      JsonSerializer[DeleteUnitPayload],
-      JsonSerializer[AssignChiefPayload],
-      JsonSerializer[UnassignChiefPayload],
-      JsonSerializer[CreatePositionPayload],
-      JsonSerializer[DeletePositionPayload],
-      JsonSerializer[UpdateNamePayload],
-      JsonSerializer[ChangePositionLimitPayload],
-      JsonSerializer[AssignPersonPayload],
-      JsonSerializer[UnassignPersonPayload],
-      JsonSerializer[AssignOrgRolePayload],
-      JsonSerializer[UnassignOrgRolePayload],
-      JsonSerializer[MoveItemPayload],
-      JsonSerializer[ChangeItemOrderPayload]
+      JsonSerializer[HierarchyEntity.ItemMoved]
     )
 }

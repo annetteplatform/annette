@@ -44,32 +44,11 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
   def createOrganization(payload: CreateOrganizationPayload): Future[Done] =
     api.createOrganization.invoke(payload)
 
-  def deleteOrganization(payload: DeleteOrganizationPayload): Future[Done] =
-    api.deleteOrganization.invoke(payload)
-
-  def getOrganizationById(orgId: OrgItemId): Future[Organization] =
-    api.getOrganizationById(orgId).invoke()
-
-  def getOrganizationTree(orgId: OrgItemId, itemId: OrgItemId): Future[OrganizationTree] =
-    api.getOrganizationTree(orgId, itemId).invoke()
-
   def createUnit(payload: CreateUnitPayload): Future[Done] =
     api.createUnit.invoke(payload)
 
-  def deleteUnit(payload: DeleteUnitPayload): Future[Done] =
-    api.deleteUnit.invoke(payload)
-
-  def assignChief(payload: AssignChiefPayload): Future[Done] =
-    api.assignChief.invoke(payload)
-
-  def unassignChief(payload: UnassignChiefPayload): Future[Done] =
-    api.unassignChief.invoke(payload)
-
   def createPosition(payload: CreatePositionPayload): Future[Done] =
     api.createPosition.invoke(payload)
-
-  def deletePosition(payload: DeletePositionPayload): Future[Done] =
-    api.deletePosition.invoke(payload)
 
   def updateName(payload: UpdateNamePayload): Future[Done] =
     api.updateName.invoke(payload)
@@ -82,6 +61,15 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
 
   def updateExternalId(payload: UpdateExternalIdPayload): Future[Done] =
     api.updateExternalId.invoke(payload)
+
+  def moveItem(payload: MoveItemPayload): Future[Done] =
+    api.moveItem.invoke(payload)
+
+  def assignChief(payload: AssignChiefPayload): Future[Done] =
+    api.assignChief.invoke(payload)
+
+  def unassignChief(payload: UnassignChiefPayload): Future[Done] =
+    api.unassignChief.invoke(payload)
 
   def changePositionLimit(payload: ChangePositionLimitPayload): Future[Done] =
     api.changePositionLimit.invoke(payload)
@@ -98,35 +86,32 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
   def unassignOrgRole(payload: UnassignOrgRolePayload): Future[Done] =
     api.unassignOrgRole.invoke(payload)
 
-  def getOrgItemById(orgId: OrgItemId, id: OrgItemId): Future[OrgItem] =
-    api.getOrgItemById(orgId, id).invoke()
+  def deleteOrgItem(payload: DeleteOrgItemPayload): Future[Done] =
+    api.deleteOrgItem.invoke(payload)
 
-  def getOrgItemsById(orgId: OrgItemId, ids: Set[OrgItemId]): Future[Seq[OrgItem]] =
-    api.getOrgItemsById(orgId).invoke(ids)
+  def getOrganizationById(orgId: CompositeOrgItemId): Future[Organization] =
+    api.getOrganizationById(orgId).invoke()
 
-  def getOrgItemByIdFromReadSide(id: OrgItemId): Future[OrgItem] =
-    api.getOrgItemByIdFromReadSide(id).invoke()
+  def getOrganizationTree(itemId: CompositeOrgItemId): Future[OrganizationTree] =
+    api.getOrganizationTree(itemId).invoke()
 
-  def getOrgItemsByIdFromReadSide(ids: Set[OrgItemId]): Future[Seq[OrgItem]] =
-    api.getOrgItemsByIdFromReadSide.invoke(ids)
+  def getOrgItemById(itemId: CompositeOrgItemId, fromReadSide: Boolean): Future[OrgItem] =
+    api.getOrgItemById(itemId, fromReadSide).invoke()
 
-  def findOrgItems(query: OrgItemFindQuery): Future[FindResult] =
-    api.findOrgItems.invoke(query)
+  def getOrgItemsById(ids: Set[CompositeOrgItemId], fromReadSide: Boolean): Future[Seq[OrgItem]] =
+    api.getOrgItemsById(fromReadSide).invoke(ids)
 
-  def getItemIdsByExternalId(externalIds: Set[String]): Future[Map[String, OrgItemId]] =
+  def getItemIdsByExternalId(externalIds: Set[String]): Future[Map[String, CompositeOrgItemId]] =
     api.getItemIdsByExternalId.invoke(externalIds)
-
-  def moveItem(payload: MoveItemPayload): Future[Done] =
-    api.moveItem.invoke(payload)
-
-  def changeItemOrder(payload: ChangeItemOrderPayload): Future[Done] =
-    api.changeItemOrder.invoke(payload)
 
   def getPersonPrincipals(personId: PersonId): Future[Set[AnnettePrincipal]] =
     api.getPersonPrincipals(personId).invoke()
 
   def getPersonPositions(personId: PersonId): Future[Set[PersonPosition]] =
     api.getPersonPositions(personId).invoke()
+
+  def findOrgItems(query: OrgItemFindQuery): Future[FindResult] =
+    api.findOrgItems.invoke(query)
 
   // org role methods
 

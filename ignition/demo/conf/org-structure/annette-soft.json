@@ -3,10 +3,10 @@
   "name": "Annette Software",
   "type": "U",
   "categoryId": "ORG",
-  "chief": "ANSOFT-CEO",
+  "chief": "ANSOFT:CEO",
   "children": [
     {
-      "id": "ANSOFT-CEO",
+      "id": "ANSOFT:CEO",
       "name": "Chief Executive Officer",
       "type": "P",
       "categoryId": "POSITION",
@@ -14,7 +14,7 @@
       "person": "P0001"
     },
     {
-      "id": "ANSOFT-CA",
+      "id": "ANSOFT:CA",
       "name": "Chief Accountant",
       "type": "P",
       "categoryId": "POSITION",
@@ -22,14 +22,14 @@
       "person": "P0002"
     },
     {
-      "id": "ANSOFT-SM",
+      "id": "ANSOFT:SM",
       "name": "Sales & Marketing Department",
       "type": "U",
       "categoryId": "UNIT",
-      "chief": "ANSOFT-SM-HEAD",
+      "chief": "ANSOFT:SM-HEAD",
       "children": [
         {
-          "id": "ANSOFT-SM-HEAD",
+          "id": "ANSOFT:SM-HEAD",
           "name": "Head of Sales & Marketing Dept.",
           "type": "P",
           "categoryId": "POSITION",
@@ -37,7 +37,7 @@
           "person": "P0003"
         },
         {
-          "id": "ANSOFT-SM-SM",
+          "id": "ANSOFT:SM-SM",
           "name": "Sales Manager",
           "type": "P",
           "categoryId": "POSITION",
@@ -47,14 +47,14 @@
       ]
     },
     {
-      "id": "ANSOFT-DEV",
+      "id": "ANSOFT:DEV",
       "name": "Development Department",
       "type": "U",
       "categoryId": "UNIT",
-      "chief": "ANSOFT-DEV-CTO",
+      "chief": "ANSOFT:DEV-CTO",
       "children": [
         {
-          "id": "ANSOFT-DEV-CTO",
+          "id": "ANSOFT:DEV-CTO",
           "name": "Chief Technical Officer",
           "type": "P",
           "categoryId": "POSITION",
@@ -62,7 +62,7 @@
           "person": "P0005"
         },
         {
-          "id": "ANSOFT-DEV-PM-1",
+          "id": "ANSOFT:DEV-PM-1",
           "name": "Project Manager",
           "type": "P",
           "categoryId": "POSITION",
@@ -70,7 +70,7 @@
           "person": "P0006"
         },
         {
-          "id": "ANSOFT-DEV-PM-2",
+          "id": "ANSOFT:DEV-PM-2",
           "name": "Project Manager",
           "type": "P",
           "categoryId": "POSITION",
@@ -78,7 +78,7 @@
           "person": "P0007"
         },
         {
-          "id": "ANSOFT-DEV-SBD-1",
+          "id": "ANSOFT:DEV-SBD-1",
           "name": "Senior Backend Developer",
           "type": "P",
           "categoryId": "POSITION",
@@ -86,7 +86,7 @@
           "person": "P0008"
         },
         {
-          "id": "ANSOFT-DEV-SBD-2",
+          "id": "ANSOFT:DEV-SBD-2",
           "name": "Senior Backend Developer",
           "type": "P",
           "categoryId": "POSITION",
@@ -94,7 +94,7 @@
           "person": "P0009"
         },
         {
-          "id": "ANSOFT-DEV-BD-1",
+          "id": "ANSOFT:DEV-BD-1",
           "name": "Backend Developer",
           "type": "P",
           "categoryId": "POSITION",
@@ -102,7 +102,7 @@
           "person": "P0010"
         },
         {
-          "id": "ANSOFT-DEV-BD-2",
+          "id": "ANSOFT:DEV-BD-2",
           "name": "Backend Developer",
           "type": "P",
           "categoryId": "POSITION",
@@ -110,7 +110,7 @@
           "person": "P0011"
         },
         {
-          "id": "ANSOFT-DEV-BD-3",
+          "id": "ANSOFT:DEV-BD-3",
           "name": "Backend Developer",
           "type": "P",
           "categoryId": "POSITION",
@@ -118,7 +118,7 @@
           "person": "P0012"
         },
         {
-          "id": "ANSOFT-DEV-SFD-1",
+          "id": "ANSOFT:DEV-SFD-1",
           "name": "Senior Frontend Developer",
           "type": "P",
           "categoryId": "POSITION",
@@ -126,7 +126,7 @@
           "person": "P0013"
         },
         {
-          "id": "ANSOFT-DEV-SFD-2",
+          "id": "ANSOFT:DEV-SFD-2",
           "name": "Senior Frontend Developer",
           "type": "P",
           "categoryId": "POSITION",
@@ -134,7 +134,7 @@
           "person": "P0014"
         },
         {
-          "id": "ANSOFT-DEV-FD-1",
+          "id": "ANSOFT:DEV-FD-1",
           "name": "Frontend Developer",
           "type": "P",
           "categoryId": "POSITION",
@@ -142,7 +142,7 @@
           "person": "P0015"
         },
         {
-          "id": "ANSOFT-DEV-FD-2",
+          "id": "ANSOFT:DEV-FD-2",
           "name": "Frontend Developer",
           "type": "P",
           "categoryId": "POSITION",
@@ -150,7 +150,7 @@
           "person": "P0016"
         },
         {
-          "id": "ANSOFT-DEV-FD-3",
+          "id": "ANSOFT:DEV-FD-3",
           "name": "Frontend Developer",
           "type": "P",
           "categoryId": "POSITION",
@@ -158,7 +158,7 @@
           "person": "P0017"
         },
         {
-          "id": "ANSOFT-DEV-MD-1",
+          "id": "ANSOFT:DEV-MD-1",
           "name": "Mobile Developer",
           "type": "P",
           "categoryId": "POSITION",
@@ -166,7 +166,7 @@
           "person": "P0018"
         },
         {
-          "id": "ANSOFT-DEV-MD-2",
+          "id": "ANSOFT:DEV-MD-2",
           "name": "Mobile Developer",
           "type": "P",
           "categoryId": "POSITION",
@@ -174,7 +174,7 @@
           "person": "P0019"
         },
         {
-          "id": "ANSOFT-DEV-DES-1",
+          "id": "ANSOFT:DEV-DES-1",
           "name": "Designer",
           "type": "P",
           "categoryId": "POSITION",
@@ -182,7 +182,7 @@
           "person": "P0020"
         },
         {
-          "id": "ANSOFT-DEV-DES-2",
+          "id": "ANSOFT:DEV-DES-2",
           "name": "Designer",
           "type": "P",
           "categoryId": "POSITION",
@@ -190,7 +190,7 @@
           "person": "P0021"
         },
         {
-          "id": "ANSOFT-DEV-DEVOPS-1",
+          "id": "ANSOFT:DEV-DEVOPS-1",
           "name": "DevOps Engineer",
           "type": "P",
           "categoryId": "POSITION",
@@ -198,7 +198,7 @@
           "person": "P0022"
         },
         {
-          "id": "ANSOFT-DEV-DEVOPS-2",
+          "id": "ANSOFT:DEV-DEVOPS-2",
           "name": "DevOps Engineer",
           "type": "P",
           "categoryId": "POSITION",

@@ -24,10 +24,10 @@ import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import play.api.libs.json.{Json, JsonConfiguration, JsonNaming}
 
 sealed trait OrgItem {
-  val orgId: OrgItemId
-  val parentId: OrgItemId
-  val rootPath: Seq[OrgItemId]
-  val id: OrgItemId
+  val orgId: CompositeOrgItemId
+  val parentId: CompositeOrgItemId
+  val rootPath: Seq[CompositeOrgItemId]
+  val id: CompositeOrgItemId
   val name: String
   val level: Int
   val categoryId: OrgCategoryId
@@ -38,13 +38,13 @@ sealed trait OrgItem {
 }
 
 case class OrgUnit(
-  orgId: OrgItemId,
-  parentId: OrgItemId,
-  rootPath: Seq[OrgItemId],
-  id: OrgItemId,
+  orgId: CompositeOrgItemId,
+  parentId: CompositeOrgItemId,
+  rootPath: Seq[CompositeOrgItemId],
+  id: CompositeOrgItemId,
   name: String,
-  children: Seq[OrgItemId],
-  chief: Option[OrgItemId],
+  children: Seq[CompositeOrgItemId],
+  chief: Option[CompositeOrgItemId],
   level: Int,
   categoryId: OrgCategoryId,
   source: Option[String] = None,
@@ -58,10 +58,10 @@ object OrgUnit {
 }
 
 case class OrgPosition(
-  orgId: OrgItemId,
-  parentId: OrgItemId,
-  rootPath: Seq[OrgItemId],
-  id: OrgItemId,
+  orgId: CompositeOrgItemId,
+  parentId: CompositeOrgItemId,
+  rootPath: Seq[CompositeOrgItemId],
+  id: CompositeOrgItemId,
   name: String,
   persons: Set[PersonId],
   limit: Int,

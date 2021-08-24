@@ -21,8 +21,7 @@ import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
 import play.api.libs.json.Json
 
 case class AssignCategoryPayload(
-  orgId: OrgItemId,
-  itemId: OrgItemId,
+  itemId: CompositeOrgItemId,
   categoryId: OrgCategoryId,
   updatedBy: AnnettePrincipal
 )

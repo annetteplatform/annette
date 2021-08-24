@@ -16,8 +16,14 @@
 
 package biz.lobachev.annette.org_structure.api.hierarchy
 
-import biz.lobachev.annette.core.exception.AnnetteTransportExceptionCompanion
+import biz.lobachev.annette.core.exception.{AnnetteTransportExceptionCompanion, AnnetteTransportExceptionCompanion1}
 import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
+
+object InvalidCompositeId extends AnnetteTransportExceptionCompanion1 {
+  val ErrorCode       = TransportErrorCode.NotFound
+  val MessageCode     = "annette.orgStructureService.hierarchy.invalidCompositeId"
+  val Arg1Key: String = "id"
+}
 
 object OrganizationAlreadyExist   extends AnnetteTransportExceptionCompanion {
   val ErrorCode   = TransportErrorCode.BadRequest

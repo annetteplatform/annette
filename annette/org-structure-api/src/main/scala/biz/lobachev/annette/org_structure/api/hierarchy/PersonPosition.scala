@@ -19,7 +19,7 @@ package biz.lobachev.annette.org_structure.api.hierarchy
 import biz.lobachev.annette.core.model.PersonId
 import play.api.libs.json.Json
 
-case class PersonPosition(personId: PersonId, positionId: OrgItemId, orgId: OrgItemId)
+case class PersonPosition(personId: PersonId, positionId: CompositeOrgItemId, orgId: CompositeOrgItemId)
 
 object PersonPosition {
   implicit val format = Json.format[PersonPosition]

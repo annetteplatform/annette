@@ -16,13 +16,12 @@
 
 package biz.lobachev.annette.org_structure.gateway.dto
 
-import biz.lobachev.annette.org_structure.api.hierarchy.OrgItemId
+import biz.lobachev.annette.org_structure.api.hierarchy.CompositeOrgItemId
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import play.api.libs.json.Json
 
 case class AssignOrgRolePayloadDto(
-  orgId: OrgItemId,
-  positionId: OrgItemId,
+  positionId: CompositeOrgItemId,
   orgRoleId: OrgRoleId
 )
 
