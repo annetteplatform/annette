@@ -28,7 +28,8 @@ object HierarchyEntity {
     externalId: Option[String] = None,
     createdBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                                extends Command
+  ) extends Command
+
   final case class CreateUnit(
     unitId: CompositeOrgItemId,
     parentId: CompositeOrgItemId,
@@ -39,7 +40,8 @@ object HierarchyEntity {
     externalId: Option[String] = None,
     createdBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                                extends Command
+  ) extends Command
+
   final case class CreatePosition(
     positionId: CompositeOrgItemId,
     parentId: CompositeOrgItemId,
@@ -51,94 +53,114 @@ object HierarchyEntity {
     externalId: Option[String] = None,
     createdBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                                extends Command
+  ) extends Command
+
   final case class UpdateName(
     itemId: CompositeOrgItemId,
     name: String,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                                extends Command
+  ) extends Command
+
   final case class AssignCategory(
     itemId: CompositeOrgItemId,
     categoryId: OrgCategoryId,
     updatedBy: AnnettePrincipal,
     category: OrgCategory,
     replyTo: ActorRef[Confirmation]
-  )                                                                                                extends Command
+  ) extends Command
+
   final case class UpdateSource(
     itemId: CompositeOrgItemId,
     source: Option[String],
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                                extends Command
+  ) extends Command
+
   final case class UpdateExternalId(
     itemId: CompositeOrgItemId,
     externalId: Option[String],
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                                extends Command
+  ) extends Command
+
   final case class MoveItem(
     itemId: CompositeOrgItemId,
     newParentId: CompositeOrgItemId,
     order: Option[Int] = None,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                                extends Command
+  ) extends Command
+
   final case class AssignChief(
     unitId: CompositeOrgItemId,
     chiefId: CompositeOrgItemId,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                                extends Command
+  ) extends Command
+
   final case class UnassignChief(
     unitId: CompositeOrgItemId,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                                extends Command
+  ) extends Command
+
   final case class ChangePositionLimit(
     positionId: CompositeOrgItemId,
     limit: Int,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                                extends Command
+  ) extends Command
+
   final case class AssignPerson(
     positionId: CompositeOrgItemId,
     personId: PersonId,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                                extends Command
+  ) extends Command
+
   final case class UnassignPerson(
     positionId: CompositeOrgItemId,
     personId: PersonId,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                                extends Command
+  ) extends Command
+
   final case class AssignOrgRole(
     positionId: CompositeOrgItemId,
     orgRoleId: OrgRoleId,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                                extends Command
+  ) extends Command
+
   final case class UnassignOrgRole(
     positionId: CompositeOrgItemId,
     orgRoleId: OrgRoleId,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                                extends Command
+  ) extends Command
+
   final case class DeleteOrgItem(
     itemId: CompositeOrgItemId,
     deletedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
-  )                                                                                                extends Command
-  final case class GetOrganization(orgId: CompositeOrgItemId, replyTo: ActorRef[Confirmation])     extends Command
+  ) extends Command
+
+  final case class GetOrganization(orgId: CompositeOrgItemId, replyTo: ActorRef[Confirmation]) extends Command
+
   final case class GetOrganizationTree(
     itemId: CompositeOrgItemId,
     replyTo: ActorRef[Confirmation]
-  )                                                                                                extends Command
-  final case class GetOrgItem(id: CompositeOrgItemId, replyTo: ActorRef[Confirmation])             extends Command
-  final case class GetChildren(unitId: CompositeOrgItemId, replyTo: ActorRef[Confirmation])        extends Command
-  final case class GetPersons(positionId: CompositeOrgItemId, replyTo: ActorRef[Confirmation])     extends Command
-  final case class GetRoles(positionId: CompositeOrgItemId, replyTo: ActorRef[Confirmation])       extends Command
+  ) extends Command
+
+  final case class GetOrgItem(id: CompositeOrgItemId, replyTo: ActorRef[Confirmation]) extends Command
+
+  final case class GetChildren(unitId: CompositeOrgItemId, replyTo: ActorRef[Confirmation]) extends Command
+
+  final case class GetPersons(positionId: CompositeOrgItemId, replyTo: ActorRef[Confirmation]) extends Command
+
+  final case class GetRoles(positionId: CompositeOrgItemId, replyTo: ActorRef[Confirmation]) extends Command
+
   final case class GetRootPaths(itemIds: Set[CompositeOrgItemId], replyTo: ActorRef[Confirmation]) extends Command
 
   sealed trait Confirmation

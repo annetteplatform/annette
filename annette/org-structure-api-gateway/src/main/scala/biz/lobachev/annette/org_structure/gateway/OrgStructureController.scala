@@ -111,6 +111,34 @@ class OrgStructureController @Inject() (
       }
     }
 
+  def updateSource =
+    authenticated.async(parse.json[UpdateSourcePayloadDto]) { implicit request =>
+      val payload = request.body
+        .into[UpdateSourcePayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
+      authorizer.performCheck(canMaintainOrg(OrgItemKey.extractOrgId(payload.itemId))) {
+        for {
+          _      <- orgStructureService.updateSource(payload)
+          result <- orgStructureService.getOrgItemById(payload.itemId, false)
+        } yield Ok(Json.toJson(result))
+      }
+    }
+
+  def updateExternalId =
+    authenticated.async(parse.json[UpdateExternalIdPayloadDto]) { implicit request =>
+      val payload = request.body
+        .into[UpdateExternalIdPayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
+      authorizer.performCheck(canMaintainOrg(OrgItemKey.extractOrgId(payload.itemId))) {
+        for {
+          _      <- orgStructureService.updateExternalId(payload)
+          result <- orgStructureService.getOrgItemById(payload.itemId, false)
+        } yield Ok(Json.toJson(result))
+      }
+    }
+
   def moveItem =
     authenticated.async(parse.json[MoveItemPayloadDto]) { implicit request =>
       val payload = request.body

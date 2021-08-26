@@ -21,7 +21,7 @@ import biz.lobachev.annette.org_structure.api.hierarchy.CompositeOrgItemId
 import play.api.libs.json.Json
 
 case class UpdateExternalIdPayloadDto(
-  orgItemId: CompositeOrgItemId,
+  itemId: CompositeOrgItemId,
   externalId: Option[String],
   updatedBy: AnnettePrincipal
 )
