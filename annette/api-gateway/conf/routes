@@ -52,6 +52,8 @@ POST    /api/annette/v1/orgStructure/createUnit                          biz.lob
 POST    /api/annette/v1/orgStructure/createPosition                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.createPosition
 POST    /api/annette/v1/orgStructure/updateName                          biz.lobachev.annette.org_structure.gateway.OrgStructureController.updateName
 POST    /api/annette/v1/orgStructure/assignCategory                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.assignCategory
+POST    /api/annette/v1/orgStructure/updateSource                        biz.lobachev.annette.org_structure.gateway.OrgStructureController.updateSource
+POST    /api/annette/v1/orgStructure/updateExternalId                    biz.lobachev.annette.org_structure.gateway.OrgStructureController.updateExternalId
 POST    /api/annette/v1/orgStructure/moveItem                            biz.lobachev.annette.org_structure.gateway.OrgStructureController.moveItem
 POST    /api/annette/v1/orgStructure/assignChief                         biz.lobachev.annette.org_structure.gateway.OrgStructureController.assignChief
 POST    /api/annette/v1/orgStructure/unassignChief                       biz.lobachev.annette.org_structure.gateway.OrgStructureController.unassignChief
@@ -60,7 +62,6 @@ POST    /api/annette/v1/orgStructure/assignPerson                        biz.lob
 POST    /api/annette/v1/orgStructure/unassignPerson                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.unassignPerson
 POST    /api/annette/v1/orgStructure/assignOrgRole                       biz.lobachev.annette.org_structure.gateway.OrgStructureController.assignOrgRole
 POST    /api/annette/v1/orgStructure/unassignOrgRole                     biz.lobachev.annette.org_structure.gateway.OrgStructureController.unassignOrgRole
-#POST    /api/annette/v1/orgStructure/changeItemOrder                     biz.lobachev.annette.org_structure.gateway.OrgStructureController.changeItemOrder
 POST    /api/annette/v1/orgStructure/deleteOrgItem                       biz.lobachev.annette.org_structure.gateway.OrgStructureController.deleteOrgItem
 GET     /api/annette/v1/orgStructure/getOrganizationById/:orgId          biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrganizationById(orgId: String)
 GET     /api/annette/v1/orgStructure/getOrganizationTree/:itemId         biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrganizationTree(itemId: String)

@@ -16,14 +16,12 @@
 
 package biz.lobachev.annette.org_structure.gateway.dto
 
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.hierarchy.CompositeOrgItemId
 import play.api.libs.json.Json
 
 case class UpdateExternalIdPayloadDto(
   itemId: CompositeOrgItemId,
-  externalId: Option[String],
-  updatedBy: AnnettePrincipal
+  externalId: Option[String]
 )
 
 object UpdateExternalIdPayloadDto {
