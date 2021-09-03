@@ -299,15 +299,15 @@ private[impl] class RoleCassandraDbDao(
       principals     <- session.selectAll(principalsStmt.bind().setString("role_id", id)).map(_.map(convertPrincipal))
     } yield maybeCnt.map(row => if (row.getLong("cnt") > 0) Some(principals.toSet) else None).getOrElse(None)
 
-  def getRoleById(ids: Set[AuthRoleId]): Future[Map[AuthRoleId, AuthRole]] =
+  def getRoleById(ids: Set[AuthRoleId]): Future[Seq[AuthRole]] =
     Source(ids)
       .mapAsync(1) { id =>
         getRoleById(id)
       }
       .runWith(Sink.seq)
-      .map(_.flatten.map(role => role.id -> role).toMap)
+      .map(_.flatten)
 
-  private def convertRole(row: Row): AuthRole                              =
+  private def convertRole(row: Row): AuthRole =
     AuthRole(
       id = row.getString("id"),
       name = row.getString("name"),

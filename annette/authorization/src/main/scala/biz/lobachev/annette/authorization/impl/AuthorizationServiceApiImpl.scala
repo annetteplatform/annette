@@ -77,7 +77,7 @@ class AuthorizationServiceApiImpl(
       roleEntityService.getRolePrincipals(id, fromReadSide)
     }
 
-  override def getRolesById(fromReadSide: Boolean): ServiceCall[Set[AuthRoleId], Map[AuthRoleId, AuthRole]] =
+  override def getRolesById(fromReadSide: Boolean): ServiceCall[Set[AuthRoleId], Seq[AuthRole]] =
     ServiceCall { payload =>
       roleEntityService.getRolesById(payload, fromReadSide)
     }

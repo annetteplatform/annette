@@ -124,7 +124,7 @@ class RoleEntityService(
       .ask[RoleEntity.Confirmation](RoleEntity.GetRolePrincipals(id, _))
       .map(convertSuccessPrincipals)
 
-  def getRolesById(ids: Set[AuthRoleId], fromReadSide: Boolean): Future[Map[AuthRoleId, AuthRole]] =
+  def getRolesById(ids: Set[AuthRoleId], fromReadSide: Boolean): Future[Seq[AuthRole]] =
     if (fromReadSide)
       dbDao
         .getRoleById(ids)
@@ -140,9 +140,9 @@ class RoleEntityService(
                        }
                    }
                    .runWith(Sink.seq)
-      } yield roles.flatten.map(role => role.id -> role).toMap
+      } yield roles.flatten
 
-  def findRoles(payload: AuthRoleFindQuery): Future[FindResult]                                    =
+  def findRoles(payload: AuthRoleFindQuery): Future[FindResult] =
     indexDao.findRoles(payload)
 
 }

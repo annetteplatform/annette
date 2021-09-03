@@ -44,6 +44,6 @@ trait RoleDbDao {
 
   def getRolePrincipals(id: AuthRoleId): Future[Option[Set[AnnettePrincipal]]]
 
-  def getRoleById(ids: Set[AuthRoleId]): Future[Map[AuthRoleId, AuthRole]]
+  def getRoleById(ids: Set[AuthRoleId]): Future[Seq[AuthRole]]
 
 }

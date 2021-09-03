@@ -30,7 +30,7 @@ trait AuthorizationServiceApi extends Service {
   def updateRole: ServiceCall[UpdateRolePayload, Done]
   def deleteRole: ServiceCall[DeleteRolePayload, Done]
   def getRoleById(id: AuthRoleId, fromReadSide: Boolean = true): ServiceCall[NotUsed, AuthRole]
-  def getRolesById(fromReadSide: Boolean = true): ServiceCall[Set[AuthRoleId], Map[AuthRoleId, AuthRole]]
+  def getRolesById(fromReadSide: Boolean = true): ServiceCall[Set[AuthRoleId], Seq[AuthRole]]
   def findRoles: ServiceCall[AuthRoleFindQuery, FindResult]
 
   def assignPrincipal: ServiceCall[AssignPrincipalPayload, Done]
