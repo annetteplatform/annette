@@ -75,6 +75,12 @@
       },
       {
         "id": "annette.cms.post.maintain.all"
+      },
+      {
+        "id": "annette.principalGroup.principalGroup.maintain.all"
+      },
+      {
+        "id": "annette.principalGroup.category.maintain.all"
       }
     ]
   }

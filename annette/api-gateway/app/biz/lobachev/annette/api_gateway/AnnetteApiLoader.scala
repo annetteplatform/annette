@@ -41,6 +41,8 @@ import biz.lobachev.annette.org_structure.api.{OrgStructureServiceApi, OrgStruct
 import biz.lobachev.annette.org_structure.gateway.OrgStructureController
 import biz.lobachev.annette.person.gateway.PersonController
 import biz.lobachev.annette.persons.api.{PersonServiceApi, PersonServiceImpl}
+import biz.lobachev.annette.principal_group.api.{PrincipalGroupServiceApi, PrincipalGroupServiceImpl}
+import biz.lobachev.annette.principal_group.gateway.PrincipalGroupController
 import biz.lobachev.annette.subscription.api.{SubscriptionServiceApi, SubscriptionServiceImpl}
 import com.lightbend.lagom.scaladsl.api.{LagomConfigComponent, ServiceAcl, ServiceInfo}
 import com.lightbend.lagom.scaladsl.client.LagomServiceClientComponents
@@ -105,12 +107,13 @@ abstract class ServiceGateway(context: Context)
   lazy val basicAuthConfig       = wireWith(BasicAuthConfigProvider.get _)
   lazy val basicAuthenticator    = wire[ConfigurationBasicAuthenticator]
 
-  lazy val keycloakController      = wire[KeycloakController]
-  lazy val authorizationController = wire[AuthorizationController]
-  lazy val personController        = wire[PersonController]
-  lazy val orgStructureController  = wire[OrgStructureController]
-  lazy val applicationController   = wire[ApplicationController]
-  lazy val blogViewController      = wire[CmsViewController]
+  lazy val keycloakController       = wire[KeycloakController]
+  lazy val authorizationController  = wire[AuthorizationController]
+  lazy val personController         = wire[PersonController]
+  lazy val principalGroupController = wire[PrincipalGroupController]
+  lazy val orgStructureController   = wire[OrgStructureController]
+  lazy val applicationController    = wire[ApplicationController]
+  lazy val blogViewController       = wire[CmsViewController]
 
   lazy val authorizationServiceApi = serviceClient.implement[AuthorizationServiceApi]
   lazy val authorizationService    = wire[AuthorizationServiceImpl]
@@ -124,8 +127,8 @@ abstract class ServiceGateway(context: Context)
   lazy val applicationServiceApi = serviceClient.implement[ApplicationServiceApi]
   lazy val applicationService    = wire[ApplicationServiceImpl]
 
-//  lazy val principalGroupServiceApi = serviceClient.implement[PrincipalGroupsServiceApi]
-//  lazy val principalGroupService    = wire[PrincipalGroupServiceImpl]
+  lazy val principalGroupServiceApi = serviceClient.implement[PrincipalGroupServiceApi]
+  lazy val principalGroupService    = wire[PrincipalGroupServiceImpl]
 
   lazy val subscriptionServiceApi = serviceClient.implement[SubscriptionServiceApi]
   lazy val subscriptionService    = wire[SubscriptionServiceImpl]

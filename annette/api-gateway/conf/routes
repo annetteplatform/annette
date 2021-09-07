@@ -100,6 +100,26 @@ POST    /api/annette/v1/person/findCategories                      biz.lobachev.
 GET     /api/annette/v1/person/profile                             biz.lobachev.annette.person.gateway.PersonController.profile
 
 
+# Person API
+POST    /api/annette/v1/principalGroup/createPrincipalGroup            biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.createPrincipalGroup
+POST    /api/annette/v1/principalGroup/updatePrincipalGroupName        biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.updatePrincipalGroupName
+POST    /api/annette/v1/principalGroup/updatePrincipalGroupDescription biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.updatePrincipalGroupDescription
+POST    /api/annette/v1/principalGroup/updatePrincipalGroupCategory    biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.updatePrincipalGroupCategory
+POST    /api/annette/v1/principalGroup/assignPrincipal                 biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.assignPrincipal
+POST    /api/annette/v1/principalGroup/unassignPrincipal               biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.unassignPrincipal
+POST    /api/annette/v1/principalGroup/deletePrincipalGroup            biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.deletePrincipalGroup
+POST    /api/annette/v1/principalGroup/findPrincipalGroups             biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.findPrincipalGroups
+GET     /api/annette/v1/principalGroup/getPrincipalGroupById/:id/:fromReadSide biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getPrincipalGroupById(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/principalGroup/getPrincipalGroupsById/:fromReadSide    biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getPrincipalGroupsById(fromReadSide: Boolean)
+GET     /api/annette/v1/principalGroup/getAssignments/:id                  biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getAssignments(id: String)
+POST    /api/annette/v1/principalGroup/createCategory                      biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.createCategory
+POST    /api/annette/v1/principalGroup/updateCategory                      biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.updateCategory
+POST    /api/annette/v1/principalGroup/deleteCategory                      biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.deleteCategory
+GET     /api/annette/v1/principalGroup/getCategoryById/:id/:fromReadSide   biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getCategoryById(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/principalGroup/getCategoriesById/:fromReadSide     biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getCategoriesById(fromReadSide: Boolean)
+POST    /api/annette/v1/principalGroup/findCategories                      biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.findCategories
+
+
 # CMS API
 POST    /api/annette/v1/cms/findPostViews                   biz.lobachev.annette.cms.gateway.CmsViewController.findPostViews
 POST    /api/annette/v1/cms/getPostViewAnnotationsById      biz.lobachev.annette.cms.gateway.CmsViewController.getPostViewAnnotationsById
