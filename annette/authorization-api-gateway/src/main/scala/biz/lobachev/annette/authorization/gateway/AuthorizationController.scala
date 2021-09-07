@@ -141,8 +141,8 @@ class AuthorizationController @Inject() (
     authenticated.async { implicit request =>
       authorizer.performCheckAny(VIEW_ROLE_PRINCIPALS, MAINTAIN_ROLE_PRINCIPALS) {
         for {
-          role <- authorizationService.getRolePrincipals(id, fromReadSide)
-        } yield Ok(Json.toJson(role))
+          principals <- authorizationService.getRolePrincipals(id, fromReadSide)
+        } yield Ok(Json.toJson(principals))
       }
     }
 
