@@ -154,7 +154,7 @@ class PrincipalGroupEntityService(
   def getPrincipalGroupsById(
     ids: Set[PrincipalGroupId],
     fromReadSide: Boolean
-  ): Future[Map[PrincipalGroupId, PrincipalGroup]]                            =
+  ): Future[Seq[PrincipalGroup]] =
     if (fromReadSide)
       dbDao.getPrincipalGroupsById(ids)
     else
@@ -168,7 +168,7 @@ class PrincipalGroupEntityService(
             }
         }
         .runWith(Sink.seq)
-        .map(_.flatten.map(a => a.id -> a).toMap)
+        .map(_.flatten)
 
   def findPrincipalGroups(query: PrincipalGroupFindQuery): Future[FindResult] =
     indexDao.findPrincipalGroup(query)

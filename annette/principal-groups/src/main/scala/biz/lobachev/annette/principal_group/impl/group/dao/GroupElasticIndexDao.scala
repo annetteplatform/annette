@@ -139,7 +139,7 @@ class GroupElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Elas
       query.filter,
       Seq("name" -> 3.0, "description" -> 2.0)
     )
-    val sortBy: Seq[FieldSort] = buildSortBy(query.sortBy)
+    val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
     val categoryQuery          = query.categories.map(chiefs => termsSetQuery("categoryId", chiefs, script("1"))).toSeq
 
     val searchRequest = search(indexName)

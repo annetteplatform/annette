@@ -168,8 +168,8 @@ class PrincipalGroupController @Inject() (
     authenticated.async { implicit request =>
       authorizer.performCheckAny(VIEW_ALL_PRINCIPAL_GROUPS, MAINTAIN_ALL_PRINCIPAL_GROUPS) {
         for {
-          principalGroup <- principalGroupService.getAssignments(id)
-        } yield Ok(Json.toJson(principalGroup))
+          principals <- principalGroupService.getAssignments(id)
+        } yield Ok(Json.toJson(principals))
       }
     }
 

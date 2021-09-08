@@ -87,7 +87,7 @@ class PrincipalGroupServiceApiImpl(
 
   override def getPrincipalGroupsById(
     fromReadSide: Boolean
-  ): ServiceCall[Set[PrincipalGroupId], Map[PrincipalGroupId, PrincipalGroup]] =
+  ): ServiceCall[Set[PrincipalGroupId], Seq[PrincipalGroup]] =
     ServiceCall { ids =>
       groupEntityService.getPrincipalGroupsById(ids, fromReadSide)
     }

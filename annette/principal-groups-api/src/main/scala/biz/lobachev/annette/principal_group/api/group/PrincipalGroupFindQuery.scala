@@ -25,7 +25,7 @@ case class PrincipalGroupFindQuery(
   size: Int,
   filter: Option[String] = None,
   categories: Option[Set[CategoryId]] = None,
-  sortBy: Option[SortBy] = None
+  sortBy: Option[Seq[SortBy]] = None
 )
 
 object PrincipalGroupFindQuery {

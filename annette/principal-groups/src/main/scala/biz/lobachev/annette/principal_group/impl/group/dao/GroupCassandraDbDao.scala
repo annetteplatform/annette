@@ -261,13 +261,13 @@ private[impl] class GroupCassandraDbDao(session: CassandraSession)(implicit ec: 
       result <- session.selectOne(stmt.bind(id)).map(_.map(convertPrincipalGroup))
     } yield result
 
-  def getPrincipalGroupsById(ids: Set[PrincipalGroupId]): Future[Map[PrincipalGroupId, PrincipalGroup]] =
+  def getPrincipalGroupsById(ids: Set[PrincipalGroupId]): Future[Seq[PrincipalGroup]] =
     for {
       stmt   <- session.prepare("SELECT * FROM groups WHERE id IN ?")
       result <- session.selectAll(stmt.bind(ids.toList.asJava)).map(_.map(convertPrincipalGroup))
-    } yield result.map(a => a.id -> a).toMap
+    } yield result
 
-  private def convertPrincipalGroup(row: Row): PrincipalGroup                                           =
+  private def convertPrincipalGroup(row: Row): PrincipalGroup =
     PrincipalGroup(
       id = row.getString("id"),
       name = row.getString("name"),

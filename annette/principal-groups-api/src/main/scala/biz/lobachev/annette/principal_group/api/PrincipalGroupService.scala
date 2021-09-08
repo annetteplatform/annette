@@ -36,7 +36,7 @@ trait PrincipalGroupService {
   def getPrincipalGroupsById(
     ids: Set[PrincipalGroupId],
     fromReadSide: Boolean
-  ): Future[Map[PrincipalGroupId, PrincipalGroup]]
+  ): Future[Seq[PrincipalGroup]]
   def findPrincipalGroups(query: PrincipalGroupFindQuery): Future[FindResult]
   def getAssignments(id: PrincipalGroupId): Future[Set[AnnettePrincipal]]
 

@@ -55,7 +55,7 @@ class PrincipalGroupServiceImpl(api: PrincipalGroupServiceApi, implicit val ec: 
   override def getPrincipalGroupsById(
     ids: Set[PrincipalGroupId],
     fromReadSide: Boolean
-  ): Future[Map[PrincipalGroupId, PrincipalGroup]] =
+  ): Future[Seq[PrincipalGroup]] =
     api.getPrincipalGroupsById(fromReadSide).invoke(ids)
 
   override def findPrincipalGroups(query: PrincipalGroupFindQuery): Future[FindResult] =

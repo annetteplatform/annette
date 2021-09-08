@@ -43,7 +43,7 @@ trait PrincipalGroupServiceApi extends Service {
   def getPrincipalGroupById(id: PrincipalGroupId, fromReadSide: Boolean = true): ServiceCall[NotUsed, PrincipalGroup]
   def getPrincipalGroupsById(
     fromReadSide: Boolean = true
-  ): ServiceCall[Set[PrincipalGroupId], Map[PrincipalGroupId, PrincipalGroup]]
+  ): ServiceCall[Set[PrincipalGroupId], Seq[PrincipalGroup]]
   def findPrincipalGroups: ServiceCall[PrincipalGroupFindQuery, FindResult]
   def getAssignments(id: PrincipalGroupId): ServiceCall[NotUsed, Set[AnnettePrincipal]]
 
