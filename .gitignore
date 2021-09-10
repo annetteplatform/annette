@@ -1,6 +1,8 @@
 build-local.sh
+run-local.sh
 .metals
 .bloop
+.vscode
 keycloak.json
 keycloak.*.json
 

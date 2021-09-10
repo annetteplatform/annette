@@ -16,15 +16,17 @@
 
 package biz.lobachev.annette.org_structure.api.role
 
-import biz.lobachev.annette.core.exception.AnnetteTransportExceptionWithIdCompanion
+import biz.lobachev.annette.core.exception.AnnetteTransportExceptionCompanion1
 import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
 
-object OrgRoleNotFound extends AnnetteTransportExceptionWithIdCompanion {
-  val ErrorCode   = TransportErrorCode.NotFound
-  val MessageCode = "annette.orgStructureService.orgRole.notFound"
+object OrgRoleNotFound extends AnnetteTransportExceptionCompanion1 {
+  val ErrorCode       = TransportErrorCode.NotFound
+  val MessageCode     = "annette.orgStructureService.orgRole.notFound"
+  val Arg1Key: String = "id"
 }
 
-object OrgRoleAlreadyExist extends AnnetteTransportExceptionWithIdCompanion {
-  val ErrorCode   = TransportErrorCode.BadRequest
-  val MessageCode = "annette.orgStructureService.orgRole.alreadyExist"
+object OrgRoleAlreadyExist extends AnnetteTransportExceptionCompanion1 {
+  val ErrorCode       = TransportErrorCode.BadRequest
+  val MessageCode     = "annette.orgStructureService.orgRole.alreadyExist"
+  val Arg1Key: String = "id"
 }

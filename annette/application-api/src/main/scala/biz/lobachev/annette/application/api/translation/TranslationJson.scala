@@ -17,12 +17,12 @@
 package biz.lobachev.annette.application.api.translation
 
 import java.time.OffsetDateTime
-import biz.lobachev.annette.application.api.language.LanguageId
+import biz.lobachev.annette.core.model.LanguageId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{JsObject, Json}
 
 case class TranslationJson(
-  id: TranslationId,
+  translationId: TranslationId,
   languageId: LanguageId,
   json: JsObject,
   updatedBy: AnnettePrincipal,

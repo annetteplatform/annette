@@ -24,7 +24,6 @@ import play.api.libs.json.Json
 case class Translation(
   id: TranslationId,
   name: String,
-  tree: TranslationTree,
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
 )

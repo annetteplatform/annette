@@ -1,14 +1,14 @@
 import com.typesafe.sbt.SbtNativePackager.autoImport.NativePackagerHelper._
-import com.typesafe.sbt.packager.docker.{DockerChmodType}
+import com.typesafe.sbt.packager.docker.DockerChmodType
 import play.sbt.routes.RoutesKeys
 
 scalaVersion := "2.13.3"
 maintainer := "valery@lobachev.biz"
 
-version in ThisBuild := "0.2.5"
-scalaVersion in ThisBuild := "2.13.3"
+ThisBuild / version := "0.3.0-SNAPSHOT"
+ThisBuild / scalaVersion := "2.13.3"
 
-maintainer in ThisBuild := "valery@lobachev.biz"
+ThisBuild / maintainer := "valery@lobachev.biz"
 
 ThisBuild / organization := "biz.lobachev.annette"
 ThisBuild / organizationName := "Valery Lobachev"
@@ -43,9 +43,9 @@ ThisBuild / publishTo := {
 ThisBuild / publishMavenStyle := true
 
 // Use external Kafka
-lagomKafkaEnabled in ThisBuild := false
+ThisBuild / lagomKafkaEnabled := false
 // Use external Cassandra
-lagomCassandraEnabled in ThisBuild := false
+ThisBuild / lagomCassandraEnabled := false
 
 // Copyright settings
 def annetteSettings: Seq[Setting[_]] =
@@ -56,8 +56,8 @@ def annetteSettings: Seq[Setting[_]] =
 
 def confDirSettings: Seq[Setting[_]] =
   Seq(
-    unmanagedClasspath in Runtime += baseDirectory.value / "conf",
-    mappings in Universal ++= directory(baseDirectory.value / "conf"),
+    Runtime / unmanagedClasspath += baseDirectory.value / "conf",
+    Universal / mappings ++= directory(baseDirectory.value / "conf"),
     scriptClasspath := "../conf/" +: scriptClasspath.value
   )
 
@@ -78,26 +78,34 @@ lazy val root = (project in file("."))
     `microservice-core`,
     `api-gateway-core`,
     `api-gateway`,
+    // initialization application
+    `ignition-core`,
+    // `demo-ignition`,
     // API gateways
     `application-api-gateway`,
     `authorization-api-gateway`,
     `org-structure-api-gateway`,
     `persons-api-gateway`,
+    `cms-api-gateway`,
+    `principal-groups-api-gateway`,
     // microservices API
     `application-api`,
     `attributes-api`,
     `authorization-api`,
     `org-structure-api`,
     `persons-api`,
+    `principal-groups-api`,
+    `subscriptions-api`,
+    `cms-api`,
     // microservices
     `application`,
     `attributes`,
     `authorization`,
     `org-structure`,
     `persons`,
-    // initialization application
-    `ignition-core`,
-    `demo-ignition`
+    `principal-groups`,
+    `subscriptions`,
+    `cms`
   )
 
 lazy val `core` = (project in file("annette/core"))
@@ -123,6 +131,7 @@ lazy val `microservice-core` = (project in file("annette/microservice-core"))
       lagomScaladslPersistenceCassandra,
       lagomScaladslServer % Optional,
       lagomScaladslTestKit,
+      Dependencies.chimney,
       Dependencies.playJsonExt,
       Dependencies.logstashEncoder,
       Dependencies.macwire
@@ -176,7 +185,9 @@ lazy val `api-gateway` = (project in file("annette/api-gateway"))
     `application-api-gateway`,
     `authorization-api-gateway`,
     `org-structure-api-gateway`,
-    `persons-api-gateway`
+    `persons-api-gateway`,
+    `principal-groups-api-gateway`,
+    `cms-api-gateway`
   )
 
 lazy val `ignition-core` = (project in file("ignition/core"))
@@ -199,7 +210,9 @@ lazy val `ignition-core` = (project in file("ignition/core"))
     `application-api`,
     `authorization-api`,
     `org-structure-api`,
-    `persons-api`
+    `persons-api`,
+    `cms-api`,
+    `subscriptions-api`
   )
 
 def demoIgnitionProject(pr: Project) =
@@ -443,9 +456,138 @@ lazy val `persons-api-gateway` = (project in file("annette/persons-api-gateway")
     `persons-api`
   )
 
-lazy val `demo-ignition` = demoIgnitionProject(project in file("ignition/demo"))
-lazy val `application`   = applicationProject(project in file("annette/application"))
-lazy val `attributes`    = attributesProject(project in file("annette/attributes"))
-lazy val `authorization` = authorizationProject(project in file("annette/authorization"))
-lazy val `org-structure` = orgStructureProject(project in file("annette/org-structure"))
-lazy val `persons`       = personsProject(project in file("annette/persons"))
+lazy val `principal-groups-api` = (project in file("annette/principal-groups-api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      lagomScaladslTestKit,
+      Dependencies.chimney
+    ) ++ Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(`microservice-core`)
+
+def principalGroupsProject(pr: Project) =
+  pr
+    .enablePlugins(LagomScala)
+    .settings(
+      libraryDependencies ++= Seq(
+        lagomScaladslPersistenceCassandra,
+        lagomScaladslKafkaClient,
+        lagomScaladslTestKit,
+        Dependencies.macwire,
+        Dependencies.chimney
+      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
+    )
+    .settings(lagomForkedTestSettings: _*)
+    .settings(confDirSettings: _*)
+    .settings(annetteSettings: _*)
+    .settings(dockerSettings: _*)
+    .dependsOn(`principal-groups-api`)
+
+lazy val `principal-groups-api-gateway` = (project in file("annette/principal-groups-api-gateway"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslServer % Optional,
+      ws,
+      Dependencies.macwire,
+      Dependencies.playJsonExt,
+      Dependencies.jwt,
+      Dependencies.pureConfig,
+      Dependencies.chimney
+    ) ++
+      Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(
+    `api-gateway-core`,
+    `principal-groups-api`
+  )
+
+lazy val `subscriptions-api` = (project in file("annette/subscriptions-api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      lagomScaladslTestKit,
+      Dependencies.chimney
+    ) ++ Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(`microservice-core`)
+
+def subscriptionsProject(pr: Project) =
+  pr
+    .enablePlugins(LagomScala)
+    .settings(
+      libraryDependencies ++= Seq(
+        lagomScaladslPersistenceCassandra,
+        lagomScaladslKafkaClient,
+        lagomScaladslTestKit,
+        Dependencies.macwire,
+        Dependencies.chimney
+      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
+    )
+    .settings(lagomForkedTestSettings: _*)
+    .settings(confDirSettings: _*)
+    .settings(annetteSettings: _*)
+    .settings(dockerSettings: _*)
+    .dependsOn(`subscriptions-api`)
+
+lazy val `cms-api` = (project in file("annette/cms-api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      lagomScaladslTestKit,
+      Dependencies.chimney
+    ) ++ Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(`microservice-core`)
+
+def cmsProject(pr: Project) =
+  pr
+    .enablePlugins(LagomScala)
+    .settings(
+      libraryDependencies ++= Seq(
+        lagomScaladslPersistenceCassandra,
+        lagomScaladslKafkaClient,
+        lagomScaladslTestKit,
+        Dependencies.macwire,
+        Dependencies.chimney
+      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
+    )
+    .settings(lagomForkedTestSettings: _*)
+    .settings(confDirSettings: _*)
+    .settings(annetteSettings: _*)
+    .settings(dockerSettings: _*)
+    .dependsOn(`cms-api`)
+
+lazy val `cms-api-gateway` = (project in file("annette/cms-api-gateway"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslServer % Optional,
+      ws,
+      Dependencies.macwire,
+      Dependencies.playJsonExt,
+      Dependencies.jwt,
+      Dependencies.pureConfig,
+      Dependencies.chimney
+    ) ++
+      Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(
+    `api-gateway-core`,
+    `cms-api`,
+    `subscriptions-api`
+  )
+
+//lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/demo"))
+lazy val `application`      = applicationProject(project in file("annette/application"))
+lazy val `attributes`       = attributesProject(project in file("annette/attributes"))
+lazy val `authorization`    = authorizationProject(project in file("annette/authorization"))
+lazy val `org-structure`    = orgStructureProject(project in file("annette/org-structure"))
+lazy val `persons`          = personsProject(project in file("annette/persons"))
+lazy val `principal-groups` = principalGroupsProject(project in file("annette/principal-groups"))
+lazy val `subscriptions`    = subscriptionsProject(project in file("annette/subscriptions"))
+lazy val `cms`              = cmsProject(project in file("annette/cms"))

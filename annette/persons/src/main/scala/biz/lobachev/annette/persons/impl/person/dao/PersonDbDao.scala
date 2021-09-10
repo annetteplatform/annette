@@ -39,6 +39,6 @@ trait PersonDbDao {
 
   def getPersonById(id: PersonId): Future[Option[Person]]
 
-  def getPersonsById(ids: Set[PersonId]): Future[Map[PersonId, Person]]
+  def getPersonsById(ids: Set[PersonId]): Future[Seq[Person]]
 
 }

@@ -16,46 +16,41 @@
 
 package biz.lobachev.annette.org_structure.impl.hierarchy.dao
 
-import java.time.OffsetDateTime
 import akka.Done
 import biz.lobachev.annette.core.model._
-import biz.lobachev.annette.core.model.auth.{
-  AnnettePrincipal,
-  DescendantUnitPrincipal,
-  DirectUnitPrincipal,
-  OrgPositionPrincipal,
-  OrgRolePrincipal,
-  UnitChiefPrincipal
-}
+import biz.lobachev.annette.core.model.auth._
 import biz.lobachev.annette.org_structure.api.hierarchy
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
-import biz.lobachev.annette.org_structure.impl.hierarchy.HierarchyEntity
+import biz.lobachev.annette.org_structure.impl.hierarchy.entity.HierarchyEntity
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 
+import java.time.OffsetDateTime
 import scala.collection.immutable.{Seq, _}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 
-private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit ec: ExecutionContext)
-    extends HierarchyDbDao {
+private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit ec: ExecutionContext) {
 
-  private var insertStatement: PreparedStatement              = _
-  private var deleteStatement: PreparedStatement              = _
-  private var updateNameStatement: PreparedStatement          = _
-  private var updateShortNameStatement: PreparedStatement     = _
-  private var assignCategoryStatement: PreparedStatement      = _
-  private var assignChiefStatement: PreparedStatement         = _
-  private var assignChiefUnitStatement: PreparedStatement     = _
-  private var unassignChiefUnitStatement: PreparedStatement   = _
-  private var updateChildrenStatement: PreparedStatement      = _
-  private var changePositionLimitStatement: PreparedStatement = _
-  private var updatePersonsStatement: PreparedStatement       = _
-  private var updateRolesStatement: PreparedStatement         = _
-  private var updateRootPathStatement: PreparedStatement      = _
-  private var assignPersonStatement: PreparedStatement        = _
-  private var unassignPersonStatement: PreparedStatement      = _
+  private var insertStatement: PreparedStatement                  = _
+  private var deleteStatement: PreparedStatement                  = _
+  private var updateNameStatement: PreparedStatement              = _
+  private var updateSourceStatement: PreparedStatement            = _
+  private var updateExternalIdStatement: PreparedStatement        = _
+  private var createExternalIdMappingStatement: PreparedStatement = _
+  private var deleteExternalIdMappingStatement: PreparedStatement = _
+  private var assignCategoryStatement: PreparedStatement          = _
+  private var assignChiefStatement: PreparedStatement             = _
+  private var assignChiefUnitStatement: PreparedStatement         = _
+  private var unassignChiefUnitStatement: PreparedStatement       = _
+  private var updateChildrenStatement: PreparedStatement          = _
+  private var changePositionLimitStatement: PreparedStatement     = _
+  private var updatePersonsStatement: PreparedStatement           = _
+  private var updateRolesStatement: PreparedStatement             = _
+  private var updateRootPathStatement: PreparedStatement          = _
+  private var assignPersonStatement: PreparedStatement            = _
+  private var unassignPersonStatement: PreparedStatement          = _
 
   def createTables(): Future[Done] =
     for {
@@ -66,7 +61,6 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
                                         |          parent_id        text,
                                         |          root_path        list<text>,
                                         |          name             text,
-                                        |          shortname        text,
                                         |          type             text,
                                         |          category_id      text,
                                         |
@@ -76,6 +70,9 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
                                         |          lim              int,
                                         |          persons          list<text>,
                                         |          org_roles        list<text>,
+                                        |
+                                        |          source           text,
+                                        |          external_id      text,
                                         |
                                         |          updated_at       text,
                                         |          updated_by_type  text,
@@ -98,33 +95,42 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
                                         |          PRIMARY KEY (position_id, unit_id )
                                         |)
                                         |""".stripMargin)
+      _ <- session.executeCreateTable("""
+                                        |CREATE TABLE IF NOT EXISTS external_ids (
+                                        |          external_id      text,
+                                        |          item_id          text,
+                                        |          PRIMARY KEY (external_id )
+                                        |)
+                                        |""".stripMargin)
 
     } yield Done
 
   def prepareStatements(): Future[Done] =
     for {
-      insertStmt              <- session.prepare(
-                                   """
-                        | INSERT  INTO org_items (id, org_id, parent_id, root_path, name, shortname, type, category_id,
+      insertStmt                  <- session.prepare(
+                                       """
+                        | INSERT  INTO org_items (id, org_id, parent_id, root_path, name, type, category_id,
                         |     children, chief,
                         |     lim, persons, org_roles,
+                        |     source, external_id,
                         |     updated_at, updated_by_type, updated_by_id
                         |    )
-                        |   VALUES (:id, :org_id, :parent_id, :root_path, :name, :shortname, :type, :category_id,
+                        |   VALUES (:id, :org_id, :parent_id, :root_path, :name, :type, :category_id,
                         |     :children, :chief,
                         |     :lim, :persons, :org_roles,
+                        |     :source, :external_id,
                         |     :updated_at, :updated_by_type, :updated_by_id
                         |    )
                         |""".stripMargin
-                                 )
-      deleteStmt              <- session.prepare(
-                                   """
+                                     )
+      deleteStmt                  <- session.prepare(
+                                       """
                         | DELETE FROM org_items
                         | WHERE id = :id
                         |""".stripMargin
-                                 )
-      assignCategoryStmt      <- session.prepare(
-                                   """
+                                     )
+      assignCategoryStmt          <- session.prepare(
+                                       """
                                 | UPDATE org_items SET
                                 |   category_id = :category_id,
                                 |   updated_at = :updated_at,
@@ -132,10 +138,10 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
                                 |   updated_by_id = :updated_by_id
                                 | WHERE id = :id
                                 |""".stripMargin
-                                 )
+                                     )
 
-      assignChiefStmt         <- session.prepare(
-                                   """
+      assignChiefStmt             <- session.prepare(
+                                       """
                              | UPDATE org_items SET
                              |   chief = :chief,
                              |   updated_at = :updated_at,
@@ -143,23 +149,23 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
                              |   updated_by_id = :updated_by_id
                              | WHERE id = :id
                              |""".stripMargin
-                                 )
+                                     )
 
-      assignChiefUnitStmt     <- session.prepare(
-                                   """
+      assignChiefUnitStmt         <- session.prepare(
+                                       """
                                  | INSERT INTO chief_units (position_id, unit_id, org_id)
                                  |   VALUES (:position_id, :unit_id, :org_id)
                                  |""".stripMargin
-                                 )
-      unassignChiefUnitStmt   <- session.prepare(
-                                   """
+                                     )
+      unassignChiefUnitStmt       <- session.prepare(
+                                       """
                                    | DELETE FROM chief_units
                                    |   WHERE position_id = :position_id AND unit_id = :unit_id
                                    |""".stripMargin
-                                 )
+                                     )
 
-      updateChildrenStmt      <- session.prepare(
-                                   """
+      updateChildrenStmt          <- session.prepare(
+                                       """
                                 | UPDATE org_items SET
                                 |   children = :children,
                                 |   updated_at = :updated_at,
@@ -167,10 +173,10 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
                                 |   updated_by_id = :updated_by_id
                                 | WHERE id = :id
                                 |""".stripMargin
-                                 )
+                                     )
 
-      changePositionLimitStmt <- session.prepare(
-                                   """
+      changePositionLimitStmt     <- session.prepare(
+                                       """
                                      | UPDATE org_items SET
                                      |   lim = :lim,
                                      |   updated_at = :updated_at,
@@ -178,10 +184,10 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
                                      |   updated_by_id = :updated_by_id
                                      | WHERE id = :id
                                      |""".stripMargin
-                                 )
+                                     )
 
-      updateNameStmt          <- session.prepare(
-                                   """
+      updateNameStmt              <- session.prepare(
+                                       """
                             | UPDATE org_items SET
                             |   name = :name,
                             |   updated_at = :updated_at,
@@ -189,20 +195,32 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
                             |   updated_by_id = :updated_by_id
                             | WHERE id = :id
                             |""".stripMargin
-                                 )
-      updateShortNameStmt     <- session.prepare(
-                                   """
-                                 | UPDATE org_items SET
-                                 |   shortname = :shortname,
-                                 |   updated_at = :updated_at,
-                                 |   updated_by_type = :updated_by_type,
-                                 |   updated_by_id = :updated_by_id
-                                 | WHERE id = :id
-                                 |""".stripMargin
-                                 )
+                                     )
 
-      updatePersonsStmt       <- session.prepare(
-                                   """
+      updateSourceStmt            <- session.prepare(
+                                       """
+                              | UPDATE org_items SET
+                              |   source = :source,
+                              |   updated_at = :updated_at,
+                              |   updated_by_type = :updated_by_type,
+                              |   updated_by_id = :updated_by_id
+                              | WHERE id = :id
+                              |""".stripMargin
+                                     )
+
+      updateExternalIdStmt        <- session.prepare(
+                                       """
+                                  | UPDATE org_items SET
+                                  |   external_id = :external_id,
+                                  |   updated_at = :updated_at,
+                                  |   updated_by_type = :updated_by_type,
+                                  |   updated_by_id = :updated_by_id
+                                  | WHERE id = :id
+                                  |""".stripMargin
+                                     )
+
+      updatePersonsStmt           <- session.prepare(
+                                       """
                                | UPDATE org_items SET
                                |   persons = :persons,
                                |   updated_at = :updated_at,
@@ -210,9 +228,9 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
                                |   updated_by_id = :updated_by_id
                                | WHERE id = :id
                                |""".stripMargin
-                                 )
-      updateRolesStmt         <- session.prepare(
-                                   """
+                                     )
+      updateRolesStmt             <- session.prepare(
+                                       """
                              | UPDATE org_items SET
                              |   org_roles = :org_roles,
                              |   updated_at = :updated_at,
@@ -220,9 +238,9 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
                              |   updated_by_id = :updated_by_id
                              | WHERE id = :id
                              |""".stripMargin
-                                 )
-      updateRootPathStmt      <- session.prepare(
-                                   """
+                                     )
+      updateRootPathStmt          <- session.prepare(
+                                       """
                                 | UPDATE org_items SET
                                 |   root_path = :root_path,
                                 |   updated_at = :updated_at,
@@ -230,19 +248,31 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
                                 |   updated_by_id = :updated_by_id
                                 | WHERE id = :id
                                 |""".stripMargin
-                                 )
-      assignPersonStmt        <- session.prepare(
-                                   """
+                                     )
+      assignPersonStmt            <- session.prepare(
+                                       """
                               | INSERT  INTO person_positions (person_id, position_id, org_id)
                               |   VALUES (:person_id, :position_id, :org_id)
                               |""".stripMargin
-                                 )
-      unassignPersonStmt      <- session.prepare(
-                                   """
+                                     )
+      unassignPersonStmt          <- session.prepare(
+                                       """
                                 | DELETE FROM person_positions
                                 | WHERE person_id=:person_id AND position_id=:position_id
                                 |""".stripMargin
-                                 )
+                                     )
+      createExternalIdMappingStmt <- session.prepare(
+                                       """
+                                         | INSERT  INTO external_ids (external_id, item_id)
+                                         |   VALUES (:external_id, :item_id)
+                                         |""".stripMargin
+                                     )
+      deleteExternalIdMappingStmt <- session.prepare(
+                                       """
+                                         | DELETE FROM external_ids
+                                         | WHERE external_id=:external_id
+                                         |""".stripMargin
+                                     )
     } yield {
       insertStatement = insertStmt
       deleteStatement = deleteStmt
@@ -253,12 +283,15 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       updateChildrenStatement = updateChildrenStmt
       changePositionLimitStatement = changePositionLimitStmt
       updateNameStatement = updateNameStmt
-      updateShortNameStatement = updateShortNameStmt
+      updateSourceStatement = updateSourceStmt
+      updateExternalIdStatement = updateExternalIdStmt
       updatePersonsStatement = updatePersonsStmt
       updateRolesStatement = updateRolesStmt
       updateRootPathStatement = updateRootPathStmt
       assignPersonStatement = assignPersonStmt
       unassignPersonStatement = unassignPersonStmt
+      createExternalIdMappingStatement = createExternalIdMappingStmt
+      deleteExternalIdMappingStatement = deleteExternalIdMappingStmt
       Done
     }
 
@@ -270,7 +303,6 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .setString("parent_id", hierarchy.ROOT)
       .setList[String]("root_path", Seq(event.orgId).asJava)
       .setString("name", event.name)
-      .setString("shortname", event.shortName)
       .setString("type", ItemTypes.Unit.toString)
       .setString("category_id", event.categoryId)
       .setList[String]("children", Seq.empty.asJava)
@@ -278,6 +310,8 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .setInt("lim", 0)
       .setList[String]("persons", Seq.empty.asJava)
       .setList[String]("org_roles", Seq.empty.asJava)
+      .setString("source", event.source.orNull)
+      .setString("external_id", event.externalId.orNull)
       .setString("updated_at", event.createdAt.toString)
       .setString("updated_by_type", event.createdBy.principalType)
       .setString("updated_by_id", event.createdBy.principalId)
@@ -291,11 +325,10 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
     insertStatement
       .bind()
       .setString("id", event.unitId)
-      .setString("org_id", event.orgId)
+      .setString("org_id", OrgItemKey.extractOrgId(event.unitId))
       .setString("parent_id", event.parentId)
       .setList[String]("root_path", event.rootPath.asJava)
       .setString("name", event.name)
-      .setString("shortname", event.shortName)
       .setString("type", ItemTypes.Unit.toString)
       .setString("category_id", event.categoryId)
       .setList[String]("children", Seq.empty.asJava)
@@ -303,6 +336,8 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .setInt("lim", 0)
       .setList[String]("persons", Seq.empty.asJava)
       .setList[String]("org_roles", Seq.empty.asJava)
+      .setString("source", event.source.orNull)
+      .setString("external_id", event.externalId.orNull)
       .setString("updated_at", event.createdAt.toString)
       .setString("updated_by_type", event.createdBy.principalType)
       .setString("updated_by_id", event.createdBy.principalId)
@@ -313,8 +348,8 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .setString("id", event.unitId)
 
   def updateChildren(
-    unitId: OrgItemId,
-    children: Seq[OrgItemId],
+    unitId: CompositeOrgItemId,
+    children: Seq[CompositeOrgItemId],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime
   ): BoundStatement =
@@ -350,7 +385,7 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
         .bind()
         .setString("position_id", event.chiefId)
         .setString("unit_id", event.unitId)
-        .setString("org_id", event.orgId)
+        .setString("org_id", OrgItemKey.extractOrgId(event.unitId))
     )
 
   def unassignChief(event: HierarchyEntity.ChiefUnassigned): List[BoundStatement] =
@@ -372,11 +407,10 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
     insertStatement
       .bind()
       .setString("id", event.positionId)
-      .setString("org_id", event.orgId)
+      .setString("org_id", OrgItemKey.extractOrgId(event.positionId))
       .setString("parent_id", event.parentId)
       .setList[String]("root_path", event.rootPath.asJava)
       .setString("name", event.name)
-      .setString("shortname", event.shortName)
       .setString("type", ItemTypes.Position.toString)
       .setString("category_id", event.categoryId)
       .setList[String]("children", null)
@@ -384,6 +418,8 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .setInt("lim", event.limit)
       .setList[String]("persons", Seq.empty.asJava)
       .setList[String]("org_roles", Seq.empty.asJava)
+      .setString("source", event.source.orNull)
+      .setString("external_id", event.externalId.orNull)
       .setString("updated_at", event.createdAt.toString)
       .setString("updated_by_type", event.createdBy.principalType)
       .setString("updated_by_id", event.createdBy.principalId)
@@ -396,20 +432,41 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
   def updateName(event: HierarchyEntity.NameUpdated): BoundStatement =
     updateNameStatement
       .bind()
-      .setString("id", event.orgItemId)
+      .setString("id", event.itemId)
       .setString("name", event.name)
       .setString("updated_at", event.updatedAt.toString)
       .setString("updated_by_type", event.updatedBy.principalType)
       .setString("updated_by_id", event.updatedBy.principalId)
 
-  def updateShortName(event: HierarchyEntity.ShortNameUpdated): BoundStatement =
-    updateShortNameStatement
+  def updateSource(event: HierarchyEntity.SourceUpdated): BoundStatement =
+    updateSourceStatement
       .bind()
-      .setString("id", event.orgItemId)
-      .setString("shortname", event.shortName)
+      .setString("id", event.itemId)
+      .setString("source", event.source.orNull)
       .setString("updated_at", event.updatedAt.toString)
       .setString("updated_by_type", event.updatedBy.principalType)
       .setString("updated_by_id", event.updatedBy.principalId)
+
+  def updateExternalId(event: HierarchyEntity.ExternalIdUpdated): Seq[BoundStatement] =
+    Seq(
+      updateExternalIdStatement
+        .bind()
+        .setString("id", event.itemId)
+        .setString("external_id", event.externalId.orNull)
+        .setString("updated_at", event.updatedAt.toString)
+        .setString("updated_by_type", event.updatedBy.principalType)
+        .setString("updated_by_id", event.updatedBy.principalId)
+    ) ++ event.externalId.map(externalId =>
+      createExternalIdMappingStatement
+        .bind()
+        .setString("external_id", externalId)
+        .setString("item_id", event.itemId)
+    ) ++
+      event.oldExternalId.map(oldExternalId =>
+        deleteExternalIdMappingStatement
+          .bind()
+          .setString("external_id", oldExternalId)
+      )
 
   def changePositionLimit(event: HierarchyEntity.PositionLimitChanged): BoundStatement =
     changePositionLimitStatement
@@ -420,17 +477,17 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .setString("updated_by_type", event.updatedBy.principalType)
       .setString("updated_by_id", event.updatedBy.principalId)
 
-  def assignPerson(event: HierarchyEntity.PersonAssigned, persons: Set[OrgItemId]): List[BoundStatement] =
+  def assignPerson(event: HierarchyEntity.PersonAssigned, persons: Set[CompositeOrgItemId]): List[BoundStatement] =
     List(
       updatePersons(event.positionId, persons, event.updatedBy, event.updatedAt),
       assignPersonStatement
         .bind()
         .setString("person_id", event.personId)
         .setString("position_id", event.positionId)
-        .setString("org_id", event.orgId)
+        .setString("org_id", OrgItemKey.extractOrgId(event.positionId))
     )
 
-  def unassignPerson(event: HierarchyEntity.PersonUnassigned, persons: Set[OrgItemId]): List[BoundStatement] =
+  def unassignPerson(event: HierarchyEntity.PersonUnassigned, persons: Set[CompositeOrgItemId]): List[BoundStatement] =
     List(
       updatePersons(event.positionId, persons, event.updatedBy, event.updatedAt),
       unassignPersonStatement
@@ -440,8 +497,8 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
     )
 
   def updatePersons(
-    positionId: OrgItemId,
-    persons: Set[OrgItemId],
+    positionId: CompositeOrgItemId,
+    persons: Set[CompositeOrgItemId],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime
   ): BoundStatement =
@@ -454,7 +511,7 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .setString("updated_by_id", updatedBy.principalId)
 
   def updateRoles(
-    positionId: OrgItemId,
+    positionId: CompositeOrgItemId,
     roles: Set[OrgRoleId],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime
@@ -468,7 +525,7 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .setString("updated_by_id", updatedBy.principalId)
 
   def updateRootPaths(
-    rootPaths: Map[OrgItemId, Seq[OrgItemId]],
+    rootPaths: Map[CompositeOrgItemId, Seq[CompositeOrgItemId]],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime
   ): Seq[BoundStatement] =
@@ -483,17 +540,25 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
           .setString("updated_by_id", updatedBy.principalId)
     }.toList
 
-  def getOrgItemById(id: OrgItemId): Future[Option[OrgItem]] =
+  def getOrgItemById(id: CompositeOrgItemId): Future[Option[OrgItem]] =
     for {
       stmt   <- session.prepare("SELECT * FROM org_items WHERE id = ?")
       result <- session.selectOne(stmt.bind(id)).map(_.map(convertToOrgItem))
     } yield result
 
-  def getOrgItemsById(ids: Set[OrgItemId]): Future[Map[OrgItemId, OrgItem]]  =
+  def getOrgItemsById(ids: Set[CompositeOrgItemId]): Future[Seq[OrgItem]] =
     for {
       stmt   <- session.prepare("SELECT * FROM org_items WHERE id IN ?")
       result <- session.selectAll(stmt.bind(ids.toList.asJava)).map(_.map(convertToOrgItem))
-    } yield result.map(item => item.id -> item).toMap
+    } yield result
+
+  def getItemIdsByExternalId(externalIds: Set[String]): Future[Map[String, CompositeOrgItemId]] =
+    for {
+      stmt   <- session.prepare("SELECT * FROM external_ids WHERE external_id IN ?")
+      result <- session
+                  .selectAll(stmt.bind(externalIds.toList.asJava))
+                  .map(_.map(row => row.getString("external_id") -> row.getString("item_id")))
+    } yield result.toMap
 
   def getPersonPrincipals(personId: PersonId): Future[Set[AnnettePrincipal]] =
     for {
@@ -544,7 +609,6 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
           rootPath = rootPath,
           id = row.getString("id"),
           name = row.getString("name"),
-          shortName = row.getString("shortname"),
           children = row.getList[String]("children", classOf[String]).asScala.toSeq,
           chief = Option(row.getString("chief")),
           level = level,
@@ -562,7 +626,6 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
           rootPath = rootPath,
           id = row.getString("id"),
           name = row.getString("name"),
-          shortName = row.getString("shortname"),
           persons = row.getList[String]("persons", classOf[String]).asScala.toSet,
           limit = row.getInt("lim"),
           orgRoles = row.getList[String]("org_roles", classOf[String]).asScala.toSet,

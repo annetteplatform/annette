@@ -17,10 +17,11 @@
 package biz.lobachev.annette.org_structure.api.hierarchy
 
 import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
+import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import play.api.libs.json._
 
 case class OrganizationTree(
-  orgId: OrgItemId,
+  orgId: CompositeOrgItemId,
   root: OrgTreeItem
 )
 
@@ -29,14 +30,16 @@ object OrganizationTree {
 }
 
 sealed trait OrgTreeItem {
-  val id: OrgItemId
+  val id: CompositeOrgItemId
 }
 
 final case class UnitTreeItem(
-  id: OrgItemId,
+  id: CompositeOrgItemId,
   children: Seq[OrgTreeItem],
-  chief: Option[OrgItemId],
-  categoryId: OrgCategoryId
+  chief: Option[CompositeOrgItemId],
+  categoryId: OrgCategoryId,
+  source: Option[String],
+  externalId: Option[String]
 ) extends OrgTreeItem
 
 object UnitTreeItem {
@@ -44,9 +47,13 @@ object UnitTreeItem {
 }
 
 final case class PositionTreeItem(
-  id: OrgItemId,
-  persons: Set[OrgItemId],
-  categoryId: OrgCategoryId
+  id: CompositeOrgItemId,
+  categoryId: OrgCategoryId,
+  persons: Set[CompositeOrgItemId],
+  limit: Int,
+  orgRoles: Set[OrgRoleId],
+  source: Option[String] = None,
+  externalId: Option[String] = None
 ) extends OrgTreeItem
 
 object PositionTreeItem {

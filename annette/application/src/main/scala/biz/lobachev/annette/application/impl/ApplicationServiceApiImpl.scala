@@ -16,7 +16,6 @@
 
 package biz.lobachev.annette.application.impl
 
-import java.util.concurrent.TimeUnit
 import akka.util.Timeout
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.application.api._
@@ -26,20 +25,27 @@ import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.application.impl.application._
 import biz.lobachev.annette.application.impl.language._
 import biz.lobachev.annette.application.impl.translation._
+import biz.lobachev.annette.application.impl.translation_json.TranslationJsonEntityService
+import biz.lobachev.annette.core.model.LanguageId
 import biz.lobachev.annette.core.model.elastic.FindResult
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
+import play.api.libs.json.JsObject
 
+import java.util.concurrent.TimeUnit
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.Try
 
 class ApplicationServiceApiImpl(
   languageEntityService: LanguageEntityService,
   translationEntityService: TranslationEntityService,
+  translationJsonEntityService: TranslationJsonEntityService,
   applicationEntityService: ApplicationEntityService,
   config: Config
-) extends ApplicationServiceApi {
+)(implicit val ec: ExecutionContext)
+    extends ApplicationServiceApi {
 
   implicit val timeout =
     Try(config.getDuration("annette.timeout"))
@@ -63,14 +69,18 @@ class ApplicationServiceApiImpl(
       languageEntityService.deleteLanguage(payload)
     }
 
-  override def getLanguageById(id: LanguageId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Language] =
+  def getLanguageById(id: LanguageId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Language] =
     ServiceCall { _ =>
       languageEntityService.getLanguageById(id, fromReadSide)
     }
+  def getLanguagesById(fromReadSide: Boolean = true): ServiceCall[Set[LanguageId], Seq[Language]]   =
+    ServiceCall { ids =>
+      languageEntityService.getLanguagesById(ids, fromReadSide)
+    }
 
-  override def getLanguages: ServiceCall[NotUsed, Map[LanguageId, Language]] =
-    ServiceCall { _ =>
-      languageEntityService.getLanguages
+  def findLanguages: ServiceCall[FindLanguageQuery, FindResult] =
+    ServiceCall { query =>
+      languageEntityService.findLanguages(query)
     }
 
   override def createTranslation: ServiceCall[CreateTranslationPayload, Done] =
@@ -78,60 +88,61 @@ class ApplicationServiceApiImpl(
       translationEntityService.createTranslation(payload)
     }
 
-  override def updateTranslationName: ServiceCall[UpdateTranslationNamePayload, Done] =
+  override def updateTranslation: ServiceCall[UpdateTranslationPayload, Done] =
     ServiceCall { payload =>
       translationEntityService.updateTranslationName(payload)
     }
 
   override def deleteTranslation: ServiceCall[DeleteTranslationPayload, Done] =
     ServiceCall { payload =>
-      translationEntityService.deleteTranslation(payload)
+      for {
+        _ <- translationEntityService.deleteTranslation(payload)
+        _ <- translationJsonEntityService.deleteTranslationJsons(payload)
+      } yield Done
     }
 
-  override def createTranslationBranch: ServiceCall[CreateTranslationBranchPayload, Done] =
-    ServiceCall { payload =>
-      translationEntityService.createTranslationBranch(payload)
-    }
-
-  override def updateTranslationText: ServiceCall[UpdateTranslationTextPayload, Done] =
-    ServiceCall { payload =>
-      translationEntityService.updateTranslationText(payload)
-    }
-
-  override def deleteTranslationItem: ServiceCall[DeleteTranslationItemPayload, Done] =
-    ServiceCall { payload =>
-      translationEntityService.deleteTranslationItem(payload)
-    }
-  override def deleteTranslationText: ServiceCall[DeleteTranslationTextPayload, Done] =
-    ServiceCall { payload =>
-      translationEntityService.deleteTranslationText(payload)
-    }
-
-  override def getTranslationById(id: TranslationId): ServiceCall[NotUsed, Translation] =
+  override def getTranslationById(id: TranslationId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Translation] =
     ServiceCall { _ =>
-      translationEntityService.getTranslationById(id)
+      translationEntityService.getTranslationById(id, fromReadSide)
     }
 
-  override def getTranslationJsonById(
-    id: TranslationId,
-    languageId: LanguageId,
-    fromReadSide: Boolean = true
-  ): ServiceCall[NotUsed, TranslationJson] =
-    ServiceCall { _ =>
-      translationEntityService.getTranslationJsonById(id, languageId, fromReadSide)
-    }
-
-  override def getTranslationJsonsById(
-    languageId: LanguageId,
-    fromReadSide: Boolean = true
-  ): ServiceCall[Set[TranslationId], Map[TranslationId, TranslationJson]] =
+  override def getTranslationsById(fromReadSide: Boolean = true): ServiceCall[Set[TranslationId], Seq[Translation]] =
     ServiceCall { ids =>
-      translationEntityService.getTranslationJsonsById(ids, languageId, fromReadSide)
+      translationEntityService.getTranslationsById(ids, fromReadSide)
     }
 
   override def findTranslations: ServiceCall[FindTranslationQuery, FindResult] =
     ServiceCall { query =>
       translationEntityService.findTranslations(query)
+    }
+
+  override def updateTranslationJson: ServiceCall[UpdateTranslationJsonPayload, Done] =
+    ServiceCall { payload =>
+      translationJsonEntityService.updateTranslationJson(payload)
+    }
+  override def deleteTranslationJson: ServiceCall[DeleteTranslationJsonPayload, Done] =
+    ServiceCall { payload =>
+      translationJsonEntityService.deleteTranslationJson(payload)
+    }
+
+  override def getTranslationLanguages(id: TranslationId): ServiceCall[NotUsed, Seq[LanguageId]] =
+    ServiceCall { _ =>
+      translationJsonEntityService.getTranslationLanguages(id)
+    }
+
+  override def getTranslationJson(
+    id: TranslationId,
+    languageId: LanguageId
+  ): ServiceCall[NotUsed, TranslationJson] =
+    ServiceCall { _ =>
+      translationJsonEntityService.getTranslationJson(id, languageId)
+    }
+
+  override def getTranslationJsons(
+    languageId: LanguageId
+  ): ServiceCall[Set[TranslationId], Seq[TranslationJson]] =
+    ServiceCall { ids =>
+      translationJsonEntityService.getTranslationJsons(ids, languageId)
     }
 
   override def createApplication: ServiceCall[CreateApplicationPayload, Done] =
@@ -154,9 +165,7 @@ class ApplicationServiceApiImpl(
       applicationEntityService.getApplicationById(id, fromReadSide)
     }
 
-  override def getApplicationsById(
-    fromReadSide: Boolean = true
-  ): ServiceCall[Set[ApplicationId], Map[ApplicationId, Application]] =
+  override def getApplicationsById(fromReadSide: Boolean = true): ServiceCall[Set[ApplicationId], Seq[Application]] =
     ServiceCall { ids =>
       applicationEntityService.getApplicationsById(ids, fromReadSide)
     }
@@ -166,4 +175,12 @@ class ApplicationServiceApiImpl(
       applicationEntityService.findApplications(query)
     }
 
+  def getApplicationTranslations(id: ApplicationId, languageId: LanguageId): ServiceCall[NotUsed, JsObject] =
+    ServiceCall { _ =>
+      for {
+        application      <- applicationEntityService.getApplicationById(id, true)
+        translationJsons <- translationJsonEntityService.getTranslationJsons(application.translations, languageId)
+        json              = translationJsons.map(_.json).reduceRight((obj, acc) => acc.deepMerge(obj))
+      } yield json
+    }
 }

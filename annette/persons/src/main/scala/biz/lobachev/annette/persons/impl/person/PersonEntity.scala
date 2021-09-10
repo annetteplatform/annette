@@ -23,7 +23,7 @@ import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.persons.api.category.PersonCategoryId
+import biz.lobachev.annette.core.model.category.CategoryId
 import biz.lobachev.annette.persons.api.person._
 import biz.lobachev.annette.persons.impl.person.model.PersonState
 import com.lightbend.lagom.scaladsl.persistence._
@@ -66,7 +66,7 @@ object PersonEntity {
     lastname: String,
     firstname: String,
     middlename: Option[String],
-    categoryId: PersonCategoryId,
+    categoryId: CategoryId,
     phone: Option[String],
     email: Option[String],
     createdBy: AnnettePrincipal,
@@ -77,7 +77,7 @@ object PersonEntity {
     lastname: String,
     firstname: String,
     middlename: Option[String],
-    categoryId: PersonCategoryId,
+    categoryId: CategoryId,
     phone: Option[String],
     email: Option[String],
     updatedBy: AnnettePrincipal,

@@ -18,15 +18,13 @@ package biz.lobachev.annette.org_structure.impl.hierarchy.dao
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
-
-import java.time.OffsetDateTime
 import biz.lobachev.annette.attributes.api.query.AttributeElastic
 import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.microservice_core.elastic.{AbstractElasticIndexDao, ElasticSettings}
 import biz.lobachev.annette.org_structure.api.hierarchy
-import biz.lobachev.annette.org_structure.api.hierarchy.{ItemTypes, OrgItemFindQuery, OrgItemId}
+import biz.lobachev.annette.org_structure.api.hierarchy.{CompositeOrgItemId, ItemTypes, OrgItemFindQuery, OrgItemKey}
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
-import biz.lobachev.annette.org_structure.impl.hierarchy.HierarchyEntity
+import biz.lobachev.annette.org_structure.impl.hierarchy.entity.HierarchyEntity
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.requests.common.RefreshPolicy
@@ -34,6 +32,7 @@ import com.sksamuel.elastic4s.requests.indexes.CreateIndexRequest
 import com.sksamuel.elastic4s.requests.searches.sort.FieldSort
 import org.slf4j.LoggerFactory
 
+import java.time.OffsetDateTime
 import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -41,7 +40,6 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
   override val ec: ExecutionContext,
   materializer: Materializer
 ) extends AbstractElasticIndexDao(elasticSettings, elasticClient)
-    with HierarchyIndexDao
     with AttributeElastic {
 
   override val log = LoggerFactory.getLogger(this.getClass)
@@ -57,7 +55,6 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
           keywordField("parentId"),
           keywordField("rootPath"),
           textField("name").fielddata(true),
-          textField("shortName").fielddata(true),
           keywordField("type"),
           keywordField("children"),
           keywordField("chief"),
@@ -66,6 +63,8 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
           keywordField("persons"),
           keywordField("orgRoles"),
           intField("level"),
+          keywordField("source"),
+          keywordField("externalId"),
           dateField("updatedAt")
         )
       )
@@ -80,11 +79,12 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
           "parentId"   -> hierarchy.ROOT,
           "rootPath"   -> Seq(event.orgId),
           "name"       -> event.name,
-          "shortName"  -> event.shortName,
           "type"       -> ItemTypes.Unit.toString,
           "children"   -> Seq.empty,
           "categoryId" -> event.categoryId,
           "level"      -> 0,
+          "source"     -> event.source,
+          "externalId" -> event.externalId,
           "updatedAt"  -> event.createdAt
         )
         .refresh(RefreshPolicy.Immediate)
@@ -101,15 +101,16 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
         .id(event.unitId)
         .fields(
           "id"         -> event.unitId,
-          "orgId"      -> event.orgId,
+          "orgId"      -> OrgItemKey.extractOrgId(event.unitId),
           "parentId"   -> event.parentId,
           "rootPath"   -> event.rootPath,
           "name"       -> event.name,
-          "shortName"  -> event.shortName,
           "type"       -> ItemTypes.Unit.toString,
           "children"   -> Seq.empty,
           "categoryId" -> event.categoryId,
           "level"      -> (event.rootPath.length - 1),
+          "source"     -> event.source,
+          "externalId" -> event.externalId,
           "updatedAt"  -> event.createdAt
         )
         .refresh(RefreshPolicy.Immediate)
@@ -147,15 +148,16 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
         .id(event.positionId)
         .fields(
           "id"         -> event.positionId,
-          "orgId"      -> event.orgId,
+          "orgId"      -> OrgItemKey.extractOrgId(event.positionId),
           "parentId"   -> event.parentId,
           "rootPath"   -> event.rootPath,
           "name"       -> event.name,
-          "shortName"  -> event.shortName,
           "type"       -> ItemTypes.Position.toString,
           "categoryId" -> event.categoryId,
           "limit"      -> event.limit,
           "level"      -> (event.rootPath.length - 1),
+          "source"     -> event.source,
+          "externalId" -> event.externalId,
           "updatedAt"  -> event.createdAt
         )
         .refresh(RefreshPolicy.Immediate)
@@ -168,20 +170,33 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
 
   def updateName(event: HierarchyEntity.NameUpdated): Future[Unit] =
     elasticClient.execute {
-      updateById(indexName, event.orgItemId)
+      updateById(indexName, event.itemId)
         .doc(
           "name"      -> event.name,
           "updatedAt" -> event.updatedAt
         )
         .refresh(RefreshPolicy.Immediate)
-    }.map(processResponse("updateName", event.orgItemId)(_))
+    }.map(processResponse("updateName", event.itemId)(_))
 
-  def updateShortName(event: HierarchyEntity.ShortNameUpdated): Future[Unit] =
+  def updateSource(event: HierarchyEntity.SourceUpdated) =
     elasticClient.execute {
-      updateById(indexName, event.orgItemId)
-        .doc("shortName" -> event.shortName, "updatedAt" -> event.updatedAt)
+      updateById(indexName, event.itemId)
+        .doc(
+          "source"    -> event.source,
+          "updatedAt" -> event.updatedAt
+        )
         .refresh(RefreshPolicy.Immediate)
-    }.map(processResponse("updateShortName", event.orgItemId)(_))
+    }.map(processResponse("updateSource", event.itemId)(_))
+
+  def updateExternalId(event: HierarchyEntity.ExternalIdUpdated) =
+    elasticClient.execute {
+      updateById(indexName, event.itemId)
+        .doc(
+          "externalId" -> event.externalId,
+          "updatedAt"  -> event.updatedAt
+        )
+        .refresh(RefreshPolicy.Immediate)
+    }.map(processResponse("updateExternalId", event.itemId)(_))
 
   def changePositionLimit(event: HierarchyEntity.PositionLimitChanged): Future[Unit] =
     elasticClient.execute {
@@ -191,8 +206,8 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
     }.map(processResponse("changePositionLimit", event.positionId)(_))
 
   def updatePersons(
-    positionId: OrgItemId,
-    persons: Set[OrgItemId],
+    positionId: CompositeOrgItemId,
+    persons: Set[CompositeOrgItemId],
     updatedAt: OffsetDateTime
   ): Future[Unit] =
     elasticClient.execute {
@@ -202,7 +217,7 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
     }.map(processResponse("updatePersons", positionId)(_))
 
   def updateRoles(
-    positionId: OrgItemId,
+    positionId: CompositeOrgItemId,
     roles: Set[OrgRoleId],
     updatedAt: OffsetDateTime
   ): Future[Unit] =
@@ -213,8 +228,8 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
     }.map(processResponse("updateRoles", positionId)(_))
 
   def updateChildren(
-    itemId: OrgItemId,
-    children: Seq[OrgItemId],
+    itemId: CompositeOrgItemId,
+    children: Seq[CompositeOrgItemId],
     updatedAt: OffsetDateTime
   ): Future[Unit] =
     elasticClient.execute {
@@ -224,7 +239,7 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
     }.map(processResponse("updateChildren", itemId)(_))
 
   def updateRootPaths(
-    rootPaths: Map[OrgItemId, Seq[OrgItemId]],
+    rootPaths: Map[CompositeOrgItemId, Seq[CompositeOrgItemId]],
     updatedAt: OffsetDateTime
   ): Future[Unit] =
     Source(rootPaths.toSeq)
@@ -243,9 +258,8 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
 
   def findOrgItem(query: OrgItemFindQuery): Future[FindResult] = {
 
-    val filterQuery        = buildFilterQuery(query.filter, Seq("name" -> 3.0, "shortName" -> 2.0))
-    val fieldQuery         = query.name.map(matchQuery("name", _)).toSeq ++
-      query.shortName.map(matchQuery("shortName", _)).toSeq
+    val filterQuery        = buildFilterQuery(query.filter, Seq("name" -> 3.0))
+    val fieldQuery         = query.name.map(matchQuery("name", _)).toSeq
     val orgUnitsQuery      = query.orgUnits.map(units => termsSetQuery("rootPath", units, script("1"))).toSeq
     val personsQuery       = query.persons.map(persons => termsSetQuery("persons", persons, script("1"))).toSeq
     val orgRolesQuery      = query.orgRoles.map(roles => termsSetQuery("orgRoles", roles, script("1"))).toSeq
@@ -256,7 +270,10 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
     val organizationsQuery = query.organizations.map(orgs => termsSetQuery("orgId", orgs, script("1"))).toSeq
     val parentsQuery       = query.parents.map(parents => termsSetQuery("parentId", parents, script("1"))).toSeq
     val chiefsQuery        = query.chiefs.map(chiefs => termsSetQuery("chief", chiefs, script("1"))).toSeq
-    val categoryQuery      = query.categories.map(chiefs => termsSetQuery("categoryId", chiefs, script("1"))).toSeq
+    val categoryQuery      = query.categories.map(categories => termsSetQuery("categoryId", categories, script("1"))).toSeq
+    val sourceQuery        = query.sources.map(sources => termsSetQuery("source", sources, script("1"))).toSeq
+    val externalIdQuery    =
+      query.externalIds.map(externalIds => termsSetQuery("externalId", externalIds, script("1"))).toSeq
     val attributeQuery     = buildAttributeQuery(query.attributes)
 
     val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
@@ -266,7 +283,8 @@ class HierarchyElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: 
         must(
           filterQuery ++ fieldQuery ++ fieldQuery ++ orgUnitsQuery ++
             personsQuery ++ orgRolesQuery ++ fromLevelQuery ++ toLevelQuery ++
-            itemTypesQuery ++ organizationsQuery ++ parentsQuery ++ chiefsQuery ++ categoryQuery ++ attributeQuery
+            itemTypesQuery ++ organizationsQuery ++ parentsQuery ++ chiefsQuery ++ categoryQuery ++
+            sourceQuery ++ externalIdQuery ++ attributeQuery
         )
       )
       .from(query.offset)

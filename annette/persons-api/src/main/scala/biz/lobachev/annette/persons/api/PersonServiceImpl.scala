@@ -20,13 +20,13 @@ import akka.Done
 import io.scalaland.chimney.dsl._
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.elastic.FindResult
-import biz.lobachev.annette.persons.api.category.{
+import biz.lobachev.annette.core.model.category.{
+  Category,
+  CategoryAlreadyExist,
+  CategoryFindQuery,
+  CategoryId,
   CreateCategoryPayload,
   DeleteCategoryPayload,
-  PersonCategory,
-  PersonCategoryAlreadyExist,
-  PersonCategoryFindQuery,
-  PersonCategoryId,
   UpdateCategoryPayload
 }
 import biz.lobachev.annette.persons.api.person._
@@ -54,7 +54,7 @@ class PersonServiceImpl(api: PersonServiceApi, implicit val ec: ExecutionContext
   override def getPersonById(id: PersonId, fromReadSide: Boolean): Future[Person] =
     api.getPersonById(id, fromReadSide).invoke()
 
-  override def getPersonsById(ids: Set[PersonId], fromReadSide: Boolean): Future[Map[PersonId, Person]] =
+  override def getPersonsById(ids: Set[PersonId], fromReadSide: Boolean): Future[Seq[Person]] =
     api.getPersonsById(fromReadSide).invoke(ids)
 
   override def findPersons(query: PersonFindQuery): Future[FindResult] = api.findPersons.invoke(query)
@@ -69,28 +69,25 @@ class PersonServiceImpl(api: PersonServiceApi, implicit val ec: ExecutionContext
 
   def createOrUpdateCategory(payload: CreateCategoryPayload): Future[Done] =
     createCategory(payload).recoverWith {
-      case PersonCategoryAlreadyExist(_) =>
+      case CategoryAlreadyExist(_) =>
         val updatePayload = payload
           .into[UpdateCategoryPayload]
           .withFieldComputed(_.updatedBy, _.createdBy)
           .transform
         updateCategory(updatePayload)
-      case th                            => Future.failed(th)
+      case th                      => Future.failed(th)
     }
 
   def deleteCategory(payload: DeleteCategoryPayload): Future[Done] =
     api.deleteCategory.invoke(payload)
 
-  def getCategoryById(id: PersonCategoryId, fromReadSide: Boolean): Future[PersonCategory] =
+  def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category] =
     api.getCategoryById(id, fromReadSide).invoke()
 
-  def getCategoriesById(
-    ids: Set[PersonCategoryId],
-    fromReadSide: Boolean
-  ): Future[Map[PersonCategoryId, PersonCategory]] =
+  def getCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean): Future[Seq[Category]] =
     api.getCategoriesById(fromReadSide).invoke(ids)
 
-  def findCategories(query: PersonCategoryFindQuery): Future[FindResult] =
+  def findCategories(query: CategoryFindQuery): Future[FindResult] =
     api.findCategories.invoke(query)
 
 }

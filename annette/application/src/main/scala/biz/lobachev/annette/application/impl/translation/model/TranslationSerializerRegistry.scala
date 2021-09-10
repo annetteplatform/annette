@@ -24,30 +24,18 @@ object TranslationSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
       JsonSerializer[TranslationState],
-      JsonSerializer[TranslationTree],
       JsonSerializer[Translation],
       JsonSerializer[TranslationJson],
       JsonSerializer[AnnettePrincipal],
-      JsonSerializer[DeleteTranslationItemPayload],
-      JsonSerializer[UpdateTranslationTextPayload],
-      JsonSerializer[CreateTranslationBranchPayload],
       JsonSerializer[DeleteTranslationPayload],
-      JsonSerializer[UpdateTranslationNamePayload],
+      JsonSerializer[UpdateTranslationPayload],
       JsonSerializer[CreateTranslationPayload],
       JsonSerializer[TranslationEntity.Success.type],
       JsonSerializer[TranslationEntity.SuccessTranslation],
-      JsonSerializer[TranslationEntity.SuccessTranslationJson],
       JsonSerializer[TranslationEntity.TranslationAlreadyExist.type],
       JsonSerializer[TranslationEntity.TranslationNotFound.type],
-      JsonSerializer[TranslationEntity.IncorrectTranslationId.type],
       JsonSerializer[TranslationEntity.TranslationCreated],
-      JsonSerializer[TranslationEntity.TranslationNameUpdated],
-      JsonSerializer[TranslationEntity.TranslationDeleted],
-      JsonSerializer[TranslationEntity.TranslationBranchCreated],
-      JsonSerializer[TranslationEntity.TranslationTextUpdated],
-      JsonSerializer[TranslationEntity.TranslationItemDeleted],
-      JsonSerializer[TranslationEntity.TranslationTextDeleted],
-      JsonSerializer[TranslationEntity.TranslationJsonChanged],
-      JsonSerializer[TranslationEntity.TranslationJsonDeleted]
+      JsonSerializer[TranslationEntity.TranslationUpdated],
+      JsonSerializer[TranslationEntity.TranslationDeleted]
     )
 }

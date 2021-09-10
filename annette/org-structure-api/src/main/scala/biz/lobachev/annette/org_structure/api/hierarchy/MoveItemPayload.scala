@@ -20,9 +20,8 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class MoveItemPayload(
-  orgId: OrgItemId,
-  orgItemId: OrgItemId,
-  newParentId: OrgItemId,
+  itemId: CompositeOrgItemId,
+  newParentId: CompositeOrgItemId,
   order: Option[Int] = None,
   updatedBy: AnnettePrincipal
 )

@@ -21,10 +21,10 @@ import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.api.language._
 import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
+import biz.lobachev.annette.core.model.LanguageId
 import biz.lobachev.annette.core.model.elastic.FindResult
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
-
-import scala.collection.immutable.Map
+import play.api.libs.json.JsObject
 
 trait ApplicationServiceApi extends Service {
 
@@ -32,35 +32,29 @@ trait ApplicationServiceApi extends Service {
   def updateLanguage: ServiceCall[UpdateLanguagePayload, Done]
   def deleteLanguage: ServiceCall[DeleteLanguagePayload, Done]
   def getLanguageById(id: LanguageId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Language]
-  def getLanguages: ServiceCall[NotUsed, Map[LanguageId, Language]]
+  def getLanguagesById(fromReadSide: Boolean = true): ServiceCall[Set[LanguageId], Seq[Language]]
+  def findLanguages: ServiceCall[FindLanguageQuery, FindResult]
 
   def createTranslation: ServiceCall[CreateTranslationPayload, Done]
-  def updateTranslationName: ServiceCall[UpdateTranslationNamePayload, Done]
+  def updateTranslation: ServiceCall[UpdateTranslationPayload, Done]
   def deleteTranslation: ServiceCall[DeleteTranslationPayload, Done]
-  def createTranslationBranch: ServiceCall[CreateTranslationBranchPayload, Done]
-  def updateTranslationText: ServiceCall[UpdateTranslationTextPayload, Done]
-  def deleteTranslationItem: ServiceCall[DeleteTranslationItemPayload, Done]
-  def deleteTranslationText: ServiceCall[DeleteTranslationTextPayload, Done]
-  def getTranslationById(id: TranslationId): ServiceCall[NotUsed, Translation]
-  def getTranslationJsonById(
-    id: TranslationId,
-    languageId: LanguageId,
-    fromReadSide: Boolean = true
-  ): ServiceCall[NotUsed, TranslationJson]
-  def getTranslationJsonsById(
-    languageId: LanguageId,
-    fromReadSide: Boolean = true
-  ): ServiceCall[Set[TranslationId], Map[TranslationId, TranslationJson]]
+  def getTranslationById(id: TranslationId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Translation]
+  def getTranslationsById(fromReadSide: Boolean = true): ServiceCall[Set[TranslationId], Seq[Translation]]
   def findTranslations: ServiceCall[FindTranslationQuery, FindResult]
+
+  def updateTranslationJson: ServiceCall[UpdateTranslationJsonPayload, Done]
+  def deleteTranslationJson: ServiceCall[DeleteTranslationJsonPayload, Done]
+  def getTranslationLanguages(id: TranslationId): ServiceCall[NotUsed, Seq[LanguageId]]
+  def getTranslationJson(id: TranslationId, languageId: LanguageId): ServiceCall[NotUsed, TranslationJson]
+  def getTranslationJsons(languageId: LanguageId): ServiceCall[Set[TranslationId], Seq[TranslationJson]]
 
   def createApplication: ServiceCall[CreateApplicationPayload, Done]
   def updateApplication: ServiceCall[UpdateApplicationPayload, Done]
   def deleteApplication: ServiceCall[DeleteApplicationPayload, Done]
   def getApplicationById(id: ApplicationId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Application]
-  def getApplicationsById(
-    fromReadSide: Boolean = true
-  ): ServiceCall[Set[ApplicationId], Map[ApplicationId, Application]]
+  def getApplicationsById(fromReadSide: Boolean = true): ServiceCall[Set[ApplicationId], Seq[Application]]
   def findApplications: ServiceCall[FindApplicationQuery, FindResult]
+  def getApplicationTranslations(id: ApplicationId, languageId: LanguageId): ServiceCall[NotUsed, JsObject]
 
   final override def descriptor = {
     import Service._
@@ -70,30 +64,26 @@ trait ApplicationServiceApi extends Service {
         pathCall("/api/application/v1/updateLanguage", updateLanguage),
         pathCall("/api/application/v1/deleteLanguage", deleteLanguage),
         pathCall("/api/application/v1/getLanguageById/:id/:fromReadSide", getLanguageById _),
-        pathCall("/api/application/v1/getLanguages", getLanguages),
+        pathCall("/api/application/v1/getLanguagesById/:fromReadSide", getLanguagesById _),
+        pathCall("/api/application/v1/findLanguages", findLanguages),
         pathCall("/api/application/v1/createTranslation", createTranslation),
-        pathCall("/api/application/v1/updateTranslationName", updateTranslationName),
+        pathCall("/api/application/v1/updateTranslation", updateTranslation),
         pathCall("/api/application/v1/deleteTranslation", deleteTranslation),
-        pathCall("/api/application/v1/createTranslationBranch", createTranslationBranch),
-        pathCall("/api/application/v1/updateTranslationText", updateTranslationText),
-        pathCall("/api/application/v1/deleteTranslationText", deleteTranslationText),
-        pathCall("/api/application/v1/deleteTranslationItem", deleteTranslationItem),
-        pathCall("/api/application/v1/getTranslationById/:id", getTranslationById _),
-        pathCall(
-          "/api/application/v1/getTranslationJsonById/:id/:languageId/:fromReadSide",
-          getTranslationJsonById _
-        ),
-        pathCall(
-          "/api/application/v1/getTranslationJsonsById/:languageId/:fromReadSide",
-          getTranslationJsonsById _
-        ),
+        pathCall("/api/application/v1/getTranslationById/:id/:fromReadSide", getTranslationById _),
+        pathCall("/api/application/v1/getTranslationsById/:fromReadSide", getTranslationsById _),
         pathCall("/api/application/v1/findTranslations", findTranslations),
+        pathCall("/api/application/v1/updateTranslationJson", updateTranslationJson),
+        pathCall("/api/application/v1/deleteTranslationJson", deleteTranslationJson),
+        pathCall("/api/application/v1/getTranslationLanguages/:id", getTranslationLanguages _),
+        pathCall("/api/application/v1/getTranslationJson/:id/:languageId", getTranslationJson _),
+        pathCall("/api/application/v1/getTranslationJsons/:languageId", getTranslationJsons _),
         pathCall("/api/application/v1/createApplication", createApplication),
         pathCall("/api/application/v1/updateApplication", updateApplication),
         pathCall("/api/application/v1/deleteApplication", deleteApplication),
         pathCall("/api/application/v1/getApplicationById/:id/:fromReadSide", getApplicationById _),
         pathCall("/api/application/v1/getApplicationsById/:fromReadSide", getApplicationsById _),
-        pathCall("/api/application/v1/findApplications", findApplications)
+        pathCall("/api/application/v1/findApplications", findApplications),
+        pathCall("/api/application/v1/getApplicationTranslations/:id/:languageId", getApplicationTranslations _)
       )
       .withExceptionSerializer(new AnnetteTransportExceptionSerializer())
       .withAutoAcl(true)

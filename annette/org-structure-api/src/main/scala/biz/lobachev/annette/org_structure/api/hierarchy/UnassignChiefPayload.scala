@@ -20,8 +20,7 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class UnassignChiefPayload(
-  orgId: OrgItemId,
-  unitId: OrgItemId,
+  unitId: CompositeOrgItemId,
   updatedBy: AnnettePrincipal
 )
 

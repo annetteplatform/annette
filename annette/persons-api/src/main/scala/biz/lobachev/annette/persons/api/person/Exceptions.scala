@@ -16,15 +16,17 @@
 
 package biz.lobachev.annette.persons.api.person
 
-import biz.lobachev.annette.core.exception.AnnetteTransportExceptionWithIdCompanion
+import biz.lobachev.annette.core.exception.AnnetteTransportExceptionCompanion1
 import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
 
-object PersonNotFound extends AnnetteTransportExceptionWithIdCompanion {
-  val ErrorCode   = TransportErrorCode.NotFound
-  val MessageCode = "annette.personService.person.notFound"
+object PersonNotFound extends AnnetteTransportExceptionCompanion1 {
+  val ErrorCode       = TransportErrorCode.NotFound
+  val MessageCode     = "annette.personService.person.notFound"
+  val Arg1Key: String = "id"
 }
 
-object PersonAlreadyExist extends AnnetteTransportExceptionWithIdCompanion {
-  val ErrorCode   = TransportErrorCode.BadRequest
-  val MessageCode = "annette.personService.person.alreadyExist"
+object PersonAlreadyExist extends AnnetteTransportExceptionCompanion1 {
+  val ErrorCode       = TransportErrorCode.BadRequest
+  val MessageCode     = "annette.personService.person.alreadyExist"
+  val Arg1Key: String = "id"
 }

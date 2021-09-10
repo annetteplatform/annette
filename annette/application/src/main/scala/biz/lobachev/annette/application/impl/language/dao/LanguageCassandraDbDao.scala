@@ -20,15 +20,16 @@ import java.time.OffsetDateTime
 import akka.Done
 import biz.lobachev.annette.application.api.language._
 import biz.lobachev.annette.application.impl.language.LanguageEntity
+import biz.lobachev.annette.core.model.LanguageId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 
-import scala.collection.immutable.{Seq, _}
+import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.jdk.CollectionConverters._
 
-private[impl] class LanguageCassandraDbDao(session: CassandraSession)(implicit ec: ExecutionContext)
-    extends LanguageDbDao {
+private[impl] class LanguageCassandraDbDao(session: CassandraSession)(implicit ec: ExecutionContext) {
 
   private var createLanguageStatement: PreparedStatement = _
   private var updateLanguageStatement: PreparedStatement = _
@@ -123,17 +124,17 @@ private[impl] class LanguageCassandraDbDao(session: CassandraSession)(implicit e
 
   def getLanguageById(id: LanguageId): Future[Option[Language]] =
     for {
-      stmt        <- session.prepare("SELECT * FROM languages WHERE id = :id")
-      maybeEntity <- session.selectOne(stmt.bind().setString("id", id)).map(_.map(convertLanguage))
-    } yield maybeEntity
+      stmt   <- session.prepare("SELECT * FROM languages WHERE id=:id")
+      result <- session.selectOne(stmt.bind().setString("id", id)).map(_.map(convertLanguage))
+    } yield result
 
-  def getLanguages: Future[Map[LanguageId, Language]] =
+  def getLanguagesById(ids: Set[LanguageId]): Future[Seq[Language]] =
     for {
-      stmt   <- session.prepare("SELECT * FROM languages")
-      result <- session.selectAll(stmt.bind).map(_.map(convertLanguage))
-    } yield result.map(a => a.id -> a).toMap
+      stmt   <- session.prepare("SELECT * FROM languages WHERE id IN ?")
+      result <- session.selectAll(stmt.bind(ids.toList.asJava)).map(_.map(convertLanguage))
+    } yield result
 
-  def convertLanguage(row: Row): Language             =
+  def convertLanguage(row: Row): Language =
     Language(
       id = row.getString("id"),
       name = row.getString("name"),

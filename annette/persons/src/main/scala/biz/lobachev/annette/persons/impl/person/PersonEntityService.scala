@@ -95,7 +95,7 @@ class PersonEntityService(
     else
       getPerson(id)
 
-  def getPersonsById(ids: Set[PersonId], fromReadSide: Boolean): Future[Map[PersonId, Person]] =
+  def getPersonsById(ids: Set[PersonId], fromReadSide: Boolean): Future[Seq[Person]] =
     if (fromReadSide)
       dbDao.getPersonsById(ids)
     else
@@ -109,9 +109,9 @@ class PersonEntityService(
             }
         }
         .runWith(Sink.seq)
-        .map(_.flatten.map(a => a.id -> a).toMap)
+        .map(_.flatten)
 
-  def findPersons(query: PersonFindQuery): Future[FindResult]                                  =
+  def findPersons(query: PersonFindQuery): Future[FindResult] =
     indexDao.findPerson(query)
 
 }

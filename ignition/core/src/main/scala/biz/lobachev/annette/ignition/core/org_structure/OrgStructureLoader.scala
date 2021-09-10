@@ -1,3 +1,19 @@
+/*
+ * Copyright 2013 Valery Lobachev
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package biz.lobachev.annette.ignition.core.org_structure
 
 import akka.Done
@@ -126,8 +142,8 @@ class OrgStructureLoader(
 
   private def loadOrg(
     children: Seq[OrgItemIgnitionData],
-    orgId: OrgItemId,
-    parentId: OrgItemId,
+    orgId: CompositeOrgItemId,
+    parentId: CompositeOrgItemId,
     createdBy: AnnettePrincipal
   ): Future[Unit] =
     children
@@ -136,24 +152,22 @@ class OrgStructureLoader(
           orgItem match {
             case unit: UnitIgnitionData         =>
               for {
-                _ <- createOrgUnit(unit, orgId, parentId, createdBy)
+                _ <- createOrgUnit(unit, parentId, createdBy)
                 _ <- loadOrg(unit.children, orgId, unit.id, createdBy)
               } yield ()
             case position: PositionIgnitionData =>
-              createPosition(position, orgId, parentId, createdBy)
+              createPosition(position, parentId, createdBy)
           }
         }
       }
 
   private def createOrgUnit(
     unit: UnitIgnitionData,
-    orgId: OrgItemId,
-    parentId: OrgItemId,
+    parentId: CompositeOrgItemId,
     createdBy: AnnettePrincipal
   ): Future[Unit] = {
     val payload = unit
       .into[CreateUnitPayload]
-      .withFieldConst(_.orgId, orgId)
       .withFieldConst(_.parentId, parentId)
       .withFieldConst(_.unitId, unit.id)
       .withFieldConst(_.order, None)
@@ -166,13 +180,11 @@ class OrgStructureLoader(
 
   private def createPosition(
     position: PositionIgnitionData,
-    orgId: OrgItemId,
-    parentId: OrgItemId,
+    parentId: CompositeOrgItemId,
     createdBy: AnnettePrincipal
   ): Future[Unit] = {
     val createPositionPayload = position
       .into[CreatePositionPayload]
-      .withFieldConst(_.orgId, orgId)
       .withFieldConst(_.parentId, parentId)
       .withFieldConst(_.positionId, position.id)
       .withFieldConst(_.order, None)
@@ -183,7 +195,6 @@ class OrgStructureLoader(
       _ <- position.person.map { personId =>
              orgStructureService.assignPerson(
                AssignPersonPayload(
-                 orgId = orgId,
                  positionId = position.id,
                  personId = personId,
                  updatedBy = createdBy
@@ -195,7 +206,7 @@ class OrgStructureLoader(
 
   private def mergeOrg(
     org: UnitIgnitionData,
-    orgId: OrgItemId,
+    orgId: CompositeOrgItemId,
     disposedCategory: String,
     removeDisposed: Boolean,
     updatedBy: AnnettePrincipal
@@ -206,31 +217,26 @@ class OrgStructureLoader(
     val timestamp        = LocalDateTime.now().toString
     val disposedUnitName = s"[DISPOSED $timestamp]"
     for {
-      currentOrg        <- orgStructureService.getOrgItemById(orgId, orgId).map(_.asInstanceOf[OrgUnit])
+      currentOrg        <- orgStructureService.getOrgItemById(orgId, false).map(_.asInstanceOf[OrgUnit])
       _                 <- if (currentOrg.name != org.name)
-                             orgStructureService.updateName(UpdateNamePayload(orgId, orgId, org.name, updatedBy))
-                           else Future.successful(())
-      _                 <- if (currentOrg.shortName != org.shortName)
-                             orgStructureService.updateShortName(UpdateShortNamePayload(orgId, orgId, org.shortName, updatedBy))
+                             orgStructureService.updateName(UpdateNamePayload(orgId, org.name, updatedBy))
                            else Future.successful(())
       _                 <- if (currentOrg.categoryId != org.categoryId)
-                             orgStructureService.assignCategory(AssignCategoryPayload(orgId, orgId, org.categoryId, updatedBy))
+                             orgStructureService.assignCategory(AssignCategoryPayload(orgId, org.categoryId, updatedBy))
                            else Future.successful(())
       _                 <- orgStructureService.createUnit(
                              CreateUnitPayload(
-                               orgId = orgId,
                                parentId = orgId,
                                unitId = disposedUnitId,
                                name = disposedUnitName,
-                               shortName = disposedUnitName,
                                categoryId = disposedCategory,
                                order = None,
                                createdBy = updatedBy
                              )
                            )
       moveToMergeUnitIds = currentOrg.children.toSet -- org.children.map(_.id).toSet
-      _                 <- moveToMergeUnit(orgId, disposedUnitId, moveToMergeUnitIds, updatedBy)
-      _                 <- sequentialProcess(org.children)(child => mergeItem(child, orgId, orgId, disposedUnitId, updatedBy))
+      _                 <- moveToMergeUnit(disposedUnitId, moveToMergeUnitIds, updatedBy)
+      _                 <- sequentialProcess(org.children)(child => mergeItem(child, orgId, disposedUnitId, updatedBy))
     } yield {
       log.debug("Completed merging organization {} - {}", orgId, org.name)
       ()
@@ -238,17 +244,15 @@ class OrgStructureLoader(
   }
 
   private def moveToMergeUnit(
-    orgId: OrgItemId,
-    mergeUnitId: OrgItemId,
-    moveToMergeUnitIds: Set[OrgItemId],
+    mergeUnitId: CompositeOrgItemId,
+    moveToMergeUnitIds: Set[CompositeOrgItemId],
     updatedBy: AnnettePrincipal
   ): Future[Unit] =
     sequentialProcess(moveToMergeUnitIds) { id =>
       orgStructureService
         .moveItem(
           MoveItemPayload(
-            orgId = orgId,
-            orgItemId = id,
+            itemId = id,
             newParentId = mergeUnitId,
             order = None,
             updatedBy = updatedBy
@@ -259,41 +263,39 @@ class OrgStructureLoader(
 
   private def mergeItem(
     item: OrgItemIgnitionData,
-    orgId: OrgItemId,
-    parentId: OrgItemId,
-    mergeUnitId: OrgItemId,
+    parentId: CompositeOrgItemId,
+    mergeUnitId: CompositeOrgItemId,
     updatedBy: AnnettePrincipal
   ): Future[Unit] =
     for {
-      currentItem <- getCurrentItem(item, orgId)
+      currentItem <- getCurrentItem(item)
       _            = currentItem.map {
                        case currentUnit: OrgUnit if item.isInstanceOf[UnitIgnitionData]             =>
                          log.debug("Merging unit {} - {}", item.id, item.name)
                          mergeCurrentUnit(
                            currentUnit,
                            item.asInstanceOf[UnitIgnitionData],
-                           orgId,
                            parentId,
                            mergeUnitId,
                            updatedBy
                          )
                        case currentPosition: OrgPosition if item.isInstanceOf[PositionIgnitionData] =>
                          log.debug("Merging position {} - {}", item.id, item.name)
-                         mergeCurrentPosition(currentPosition, item.asInstanceOf[PositionIgnitionData], orgId, parentId, updatedBy)
+                         mergeCurrentPosition(currentPosition, item.asInstanceOf[PositionIgnitionData], parentId, updatedBy)
                      }.getOrElse {
                        if (item.isInstanceOf[UnitIgnitionData]) {
                          log.debug("Creating new unit {} - {}", item.id, item.name)
-                         mergeNewUnit(item.asInstanceOf[UnitIgnitionData], orgId, parentId, mergeUnitId, updatedBy)
+                         mergeNewUnit(item.asInstanceOf[UnitIgnitionData], parentId, mergeUnitId, updatedBy)
                        } else {
                          log.debug("Creating new position {} - {}", item.id, item.name)
-                         mergeNewPosition(item.asInstanceOf[PositionIgnitionData], orgId, parentId, updatedBy)
+                         mergeNewPosition(item.asInstanceOf[PositionIgnitionData], parentId, updatedBy)
                        }
                      }
     } yield ()
 
-  private def getCurrentItem(item: OrgItemIgnitionData, orgId: OrgItemId) =
+  private def getCurrentItem(item: OrgItemIgnitionData) =
     orgStructureService
-      .getOrgItemById(orgId, item.id)
+      .getOrgItemById(item.id, false)
       .map {
         case currentUnit: OrgUnit if item.isInstanceOf[PositionIgnitionData]     =>
           throw new IllegalArgumentException(
@@ -312,107 +314,98 @@ class OrgStructureLoader(
 
   def mergeNewUnit(
     newUnit: UnitIgnitionData,
-    orgId: OrgItemId,
-    parentId: OrgItemId,
-    mergeUnitId: OrgItemId,
+    parentId: CompositeOrgItemId,
+    mergeUnitId: CompositeOrgItemId,
     updatedBy: AnnettePrincipal
   ): Future[Unit] =
     for {
-      _ <- createOrgUnit(newUnit, orgId, parentId, updatedBy)
-      _ <- sequentialProcess(newUnit.children)(child => mergeItem(child, orgId, newUnit.id, mergeUnitId, updatedBy))
+      _ <- createOrgUnit(newUnit, parentId, updatedBy)
+      _ <- sequentialProcess(newUnit.children)(child => mergeItem(child, newUnit.id, mergeUnitId, updatedBy))
     } yield ()
 
   def mergeNewPosition(
     newPosition: PositionIgnitionData,
-    orgId: OrgItemId,
-    parentId: OrgItemId,
+    parentId: CompositeOrgItemId,
     updatedBy: AnnettePrincipal
-  ): Future[Unit] = createPosition(newPosition, orgId, parentId, updatedBy)
+  ): Future[Unit] = createPosition(newPosition, parentId, updatedBy)
 
   def mergeCurrentUnit(
     currentUnit: OrgUnit,
     newUnit: UnitIgnitionData,
-    orgId: OrgItemId,
-    parentId: OrgItemId,
-    mergeUnitId: OrgItemId,
+    parentId: CompositeOrgItemId,
+    mergeUnitId: CompositeOrgItemId,
     updatedBy: AnnettePrincipal
   ): Future[Unit] =
     for {
-      _          <- mergeCommonProperties(currentUnit, newUnit, orgId, parentId, updatedBy)
+      _          <- mergeCommonProperties(currentUnit, newUnit, parentId, updatedBy)
       idsToRemove = currentUnit.children.toSet -- newUnit.children.map(_.id).toSet
-      _          <- moveToMergeUnit(orgId, mergeUnitId, idsToRemove, updatedBy)
-      _          <- sequentialProcess(newUnit.children)(child => mergeItem(child, orgId, newUnit.id, mergeUnitId, updatedBy))
+      _          <- moveToMergeUnit(mergeUnitId, idsToRemove, updatedBy)
+      _          <- sequentialProcess(newUnit.children)(child => mergeItem(child, newUnit.id, mergeUnitId, updatedBy))
 
     } yield ()
 
   def mergeCurrentPosition(
     currentPosition: OrgPosition,
     newPosition: PositionIgnitionData,
-    orgId: OrgItemId,
-    parentId: OrgItemId,
+    parentId: CompositeOrgItemId,
     updatedBy: AnnettePrincipal
   ): Future[Unit] =
     for {
-      _                <- mergeCommonProperties(currentPosition, newPosition, orgId, parentId, updatedBy)
+      _                <- mergeCommonProperties(currentPosition, newPosition, parentId, updatedBy)
       _                <- if (currentPosition.limit != newPosition.limit)
                             orgStructureService.changePositionLimit(
-                              ChangePositionLimitPayload(orgId, newPosition.id, newPosition.limit, updatedBy)
+                              ChangePositionLimitPayload(newPosition.id, newPosition.limit, updatedBy)
                             )
                           else Future.successful(())
       personsToUnassign = currentPosition.persons -- newPosition.person.toSet
       _                <- sequentialProcess(personsToUnassign) { personId =>
-                            orgStructureService.unassignPerson(UnassignPersonPayload(orgId, newPosition.id, personId, updatedBy))
+                            orgStructureService.unassignPerson(UnassignPersonPayload(newPosition.id, personId, updatedBy))
                           }
       personsToAssign   = newPosition.person.toSet -- currentPosition.persons
       _                <- sequentialProcess(personsToAssign) { personId =>
-                            orgStructureService.assignPerson(AssignPersonPayload(orgId, newPosition.id, personId, updatedBy))
+                            orgStructureService.assignPerson(AssignPersonPayload(newPosition.id, personId, updatedBy))
                           }
     } yield ()
 
   def mergeCommonProperties(
     currentItem: OrgItem,
     newItem: OrgItemIgnitionData,
-    orgId: OrgItemId,
-    parentId: OrgItemId,
+    parentId: CompositeOrgItemId,
     updatedBy: AnnettePrincipal
   ): Future[Unit] =
     for {
       _ <- if (currentItem.parentId != parentId)
-             orgStructureService.moveItem(MoveItemPayload(orgId, newItem.id, parentId, None, updatedBy))
+             orgStructureService.moveItem(MoveItemPayload(newItem.id, parentId, None, updatedBy))
            else Future.successful(())
       _ <- if (currentItem.categoryId != newItem.categoryId)
-             orgStructureService.assignCategory(AssignCategoryPayload(orgId, newItem.id, newItem.categoryId, updatedBy))
+             orgStructureService.assignCategory(AssignCategoryPayload(newItem.id, newItem.categoryId, updatedBy))
            else Future.successful(())
       _ <- if (currentItem.name != newItem.name)
-             orgStructureService.updateName(UpdateNamePayload(orgId, newItem.id, newItem.name, updatedBy))
+             orgStructureService.updateName(UpdateNamePayload(newItem.id, newItem.name, updatedBy))
            else Future.successful(())
-      _ <-
-        if (currentItem.shortName != newItem.shortName)
-          orgStructureService.updateShortName(UpdateShortNamePayload(orgId, newItem.id, newItem.shortName, updatedBy))
-        else Future.successful(())
 
     } yield ()
 
-  def loadChiefs(unit: UnitIgnitionData, orgId: OrgItemId, createdBy: AnnettePrincipal): Future[Unit] =
+  def loadChiefs(unit: UnitIgnitionData, orgId: CompositeOrgItemId, createdBy: AnnettePrincipal): Future[Unit] =
     for {
       _ <- unit.chief.map { chiefId =>
              for {
-               currentItem <- orgStructureService.getOrgItemById(orgId, unit.id)
+               currentItem <- orgStructureService.getOrgItemById(unit.id, false)
                _           <- currentItem match {
                                 case currentUnit: OrgUnit if currentUnit.chief.isEmpty          =>
                                   orgStructureService
                                     .assignChief(
-                                      AssignChiefPayload(orgId, currentUnit.id, chiefId, createdBy)
+                                      AssignChiefPayload(currentUnit.id, chiefId, createdBy)
                                     )
                                 case currentUnit: OrgUnit if currentUnit.chief != Some(chiefId) =>
                                   for {
                                     _ <- orgStructureService
                                            .unassignChief(
-                                             UnassignChiefPayload(orgId, unit.id, createdBy)
+                                             UnassignChiefPayload(unit.id, createdBy)
                                            )
                                     _ <- orgStructureService
                                            .assignChief(
-                                             AssignChiefPayload(orgId, currentUnit.id, chiefId, createdBy)
+                                             AssignChiefPayload(currentUnit.id, chiefId, createdBy)
                                            )
                                   } yield Done
                                 case _: OrgUnit                                                 => Future.successful(Done)

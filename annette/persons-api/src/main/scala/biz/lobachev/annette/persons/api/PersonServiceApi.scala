@@ -19,15 +19,15 @@ package biz.lobachev.annette.persons.api
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
 import biz.lobachev.annette.core.model.PersonId
-import biz.lobachev.annette.core.model.elastic.FindResult
-import biz.lobachev.annette.persons.api.category.{
+import biz.lobachev.annette.core.model.category.{
+  Category,
+  CategoryFindQuery,
+  CategoryId,
   CreateCategoryPayload,
   DeleteCategoryPayload,
-  PersonCategory,
-  PersonCategoryFindQuery,
-  PersonCategoryId,
   UpdateCategoryPayload
 }
+import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.persons.api.person._
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 
@@ -72,7 +72,7 @@ trait PersonServiceApi extends Service {
    *
    * @return
    */
-  def getPersonsById(fromReadSide: Boolean = true): ServiceCall[Set[PersonId], Map[PersonId, Person]]
+  def getPersonsById(fromReadSide: Boolean = true): ServiceCall[Set[PersonId], Seq[Person]]
 
   /**
    * Search person using particular query.
@@ -86,11 +86,11 @@ trait PersonServiceApi extends Service {
   def createCategory: ServiceCall[CreateCategoryPayload, Done]
   def updateCategory: ServiceCall[UpdateCategoryPayload, Done]
   def deleteCategory: ServiceCall[DeleteCategoryPayload, Done]
-  def getCategoryById(id: PersonCategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, PersonCategory]
+  def getCategoryById(id: CategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, Category]
   def getCategoriesById(
     fromReadSide: Boolean
-  ): ServiceCall[Set[PersonCategoryId], Map[PersonCategoryId, PersonCategory]]
-  def findCategories: ServiceCall[PersonCategoryFindQuery, FindResult]
+  ): ServiceCall[Set[CategoryId], Seq[Category]]
+  def findCategories: ServiceCall[CategoryFindQuery, FindResult]
 
   final override def descriptor = {
     import Service._

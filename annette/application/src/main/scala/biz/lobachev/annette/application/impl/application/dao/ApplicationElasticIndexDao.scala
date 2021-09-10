@@ -80,7 +80,7 @@ class ApplicationElasticIndexDao(elasticSettings: ElasticSettings, elasticClient
 
   def findApplications(query: FindApplicationQuery): Future[FindResult] = {
     val filterQuery            = buildFilterQuery(query.filter, Seq("name" -> 3.0, "id" -> 1.0))
-    val sortBy: Seq[FieldSort] = buildSortBy(query.sortBy)
+    val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
 
     val searchRequest = search(indexName)
       .bool(must(filterQuery))

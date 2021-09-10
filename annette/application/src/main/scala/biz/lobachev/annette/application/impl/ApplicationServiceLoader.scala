@@ -23,11 +23,18 @@ import biz.lobachev.annette.application.impl.application._
 import biz.lobachev.annette.application.impl.application.dao.{ApplicationCassandraDbDao, ApplicationElasticIndexDao}
 import biz.lobachev.annette.application.impl.application.model.ApplicationSerializerRegistry
 import biz.lobachev.annette.application.impl.language._
-import biz.lobachev.annette.application.impl.language.dao.LanguageCassandraDbDao
+import biz.lobachev.annette.application.impl.language.dao.{LanguageCassandraDbDao, LanguageElasticIndexDao}
 import biz.lobachev.annette.application.impl.language.model.LanguageSerializerRegistry
 import biz.lobachev.annette.application.impl.translation._
 import biz.lobachev.annette.application.impl.translation.dao.{TranslationCassandraDbDao, TranslationElasticIndexDao}
 import biz.lobachev.annette.application.impl.translation.model.TranslationSerializerRegistry
+import biz.lobachev.annette.application.impl.translation_json.{
+  TranslationJsonDbEventProcessor,
+  TranslationJsonEntity,
+  TranslationJsonEntityService
+}
+import biz.lobachev.annette.application.impl.translation_json.dao.TranslationJsonCassandraDbDao
+import biz.lobachev.annette.application.impl.translation_json.model.TranslationJsonSerializerRegistry
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.microservice_core.elastic.ElasticModule
 import com.lightbend.lagom.scaladsl.api.LagomConfigComponent
@@ -72,16 +79,17 @@ trait ApplicationComponents
   implicit def materializer: Materializer
 
   val elasticModule = new ElasticModule(config)
-
   import elasticModule._
 
   override lazy val lagomServer = serverFor[ApplicationServiceApi](wire[ApplicationServiceApiImpl])
 
   lazy val jsonSerializerRegistry = ApplicationServiceSerializerRegistry
 
-  lazy val wiredLanguageCasRepository = wire[LanguageCassandraDbDao]
+  lazy val wiredLanguageCasRepository   = wire[LanguageCassandraDbDao]
+  lazy val wiredLanguageElasticIndexDao = wire[LanguageElasticIndexDao]
   readSide.register(wire[LanguageDbEventProcessor])
-  lazy val wiredLanguageEntityService = wire[LanguageEntityService]
+  readSide.register(wire[LanguageIndexEventProcessor])
+  lazy val wiredLanguageEntityService   = wire[LanguageEntityService]
   clusterSharding.init(
     Entity(LanguageEntity.typeKey) { entityContext =>
       LanguageEntity(entityContext)
@@ -96,6 +104,15 @@ trait ApplicationComponents
   clusterSharding.init(
     Entity(TranslationEntity.typeKey) { entityContext =>
       TranslationEntity(entityContext)
+    }
+  )
+
+  lazy val wiredTranslationJsonCasRepository = wire[TranslationJsonCassandraDbDao]
+  readSide.register(wire[TranslationJsonDbEventProcessor])
+  lazy val wiredTranslationJsonEntityService = wire[TranslationJsonEntityService]
+  clusterSharding.init(
+    Entity(TranslationJsonEntity.typeKey) { entityContext =>
+      TranslationJsonEntity(entityContext)
     }
   )
 
@@ -122,5 +139,6 @@ object ApplicationServiceSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: immutable.Seq[JsonSerializer[_]] =
     LanguageSerializerRegistry.serializers ++
       TranslationSerializerRegistry.serializers ++
+      TranslationJsonSerializerRegistry.serializers ++
       ApplicationSerializerRegistry.serializers
 }

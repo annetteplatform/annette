@@ -31,7 +31,7 @@ import biz.lobachev.annette.org_structure.impl.category.dao.{CategoryCassandraDb
 import biz.lobachev.annette.org_structure.impl.category.model.CategorySerializerRegistry
 import biz.lobachev.annette.org_structure.impl.hierarchy._
 import biz.lobachev.annette.org_structure.impl.hierarchy.dao.{HierarchyCassandraDbDao, HierarchyElasticIndexDao}
-import biz.lobachev.annette.org_structure.impl.hierarchy.model.HierarchySerializerRegistry
+import biz.lobachev.annette.org_structure.impl.hierarchy.entity.{HierarchyEntity, HierarchySerializerRegistry}
 import biz.lobachev.annette.org_structure.impl.role._
 import biz.lobachev.annette.org_structure.impl.role.dao.{OrgRoleCassandraDbDao, OrgRoleElasticIndexDao}
 import biz.lobachev.annette.org_structure.impl.role.model.OrgRoleSerializerRegistry

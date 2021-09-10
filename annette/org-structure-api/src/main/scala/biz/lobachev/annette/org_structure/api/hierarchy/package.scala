@@ -17,7 +17,7 @@
 package biz.lobachev.annette.org_structure.api
 
 package object hierarchy {
-  type OrgItemId = String
+  type CompositeOrgItemId = String
 
   val ROOT = "ROOT"
 }

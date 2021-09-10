@@ -19,7 +19,7 @@ package biz.lobachev.annette.persons.api.person
 import java.time.OffsetDateTime
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.persons.api.category.PersonCategoryId
+import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.Json
 
 case class Person(
@@ -27,7 +27,7 @@ case class Person(
   lastname: String,                  // last name of the person
   firstname: String,                 // first name
   middlename: Option[String] = None, // middle name
-  categoryId: PersonCategoryId,
+  categoryId: CategoryId,
   phone: Option[String] = None,      // phone
   email: Option[String] = None,      // email
   updatedAt: OffsetDateTime = OffsetDateTime.now(),

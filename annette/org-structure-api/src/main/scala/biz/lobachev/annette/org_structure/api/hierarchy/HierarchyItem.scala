@@ -24,24 +24,26 @@ import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 
 sealed trait HierarchyItem {
-  val id: OrgItemId
-  val parentId: OrgItemId
+  val id: CompositeOrgItemId
+  val parentId: CompositeOrgItemId
   val name: String
-  val shortName: String
   val categoryId: OrgCategoryId
+  val source: Option[String]
+  val externalId: Option[String]
   val updatedAt: OffsetDateTime
   val updatedBy: AnnettePrincipal
 }
 
 case class HierarchyPosition(
-  id: OrgItemId,
-  parentId: OrgItemId,
+  id: CompositeOrgItemId,
+  parentId: CompositeOrgItemId,
   name: String,
-  shortName: String,
   limit: Int = 1,
   persons: Set[PersonId] = Set.empty,
   orgRoles: Set[OrgRoleId] = Set.empty,
   categoryId: OrgCategoryId,
+  source: Option[String] = None,
+  externalId: Option[String] = None,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) extends HierarchyItem
@@ -51,13 +53,14 @@ object HierarchyPosition {
 }
 
 case class HierarchyUnit(
-  id: OrgItemId,
-  parentId: OrgItemId,
+  id: CompositeOrgItemId,
+  parentId: CompositeOrgItemId,
   name: String,
-  shortName: String,
-  children: Seq[OrgItemId] = Seq.empty,
-  chief: Option[OrgItemId] = None,
+  children: Seq[CompositeOrgItemId] = Seq.empty,
+  chief: Option[CompositeOrgItemId] = None,
   categoryId: OrgCategoryId,
+  source: Option[String] = None,
+  externalId: Option[String] = None,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) extends HierarchyItem

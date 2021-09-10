@@ -20,11 +20,11 @@ import biz.lobachev.annette.api_gateway_core.authentication.{AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.{DescendantUnitPrincipal, DirectUnitPrincipal, UnitChiefPrincipal}
+import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.org_structure.api.OrgStructureService
 import biz.lobachev.annette.person.gateway.Permissions._
 import biz.lobachev.annette.person.gateway.dto._
 import biz.lobachev.annette.persons.api.PersonService
-import biz.lobachev.annette.persons.api.category._
 import biz.lobachev.annette.persons.api.person.{
   CreatePersonPayload,
   DeletePersonPayload,
@@ -162,7 +162,7 @@ class PersonController @Inject() (
       authorizer.performCheckAny(MAINTAIN_ALL_PERSON_CATEGORIES) {
         val payload = request.body
           .into[DeleteCategoryPayload]
-          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .withFieldConst(_.deletedBy, request.subject.principals.head)
           .transform
         for {
           _ <- personService.deleteCategory(payload)
@@ -170,7 +170,7 @@ class PersonController @Inject() (
       }
     }
 
-  def getCategoryById(id: PersonCategoryId, fromReadSide: Boolean) =
+  def getCategoryById(id: CategoryId, fromReadSide: Boolean) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(VIEW_ALL_PERSON_CATEGORIES, MAINTAIN_ALL_PERSON_CATEGORIES) {
         for {
@@ -180,7 +180,7 @@ class PersonController @Inject() (
     }
 
   def getCategoriesById(fromReadSide: Boolean) =
-    authenticated.async(parse.json[Set[PersonCategoryId]]) { implicit request =>
+    authenticated.async(parse.json[Set[CategoryId]]) { implicit request =>
       val ids = request.body
       authorizer.performCheckAny(VIEW_ALL_PERSON_CATEGORIES, MAINTAIN_ALL_PERSON_CATEGORIES) {
         for {
@@ -190,7 +190,7 @@ class PersonController @Inject() (
     }
 
   def findCategories =
-    authenticated.async(parse.json[PersonCategoryFindQuery]) { implicit request =>
+    authenticated.async(parse.json[CategoryFindQuery]) { implicit request =>
       val query = request.body
       authorizer.performCheckAny(VIEW_ALL_PERSON_CATEGORIES, MAINTAIN_ALL_PERSON_CATEGORIES) {
         for {

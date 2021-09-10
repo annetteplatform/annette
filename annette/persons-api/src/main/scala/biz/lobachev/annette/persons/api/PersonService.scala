@@ -18,12 +18,12 @@ package biz.lobachev.annette.persons.api
 import akka.Done
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.elastic.FindResult
-import biz.lobachev.annette.persons.api.category.{
+import biz.lobachev.annette.core.model.category.{
+  Category,
+  CategoryFindQuery,
+  CategoryId,
   CreateCategoryPayload,
   DeleteCategoryPayload,
-  PersonCategory,
-  PersonCategoryFindQuery,
-  PersonCategoryId,
   UpdateCategoryPayload
 }
 import biz.lobachev.annette.persons.api.person._
@@ -37,7 +37,7 @@ trait PersonService {
   def createOrUpdatePerson(payload: CreatePersonPayload): Future[Done]
   def deletePerson(payload: DeletePersonPayload): Future[Done]
   def getPersonById(id: PersonId, fromReadSide: Boolean): Future[Person]
-  def getPersonsById(ids: Set[PersonId], fromReadSide: Boolean): Future[Map[PersonId, Person]]
+  def getPersonsById(ids: Set[PersonId], fromReadSide: Boolean): Future[Seq[Person]]
   def findPersons(query: PersonFindQuery): Future[FindResult]
 
   // category methods
@@ -46,10 +46,7 @@ trait PersonService {
   def createOrUpdateCategory(payload: CreateCategoryPayload): Future[Done]
   def updateCategory(payload: UpdateCategoryPayload): Future[Done]
   def deleteCategory(payload: DeleteCategoryPayload): Future[Done]
-  def getCategoryById(id: PersonCategoryId, fromReadSide: Boolean): Future[PersonCategory]
-  def getCategoriesById(
-    ids: Set[PersonCategoryId],
-    fromReadSide: Boolean
-  ): Future[Map[PersonCategoryId, PersonCategory]]
-  def findCategories(query: PersonCategoryFindQuery): Future[FindResult]
+  def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category]
+  def getCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean): Future[Seq[Category]]
+  def findCategories(query: CategoryFindQuery): Future[FindResult]
 }

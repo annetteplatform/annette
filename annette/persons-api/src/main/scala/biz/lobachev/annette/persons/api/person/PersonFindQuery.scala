@@ -17,29 +17,9 @@
 package biz.lobachev.annette.persons.api.person
 
 import biz.lobachev.annette.attributes.api.query.AttributeQuery
+import biz.lobachev.annette.core.model.category.CategoryId
 import biz.lobachev.annette.core.model.elastic.SortBy
-import biz.lobachev.annette.persons.api.category.PersonCategoryId
 import play.api.libs.json.{Format, Json}
-
-object PersonSortField extends Enumeration {
-  type PersonSortField = Value
-
-  val Lastname  = Value("lastname")  // Sort by last name, first name, middle name
-  val Firstname = Value("firstname") // sort by first name, last name
-  val Phone     = Value("phone")     // sort by phone
-  val Email     = Value("email")     //sort by email
-
-  implicit val format = Json.formatEnum(this)
-}
-
-case class PersonSortBy(
-  field: PersonSortField.PersonSortField,
-  ascending: Boolean = true
-)
-
-object PersonSortBy {
-  implicit val format: Format[PersonSortBy] = Json.format
-}
 
 case class PersonFindQuery(
   offset: Int = 0,
@@ -50,9 +30,9 @@ case class PersonFindQuery(
   middlename: Option[String] = None, //search in middle name
   phone: Option[String] = None,      //search in phone
   email: Option[String] = None,      //search in email
-  categories: Option[Set[PersonCategoryId]] = None,
+  categories: Option[Set[CategoryId]] = None,
   attributes: Option[AttributeQuery] = None,
-  sortBy: Option[Seq[SortBy]] = None //sort results by field provided
+  sortBy: Option[Seq[SortBy]] = None
 )
 
 object PersonFindQuery {

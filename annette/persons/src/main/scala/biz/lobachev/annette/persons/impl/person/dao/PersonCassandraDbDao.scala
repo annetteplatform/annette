@@ -135,13 +135,13 @@ private[impl] class PersonCassandraDbDao(session: CassandraSession)(implicit ec:
       result <- session.selectOne(stmt.bind(id)).map(_.map(convertPerson))
     } yield result
 
-  def getPersonsById(ids: Set[PersonId]): Future[Map[PersonId, Person]] =
+  def getPersonsById(ids: Set[PersonId]): Future[Seq[Person]] =
     for {
       stmt   <- session.prepare("SELECT * FROM persons WHERE id IN ?")
       result <- session.selectAll(stmt.bind(ids.toList.asJava)).map(_.map(convertPerson))
-    } yield result.map(a => a.id -> a).toMap
+    } yield result
 
-  private def convertPerson(row: Row): Person                           =
+  private def convertPerson(row: Row): Person =
     Person(
       id = row.getString("id"),
       lastname = row.getString("lastname"),

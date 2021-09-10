@@ -25,11 +25,11 @@ import biz.lobachev.annette.attributes.api.index.{
   IndexAttributeUnassigned,
   IndexEvent
 }
-import biz.lobachev.annette.org_structure.impl.hierarchy.dao.HierarchyIndexDao
+import biz.lobachev.annette.org_structure.impl.hierarchy.dao.HierarchyElasticIndexDao
 
 import scala.concurrent.Future
 
-class AttributeServiceSubscriber(attributeService: AttributeServiceApi, indexDao: HierarchyIndexDao) {
+class AttributeServiceSubscriber(attributeService: AttributeServiceApi, indexDao: HierarchyElasticIndexDao) {
   final val ORG_STRUCTURE_SCHEMA_IDS = Set("org-item", "org-position", "org-unit")
 
   attributeService.indexTopic.subscribe.atLeastOnce(Flow[IndexEvent].mapAsync(1) {

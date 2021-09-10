@@ -16,12 +16,11 @@
 
 package biz.lobachev.annette.org_structure.gateway.dto
 
-import biz.lobachev.annette.org_structure.api.hierarchy.OrgItemId
+import biz.lobachev.annette.org_structure.api.hierarchy.CompositeOrgItemId
 import play.api.libs.json.Json
 
 case class ChangePositionLimitPayloadDto(
-  orgId: OrgItemId,
-  positionId: OrgItemId,
+  positionId: CompositeOrgItemId,
   limit: Int
 )
 

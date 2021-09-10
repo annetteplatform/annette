@@ -20,9 +20,8 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class AssignChiefPayload(
-  orgId: OrgItemId,
-  unitId: OrgItemId,
-  chiefId: OrgItemId,
+  unitId: CompositeOrgItemId,
+  chiefId: CompositeOrgItemId,
   updatedBy: AnnettePrincipal
 )
 

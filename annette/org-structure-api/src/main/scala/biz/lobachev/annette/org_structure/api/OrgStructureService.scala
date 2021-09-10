@@ -31,6 +31,7 @@ import biz.lobachev.annette.org_structure.api.category.{
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.{OrgRoleId, _}
 
+import scala.collection.immutable.Map
 import scala.concurrent.Future
 
 trait OrgStructureService {
@@ -38,37 +39,38 @@ trait OrgStructureService {
   // hierarchy methods
 
   def createOrganization(payload: CreateOrganizationPayload): Future[Done]
-  def deleteOrganization(payload: DeleteOrganizationPayload): Future[Done]
-  def getOrganizationById(orgId: OrgItemId): Future[Organization]
-  def getOrganizationTree(orgId: OrgItemId, itemId: OrgItemId): Future[OrganizationTree]
-
   def createUnit(payload: CreateUnitPayload): Future[Done]
-  def deleteUnit(payload: DeleteUnitPayload): Future[Done]
+  def createPosition(payload: CreatePositionPayload): Future[Done]
+
+  def updateName(payload: UpdateNamePayload): Future[Done]
+  def assignCategory(payload: AssignCategoryPayload): Future[Done]
+  def updateSource(payload: UpdateSourcePayload): Future[Done]
+  def updateExternalId(payload: UpdateExternalIdPayload): Future[Done]
+  def moveItem(payload: MoveItemPayload): Future[Done]
+
   def assignChief(payload: AssignChiefPayload): Future[Done]
   def unassignChief(payload: UnassignChiefPayload): Future[Done]
 
-  def createPosition(payload: CreatePositionPayload): Future[Done]
-  def deletePosition(payload: DeletePositionPayload): Future[Done]
-  def updateName(payload: UpdateNamePayload): Future[Done]
-  def updateShortName(payload: UpdateShortNamePayload): Future[Done]
-  def assignCategory(payload: AssignCategoryPayload): Future[Done]
   def changePositionLimit(payload: ChangePositionLimitPayload): Future[Done]
   def assignPerson(payload: AssignPersonPayload): Future[Done]
   def unassignPerson(payload: UnassignPersonPayload): Future[Done]
   def assignOrgRole(payload: AssignOrgRolePayload): Future[Done]
   def unassignOrgRole(payload: UnassignOrgRolePayload): Future[Done]
 
-  def getOrgItemById(orgId: OrgItemId, id: OrgItemId): Future[OrgItem]
-  def getOrgItemsById(orgId: OrgItemId, ids: Set[OrgItemId]): Future[Map[OrgItemId, OrgItem]]
-  def getOrgItemByIdFromReadSide(id: OrgItemId): Future[OrgItem]
-  def getOrgItemsByIdFromReadSide(ids: Set[OrgItemId]): Future[Map[OrgItemId, OrgItem]]
-  def findOrgItems(query: OrgItemFindQuery): Future[FindResult]
+  def deleteOrgItem(payload: DeleteOrgItemPayload): Future[Done]
 
-  def moveItem(payload: MoveItemPayload): Future[Done]
-  def changeItemOrder(payload: ChangeItemOrderPayload): Future[Done]
+  def getOrganizationById(orgId: CompositeOrgItemId): Future[Organization]
+  def getOrganizationTree(itemId: CompositeOrgItemId): Future[OrganizationTree]
+
+  def getOrgItemById(itemId: CompositeOrgItemId, fromReadSide: Boolean = true): Future[OrgItem]
+  def getOrgItemsById(ids: Set[CompositeOrgItemId], fromReadSide: Boolean = true): Future[Seq[OrgItem]]
+
+  def getItemIdsByExternalId(externalIds: Set[String]): Future[Map[String, CompositeOrgItemId]]
 
   def getPersonPrincipals(personId: PersonId): Future[Set[AnnettePrincipal]]
   def getPersonPositions(personId: PersonId): Future[Set[PersonPosition]]
+
+  def findOrgItems(query: OrgItemFindQuery): Future[FindResult]
 
   // org role methods
 
@@ -77,7 +79,7 @@ trait OrgStructureService {
   def updateOrgRole(payload: UpdateOrgRolePayload): Future[Done]
   def deleteOrgRole(payload: DeleteOrgRolePayload): Future[Done]
   def getOrgRoleById(id: OrgRoleId, fromReadSide: Boolean): Future[OrgRole]
-  def getOrgRolesById(ids: Set[OrgRoleId], fromReadSide: Boolean): Future[Map[OrgRoleId, OrgRole]]
+  def getOrgRolesById(ids: Set[OrgRoleId], fromReadSide: Boolean): Future[Seq[OrgRole]]
   def findOrgRoles(query: OrgRoleFindQuery): Future[FindResult]
 
   // category methods
@@ -87,7 +89,7 @@ trait OrgStructureService {
   def updateCategory(payload: UpdateCategoryPayload): Future[Done]
   def deleteCategory(payload: DeleteCategoryPayload): Future[Done]
   def getCategoryById(id: OrgCategoryId, fromReadSide: Boolean): Future[OrgCategory]
-  def getCategoriesById(ids: Set[OrgCategoryId], fromReadSide: Boolean): Future[Map[OrgCategoryId, OrgCategory]]
+  def getCategoriesById(ids: Set[OrgCategoryId], fromReadSide: Boolean): Future[Seq[OrgCategory]]
   def findCategories(query: OrgCategoryFindQuery): Future[FindResult]
 
 }

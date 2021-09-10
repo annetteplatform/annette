@@ -16,7 +16,6 @@
 
 package biz.lobachev.annette.microservice_core.elastic
 
-import java.time.OffsetDateTime
 import akka.Done
 import biz.lobachev.annette.core.model.elastic.{FindResult, HitResult, SortBy}
 import com.sksamuel.elastic4s.ElasticDsl.{deleteById, indexExists, _}
@@ -33,6 +32,7 @@ import com.sksamuel.elastic4s.requests.searches.{SearchRequest, SearchResponse}
 import com.sksamuel.elastic4s.{ElasticClient, RequestFailure, RequestSuccess, Response}
 import org.slf4j.Logger
 
+import java.time.OffsetDateTime
 import scala.collection.immutable.Seq
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -121,6 +121,7 @@ abstract class AbstractElasticIndexDao(elasticSettings: ElasticSettings, val ela
       case results: RequestSuccess[SearchResponse] =>
         log.trace(s"findEntity: results ${results.toString}")
         val total = results.result.hits.total.value
+        log.debug(s"findEntity: total= $total, hits= ${results.result.hits.hits.length}")
         val hits  = results.result.hits.hits.map { hit =>
           val updatedAt = hit.sourceAsMap
             .get("updatedAt")
@@ -145,25 +146,21 @@ abstract class AbstractElasticIndexDao(elasticSettings: ElasticSettings, val ela
       }
       .toSeq
 
-  protected def buildSortBy(sortBy: Option[SortBy]) =
-    sortBy.map {
-      case SortBy(field, maybeAscending) =>
-        val sortOrder =
-          if (maybeAscending.getOrElse(true)) SortOrder.Asc
-          else SortOrder.Desc
-        FieldSort(field, order = sortOrder)
-    }.toSeq
+  protected def buildSortBy(sortBy: Option[SortBy]): Seq[FieldSort] =
+    sortBy.map(sortBy2FieldSort).toSeq
 
-  protected def buildSortBySeq(sortBySeq: Option[Seq[SortBy]]) =
-    sortBySeq.map { sortBy =>
-      sortBy.map {
-        case SortBy(field, maybeAscending) =>
-          val sortOrder =
-            if (maybeAscending.getOrElse(true)) SortOrder.Asc
-            else SortOrder.Desc
-          FieldSort(field, order = sortOrder)
-      }
-    }.getOrElse(Seq.empty)
+  protected def buildSortBySeq(sortBySeq: Option[Seq[SortBy]]): Seq[FieldSort] =
+    sortBySeq
+      .map(_.map(sortBy2FieldSort))
+      .getOrElse(Seq.empty)
+
+  protected def sortBy2FieldSort: PartialFunction[SortBy, FieldSort] = {
+    case SortBy(field, maybeDescending) =>
+      val sortOrder =
+        if (maybeDescending.getOrElse(true)) SortOrder.Desc
+        else SortOrder.Asc
+      FieldSort(field, order = sortOrder)
+  }
 
   protected def processResponse[T](method: String, id: String): PartialFunction[Response[T], Unit] = {
     case success: RequestSuccess[_] =>

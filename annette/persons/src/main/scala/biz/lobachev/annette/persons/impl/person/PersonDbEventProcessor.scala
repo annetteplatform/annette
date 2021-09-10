@@ -30,7 +30,7 @@ private[impl] class PersonDbEventProcessor(
 
   def buildHandler() =
     readSide
-      .builder[PersonEntity.Event]("Person_Person_CasEventOffset")
+      .builder[PersonEntity.Event]("person-cassandra")
       .setGlobalPrepare(dbDao.createTables)
       .setPrepare(_ => dbDao.prepareStatements())
       .setEventHandler[PersonEntity.PersonCreated](e => createPerson(e.event))

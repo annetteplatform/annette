@@ -96,7 +96,7 @@ class ApplicationEntityService(
     else
       getApplication(id)
 
-  def getApplicationsById(ids: Set[ApplicationId], fromReadSide: Boolean): Future[Map[ApplicationId, Application]] =
+  def getApplicationsById(ids: Set[ApplicationId], fromReadSide: Boolean): Future[Seq[Application]] =
     if (fromReadSide)
       dbDao.getApplicationsById(ids)
     else
@@ -110,8 +110,8 @@ class ApplicationEntityService(
             }
         }
         .runWith(Sink.seq)
-        .map(_.flatten.map(a => a.id -> a).toMap)
+        .map(_.flatten)
 
-  def findApplications(query: FindApplicationQuery): Future[FindResult]                                            =
+  def findApplications(query: FindApplicationQuery): Future[FindResult] =
     indexDao.findApplications(query)
 }

@@ -3,13 +3,13 @@ import sbt._
 
 object Dependencies {
   object Version {
-    val macwire                 = "2.3.7"
+    val macwire                 = "2.4.0"
     val scalaTest               = "3.2.2"
     val scalaCheck              = "1.14.3"
-    val commonsIO               = "2.7"
+    val commonsIO               = "2.11.0"
     val elastic4s               = "7.8.1"
     val playJsonExt             = "0.42.0"
-    val jwtPlayJson             = "4.3.0"
+    val jwtPlayJson             = "8.0.3"
     val akkaKubernetesDiscovery = "1.0.8"
     val logstashEncoder         = "6.4"
     val chimney                 = "0.6.1"
@@ -32,7 +32,7 @@ object Dependencies {
 
   val playJsonExt: sbt.ModuleID = "ai.x" %% "play-json-extensions" % Version.playJsonExt
 
-  val jwt: sbt.ModuleID = "com.pauldijou" %% "jwt-play-json" % Version.jwtPlayJson
+  val jwt: sbt.ModuleID = "com.github.jwt-scala" %% "jwt-play-json" % Version.jwtPlayJson
 
   val lagomAkkaDiscovery: Seq[sbt.ModuleID] = Seq(
     "com.lightbend.lagom"          %% "lagom-scaladsl-akka-discovery-service-locator" % LagomVersion.current,

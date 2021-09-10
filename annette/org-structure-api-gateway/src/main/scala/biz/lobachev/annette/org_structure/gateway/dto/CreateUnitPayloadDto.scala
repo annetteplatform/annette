@@ -17,16 +17,16 @@
 package biz.lobachev.annette.org_structure.gateway.dto
 
 import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
-import biz.lobachev.annette.org_structure.api.hierarchy.OrgItemId
+import biz.lobachev.annette.org_structure.api.hierarchy.CompositeOrgItemId
 import play.api.libs.json.Json
 
 case class CreateUnitPayloadDto(
-  orgId: OrgItemId,
-  parentId: OrgItemId,
-  unitId: OrgItemId,
+  parentId: CompositeOrgItemId,
+  unitId: CompositeOrgItemId,
   name: String,
-  shortName: String,
   categoryId: OrgCategoryId,
+  source: Option[String],
+  externalId: Option[String],
   order: Option[Int]
 )
 

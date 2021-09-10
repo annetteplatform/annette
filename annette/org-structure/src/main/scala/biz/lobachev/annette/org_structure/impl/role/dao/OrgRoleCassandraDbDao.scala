@@ -123,17 +123,12 @@ private[impl] class OrgRoleCassandraDbDao(session: CassandraSession)(implicit
       result <- session.selectOne(stmt.bind(id)).map(_.map(convertOrgRole))
     } yield result
 
-  def getOrgRolesById(ids: Set[OrgRoleId]): Future[Map[OrgRoleId, OrgRole]] =
+  def getOrgRolesById(ids: Set[OrgRoleId]): Future[Seq[OrgRole]] =
     for {
       stmt   <- session.prepare("SELECT * FROM org_roles WHERE id IN ?")
       result <- session
                   .selectAll(stmt.bind(ids.toList.asJava))
-                  .map(
-                    _.map { row =>
-                      val role = convertOrgRole(row)
-                      role.id -> role
-                    }.toMap
-                  )
+                  .map(_.map(convertOrgRole))
     } yield result
 
   private def convertOrgRole(row: Row): OrgRole =

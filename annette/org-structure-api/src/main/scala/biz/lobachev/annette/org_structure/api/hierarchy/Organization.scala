@@ -22,11 +22,11 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class Organization(
-  orgId: OrgItemId,
-  units: Map[OrgItemId, HierarchyUnit],
-  positions: Map[OrgItemId, HierarchyPosition],
-  chiefAssignments: Map[OrgItemId, Set[OrgItemId]],
-  personAssignments: Map[PersonId, Set[OrgItemId]],
+  orgId: CompositeOrgItemId,
+  units: Map[CompositeOrgItemId, HierarchyUnit],
+  positions: Map[CompositeOrgItemId, HierarchyPosition],
+  chiefAssignments: Map[CompositeOrgItemId, Set[CompositeOrgItemId]],
+  personAssignments: Map[PersonId, Set[CompositeOrgItemId]],
   updatedAt: OffsetDateTime,
   updatedBy: AnnettePrincipal
 )

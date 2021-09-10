@@ -36,10 +36,10 @@ private[impl] class TranslationIndexEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[TranslationEntity.Event] =
     readSide
-      .builder[TranslationEntity.Event]("Application_Translation_ElasticEventOffset")
+      .builder[TranslationEntity.Event]("translation-elastic")
       .setGlobalPrepare(globalPrepare)
       .setEventHandler[TranslationEntity.TranslationCreated](e => createTranslation(e.event))
-      .setEventHandler[TranslationEntity.TranslationNameUpdated](e => updateTranslation(e.event))
+      .setEventHandler[TranslationEntity.TranslationUpdated](e => updateTranslation(e.event))
       .setEventHandler[TranslationEntity.TranslationDeleted](e => deleteTranslation(e.event))
       .build()
 
@@ -55,7 +55,7 @@ private[impl] class TranslationIndexEventProcessor(
       .createTranslation(event)
       .map(_ => Seq.empty)
 
-  def updateTranslation(event: TranslationEntity.TranslationNameUpdated): Future[Seq[BoundStatement]] =
+  def updateTranslation(event: TranslationEntity.TranslationUpdated): Future[Seq[BoundStatement]] =
     elasticRepository
       .updateTranslation(event)
       .map(_ => Seq.empty)

@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.api_gateway_core.exception
 
-import biz.lobachev.annette.core.exception.{AnnetteException, AnnetteTransportException}
+import biz.lobachev.annette.core.exception.{AnnetteException, AnnetteTransportException, AnnetteTransportThrowable}
 import biz.lobachev.annette.core.message.ErrorMessage
 import com.lightbend.lagom.scaladsl.api.transport.TransportException
 import net.logstash.logback.argument.StructuredArguments._
@@ -50,14 +50,33 @@ class ApiGatewayErrorHandler extends HttpErrorHandler {
   def onServerError(request: RequestHeader, exception: Throwable): Future[Result] = {
     log.error("Server error", exception)
     exception match {
-      case ex: AnnetteTransportException => Future.successful(Status(ex.errorCode.http)(Json.toJson(ex.errorMessage)))
-      case ex: AnnetteException          => Future.successful(Status(ex.errorMessage.errorCode)(Json.toJson(ex.errorMessage)))
-      case ex: TransportException        => Future.successful(Status(ex.errorCode.http)(Json.toJson(ex.exceptionMessage.name)))
-      case th: Throwable                 =>
+      case ex: AnnetteTransportException if ex.code == AnnetteTransportThrowable.ANNETTE_THROWABLE =>
         val id      = Random.nextInt(1000000).toString
-        val message = new ErrorMessage("annette.throwable", Map("id" -> id))
+        val message = new ErrorMessage(AnnetteTransportThrowable.ANNETTE_THROWABLE, Map("id" -> id))
         log.error(
-          s"Exception {} {} {}",
+          s"Annette Throwable {} {} {}",
+          keyValue("id", id),
+          keyValue("method", request.method),
+          keyValue("path", request.path),
+          keyValue("exception", ex.getMessage),
+          ex
+        )
+        Future.successful(InternalServerError(Json.toJson(message)))
+
+      case ex: AnnetteTransportException                                                           =>
+        Future.successful(Status(ex.errorCode.http)(Json.toJson(ex.errorMessage)))
+
+      case ex: AnnetteException                                                                    =>
+        Future.successful(Status(ex.errorMessage.errorCode)(Json.toJson(ex.errorMessage)))
+
+      case ex: TransportException                                                                  =>
+        Future.successful(Status(ex.errorCode.http)(Json.toJson(ex.exceptionMessage.name)))
+
+      case th: Throwable                                                                           =>
+        val id      = Random.nextInt(1000000).toString
+        val message = new ErrorMessage(AnnetteTransportThrowable.ANNETTE_THROWABLE, Map("id" -> id))
+        log.error(
+          s"Throwable {} {} {}",
           keyValue("id", id),
           keyValue("method", request.method),
           keyValue("path", request.path),

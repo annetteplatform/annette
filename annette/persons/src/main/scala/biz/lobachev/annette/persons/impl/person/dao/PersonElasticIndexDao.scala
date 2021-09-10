@@ -78,7 +78,7 @@ class PersonElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Ela
             EdgeNGramTokenizer(
               "name_tokenizer",
               minGram = 2,
-              maxGram = 10
+              maxGram = 30
             )
           )
         )
@@ -143,7 +143,7 @@ class PersonElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Ela
     val attributeQuery         = buildAttributeQuery(query.attributes)
 
     val searchRequest = search(indexName)
-      .bool(must(filterQuery ++ fieldQuery ++ fieldQuery ++ categoryQuery ++ attributeQuery))
+      .bool(must(filterQuery ++ fieldQuery ++ categoryQuery ++ attributeQuery))
       .from(query.offset)
       .size(query.size)
       .sortBy(sortBy)

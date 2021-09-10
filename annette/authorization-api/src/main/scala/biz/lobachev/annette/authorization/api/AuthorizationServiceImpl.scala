@@ -64,7 +64,7 @@ class AuthorizationServiceImpl(api: AuthorizationServiceApi, implicit val ec: Ex
   override def getRoleById(id: AuthRoleId, fromReadSide: Boolean): Future[AuthRole] =
     api.getRoleById(id, fromReadSide).invoke()
 
-  override def getRolesById(ids: Set[AuthRoleId], fromReadSide: Boolean): Future[Map[AuthRoleId, AuthRole]] =
+  override def getRolesById(ids: Set[AuthRoleId], fromReadSide: Boolean): Future[Seq[AuthRole]] =
     api.getRolesById(fromReadSide).invoke(ids)
 
   override def findRoles(payload: AuthRoleFindQuery): Future[FindResult] = api.findRoles.invoke(payload)

@@ -16,141 +16,132 @@
 
 package biz.lobachev.annette.application.impl.translation.dao
 
-import java.time.OffsetDateTime
 import akka.Done
-import biz.lobachev.annette.application.api.language.LanguageId
 import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.application.impl.translation.TranslationEntity
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 import org.slf4j.LoggerFactory
-import play.api.libs.json.{JsObject, Json}
 
+import java.time.OffsetDateTime
 import scala.collection.immutable.{Seq, _}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 
-private[impl] class TranslationCassandraDbDao(session: CassandraSession)(implicit ec: ExecutionContext)
-    extends TranslationDbDao {
+private[impl] class TranslationCassandraDbDao(session: CassandraSession)(implicit ec: ExecutionContext) {
 
   val log = LoggerFactory.getLogger(this.getClass)
 
-  private var deleteTranslationStatement: PreparedStatement     = _
-  private var changeTranslationJsonStatement: PreparedStatement = _
+  private var createTranslationStatement: PreparedStatement = _
+  private var updateTranslationStatement: PreparedStatement = _
+  private var deleteTranslationStatement: PreparedStatement = _
 
   def createTables(): Future[Unit] =
     for {
       _ <- session.executeCreateTable("""
-                                        |CREATE TABLE IF NOT EXISTS translation_jsons (
+                                        |CREATE TABLE IF NOT EXISTS translations (
                                         |      id                text ,
-                                        |      language_id       text ,
-                                        |      json              text ,
+                                        |      name       text ,
                                         |      updated_at        text,
                                         |      updated_by_type   text,
                                         |      updated_by_id     text,
-                                        |      PRIMARY KEY ( id, language_id)
+                                        |      PRIMARY KEY (id)
                                         |)
                                         |""".stripMargin)
     } yield ()
 
   def prepareStatements(): Future[Done] =
     for {
-      changeTranslationJsonStmt <- session.prepare(
-                                     """
-                                       | INSERT INTO translation_jsons (
-                                       |   id                ,
-                                       |   language_id       ,
-                                       |   json              ,
-                                       |   updated_at        ,
-                                       |   updated_by_type   ,
-                                       |   updated_by_id
-                                       | )
-                                       | VALUES (
-                                       |   :id                ,
-                                       |   :language_id       ,
-                                       |   :json              ,
-                                       |   :updated_at        ,
-                                       |   :updated_by_type   ,
-                                       |   :updated_by_id
-                                       | )
-                                       |""".stripMargin
-                                   )
+      createTranslationStmt <- session.prepare(
+                                 """
+                                   | INSERT INTO translations (
+                                   |   id                ,
+                                   |   name              ,
+                                   |   updated_at        ,
+                                   |   updated_by_type   ,
+                                   |   updated_by_id
+                                   | )
+                                   | VALUES (
+                                   |   :id                ,
+                                   |   :name       ,
+                                   |   :updated_at        ,
+                                   |   :updated_by_type   ,
+                                   |   :updated_by_id
+                                   | )
+                                   |""".stripMargin
+                               )
 
-      deleteTranslationStmt     <- session.prepare(
-                                     """
-                                   | DELETE FROM translation_jsons
+      updateTranslationStmt <- session.prepare(
+                                 """
+                                   | UPDATE translations SET
+                                   |    name            =  :name           ,
+                                   |    updated_at      =  :updated_at     ,
+                                   |    updated_by_type =  :updated_by_type,
+                                   |    updated_by_id   =  :updated_by_id
                                    | WHERE id = :id
                                    |""".stripMargin
-                                   )
+                               )
+
+      deleteTranslationStmt <- session.prepare(
+                                 """
+                                   | DELETE FROM translations
+                                   | WHERE id = :id
+                                   |""".stripMargin
+                               )
 
     } yield {
+      createTranslationStatement = createTranslationStmt
+      updateTranslationStatement = updateTranslationStmt
       deleteTranslationStatement = deleteTranslationStmt
-      changeTranslationJsonStatement = changeTranslationJsonStmt
       Done
     }
 
-  def deleteTranslation(event: TranslationEntity.TranslationDeleted): Seq[BoundStatement] = {
-    println(event)
+  def createTranslation(event: TranslationEntity.TranslationCreated): Seq[BoundStatement] =
+    Seq(
+      createTranslationStatement
+        .bind()
+        .setString("id", event.id)
+        .setString("name", event.name)
+        .setString("updated_at", event.createdAt.toString)
+        .setString("updated_by_type", event.createdBy.principalType)
+        .setString("updated_by_id", event.createdBy.principalId)
+    )
+
+  def updateTranslation(event: TranslationEntity.TranslationUpdated): Seq[BoundStatement] =
+    Seq(
+      updateTranslationStatement
+        .bind()
+        .setString("id", event.id)
+        .setString("name", event.name)
+        .setString("updated_at", event.updatedAt.toString)
+        .setString("updated_by_type", event.updatedBy.principalType)
+        .setString("updated_by_id", event.updatedBy.principalId)
+    )
+
+  def deleteTranslation(event: TranslationEntity.TranslationDeleted): Seq[BoundStatement] =
     Seq(
       deleteTranslationStatement
         .bind()
         .setString("id", event.id)
     )
-  }
 
-  def changeTranslationJson(
-    id: TranslationId,
-    languageId: LanguageId,
-    json: String,
-    updatedBy: AnnettePrincipal,
-    updatedAt: OffsetDateTime
-  ): Seq[BoundStatement] =
-    Seq(
-      changeTranslationJsonStatement
-        .bind()
-        .setString("id", id)
-        .setString("language_id", languageId)
-        .setString("json", json)
-        .setString("updated_at", updatedAt.toString)
-        .setString("updated_by_type", updatedBy.principalType)
-        .setString("updated_by_id", updatedBy.principalId)
-    )
-
-  def getTranslationJsonById(id: TranslationId, languageId: LanguageId): Future[Option[TranslationJson]] =
+  def getTranslationById(id: TranslationId): Future[Option[Translation]] =
     for {
-      stmt        <- session.prepare("SELECT * FROM translation_jsons WHERE id = :id AND language_id = :language_id")
-      maybeEntity <- session
-                       .selectOne(
-                         stmt
-                           .bind()
-                           .setString("id", id)
-                           .setString("language_id", languageId)
-                       )
-                       .map(_.map(convertTranslationJson))
-    } yield maybeEntity
+      stmt   <- session.prepare("SELECT * FROM translations WHERE id=:id")
+      result <- session.selectOne(stmt.bind().setString("id", id)).map(_.map(convertTranslation))
+    } yield result
 
-  def getTranslationJsonsById(
-    ids: Set[TranslationId],
-    languageId: LanguageId
-  ): Future[Map[TranslationId, TranslationJson]]        =
+  def getTranslationsById(ids: Set[TranslationId]): Future[Seq[Translation]] =
     for {
-      stmt   <- session.prepare("SELECT * FROM translation_jsons WHERE id IN :ids AND language_id = :language_id")
-      result <- session
-                  .selectAll(
-                    stmt
-                      .bind()
-                      .setList("ids", ids.toList.asJava)
-                      .setString("language_id", languageId)
-                  )
-                  .map(_.map(convertTranslationJson))
-    } yield result.map(a => a.id -> a).toMap
+      stmt   <- session.prepare("SELECT * FROM translations WHERE id IN ?")
+      result <- session.selectAll(stmt.bind(ids.toList.asJava)).map(_.map(convertTranslation))
+    } yield result
 
-  def convertTranslationJson(row: Row): TranslationJson =
-    TranslationJson(
+  def convertTranslation(row: Row): Translation =
+    Translation(
       id = row.getString("id"),
-      languageId = row.getString("language_id"),
-      json = Json.parse(row.getString("json")).asInstanceOf[JsObject],
+      name = row.getString("name"),
       updatedAt = OffsetDateTime.parse(row.getString("updated_at")),
       updatedBy = AnnettePrincipal(
         principalType = row.getString("updated_by_type"),

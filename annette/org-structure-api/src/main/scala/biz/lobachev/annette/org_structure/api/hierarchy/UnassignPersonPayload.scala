@@ -21,8 +21,7 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class UnassignPersonPayload(
-  orgId: OrgItemId,
-  positionId: OrgItemId,
+  positionId: CompositeOrgItemId,
   personId: PersonId,
   updatedBy: AnnettePrincipal
 )

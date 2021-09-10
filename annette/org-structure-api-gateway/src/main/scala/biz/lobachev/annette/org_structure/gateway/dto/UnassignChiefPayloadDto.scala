@@ -16,12 +16,11 @@
 
 package biz.lobachev.annette.org_structure.gateway.dto
 
-import biz.lobachev.annette.org_structure.api.hierarchy.OrgItemId
+import biz.lobachev.annette.org_structure.api.hierarchy.CompositeOrgItemId
 import play.api.libs.json.Json
 
 case class UnassignChiefPayloadDto(
-  orgId: OrgItemId,
-  unitId: OrgItemId
+  unitId: CompositeOrgItemId
 )
 
 object UnassignChiefPayloadDto {

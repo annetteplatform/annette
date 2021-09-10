@@ -92,7 +92,7 @@ class OrgRoleEntityService(
       case None          => throw OrgRoleNotFound(id)
     }
 
-  def getOrgRolesById(ids: Set[OrgRoleId], fromReadSide: Boolean): Future[Map[OrgRoleId, OrgRole]] =
+  def getOrgRolesById(ids: Set[OrgRoleId], fromReadSide: Boolean): Future[Seq[OrgRole]] =
     if (fromReadSide) dbDao.getOrgRolesById(ids)
     else
       Source(ids)
@@ -105,9 +105,9 @@ class OrgRoleEntityService(
             }
         }
         .runWith(Sink.seq)
-        .map(seq => seq.flatten.map(role => role.id -> role).toMap)
+        .map(seq => seq.flatten)
 
-  def findOrgRoles(query: OrgRoleFindQuery): Future[FindResult]                                    =
+  def findOrgRoles(query: OrgRoleFindQuery): Future[FindResult] =
     indexDao.findOrgRole(query)
 
 }

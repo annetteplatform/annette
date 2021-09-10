@@ -41,6 +41,6 @@ trait CategoryDbDao {
 
   def getCategoryById(id: OrgCategoryId): Future[Option[OrgCategory]]
 
-  def getCategoriesById(ids: Set[OrgCategoryId]): Future[Map[OrgCategoryId, OrgCategory]]
+  def getCategoriesById(ids: Set[OrgCategoryId]): Future[Seq[OrgCategory]]
 
 }

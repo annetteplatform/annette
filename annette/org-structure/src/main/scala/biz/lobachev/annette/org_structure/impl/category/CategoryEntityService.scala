@@ -92,7 +92,7 @@ class CategoryEntityService(
       case None           => throw OrgCategoryNotFound(id)
     }
 
-  def getCategoriesById(ids: Set[OrgCategoryId], fromReadSide: Boolean): Future[Map[OrgCategoryId, OrgCategory]] =
+  def getCategoriesById(ids: Set[OrgCategoryId], fromReadSide: Boolean): Future[Seq[OrgCategory]] =
     if (fromReadSide) dbDao.getCategoriesById(ids)
     else
       Source(ids)
@@ -105,8 +105,8 @@ class CategoryEntityService(
             }
         }
         .runWith(Sink.seq)
-        .map(seq => seq.flatten.map(category => category.id -> category).toMap)
+        .map(seq => seq.flatten)
 
-  def findCategories(query: OrgCategoryFindQuery): Future[FindResult]                                            =
+  def findCategories(query: OrgCategoryFindQuery): Future[FindResult] =
     indexDao.findCategories(query)
 }

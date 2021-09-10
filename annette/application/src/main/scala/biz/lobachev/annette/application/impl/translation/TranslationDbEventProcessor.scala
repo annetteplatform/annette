@@ -17,7 +17,7 @@
 package biz.lobachev.annette.application.impl.translation
 
 import akka.Done
-import biz.lobachev.annette.application.impl.translation.dao.TranslationDbDao
+import biz.lobachev.annette.application.impl.translation.dao.TranslationCassandraDbDao
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
@@ -27,8 +27,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class TranslationDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: TranslationDbDao,
-  entityService: TranslationEntityService
+  dbDao: TranslationCassandraDbDao
 )(implicit
   ec: ExecutionContext
 ) extends ReadSideProcessor[TranslationEntity.Event] {
@@ -37,11 +36,12 @@ private[impl] class TranslationDbEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[TranslationEntity.Event] =
     readSide
-      .builder[TranslationEntity.Event]("Application_Translation_CasEventOffset")
+      .builder[TranslationEntity.Event]("translation-cassandra")
       .setGlobalPrepare(globalPrepare)
       .setPrepare(_ => dbDao.prepareStatements())
+      .setEventHandler[TranslationEntity.TranslationCreated](e => createTranslation(e.event))
+      .setEventHandler[TranslationEntity.TranslationUpdated](e => updateTranslation(e.event))
       .setEventHandler[TranslationEntity.TranslationDeleted](e => deleteTranslation(e.event))
-      .setEventHandler[TranslationEntity.TranslationJsonChanged](e => changeTranslationJson(e.event))
       .build()
 
   def aggregateTags: Set[AggregateEventTag[TranslationEntity.Event]] = TranslationEntity.Event.Tag.allTags
@@ -51,20 +51,19 @@ private[impl] class TranslationDbEventProcessor(
       .createTables()
       .map(_ => Done)
 
+  def createTranslation(event: TranslationEntity.TranslationCreated): Future[Seq[BoundStatement]] =
+    Future.successful(
+      dbDao.createTranslation(event)
+    )
+
+  def updateTranslation(event: TranslationEntity.TranslationUpdated): Future[Seq[BoundStatement]] =
+    Future.successful(
+      dbDao.updateTranslation(event)
+    )
+
   def deleteTranslation(event: TranslationEntity.TranslationDeleted): Future[Seq[BoundStatement]] =
     Future.successful(
       dbDao.deleteTranslation(event)
-    )
-
-  def changeTranslationJson(event: TranslationEntity.TranslationJsonChanged): Future[Seq[BoundStatement]] =
-    for {
-      translationJson <- entityService.getTranslationJson(event.id, event.languageId)
-    } yield dbDao.changeTranslationJson(
-      event.id,
-      event.languageId,
-      translationJson.json.toString(),
-      translationJson.updatedBy,
-      translationJson.updatedAt
     )
 
 }
