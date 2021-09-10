@@ -163,7 +163,7 @@ class SpaceEntityService(
     else
       getSpace(id)
 
-  def getSpacesById(ids: Set[SpaceId], fromReadSide: Boolean): Future[Map[SpaceId, Space]] =
+  def getSpacesById(ids: Set[SpaceId], fromReadSide: Boolean): Future[Seq[Space]] =
     if (fromReadSide)
       dbDao.getSpacesById(ids)
     else
@@ -176,9 +176,9 @@ class SpaceEntityService(
               case _                               => None
             }
         }
-        .map(_.flatten.map(a => a.id -> a).toMap)
+        .map(_.flatten.toSeq)
 
-  def getSpaceViews(payload: GetSpaceViewsPayload): Future[Map[SpaceId, SpaceView]]        =
+  def getSpaceViews(payload: GetSpaceViewsPayload): Future[Seq[SpaceView]] =
     dbDao.getSpaceViews(payload.ids, payload.principals)
 
   def canAccessToSpace(payload: CanAccessToSpacePayload): Future[Boolean] =

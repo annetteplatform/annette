@@ -124,15 +124,16 @@ class CmsViewController @Inject() (
     authenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         for {
-          result <- cmsService.getPostViews(
-                      GetPostViewsPayload(
-                        ids = Set(postId),
-                        directPrincipal = request.subject.principals.head,
-                        principals = request.subject.principals.toSet,
-                        withContent = true
+          result   <- cmsService.getPostViews(
+                        GetPostViewsPayload(
+                          ids = Set(postId),
+                          directPrincipal = request.subject.principals.head,
+                          principals = request.subject.principals.toSet,
+                          withContent = true
+                        )
                       )
-                    )
-        } yield Ok(Json.toJson(result.get(postId).getOrElse(throw PostNotFound(postId))))
+          resultMap = result.map(a => a.id -> a).toMap
+        } yield Ok(Json.toJson(resultMap.get(postId).getOrElse(throw PostNotFound(postId))))
       }
     }
 
@@ -275,7 +276,7 @@ class CmsViewController @Inject() (
                               .toSet
                               .groupMap[String, AnnettePrincipal](_.objectId)(_.principal)
           result          = spaces.view
-                              .mapValues(sv =>
+                              .map(sv =>
                                 sv.into[SpaceViewDto]
                                   .withFieldConst(_.subscriptions, subscriptionMap.get(sv.id).getOrElse(Set.empty))
                                   .transform
@@ -439,7 +440,7 @@ class CmsViewController @Inject() (
         for {
           spaces <- cmsService.getSpacesById(ids)
           result  = spaces.view
-                      .mapValues(sv => sv.into[SpaceDto].transform)
+                      .map(sv => sv.into[SpaceDto].transform)
         } yield Ok(Json.toJson(result))
       }
     }

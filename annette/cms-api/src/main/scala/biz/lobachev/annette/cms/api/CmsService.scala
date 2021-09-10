@@ -22,7 +22,6 @@ import biz.lobachev.annette.cms.api.space._
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.elastic.FindResult
 
-import scala.collection.immutable.Map
 import scala.concurrent.Future
 
 trait CmsService {
@@ -44,8 +43,8 @@ trait CmsService {
   def deactivateSpace(payload: DeactivateSpacePayload): Future[Done]
   def deleteSpace(payload: DeleteSpacePayload): Future[Done]
   def getSpaceById(id: SpaceId, fromReadSide: Boolean = true): Future[Space]
-  def getSpacesById(ids: Set[SpaceId], fromReadSide: Boolean = true): Future[Map[SpaceId, Space]]
-  def getSpaceViews(payload: GetSpaceViewsPayload): Future[Map[SpaceId, SpaceView]]
+  def getSpacesById(ids: Set[SpaceId], fromReadSide: Boolean = true): Future[Seq[Space]]
+  def getSpaceViews(payload: GetSpaceViewsPayload): Future[Seq[SpaceView]]
   def canAccessToSpace(payload: CanAccessToSpacePayload): Future[Boolean]
   def findSpaces(payload: SpaceFindQuery): Future[FindResult]
 
@@ -63,9 +62,9 @@ trait CmsService {
   def deletePost(payload: DeletePostPayload): Future[Done]
   def getPostById(id: PostId, fromReadSide: Boolean = true): Future[Post]
   def getPostAnnotationById(id: PostId, fromReadSide: Boolean = true): Future[PostAnnotation]
-  def getPostsById(ids: Set[PostId], fromReadSide: Boolean = true): Future[Map[PostId, Post]]
-  def getPostAnnotationsById(ids: Set[PostId], fromReadSide: Boolean = true): Future[Map[PostId, PostAnnotation]]
-  def getPostViews(payload: GetPostViewsPayload): Future[Map[PostId, PostView]]
+  def getPostsById(ids: Set[PostId], fromReadSide: Boolean = true): Future[Seq[Post]]
+  def getPostAnnotationsById(ids: Set[PostId], fromReadSide: Boolean = true): Future[Seq[PostAnnotation]]
+  def getPostViews(payload: GetPostViewsPayload): Future[Seq[PostView]]
   def canAccessToPost(payload: CanAccessToPostPayload): Future[Boolean]
   def findPosts(query: PostFindQuery): Future[FindResult]
   def addPostMedia(payload: AddPostMediaPayload): Future[Done]
@@ -78,7 +77,7 @@ trait CmsService {
   def likePost(payload: LikePostPayload): Future[Done]
   def unlikePost(payload: UnlikePostPayload): Future[Done]
   def getPostMetricById(payload: GetPostMetricPayload): Future[PostMetric]
-  def getPostMetricsById(payload: GetPostMetricsPayload): Future[Map[PostId, PostMetric]]
+  def getPostMetricsById(payload: GetPostMetricsPayload): Future[Seq[PostMetric]]
 
   def movePost(payload: MovePostPayload): Future[Done]
   def getWikiHierarchyById(id: SpaceId, fromReadSide: Boolean = true): Future[WikiHierarchy]

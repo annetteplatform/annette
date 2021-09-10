@@ -24,8 +24,6 @@ import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.elastic.FindResult
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 
-import scala.collection.immutable.Map
-
 trait CmsServiceApi extends Service {
 
   def createCategory: ServiceCall[CreateCategoryPayload, Done]
@@ -45,8 +43,8 @@ trait CmsServiceApi extends Service {
   def deactivateSpace: ServiceCall[DeactivateSpacePayload, Done]
   def deleteSpace: ServiceCall[DeleteSpacePayload, Done]
   def getSpaceById(id: SpaceId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Space]
-  def getSpacesById(fromReadSide: Boolean = true): ServiceCall[Set[SpaceId], Map[SpaceId, Space]]
-  def getSpaceViews: ServiceCall[GetSpaceViewsPayload, Map[SpaceId, SpaceView]]
+  def getSpacesById(fromReadSide: Boolean = true): ServiceCall[Set[SpaceId], Seq[Space]]
+  def getSpaceViews: ServiceCall[GetSpaceViewsPayload, Seq[SpaceView]]
   def canAccessToSpace: ServiceCall[CanAccessToSpacePayload, Boolean]
   def findSpaces: ServiceCall[SpaceFindQuery, FindResult]
 
@@ -64,9 +62,9 @@ trait CmsServiceApi extends Service {
   def deletePost: ServiceCall[DeletePostPayload, Done]
   def getPostById(id: PostId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Post]
   def getPostAnnotationById(id: PostId, fromReadSide: Boolean = true): ServiceCall[NotUsed, PostAnnotation]
-  def getPostsById(fromReadSide: Boolean = true): ServiceCall[Set[PostId], Map[PostId, Post]]
-  def getPostAnnotationsById(fromReadSide: Boolean = true): ServiceCall[Set[PostId], Map[PostId, PostAnnotation]]
-  def getPostViews: ServiceCall[GetPostViewsPayload, Map[PostId, PostView]]
+  def getPostsById(fromReadSide: Boolean = true): ServiceCall[Set[PostId], Seq[Post]]
+  def getPostAnnotationsById(fromReadSide: Boolean = true): ServiceCall[Set[PostId], Seq[PostAnnotation]]
+  def getPostViews: ServiceCall[GetPostViewsPayload, Seq[PostView]]
   def canAccessToPost: ServiceCall[CanAccessToPostPayload, Boolean]
   def findPosts: ServiceCall[PostFindQuery, FindResult]
   def addPostMedia: ServiceCall[AddPostMediaPayload, Done]
@@ -79,7 +77,7 @@ trait CmsServiceApi extends Service {
   def likePost: ServiceCall[LikePostPayload, Done]
   def unlikePost: ServiceCall[UnlikePostPayload, Done]
   def getPostMetricById: ServiceCall[GetPostMetricPayload, PostMetric]
-  def getPostMetricsById: ServiceCall[GetPostMetricsPayload, Map[PostId, PostMetric]]
+  def getPostMetricsById: ServiceCall[GetPostMetricsPayload, Seq[PostMetric]]
 
   def movePost: ServiceCall[MovePostPayload, Done]
   def getWikiHierarchyById(id: SpaceId, fromReadSide: Boolean = true): ServiceCall[NotUsed, WikiHierarchy]
