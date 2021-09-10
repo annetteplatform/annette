@@ -319,13 +319,13 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
       targets     <- session.selectAll(targetStmt.bind().setString("space_id", id)).map(_.map(convertTarget))
     } yield maybeEntity.map(_.copy(targets = targets.toSet))
 
-  def getSpacesById(ids: Set[SpaceId]): Future[Map[SpaceId, Space]]                                        =
+  def getSpacesById(ids: Set[SpaceId]): Future[Seq[Space]] =
     Source(ids)
       .mapAsync(1)(getSpaceById)
       .runWith(Sink.seq)
-      .map(_.flatten.map(a => a.id -> a).toMap)
+      .map(_.flatten.toSeq)
 
-  def getSpaceViews(ids: Set[SpaceId], principals: Set[AnnettePrincipal]): Future[Map[SpaceId, SpaceView]] =
+  def getSpaceViews(ids: Set[SpaceId], principals: Set[AnnettePrincipal]): Future[Seq[SpaceView]] =
     for {
       stmt     <- session.prepare(
                     "SELECT space_id FROM space_targets WHERE space_id IN :ids AND principal IN :principals"
@@ -342,9 +342,9 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
                     "SELECT * FROM spaces WHERE id IN ?"
                   )
       result   <- session.selectAll(stmt.bind(spaceIds.toList.asJava)).map(_.map(convertSpaceView))
-    } yield result.map(a => a.id -> a).toMap
+    } yield result
 
-  def canAccessToSpace(id: SpaceId, principals: Set[AnnettePrincipal]): Future[Boolean]                    =
+  def canAccessToSpace(id: SpaceId, principals: Set[AnnettePrincipal]): Future[Boolean] =
     for {
       stmt  <- session.prepare("SELECT count(*) FROM space_targets WHERE space_id=:id AND principal IN :principals")
       count <- session

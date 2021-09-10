@@ -29,7 +29,7 @@ import biz.lobachev.annette.cms.impl.post.dao.{PostCassandraDbDao, PostElasticIn
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.elastic.FindResult
 
-import scala.collection.immutable.{Map, Set}
+import scala.collection.immutable.Set
 
 class PostEntityService(
   clusterSharding: ClusterSharding,
@@ -286,10 +286,7 @@ class PostEntityService(
     else
       getPostAnnotation(id)
 
-  def getPostsById(
-    ids: Set[PostId],
-    fromReadSide: Boolean
-  ): Future[Map[PostId, Post]]                                                  =
+  def getPostsById(ids: Set[PostId], fromReadSide: Boolean): Future[Seq[Post]] =
     if (fromReadSide)
       dbDao.getPostsById(ids)
     else
@@ -302,12 +299,9 @@ class PostEntityService(
               case _                            => None
             }
         }
-        .map(_.flatten.map(a => a.id -> a).toMap)
+        .map(_.flatten.toSeq)
 
-  def getPostAnnotationsById(
-    ids: Set[PostId],
-    fromReadSide: Boolean
-  ): Future[Map[PostId, PostAnnotation]]                                        =
+  def getPostAnnotationsById(ids: Set[PostId], fromReadSide: Boolean): Future[Seq[PostAnnotation]] =
     if (fromReadSide)
       dbDao.getPostAnnotationsById(ids)
     else
@@ -320,9 +314,9 @@ class PostEntityService(
               case _                                      => None
             }
         }
-        .map(_.flatten.map(a => a.id -> a).toMap)
+        .map(_.flatten.toSeq)
 
-  def getPostViews(payload: GetPostViewsPayload): Future[Map[PostId, PostView]] =
+  def getPostViews(payload: GetPostViewsPayload): Future[Seq[PostView]] =
     dbDao.getPostViewsById(payload)
 
   def findPosts(query: PostFindQuery): Future[FindResult] = indexDao.findPosts(query)
@@ -336,7 +330,7 @@ class PostEntityService(
   def getPostMetricById(payload: GetPostMetricPayload): Future[PostMetric] =
     dbDao.getPostMetricById(payload.id, payload.principal)
 
-  def getPostMetricsById(payload: GetPostMetricsPayload): Future[Map[PostId, PostMetric]] =
+  def getPostMetricsById(payload: GetPostMetricsPayload): Future[Seq[PostMetric]] =
     dbDao.getPostMetricsById(payload.ids, payload.principal)
 
 }
