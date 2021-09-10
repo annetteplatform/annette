@@ -695,13 +695,13 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
       maybeEntity <- session.selectOne(stmt.bind().setString("id", id)).map(_.map(convertPostAnnotation))
     } yield maybeEntity
 
-  def getPostsById(ids: Set[PostId]): Future[Map[PostId, Post]]                       =
+  def getPostsById(ids: Set[PostId]): Future[Seq[Post]] =
     Source(ids)
       .mapAsync(1)(getPostById)
       .runWith(Sink.seq)
-      .map(_.flatten.map(a => a.id -> a).toMap)
+      .map(_.flatten)
 
-  def getPostAnnotationsById(ids: Set[PostId]): Future[Map[PostId, PostAnnotation]]   =
+  def getPostAnnotationsById(ids: Set[PostId]): Future[Seq[PostAnnotation]] =
     for {
       stmt   <- session.prepare("""
                                 | SELECT id, space_id, featured, author_id_type, author_id_id,
@@ -710,7 +710,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
                                 |  FROM posts WHERE id IN ?
                                 |""".stripMargin)
       result <- session.selectAll(stmt.bind(ids.toList.asJava)).map(_.map(convertPostAnnotation))
-    } yield result.map(a => a.id -> a).toMap
+    } yield result
 
   def canAccessToPost(id: PostId, principals: Set[AnnettePrincipal]): Future[Boolean] =
     for {
@@ -725,7 +725,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
                  .map(_.map(_.getLong("count").toInt).getOrElse(0))
     } yield count > 0
 
-  def getPostViewsById(payload: GetPostViewsPayload): Future[Map[PostId, PostView]] = {
+  def getPostViewsById(payload: GetPostViewsPayload): Future[Seq[PostView]] = {
     val fields =
       if (payload.withContent)
         "id, space_id, featured, author_id_type, author_id_id, title, intro_content, content, publication_status, publication_timestamp, updated_at, updated_by_type, updated_by_id"
@@ -743,11 +743,10 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
                                post.publicationTimestamp.map(_.compareTo(OffsetDateTime.now) <= 0).getOrElse(true)
                            )
       metrics           <- getPostMetricsById(publishedPostViews.map(_.id).toSet, payload.directPrincipal)
+      metricsMap         = metrics.map(a => a.id -> a).toMap
 
     } yield publishedPostViews
-      .map(pv => pv.copy(metric = metrics.get(pv.id)))
-      .map(a => a.id -> a)
-      .toMap
+      .map(pv => pv.copy(metric = metricsMap.get(pv.id)))
   }
 
   private def getAllowedPostIds(ids: Set[PostId], principals: Set[AnnettePrincipal]): Future[Set[String]] =
@@ -860,13 +859,12 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
 
   // ***************************** metrics *****************************
 
-  def getPostMetricsById(ids: Set[PostId], principal: AnnettePrincipal): Future[Map[PostId, PostMetric]] =
+  def getPostMetricsById(ids: Set[PostId], principal: AnnettePrincipal): Future[Seq[PostMetric]] =
     Source(ids)
       .mapAsync(1)(id => getPostMetricById(id, principal))
       .runWith(Sink.seq)
-      .map(_.map(a => a.id -> a).toMap)
 
-  def getPostMetricById(id: PostId, principal: AnnettePrincipal): Future[PostMetric]                     =
+  def getPostMetricById(id: PostId, principal: AnnettePrincipal): Future[PostMetric] =
     for {
       views     <- getPostViewsCountById(id)
       likes     <- getPostLikesCountById(id)

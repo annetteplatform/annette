@@ -22,7 +22,6 @@ import biz.lobachev.annette.cms.api.post._
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.elastic.FindResult
 
-import scala.collection.immutable.Map
 import scala.concurrent.Future
 
 class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
@@ -74,12 +73,12 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def getSpaceById(id: SpaceId, fromReadSide: Boolean): Future[Space] =
     api.getSpaceById(id, fromReadSide).invoke()
 
-  override def getSpacesById(ids: Set[SpaceId], fromReadSide: Boolean): Future[Map[SpaceId, Space]] =
+  override def getSpacesById(ids: Set[SpaceId], fromReadSide: Boolean): Future[Seq[Space]] =
     api.getSpacesById(fromReadSide).invoke(ids)
 
   override def getSpaceViews(
     payload: GetSpaceViewsPayload
-  ): Future[Map[SpaceId, SpaceView]] =
+  ): Future[Seq[SpaceView]] =
     api.getSpaceViews.invoke(payload)
 
   override def canAccessToSpace(payload: CanAccessToSpacePayload): Future[Boolean] =
@@ -130,13 +129,13 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def getPostAnnotationById(id: PostId, fromReadSide: Boolean): Future[PostAnnotation] =
     api.getPostAnnotationById(id, fromReadSide).invoke()
 
-  override def getPostsById(ids: Set[PostId], fromReadSide: Boolean): Future[Map[PostId, Post]] =
+  override def getPostsById(ids: Set[PostId], fromReadSide: Boolean): Future[Seq[Post]] =
     api.getPostsById(fromReadSide).invoke(ids)
 
-  override def getPostAnnotationsById(ids: Set[PostId], fromReadSide: Boolean): Future[Map[PostId, PostAnnotation]] =
+  override def getPostAnnotationsById(ids: Set[PostId], fromReadSide: Boolean): Future[Seq[PostAnnotation]] =
     api.getPostAnnotationsById(fromReadSide).invoke(ids)
 
-  override def getPostViews(payload: GetPostViewsPayload): Future[Map[PostId, PostView]] =
+  override def getPostViews(payload: GetPostViewsPayload): Future[Seq[PostView]] =
     api.getPostViews.invoke(payload)
 
   override def canAccessToPost(payload: CanAccessToPostPayload): Future[Boolean] =
@@ -172,7 +171,7 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def getPostMetricById(payload: GetPostMetricPayload): Future[PostMetric] =
     api.getPostMetricById.invoke(payload)
 
-  override def getPostMetricsById(payload: GetPostMetricsPayload): Future[Map[PostId, PostMetric]] =
+  override def getPostMetricsById(payload: GetPostMetricsPayload): Future[Seq[PostMetric]] =
     api.getPostMetricsById.invoke(payload)
 
   override def movePost(payload: MovePostPayload): Future[Done] =

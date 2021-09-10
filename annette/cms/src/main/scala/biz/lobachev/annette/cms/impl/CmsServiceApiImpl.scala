@@ -30,7 +30,6 @@ import biz.lobachev.annette.microservice_core.category.CategoryEntityService
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import org.slf4j.LoggerFactory
 
-import scala.collection.immutable.Map
 import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
@@ -138,12 +137,12 @@ class CmsServiceApiImpl(
       spaceEntityService.getSpaceById(id, fromReadSide)
     }
 
-  override def getSpacesById(fromReadSide: Boolean = true): ServiceCall[Set[SpaceId], Map[SpaceId, Space]] =
+  override def getSpacesById(fromReadSide: Boolean = true): ServiceCall[Set[SpaceId], Seq[Space]] =
     ServiceCall { ids =>
       spaceEntityService.getSpacesById(ids, fromReadSide)
     }
 
-  override def getSpaceViews: ServiceCall[GetSpaceViewsPayload, Map[SpaceId, SpaceView]] =
+  override def getSpaceViews: ServiceCall[GetSpaceViewsPayload, Seq[SpaceView]] =
     ServiceCall { payload =>
       spaceEntityService.getSpaceViews(payload)
     }
@@ -261,19 +260,17 @@ class CmsServiceApiImpl(
       postEntityService.getPostAnnotationById(id, fromReadSide)
     }
 
-  override def getPostsById(fromReadSide: Boolean = true): ServiceCall[Set[PostId], Map[PostId, Post]] =
+  override def getPostsById(fromReadSide: Boolean = true): ServiceCall[Set[PostId], Seq[Post]] =
     ServiceCall { ids =>
       postEntityService.getPostsById(ids, fromReadSide)
     }
 
-  override def getPostAnnotationsById(
-    fromReadSide: Boolean = true
-  ): ServiceCall[Set[PostId], Map[PostId, PostAnnotation]] =
+  override def getPostAnnotationsById(fromReadSide: Boolean = true): ServiceCall[Set[PostId], Seq[PostAnnotation]] =
     ServiceCall { ids =>
       postEntityService.getPostAnnotationsById(ids, fromReadSide)
     }
 
-  override def getPostViews: ServiceCall[GetPostViewsPayload, Map[PostId, PostView]] =
+  override def getPostViews: ServiceCall[GetPostViewsPayload, Seq[PostView]] =
     ServiceCall { payload =>
       postEntityService.getPostViews(payload)
     }
@@ -333,7 +330,7 @@ class CmsServiceApiImpl(
       postEntityService.getPostMetricById(payload)
     }
 
-  override def getPostMetricsById: ServiceCall[GetPostMetricsPayload, Map[PostId, PostMetric]] =
+  override def getPostMetricsById: ServiceCall[GetPostMetricsPayload, Seq[PostMetric]] =
     ServiceCall { payload =>
       postEntityService.getPostMetricsById(payload)
     }
