@@ -172,7 +172,10 @@ class PersonController @Inject() (
 
   def getCategoryById(id: CategoryId, fromReadSide: Boolean) =
     authenticated.async { implicit request =>
-      authorizer.performCheckAny(VIEW_ALL_PERSON_CATEGORIES, MAINTAIN_ALL_PERSON_CATEGORIES) {
+      val rules =
+        if (fromReadSide) Seq(VIEW_ALL_PERSON_CATEGORIES, MAINTAIN_ALL_PERSON_CATEGORIES)
+        else Seq(MAINTAIN_ALL_PERSON_CATEGORIES)
+      authorizer.performCheckAny(rules: _*) {
         for {
           role <- personService.getCategoryById(id, fromReadSide)
         } yield Ok(Json.toJson(role))
@@ -181,8 +184,11 @@ class PersonController @Inject() (
 
   def getCategoriesById(fromReadSide: Boolean) =
     authenticated.async(parse.json[Set[CategoryId]]) { implicit request =>
-      val ids = request.body
-      authorizer.performCheckAny(VIEW_ALL_PERSON_CATEGORIES, MAINTAIN_ALL_PERSON_CATEGORIES) {
+      val ids   = request.body
+      val rules =
+        if (fromReadSide) Seq(VIEW_ALL_PERSON_CATEGORIES, MAINTAIN_ALL_PERSON_CATEGORIES)
+        else Seq(MAINTAIN_ALL_PERSON_CATEGORIES)
+      authorizer.performCheckAny(rules: _*) {
         for {
           roles <- personService.getCategoriesById(ids, fromReadSide)
         } yield Ok(Json.toJson(roles))

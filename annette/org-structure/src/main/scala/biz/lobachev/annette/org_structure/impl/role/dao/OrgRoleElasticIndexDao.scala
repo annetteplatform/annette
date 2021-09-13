@@ -100,7 +100,7 @@ class OrgRoleElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: El
       query.description.map(matchQuery("description", _))
     ).flatten
     val filterQuery            = buildFilterQuery(query.filter, Seq("name" -> 3.0, "description" -> 2.0))
-    val sortBy: Seq[FieldSort] = buildSortBy(query.sortBy)
+    val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
 
     val searchRequest = search(indexName)
       .bool(must(filterQuery ++ fieldQuery)) // ++ fieldQuery))

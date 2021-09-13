@@ -196,7 +196,7 @@ class SpaceElasticIndexDao(elasticSettings: ElasticSettings, elasticClient: Elas
       .toSeq
     val activeQuery    = query.active.map(matchQuery("active", _)).toSeq
 
-    val sortBy: Seq[FieldSort] = buildSortBy(query.sortBy)
+    val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
 
     val searchRequest = search(indexName)
       .bool(must(filterQuery ++ spaceIdsQuery ++ spaceTypeQuery ++ categoryQuery ++ targetsQuery ++ activeQuery))

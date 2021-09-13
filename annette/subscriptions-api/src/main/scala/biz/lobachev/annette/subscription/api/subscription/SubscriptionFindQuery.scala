@@ -27,7 +27,7 @@ case class SubscriptionFindQuery(
   subscriptionType: Option[Set[SubscriptionTypeId]] = None,
   objects: Option[Set[ObjectId]] = None,
   principals: Option[Set[AnnettePrincipal]] = None,
-  sortBy: Option[SortBy] = None
+  sortBy: Option[Seq[SortBy]] = None
 )
 
 object SubscriptionFindQuery {

@@ -25,7 +25,7 @@ case class OrgRoleFindQuery(
   filter: Option[String] = None, //search by filter in orgRole's name and description
   name: Option[String] = None,
   description: Option[String] = None,
-  sortBy: Option[SortBy] = None  //sort results by field provided
+  sortBy: Option[Seq[SortBy]] = None
 )
 
 object OrgRoleFindQuery {
