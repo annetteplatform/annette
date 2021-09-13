@@ -26,10 +26,21 @@ import biz.lobachev.annette.cms.gateway.Permissions.{
   MAINTAIN_ALL_SPACE_CATEGORIES,
   VIEW_ALL_SPACE_CATEGORIES
 }
-import biz.lobachev.annette.cms.gateway.dto._
+import biz.lobachev.annette.cms.gateway.category._
+import biz.lobachev.annette.cms.gateway.post.{
+  CreatePostPayloadDto,
+  PostFindQueryDto,
+  PostViewFindQueryDto,
+  UpdatePostAuthorPayloadDto,
+  UpdatePostContentPayloadDto,
+  UpdatePostIntroPayloadDto,
+  UpdatePostPublicationTimestampPayloadDto,
+  UpdatePostTitlePayloadDto
+}
 import biz.lobachev.annette.cms.gateway.space.{
   ActivateSpacePayloadDto,
   AssignSpaceTargetPrincipalPayloadDto,
+  CreateSpacePayloadDto,
   DeactivateSpacePayloadDto,
   DeleteSpacePayloadDto,
   SpaceFindQueryDto,

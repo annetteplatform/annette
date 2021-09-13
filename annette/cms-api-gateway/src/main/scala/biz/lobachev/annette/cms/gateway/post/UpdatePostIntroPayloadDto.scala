@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway.dto
+package biz.lobachev.annette.cms.gateway.post
 
-import biz.lobachev.annette.core.model.category.CategoryId
+import biz.lobachev.annette.cms.api.post.{PostContent, PostId}
 import play.api.libs.json.{Format, Json}
 
-case class CategoryDto(
-  id: CategoryId,
-  name: String
+case class UpdatePostIntroPayloadDto(
+  id: PostId,
+  introContent: PostContent
 )
 
-object CategoryDto {
-  implicit val format: Format[CategoryDto] = Json.format
+object UpdatePostIntroPayloadDto {
+  implicit val format: Format[UpdatePostIntroPayloadDto] = Json.format
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway.dto
+package biz.lobachev.annette.cms.gateway.post
 
 import biz.lobachev.annette.cms.api.post.{PostId, PublicationStatus}
 import biz.lobachev.annette.cms.api.space.SpaceId

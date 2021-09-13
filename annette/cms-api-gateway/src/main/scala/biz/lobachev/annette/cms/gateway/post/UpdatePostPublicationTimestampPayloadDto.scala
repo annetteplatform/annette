@@ -14,15 +14,18 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway.dto
+package biz.lobachev.annette.cms.gateway.post
 
-import biz.lobachev.annette.core.model.category.CategoryId
+import biz.lobachev.annette.cms.api.post.PostId
 import play.api.libs.json.{Format, Json}
 
-case class DeleteCategoryDto(
-  id: CategoryId
+import java.time.OffsetDateTime
+
+case class UpdatePostPublicationTimestampPayloadDto(
+  id: PostId,
+  publicationTimestamp: Option[OffsetDateTime]
 )
 
-object DeleteCategoryDto {
-  implicit val format: Format[DeleteCategoryDto] = Json.format
+object UpdatePostPublicationTimestampPayloadDto {
+  implicit val format: Format[UpdatePostPublicationTimestampPayloadDto] = Json.format
 }

@@ -14,23 +14,15 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway.dto
+package biz.lobachev.annette.cms.gateway.category
 
-import biz.lobachev.annette.cms.api.space.SpaceId
-import biz.lobachev.annette.cms.api.space.SpaceType.SpaceType
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.{Format, Json}
 
-case class CreateSpacePayloadDto(
-  id: SpaceId,
-  name: String,
-  description: String,
-  spaceType: SpaceType,
-  categoryId: CategoryId,
-  targets: Set[AnnettePrincipal] = Set.empty
+case class DeleteCategoryDto(
+  id: CategoryId
 )
 
-object CreateSpacePayloadDto {
-  implicit val format: Format[CreateSpacePayloadDto] = Json.format
+object DeleteCategoryDto {
+  implicit val format: Format[DeleteCategoryDto] = Json.format
 }
