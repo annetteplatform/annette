@@ -31,7 +31,7 @@ case class SpaceFindQuery(
   categories: Option[Set[CategoryId]] = None,
   targets: Option[Set[AnnettePrincipal]] = None,
   active: Option[Boolean] = None,
-  sortBy: Option[SortBy] = None
+  sortBy: Option[Seq[SortBy]] = None
 )
 
 object SpaceFindQuery {

@@ -92,7 +92,7 @@ class SubscriptionElasticIndexDao(elasticSettings: ElasticSettings, elasticClien
 
   def findSubscription(query: SubscriptionFindQuery): Future[SubscriptionFindResult] = {
 
-    val sortBy: Seq[FieldSort] = buildSortBy(query.sortBy)
+    val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
 
     val subscriptionTypeQuery =
       query.subscriptionType.map(subscriptionTypes => termsQuery("subscriptionType", subscriptionTypes)).toSeq
