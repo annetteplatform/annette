@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway.dto
+package biz.lobachev.annette.cms.gateway.post
 
-import biz.lobachev.annette.cms.api.space.SpaceId
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.cms.api.post.PostId
 import play.api.libs.json.{Format, Json}
 
-case class BlogSubscriptionDto(
-  spaceId: SpaceId,
-  principal: AnnettePrincipal
+case class UpdatePostTitlePayloadDto(
+  id: PostId,
+  title: String
 )
 
-object BlogSubscriptionDto {
-  implicit val format: Format[BlogSubscriptionDto] = Json.format
+object UpdatePostTitlePayloadDto {
+  implicit val format: Format[UpdatePostTitlePayloadDto] = Json.format
 }

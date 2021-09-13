@@ -14,23 +14,17 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway.dto
+package biz.lobachev.annette.cms.gateway.post
 
-import biz.lobachev.annette.cms.api.space.SpaceId
+import biz.lobachev.annette.cms.api.post.PostId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.elastic.SortBy
 import play.api.libs.json.{Format, Json}
 
-case class PostViewFindQueryDto(
-  offset: Int = 0,
-  size: Int,
-  filter: Option[String] = None,
-  spaces: Option[Set[SpaceId]] = None,
-  featured: Option[Boolean] = None,
-  authors: Option[Set[AnnettePrincipal]] = None,
-  sortBy: Option[Seq[SortBy]] = None
+case class UpdatePostAuthorPayloadDto(
+  id: PostId,
+  authorId: AnnettePrincipal
 )
 
-object PostViewFindQueryDto {
-  implicit val format: Format[PostViewFindQueryDto] = Json.format
+object UpdatePostAuthorPayloadDto {
+  implicit val format: Format[UpdatePostAuthorPayloadDto] = Json.format
 }

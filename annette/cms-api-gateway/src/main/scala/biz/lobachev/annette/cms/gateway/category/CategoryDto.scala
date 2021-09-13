@@ -14,24 +14,16 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway.dto
+package biz.lobachev.annette.cms.gateway.category
 
-import biz.lobachev.annette.cms.api.post.{PostContent, PostId}
-import biz.lobachev.annette.cms.api.space.SpaceId
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.{Format, Json}
 
-case class CreatePostPayloadDto(
-  id: PostId,
-  spaceId: SpaceId,
-  parent: Option[PostId] = None,
-  featured: Boolean,
-  authorId: AnnettePrincipal,
-  title: String,
-  introContent: PostContent,
-  content: PostContent
+case class CategoryDto(
+  id: CategoryId,
+  name: String
 )
 
-object CreatePostPayloadDto {
-  implicit val format: Format[CreatePostPayloadDto] = Json.format
+object CategoryDto {
+  implicit val format: Format[CategoryDto] = Json.format
 }
