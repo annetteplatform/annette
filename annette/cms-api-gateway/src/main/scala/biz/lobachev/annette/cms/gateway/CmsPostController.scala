@@ -148,13 +148,16 @@ class CmsPostController @Inject() (
       }
     }
 
-  def updatePostFeatured(id: String, featured: Boolean) =
-    authenticated.async { implicit request =>
+  def updatePostFeatured =
+    authenticated.async(parse.json[UpdatePostFeaturedPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
-        val payload = UpdatePostFeaturedPayload(id, featured, request.subject.principals.head)
+        val payload = request.body
+          .into[UpdatePostFeaturedPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
         for {
           _    <- cmsService.updatePostFeatured(payload)
-          post <- cmsService.getPostById(id, false)
+          post <- cmsService.getPostById(payload.id, false)
         } yield Ok(Json.toJson(post))
       }
     }

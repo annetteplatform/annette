@@ -149,7 +149,7 @@ POST    /api/annette/v1/cms/getSpacesById/:fromReadSide     biz.lobachev.annette
 POST    /api/annette/v1/cms/findSpaces                      biz.lobachev.annette.cms.gateway.CmsSpaceController.findSpaces
 # CMS Post
 POST    /api/annette/v1/cms/createPost                      biz.lobachev.annette.cms.gateway.CmsPostController.createPost
-POST    /api/annette/v1/cms/updatePostFeatured/:id/:featured   biz.lobachev.annette.cms.gateway.CmsPostController.updatePostFeatured(id: String, featured: Boolean)
+POST    /api/annette/v1/cms/updatePostFeatured              biz.lobachev.annette.cms.gateway.CmsPostController.updatePostFeatured
 POST    /api/annette/v1/cms/updatePostTitle                 biz.lobachev.annette.cms.gateway.CmsPostController.updatePostTitle
 POST    /api/annette/v1/cms/updatePostAuthor                biz.lobachev.annette.cms.gateway.CmsPostController.updatePostAuthor
 POST    /api/annette/v1/cms/updatePostIntro                 biz.lobachev.annette.cms.gateway.CmsPostController.updatePostIntro
