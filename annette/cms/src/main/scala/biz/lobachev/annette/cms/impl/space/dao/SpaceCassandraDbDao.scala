@@ -270,9 +270,7 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
       unassignSpaceTargetPrincipalStatement
         .bind()
         .setString("space_id", event.id)
-        .setString("principal", event.principal.code)
-        .setString("principal_type", event.principal.principalType)
-        .setString("principal_id", event.principal.principalId),
+        .setString("principal", event.principal.code),
       updateSpaceTimestampStatement
         .bind()
         .setString("id", event.id)
