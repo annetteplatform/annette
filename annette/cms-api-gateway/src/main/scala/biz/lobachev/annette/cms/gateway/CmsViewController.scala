@@ -21,8 +21,24 @@ import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.CmsService
 import biz.lobachev.annette.cms.api.post._
 import biz.lobachev.annette.cms.api.space._
-import biz.lobachev.annette.cms.gateway.Permissions.{MAINTAIN_ALL_SPACE_CATEGORIES, VIEW_ALL_SPACE_CATEGORIES}
+import biz.lobachev.annette.cms.gateway.Permissions.{
+  MAINTAIN_ALL_SPACES,
+  MAINTAIN_ALL_SPACE_CATEGORIES,
+  VIEW_ALL_SPACE_CATEGORIES
+}
 import biz.lobachev.annette.cms.gateway.dto._
+import biz.lobachev.annette.cms.gateway.space.{
+  ActivateSpacePayloadDto,
+  AssignSpaceTargetPrincipalPayloadDto,
+  DeactivateSpacePayloadDto,
+  DeleteSpacePayloadDto,
+  SpaceFindQueryDto,
+  SpaceViewDto,
+  UnassignSpaceTargetPrincipalPayloadDto,
+  UpdateSpaceCategoryPayloadDto,
+  UpdateSpaceDescriptionPayloadDto,
+  UpdateSpaceNamePayloadDto
+}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.elastic.{FindResult, SortBy}
@@ -369,21 +385,27 @@ class CmsViewController @Inject() (
       }
     }
 
-  def getCategoryById(id: CategoryId) =
+  def getCategoryById(id: CategoryId, fromReadSide: Boolean) =
     authenticated.async { implicit request =>
-      authorizer.performCheckAny(VIEW_ALL_SPACE_CATEGORIES, MAINTAIN_ALL_SPACE_CATEGORIES) {
+      val rules =
+        if (fromReadSide) Seq(VIEW_ALL_SPACE_CATEGORIES, MAINTAIN_ALL_SPACE_CATEGORIES)
+        else Seq(MAINTAIN_ALL_SPACE_CATEGORIES)
+      authorizer.performCheckAny(rules: _*) {
         for {
-          role <- cmsService.getCategoryById(id, true)
+          role <- cmsService.getCategoryById(id, fromReadSide)
         } yield Ok(Json.toJson(role))
       }
     }
 
-  def getCategoryByIdForEdit(id: CategoryId) =
-    authenticated.async { implicit request =>
-      authorizer.performCheckAny(MAINTAIN_ALL_SPACE_CATEGORIES) {
+  def getCategoriesById(fromReadSide: Boolean) =
+    authenticated.async(parse.json[Set[CategoryId]]) { implicit request =>
+      val rules =
+        if (fromReadSide) Seq(VIEW_ALL_SPACE_CATEGORIES, MAINTAIN_ALL_SPACE_CATEGORIES)
+        else Seq(MAINTAIN_ALL_SPACE_CATEGORIES)
+      authorizer.performCheckAny(rules: _*) {
         for {
-          role <- cmsService.getCategoryById(id, false)
-        } yield Ok(Json.toJson(role))
+          result <- cmsService.getCategoriesById(request.request.body, fromReadSide)
+        } yield Ok(Json.toJson(result))
       }
     }
 
@@ -392,15 +414,6 @@ class CmsViewController @Inject() (
       authorizer.performCheckAny(VIEW_ALL_SPACE_CATEGORIES, MAINTAIN_ALL_SPACE_CATEGORIES) {
         for {
           result <- cmsService.findCategories(request.request.body)
-        } yield Ok(Json.toJson(result))
-      }
-    }
-
-  def getCategoriesById =
-    authenticated.async(parse.json[Set[CategoryId]]) { implicit request =>
-      authorizer.performCheckAny(VIEW_ALL_SPACE_CATEGORIES, MAINTAIN_ALL_SPACE_CATEGORIES) {
-        for {
-          result <- cmsService.getCategoriesById(request.request.body, true)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -415,9 +428,139 @@ class CmsViewController @Inject() (
           .withFieldConst(_.createdBy, request.subject.principals.head)
           .transform
         for {
-          _    <- cmsService.createSpace(payload)
-          post <- cmsService.getSpaceById(payload.id, false)
-        } yield Ok(Json.toJson(post))
+          _     <- cmsService.createSpace(payload)
+          space <- cmsService.getSpaceById(payload.id, false)
+        } yield Ok(Json.toJson(space))
+      }
+    }
+
+  def updateSpaceName =
+    authenticated.async(parse.json[UpdateSpaceNamePayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+        val payload = request.body
+          .into[UpdateSpaceNamePayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _     <- cmsService.updateSpaceName(payload)
+          space <- cmsService.getSpaceById(payload.id, false)
+        } yield Ok(Json.toJson(space))
+      }
+    }
+
+  def updateSpaceDescription =
+    authenticated.async(parse.json[UpdateSpaceDescriptionPayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+        val payload = request.body
+          .into[UpdateSpaceDescriptionPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _     <- cmsService.updateSpaceDescription(payload)
+          space <- cmsService.getSpaceById(payload.id, false)
+        } yield Ok(Json.toJson(space))
+      }
+    }
+
+  def updateSpaceCategory =
+    authenticated.async(parse.json[UpdateSpaceCategoryPayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+        val payload = request.body
+          .into[UpdateSpaceCategoryPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _     <- cmsService.updateSpaceCategory(payload)
+          space <- cmsService.getSpaceById(payload.id, false)
+        } yield Ok(Json.toJson(space))
+      }
+    }
+
+  def assignSpaceTargetPrincipal =
+    authenticated.async(parse.json[AssignSpaceTargetPrincipalPayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+        val payload = request.body
+          .into[AssignSpaceTargetPrincipalPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _     <- cmsService.assignSpaceTargetPrincipal(payload)
+          space <- cmsService.getSpaceById(payload.id, false)
+        } yield Ok(Json.toJson(space))
+      }
+    }
+
+  def unassignSpaceTargetPrincipal =
+    authenticated.async(parse.json[UnassignSpaceTargetPrincipalPayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+        val payload = request.body
+          .into[UnassignSpaceTargetPrincipalPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _     <- cmsService.unassignSpaceTargetPrincipal(payload)
+          space <- cmsService.getSpaceById(payload.id, false)
+        } yield Ok(Json.toJson(space))
+      }
+    }
+
+  def activateSpace =
+    authenticated.async(parse.json[ActivateSpacePayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+        val payload = request.body
+          .into[ActivateSpacePayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _     <- cmsService.activateSpace(payload)
+          space <- cmsService.getSpaceById(payload.id, false)
+        } yield Ok(Json.toJson(space))
+      }
+    }
+
+  def deactivateSpace =
+    authenticated.async(parse.json[DeactivateSpacePayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+        val payload = request.body
+          .into[DeactivateSpacePayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _     <- cmsService.deactivateSpace(payload)
+          space <- cmsService.getSpaceById(payload.id, false)
+        } yield Ok(Json.toJson(space))
+      }
+    }
+
+  def deleteSpace =
+    authenticated.async(parse.json[DeleteSpacePayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+        val payload = request.body
+          .into[DeleteSpacePayload]
+          .withFieldConst(_.deletedBy, request.subject.principals.head)
+          .transform
+        for {
+          _ <- cmsService.deleteSpace(payload)
+        } yield Ok(Json.toJson(""))
+      }
+    }
+
+  def getSpaceById(id: SpaceId, fromReadSide: Boolean) =
+    authenticated.async { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_SPACES) {
+        for {
+          space <- cmsService.getSpaceById(id, fromReadSide)
+        } yield Ok(Json.toJson(space))
+      }
+    }
+
+  def getSpacesById(fromReadSide: Boolean) =
+    authenticated.async(parse.json[Set[SpaceId]]) { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_ALL_SPACES) {
+        val ids = request.request.body
+        for {
+          spaces <- cmsService.getSpacesById(ids, fromReadSide)
+        } yield Ok(Json.toJson(spaces))
       }
     }
 
@@ -428,19 +571,6 @@ class CmsViewController @Inject() (
         val query   = payload.transformInto[SpaceFindQuery]
         for {
           result <- cmsService.findSpaces(query)
-        } yield Ok(Json.toJson(result))
-      }
-    }
-
-  def getSpacesById =
-    authenticated.async(parse.json[Set[SpaceId]]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
-        val ids = request.request.body
-
-        for {
-          spaces <- cmsService.getSpacesById(ids)
-          result  = spaces.view
-                      .map(sv => sv.into[SpaceDto].transform)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -610,11 +740,11 @@ class CmsViewController @Inject() (
       }
     }
 
-  def getPostByIdForEdit(postId: PostId) =
+  def getPostById(id: PostId, fromReadSide: Boolean) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
         for {
-          result <- cmsService.getPostById(postId, false)
+          result <- cmsService.getPostById(id, fromReadSide)
         } yield Ok(Json.toJson(result))
       }
     }

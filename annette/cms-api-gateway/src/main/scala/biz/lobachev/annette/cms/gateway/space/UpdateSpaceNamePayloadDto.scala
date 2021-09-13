@@ -14,19 +14,16 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway.dto
+package biz.lobachev.annette.cms.gateway.space
 
 import biz.lobachev.annette.cms.api.space.SpaceId
-import biz.lobachev.annette.core.model.elastic.SortBy
 import play.api.libs.json.{Format, Json}
 
-case class SubscriptionFindQueryDto(
-  offset: Int = 0,
-  size: Int,
-  spaceIds: Option[Set[SpaceId]] = None,
-  sortBy: Option[SortBy] = None
+case class UpdateSpaceNamePayloadDto(
+  id: SpaceId,
+  name: String
 )
 
-object SubscriptionFindQueryDto {
-  implicit val format: Format[SubscriptionFindQueryDto] = Json.format
+object UpdateSpaceNamePayloadDto {
+  implicit val format: Format[UpdateSpaceNamePayloadDto] = Json.format
 }

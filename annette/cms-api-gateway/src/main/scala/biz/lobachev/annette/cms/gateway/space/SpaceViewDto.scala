@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway.dto
+package biz.lobachev.annette.cms.gateway.space
 
 import biz.lobachev.annette.cms.api.space.SpaceId
 import biz.lobachev.annette.cms.api.space.SpaceType.SpaceType

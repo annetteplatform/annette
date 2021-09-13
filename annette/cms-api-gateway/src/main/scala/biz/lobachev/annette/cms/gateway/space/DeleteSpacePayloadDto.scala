@@ -14,24 +14,15 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway.dto
+package biz.lobachev.annette.cms.gateway.space
 
 import biz.lobachev.annette.cms.api.space.SpaceId
-import biz.lobachev.annette.cms.api.space.SpaceType.SpaceType
-import biz.lobachev.annette.core.model.category.CategoryId
-import biz.lobachev.annette.core.model.elastic.SortBy
 import play.api.libs.json.{Format, Json}
 
-case class SpaceFindQueryDto(
-  offset: Int = 0,
-  size: Int,
-  filter: Option[String] = None,
-  spaceIds: Option[Set[SpaceId]] = None,
-  spaceType: Option[SpaceType] = None,
-  categories: Option[Set[CategoryId]] = None,
-  sortBy: Option[SortBy] = None
+case class DeleteSpacePayloadDto(
+  id: SpaceId
 )
 
-object SpaceFindQueryDto {
-  implicit val format: Format[SpaceFindQueryDto] = Json.format
+object DeleteSpacePayloadDto {
+  implicit val format: Format[DeleteSpacePayloadDto] = Json.format
 }

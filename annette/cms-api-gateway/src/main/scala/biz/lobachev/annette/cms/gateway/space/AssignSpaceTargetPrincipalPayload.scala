@@ -14,28 +14,17 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway.dto
+package biz.lobachev.annette.cms.gateway.space
 
 import biz.lobachev.annette.cms.api.space.SpaceId
-import biz.lobachev.annette.cms.api.space.SpaceType.SpaceType
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.{Format, Json}
 
-import java.time.OffsetDateTime
-
-case class SpaceDto(
+case class AssignSpaceTargetPrincipalPayloadDto(
   id: SpaceId,
-  name: String,
-  description: String,
-  spaceType: SpaceType,
-  categoryId: CategoryId,
-  targets: Set[AnnettePrincipal] = Set.empty,
-  active: Boolean,
-  updatedBy: AnnettePrincipal,
-  updatedAt: OffsetDateTime = OffsetDateTime.now
+  principal: AnnettePrincipal
 )
 
-object SpaceDto {
-  implicit val format: Format[SpaceDto] = Json.format
+object AssignSpaceTargetPrincipalPayloadDto {
+  implicit val format: Format[AssignSpaceTargetPrincipalPayloadDto] = Json.format
 }
