@@ -57,8 +57,14 @@ class CmsPostViewController @Inject() (
                         if (payload.filter.map(_.isEmpty).getOrElse(true) && payload.sortBy.isEmpty)
                           Some(
                             Seq(
-                              SortBy("featured", Some(false)),
-                              SortBy("publicationTimestamp", Some(false))
+                              SortBy(
+                                field = "featured",
+                                descending = Some(true)
+                              ),
+                              SortBy(
+                                field = "publicationTimestamp",
+                                descending = Some(true)
+                              )
                             )
                           )
                         else payload.sortBy
