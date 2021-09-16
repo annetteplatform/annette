@@ -112,7 +112,7 @@ class SubscriptionElasticIndexDao(elasticSettings: ElasticSettings, elasticClien
   }
 
   protected def findSubscriptionKeys(searchRequest: SearchRequest): Future[SubscriptionFindResult] = {
-    log.debug(s"findEntity: searchRequest: ${searchRequest.toString} ")
+    log.trace(s"findEntity: searchRequest: ${searchRequest.toString} ")
     for {
       resp <- elasticClient.execute(searchRequest)
     } yield resp match {
