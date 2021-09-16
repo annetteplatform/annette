@@ -31,7 +31,9 @@ import scala.collection.immutable.{Seq, _}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 
-private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
+private[impl] class SpaceCassandraDbDao(
+  session: CassandraSession
+)(implicit
   ec: ExecutionContext,
   materializer: Materializer
 ) {
@@ -217,7 +219,7 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
   }
 
   def updateSpaceName(event: SpaceEntity.SpaceNameUpdated): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       updateSpaceNameStatement
         .bind()
         .setString("id", event.id)
@@ -228,7 +230,7 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def updateSpaceDescription(event: SpaceEntity.SpaceDescriptionUpdated): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       updateSpaceDescriptionStatement
         .bind()
         .setString("id", event.id)
@@ -239,7 +241,7 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def updateSpaceCategory(event: SpaceEntity.SpaceCategoryUpdated): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       updateSpaceCategoryStatement
         .bind()
         .setString("id", event.id)
@@ -250,7 +252,7 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def assignSpaceTargetPrincipal(event: SpaceEntity.SpaceTargetPrincipalAssigned): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       assignSpaceTargetPrincipalStatement
         .bind()
         .setString("space_id", event.id)
@@ -266,7 +268,7 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def unassignSpaceTargetPrincipal(event: SpaceEntity.SpaceTargetPrincipalUnassigned): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       unassignSpaceTargetPrincipalStatement
         .bind()
         .setString("space_id", event.id)
@@ -280,7 +282,7 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def activateSpace(event: SpaceEntity.SpaceActivated): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       activateSpaceStatement
         .bind()
         .setString("id", event.id)
@@ -290,7 +292,7 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def deactivateSpace(event: SpaceEntity.SpaceDeactivated): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       deactivateSpaceStatement
         .bind()
         .setString("id", event.id)
@@ -300,7 +302,7 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def deleteSpace(event: SpaceEntity.SpaceDeleted): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       deleteSpaceStatement
         .bind()
         .setString("id", event.id),
@@ -391,7 +393,15 @@ private[impl] class SpaceCassandraDbDao(session: CassandraSession)(implicit
       )
     )
 
-  private def build(statements: BoundStatement*): Future[List[BoundStatement]] =
-    Future.successful(statements.toList)
+  private def execute(statements: BoundStatement*): Future[List[BoundStatement]] =
+    for (
+      _ <- Source(statements)
+             .mapAsync(1) { statement =>
+               val future = session.executeWrite(statement)
+               future.failed.foreach(th => log.error("Failed to process statement {}", statement, th))
+               future
+             }
+             .runWith(Sink.seq)
+    ) yield List.empty
 
 }

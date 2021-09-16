@@ -32,7 +32,9 @@ import scala.collection.immutable.{Seq, _}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 
-private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
+private[impl] class PostCassandraDbDao(
+  session: CassandraSession
+)(implicit
   ec: ExecutionContext,
   materializer: Materializer
 ) {
@@ -414,7 +416,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
   }
 
   def updatePostFeatured(event: PostEntity.PostFeaturedUpdated): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       updatePostFeaturedStatement
         .bind()
         .setString("id", event.id)
@@ -425,7 +427,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def updatePostAuthor(event: PostEntity.PostAuthorUpdated): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       updatePostAuthorStatement
         .bind()
         .setString("id", event.id)
@@ -437,7 +439,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def updatePostTitle(event: PostEntity.PostTitleUpdated): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       updatePostTitleStatement
         .bind()
         .setString("id", event.id)
@@ -448,7 +450,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def updatePostIntro(event: PostEntity.PostIntroUpdated): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       updatePostIntroStatement
         .bind()
         .setString("id", event.id)
@@ -459,7 +461,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def updatePostContent(event: PostEntity.PostContentUpdated): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       updatePostContentStatement
         .bind()
         .setString("id", event.id)
@@ -470,7 +472,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def updatePostPublicationTimestamp(event: PostEntity.PostPublicationTimestampUpdated): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       updatePostPublicationTimestampStatement
         .bind()
         .setString("id", event.id)
@@ -481,7 +483,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def publishPost(event: PostEntity.PostPublished): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       publishPostStatement
         .bind()
         .setString("id", event.id)
@@ -493,7 +495,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def unpublishPost(event: PostEntity.PostUnpublished): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       unpublishPostStatement
         .bind()
         .setString("id", event.id)
@@ -504,7 +506,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def assignPostTargetPrincipal(event: PostEntity.PostTargetPrincipalAssigned): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       assignPostTargetPrincipalStatement
         .bind()
         .setString("post_id", event.id)
@@ -520,7 +522,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def unassignPostTargetPrincipal(event: PostEntity.PostTargetPrincipalUnassigned): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       unassignPostTargetPrincipalStatement
         .bind()
         .setString("post_id", event.id)
@@ -559,7 +561,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def addPostMedia(event: PostEntity.PostMediaAdded): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       addPostMediaStatement
         .bind()
         .setString("post_id", event.postId)
@@ -574,7 +576,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def removePostMedia(event: PostEntity.PostMediaRemoved): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       removePostMediaStatement
         .bind()
         .setString("post_id", event.postId)
@@ -588,7 +590,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def addPostDoc(event: PostEntity.PostDocAdded): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       addPostDocStatement
         .bind()
         .setString("post_id", event.postId)
@@ -604,7 +606,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def updatePostDocName(event: PostEntity.PostDocNameUpdated): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       updatePostDocNameStatement
         .bind()
         .setString("post_id", event.postId)
@@ -619,7 +621,7 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
     )
 
   def removePostDoc(event: PostEntity.PostDocRemoved): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       removePostDocStatement
         .bind()
         .setString("post_id", event.postId)
@@ -894,6 +896,15 @@ private[impl] class PostCassandraDbDao(session: CassandraSession)(implicit
                          .map(_.map(_.getLong("count") > 0).getOrElse(false))
     } yield likedByMe
 
-  private def build(statements: BoundStatement*): Future[List[BoundStatement]] =
-    Future.successful(statements.toList)
+  private def execute(statements: BoundStatement*): Future[List[BoundStatement]] =
+    for (
+      _ <- Source(statements)
+             .mapAsync(1) { statement =>
+               val future = session.executeWrite(statement)
+               future.failed.foreach(th => log.error("Failed to process statement {}", statement, th))
+               future
+             }
+             .runWith(Sink.seq)
+    ) yield List.empty
+  //    Future.successful(statements.toList)
 }

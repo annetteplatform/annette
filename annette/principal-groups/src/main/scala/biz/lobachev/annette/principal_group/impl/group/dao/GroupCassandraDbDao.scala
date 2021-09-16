@@ -17,6 +17,8 @@
 package biz.lobachev.annette.principal_group.impl.group.dao
 
 import akka.Done
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.principal_group.api.group.{PrincipalGroup, PrincipalGroupId}
 import biz.lobachev.annette.principal_group.impl.group.PrincipalGroupEntity.{
@@ -30,13 +32,21 @@ import biz.lobachev.annette.principal_group.impl.group.PrincipalGroupEntity.{
 }
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import org.slf4j.LoggerFactory
 
 import java.time.OffsetDateTime
 import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 
-private[impl] class GroupCassandraDbDao(session: CassandraSession)(implicit ec: ExecutionContext) {
+private[impl] class GroupCassandraDbDao(
+  session: CassandraSession
+)(implicit
+  ec: ExecutionContext,
+  materializer: Materializer
+) {
+
+  val log = LoggerFactory.getLogger(this.getClass)
 
   private var insertPrincipalGroupStatement: PreparedStatement            = null
   private var updatePrincipalGroupNameStatement: PreparedStatement        = null
@@ -171,7 +181,7 @@ private[impl] class GroupCassandraDbDao(session: CassandraSession)(implicit ec: 
     }
 
   def createPrincipalGroup(event: PrincipalGroupCreated): Future[List[BoundStatement]] =
-    build(
+    execute(
       insertPrincipalGroupStatement
         .bind()
         .setString("id", event.id)
@@ -184,7 +194,7 @@ private[impl] class GroupCassandraDbDao(session: CassandraSession)(implicit ec: 
     )
 
   def updatePrincipalGroupName(event: PrincipalGroupNameUpdated): Future[List[BoundStatement]]               =
-    build(
+    execute(
       updatePrincipalGroupNameStatement
         .bind()
         .setString("id", event.id)
@@ -194,7 +204,7 @@ private[impl] class GroupCassandraDbDao(session: CassandraSession)(implicit ec: 
         .setString("updated_by_id", event.updatedBy.principalId)
     )
   def updatePrincipalGroupDescription(event: PrincipalGroupDescriptionUpdated): Future[List[BoundStatement]] =
-    build(
+    execute(
       updatePrincipalGroupDescriptionStatement
         .bind()
         .setString("id", event.id)
@@ -205,7 +215,7 @@ private[impl] class GroupCassandraDbDao(session: CassandraSession)(implicit ec: 
     )
 
   def updatePrincipalGroupCategory(event: PrincipalGroupCategoryUpdated): Future[List[BoundStatement]] =
-    build(
+    execute(
       updatePrincipalGroupCategoryStatement
         .bind()
         .setString("id", event.id)
@@ -216,7 +226,7 @@ private[impl] class GroupCassandraDbDao(session: CassandraSession)(implicit ec: 
     )
 
   def deletePrincipalGroup(event: PrincipalGroupDeleted): Future[List[BoundStatement]] =
-    build(
+    execute(
       deletePrincipalGroupStatement
         .bind()
         .setString("id", event.id),
@@ -226,7 +236,7 @@ private[impl] class GroupCassandraDbDao(session: CassandraSession)(implicit ec: 
     )
 
   def assignPrincipal(event: PrincipalAssigned): Future[List[BoundStatement]] =
-    build(
+    execute(
       assignPrincipalStatement
         .bind()
         .setString("id", event.id)
@@ -241,7 +251,7 @@ private[impl] class GroupCassandraDbDao(session: CassandraSession)(implicit ec: 
     )
 
   def unassignPrincipal(event: PrincipalUnassigned): Future[List[BoundStatement]] =
-    build(
+    execute(
       unassignPrincipalStatement
         .bind()
         .setString("id", event.id)
@@ -292,7 +302,15 @@ private[impl] class GroupCassandraDbDao(session: CassandraSession)(implicit ec: 
       principalId = row.getString("principal_id")
     )
 
-  private def build(statements: BoundStatement*): Future[List[BoundStatement]] =
-    Future.successful(statements.toList)
+  private def execute(statements: BoundStatement*): Future[List[BoundStatement]] =
+    for (
+      _ <- Source(statements)
+             .mapAsync(1) { statement =>
+               val future = session.executeWrite(statement)
+               future.failed.foreach(th => log.error("Failed to process statement {}", statement, th))
+               future
+             }
+             .runWith(Sink.seq)
+    ) yield List.empty
 
 }

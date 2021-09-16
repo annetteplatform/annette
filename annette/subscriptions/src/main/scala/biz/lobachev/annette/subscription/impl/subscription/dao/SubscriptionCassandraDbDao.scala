@@ -17,19 +17,29 @@
 package biz.lobachev.annette.subscription.impl.subscription.dao
 
 import akka.Done
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.subscription.api.subscription.{ObjectId, Subscription, SubscriptionKey}
 import biz.lobachev.annette.subscription.api.subscription_type.SubscriptionTypeId
 import biz.lobachev.annette.subscription.impl.subscription.SubscriptionEntity.{SubscriptionCreated, SubscriptionDeleted}
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import org.slf4j.LoggerFactory
 
 import java.time.OffsetDateTime
 import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 
-private[impl] class SubscriptionCassandraDbDao(session: CassandraSession)(implicit ec: ExecutionContext) {
+private[impl] class SubscriptionCassandraDbDao(
+  session: CassandraSession
+)(implicit
+  ec: ExecutionContext,
+  materializer: Materializer
+) {
+
+  val log = LoggerFactory.getLogger(this.getClass)
 
   private var insertSubscription1Statement: PreparedStatement = null
   private var insertSubscription2Statement: PreparedStatement = null
@@ -126,7 +136,7 @@ private[impl] class SubscriptionCassandraDbDao(session: CassandraSession)(implic
     }
 
   def createSubscription(event: SubscriptionCreated): Future[List[BoundStatement]] =
-    build(
+    execute(
       insertSubscription1Statement
         .bind()
         .setString("subscription_type", event.subscriptionType)
@@ -147,7 +157,7 @@ private[impl] class SubscriptionCassandraDbDao(session: CassandraSession)(implic
     )
 
   def deleteSubscription(event: SubscriptionDeleted): Future[List[BoundStatement]] =
-    build(
+    execute(
       deleteSubscription1Statement
         .bind()
         .setString("subscription_type", event.subscriptionType)
@@ -251,7 +261,15 @@ private[impl] class SubscriptionCassandraDbDao(session: CassandraSession)(implic
       )
     )
 
-  private def build(statements: BoundStatement*): Future[List[BoundStatement]] =
-    Future.successful(statements.toList)
+  private def execute(statements: BoundStatement*): Future[List[BoundStatement]] =
+    for (
+      _ <- Source(statements)
+             .mapAsync(1) { statement =>
+               val future = session.executeWrite(statement)
+               future.failed.foreach(th => log.error("Failed to process statement {}", statement, th))
+               future
+             }
+             .runWith(Sink.seq)
+    ) yield List.empty
 
 }

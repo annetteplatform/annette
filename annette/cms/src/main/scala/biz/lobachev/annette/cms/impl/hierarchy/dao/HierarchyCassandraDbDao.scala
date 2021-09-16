@@ -17,6 +17,8 @@
 package biz.lobachev.annette.cms.impl.hierarchy.dao
 
 import akka.Done
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.cms.api.post.PostId
 import biz.lobachev.annette.cms.api.space.{SpaceId, WikiHierarchy}
 import biz.lobachev.annette.cms.impl.hierarchy
@@ -33,7 +35,8 @@ import scala.jdk.CollectionConverters._
 private[impl] class HierarchyCassandraDbDao(
   session: CassandraSession
 )(implicit
-  ec: ExecutionContext
+  ec: ExecutionContext,
+  materializer: Materializer
 ) {
 
   val log = LoggerFactory.getLogger(this.getClass)
@@ -137,7 +140,7 @@ private[impl] class HierarchyCassandraDbDao(
     }
 
   def createSpace(event: HierarchyEntity.SpaceCreated): Future[Seq[BoundStatement]]  =
-    build(
+    execute(
       createSpaceStatement
         .bind()
         .setString("space_id", event.spaceId)
@@ -146,7 +149,7 @@ private[impl] class HierarchyCassandraDbDao(
         .setString("updated_by_id", event.updatedBy.principalId)
     )
   def addRootPost(event: HierarchyEntity.RootPostAdded): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       updateRootPostStatement
         .bind()
         .setString("space_id", event.spaceId)
@@ -157,7 +160,7 @@ private[impl] class HierarchyCassandraDbDao(
     )
 
   def addPost(event: HierarchyEntity.PostAdded): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       updateChildrenStatement
         .bind()
         .setString("space_id", event.spaceId)
@@ -220,7 +223,7 @@ private[impl] class HierarchyCassandraDbDao(
   }
 
   def removeRootPost(event: HierarchyEntity.RootPostRemoved): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       updateRootPostStatement
         .bind()
         .setString("space_id", event.spaceId)
@@ -231,7 +234,7 @@ private[impl] class HierarchyCassandraDbDao(
     )
 
   def removePost(event: HierarchyEntity.PostRemoved): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       if (event.children.isEmpty)
         removeChildrenStatement
           .bind()
@@ -252,7 +255,7 @@ private[impl] class HierarchyCassandraDbDao(
     )
 
   def deleteSpace(event: hierarchy.HierarchyEntity.SpaceDeleted): Future[Seq[BoundStatement]] =
-    build(
+    execute(
       deleteSpaceStatement
         .bind()
         .setString("space_id", event.spaceId),
@@ -285,7 +288,15 @@ private[impl] class HierarchyCassandraDbDao(
     row.getString("post_id") ->
       row.getList[String]("child_posts", classOf[String]).asScala.toSeq
 
-  private def build(statements: BoundStatement*): Future[List[BoundStatement]] =
-    Future.successful(statements.toList)
+  private def execute(statements: BoundStatement*): Future[List[BoundStatement]] =
+    for (
+      _ <- Source(statements)
+             .mapAsync(1) { statement =>
+               val future = session.executeWrite(statement)
+               future.failed.foreach(th => log.error("Failed to process statement {}", statement, th))
+               future
+             }
+             .runWith(Sink.seq)
+    ) yield List.empty
 
 }
