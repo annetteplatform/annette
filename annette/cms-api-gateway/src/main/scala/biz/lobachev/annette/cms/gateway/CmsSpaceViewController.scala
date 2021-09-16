@@ -119,7 +119,16 @@ class CmsSpaceViewController @Inject() (
                                   request.subject.principals.head
                                 )
                               )
-        } yield Ok("")
+          subscriptions    <- subscriptionService.findSubscriptions(
+                                SubscriptionFindQuery(
+                                  size = 1000,
+                                  principals = Some(request.subject.principals.toSet),
+                                  subscriptionType = Some(Set(spaceSubscriptionType)),
+                                  objects = Some(Set(spaceId))
+                                )
+                              )
+          result            = subscriptions.hits.map(_.subscription.principal).toSet + request.subject.principals.head
+        } yield Ok(Json.toJson(result))
       }
     }
 
@@ -127,15 +136,24 @@ class CmsSpaceViewController @Inject() (
     authenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_BLOGS, Permissions.VIEW_WIKIES) {
         for {
-          _ <- subscriptionService.deleteSubscription(
-                 DeleteSubscriptionPayload(
-                   spaceSubscriptionType,
-                   spaceId,
-                   request.subject.principals.head,
-                   request.subject.principals.head
-                 )
-               )
-        } yield Ok("")
+          _             <- subscriptionService.deleteSubscription(
+                             DeleteSubscriptionPayload(
+                               spaceSubscriptionType,
+                               spaceId,
+                               request.subject.principals.head,
+                               request.subject.principals.head
+                             )
+                           )
+          subscriptions <- subscriptionService.findSubscriptions(
+                             SubscriptionFindQuery(
+                               size = 1000,
+                               principals = Some(request.subject.principals.toSet),
+                               subscriptionType = Some(Set(spaceSubscriptionType)),
+                               objects = Some(Set(spaceId))
+                             )
+                           )
+          result         = subscriptions.hits.map(_.subscription.principal).toSet - request.subject.principals.head
+        } yield Ok(Json.toJson(result))
       }
     }
 }
