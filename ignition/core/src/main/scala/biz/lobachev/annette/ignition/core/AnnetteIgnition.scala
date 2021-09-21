@@ -23,7 +23,7 @@ import biz.lobachev.annette.ignition.core.model.ServiceLoadResult
 import biz.lobachev.annette.ignition.core.org_structure.OrgStructureServiceLoader
 import biz.lobachev.annette.ignition.core.persons.PersonServiceLoader
 import org.slf4j.{Logger, LoggerFactory}
-import pureconfig.ConfigSource
+import pureconfig._
 import pureconfig.generic.auto._
 
 import scala.concurrent.{ExecutionContext, Future}

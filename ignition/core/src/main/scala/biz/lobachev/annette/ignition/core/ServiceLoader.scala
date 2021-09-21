@@ -19,7 +19,7 @@ package biz.lobachev.annette.ignition.core
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.ignition.core.model.{EntityLoadResult, LoadFailed, LoadOk, ServiceLoadResult}
 import org.slf4j.Logger
-import pureconfig.{ConfigReader, ConfigSource, Derivation}
+import pureconfig._
 
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -31,7 +31,7 @@ protected trait ServiceLoader[A] {
   val name: String
   val configName: String
 
-  def run(principal: AnnettePrincipal)(implicit reader: Derivation[ConfigReader[A]]): Future[ServiceLoadResult] =
+  def run(principal: AnnettePrincipal)(implicit reader: ConfigReader[A]): Future[ServiceLoadResult] =
     ConfigSource.default
       .at(s"annette.ignition.$configName")
       .load[A]

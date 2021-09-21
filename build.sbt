@@ -132,6 +132,7 @@ lazy val `microservice-core` = (project in file("annette/microservice-core"))
       lagomScaladslServer % Optional,
       lagomScaladslTestKit,
       Dependencies.chimney,
+      Dependencies.pureConfig,
       Dependencies.playJsonExt,
       Dependencies.logstashEncoder,
       Dependencies.macwire
