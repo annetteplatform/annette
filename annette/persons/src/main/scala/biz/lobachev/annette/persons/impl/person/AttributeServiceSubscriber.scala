@@ -16,30 +16,30 @@
 
 package biz.lobachev.annette.persons.impl.person
 
-import akka.Done
-import akka.stream.scaladsl.Flow
-import biz.lobachev.annette.attributes.api.AttributeServiceApi
-import biz.lobachev.annette.attributes.api.index.{
-  IndexAttributeAssigned,
-  IndexAttributeCreated,
-  IndexAttributeUnassigned,
-  IndexEvent
-}
-import biz.lobachev.annette.persons.impl.person.dao.PersonIndexDao
+//import akka.Done
+//import akka.stream.scaladsl.Flow
+//import biz.lobachev.annette.attributes.api.AttributeServiceApi
+//import biz.lobachev.annette.attributes.api.index.{
+//  IndexAttributeAssigned,
+//  IndexAttributeCreated,
+//  IndexAttributeUnassigned,
+//  IndexEvent
+//}
+//import biz.lobachev.annette.persons.impl.person.dao.PersonIndexDao
 
-import scala.concurrent.Future
+//import scala.concurrent.Future
 
-class AttributeServiceSubscriber(attributeService: AttributeServiceApi, indexDao: PersonIndexDao) {
+class AttributeServiceSubscriber( /*attributeService: AttributeServiceApi, indexDao: PersonIndexDao*/ ) {
   final val PERSON_SCHEMA_ID = "person"
 
-  attributeService.indexTopic.subscribe.atLeastOnce(Flow[IndexEvent].mapAsync(1) {
-    case event: IndexAttributeCreated if event.id.schemaId == PERSON_SCHEMA_ID    =>
-      indexDao.createAttribute(event.index)
-    case event: IndexAttributeAssigned if event.id.schemaId == PERSON_SCHEMA_ID   =>
-      indexDao.assignAttribute(event.objectId, event.fieldName, event.attribute)
-    case event: IndexAttributeUnassigned if event.id.schemaId == PERSON_SCHEMA_ID =>
-      indexDao.unassignAttribute(event.objectId, event.fieldName)
-    case _                                                                        => Future.successful(Done)
-  })
+//  attributeService.indexTopic.subscribe.atLeastOnce(Flow[IndexEvent].mapAsync(1) {
+//    case event: IndexAttributeCreated if event.id.schemaId == PERSON_SCHEMA_ID    =>
+//      indexDao.createAttribute(event.index)
+//    case event: IndexAttributeAssigned if event.id.schemaId == PERSON_SCHEMA_ID   =>
+//      indexDao.assignAttribute(event.objectId, event.fieldName, event.attribute)
+//    case event: IndexAttributeUnassigned if event.id.schemaId == PERSON_SCHEMA_ID =>
+//      indexDao.unassignAttribute(event.objectId, event.fieldName)
+//    case _                                                                        => Future.successful(Done)
+//  })
 
 }

@@ -48,7 +48,7 @@ abstract class AbstractIndexDao(client: ElasticClient)(implicit
 ) {
   protected val log: Logger
 
-  val indexConfigPath: String
+  def indexConfigPath: String
 
   val indexConfig = IndexingProvider.loadIndexConfig(indexConfigPath)
 
@@ -69,7 +69,7 @@ abstract class AbstractIndexDao(client: ElasticClient)(implicit
   protected def processResponse[T]: PartialFunction[Response[T], T] = {
     case failure: RequestFailure    =>
       log.error("indexing request failed", failure.error.asException)
-      throw IndexingRequestFailure(failure.error.reason)
+      throw IndexingRequestFailure(failure.error.reason, failure.error.causedBy.map(_.reason).getOrElse(""))
     case success: RequestSuccess[T] => success.result
   }
   private def validateIndex(): Future[ValidationStatus]             =
@@ -78,30 +78,33 @@ abstract class AbstractIndexDao(client: ElasticClient)(implicit
                          processResponse[Map[String, GetIndexResponse]](response)(indexName)
                        }
     } yield {
-      val result         = indexConfig.mappings.map {
+      val result = indexConfig.mappings.map {
         case alias -> field =>
           val fieldName       = field.field.getOrElse(alias)
           val maybeIndexField = indexResponse.mappings.properties.get(fieldName)
-          maybeIndexField.map { indexField =>
+          val r               = maybeIndexField.map { indexField =>
             if (indexField.`type` == Some(field.fieldType))
               IndexValid
             else IndexInvalid(Seq(alias))
           }.getOrElse(IndexRequireUpdate(Seq(alias)))
+          println(s"$alias -> $r")
+          r
       }
+
       val invalidAliases = result.map {
         case IndexInvalid(aliases) => Some(aliases)
         case _                     => None
       }.flatten.flatten.toSeq
-      if (invalidAliases.isEmpty)
+      if (invalidAliases.nonEmpty)
         IndexInvalid(invalidAliases)
       else {
         val requiredUpdateAliases = result.map {
           case IndexRequireUpdate(aliases) => Some(aliases)
           case _                           => None
         }.flatten.flatten.toSeq
-        if (requiredUpdateAliases.isEmpty)
-          IndexValid
-        else IndexRequireUpdate(requiredUpdateAliases)
+        if (requiredUpdateAliases.nonEmpty)
+          IndexRequireUpdate(requiredUpdateAliases)
+        else IndexValid
       }
     }
 

@@ -17,11 +17,10 @@
 package biz.lobachev.annette.microservice_core.indexing
 
 import com.softwaremill.macwire._
-import com.typesafe.config.Config
 
-class IndexingModule(val config: Config) {
+class IndexingModule(path: String = "indexing.connection") {
 
-  lazy val configPath       = ConnectionConfigPath("indexing.connection")
+  lazy val configPath       = ConnectionConfigPath(path)
   lazy val connectionConfig = wireWith(IndexingProvider.loadConnectionConfig _)
   lazy val client           = wireWith(IndexingProvider.createClient _)
 

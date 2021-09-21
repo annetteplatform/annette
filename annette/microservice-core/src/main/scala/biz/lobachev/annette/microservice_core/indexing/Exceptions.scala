@@ -19,10 +19,11 @@ package biz.lobachev.annette.microservice_core.indexing
 import biz.lobachev.annette.core.exception.{AnnetteTransportExceptionCompanion1, AnnetteTransportExceptionCompanion2}
 import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
 
-object IndexingRequestFailure extends AnnetteTransportExceptionCompanion1 {
+object IndexingRequestFailure extends AnnetteTransportExceptionCompanion2 {
   val ErrorCode       = TransportErrorCode.InternalServerError
   val MessageCode     = "annette.core.indexing.requestFailure"
   val Arg1Key: String = "reason"
+  val Arg2Key: String = "causedBy"
 }
 
 object AliasNotFound extends AnnetteTransportExceptionCompanion1 {
