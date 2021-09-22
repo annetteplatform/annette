@@ -47,6 +47,8 @@ private[impl] class PersonCassandraDbDao(session: CassandraSession)(implicit ec:
                |          category_id text,
                |          phone text,
                |          email text,
+               |          source text,
+               |          external_id text,
                |          updated_at text,
                |          updated_by_type text,
                |          updated_by_id text,
@@ -60,10 +62,14 @@ private[impl] class PersonCassandraDbDao(session: CassandraSession)(implicit ec:
     for {
       insertPersonStmt <- session.prepare(
                             """
-                              | INSERT INTO persons (id, lastname, firstname, middlename, category_id, phone, email,
+                              | INSERT INTO persons (id, lastname, firstname, middlename,
+                              |     category_id, phone, email,
+                              |     source, external_id,
                               |     updated_at, updated_by_type, updated_by_id
                               |     )
-                              |   VALUES (:id, :lastname, :firstname, :middlename, :category_id, :phone, :email,
+                              |   VALUES (:id, :lastname, :firstname, :middlename,
+                              |     :category_id, :phone, :email,
+                              |     :source, :external_id,
                               |     :updated_at, :updated_by_type, :updated_by_id
                               |     )
                               |""".stripMargin
@@ -77,6 +83,8 @@ private[impl] class PersonCassandraDbDao(session: CassandraSession)(implicit ec:
                               |   category_id = :category_id,
                               |   phone = :phone,
                               |   email = :email,
+                              |   source = :source,
+                              |   external_id = :external_id,
                               |   updated_at = :updated_at,
                               |   updated_by_type = :updated_by_type,
                               |   updated_by_id = :updated_by_id
@@ -106,6 +114,8 @@ private[impl] class PersonCassandraDbDao(session: CassandraSession)(implicit ec:
       .setString("category_id", event.categoryId)
       .setString("phone", event.phone.orNull)
       .setString("email", event.email.orNull)
+      .setString("source", event.source.orNull)
+      .setString("external_id", event.externalId.orNull)
       .setString("updated_at", event.createdAt.toString)
       .setString("updated_by_type", event.createdBy.principalType)
       .setString("updated_by_id", event.createdBy.principalId)
@@ -120,6 +130,8 @@ private[impl] class PersonCassandraDbDao(session: CassandraSession)(implicit ec:
       .setString("category_id", event.categoryId)
       .setString("phone", event.phone.orNull)
       .setString("email", event.email.orNull)
+      .setString("source", event.source.orNull)
+      .setString("external_id", event.externalId.orNull)
       .setString("updated_at", event.updatedAt.toString)
       .setString("updated_by_type", event.updatedBy.principalType)
       .setString("updated_by_id", event.updatedBy.principalId)
@@ -150,6 +162,8 @@ private[impl] class PersonCassandraDbDao(session: CassandraSession)(implicit ec:
       categoryId = row.getString("category_id"),
       phone = Option(row.getString("phone")),
       email = Option(row.getString("email")),
+      source = Option(row.getString("source")),
+      externalId = Option(row.getString("external_id")),
       updatedAt = OffsetDateTime.parse(row.getString("updated_at")),
       updatedBy = AnnettePrincipal(
         principalType = row.getString("updated_by_type"),

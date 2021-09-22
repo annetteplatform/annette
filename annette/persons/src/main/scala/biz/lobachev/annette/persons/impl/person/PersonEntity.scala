@@ -69,6 +69,8 @@ object PersonEntity {
     categoryId: CategoryId,
     phone: Option[String],
     email: Option[String],
+    source: Option[String] = None,
+    externalId: Option[String] = None,
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -80,6 +82,8 @@ object PersonEntity {
     categoryId: CategoryId,
     phone: Option[String],
     email: Option[String],
+    source: Option[String] = None,
+    externalId: Option[String] = None,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event

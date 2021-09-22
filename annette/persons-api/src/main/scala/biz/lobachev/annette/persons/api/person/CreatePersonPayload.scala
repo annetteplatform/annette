@@ -29,6 +29,8 @@ case class CreatePersonPayload(
   categoryId: CategoryId,
   phone: Option[String],      // phone
   email: Option[String],      // email
+  source: Option[String] = None,
+  externalId: Option[String] = None,
   createdBy: AnnettePrincipal
 )
 

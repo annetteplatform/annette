@@ -14,24 +14,27 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.person.gateway.dto
+package biz.lobachev.annette.persons.impl.category.model
 
-import biz.lobachev.annette.core.model.PersonId
-import biz.lobachev.annette.core.model.category.CategoryId
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.category.{Category, CategoryId}
+import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 
-case class PersonPayloadDto(
-  id: PersonId,               // person id
-  lastname: String,           // last name of the person
-  firstname: String,          // first name
-  middlename: Option[String], // middle name
-  categoryId: CategoryId,
-  phone: Option[String],      // phone
-  email: Option[String],      // email
-  source: Option[String] = None,
-  externalId: Option[String] = None
-)
+import java.time.OffsetDateTime
 
-object PersonPayloadDto {
-  implicit val format = Json.format[PersonPayloadDto]
+case class CategoryState(
+  id: CategoryId,
+  name: String,
+  updatedAt: OffsetDateTime = OffsetDateTime.now(),
+  updatedBy: AnnettePrincipal
+) {
+
+  def toCategory: Category =
+    this.into[Category].transform
+
+}
+
+object CategoryState {
+  implicit val format = Json.format[CategoryState]
 }

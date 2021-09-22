@@ -80,7 +80,7 @@ lazy val root = (project in file("."))
     `api-gateway`,
     // initialization application
     `ignition-core`,
-    // `demo-ignition`,
+//    `demo-ignition`,
     // API gateways
     `application-api-gateway`,
     `authorization-api-gateway`,
@@ -99,7 +99,7 @@ lazy val root = (project in file("."))
     `cms-api`,
     // microservices
     `application`,
-    `attributes`,
+//    `attributes`,
     `authorization`,
     `org-structure`,
     `persons`,
@@ -436,7 +436,7 @@ def personsProject(pr: Project) =
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`persons-api`, `attributes-api`)
+    .dependsOn(`persons-api`)
 
 lazy val `persons-api-gateway` = (project in file("annette/persons-api-gateway"))
   .settings(
@@ -585,7 +585,7 @@ lazy val `cms-api-gateway` = (project in file("annette/cms-api-gateway"))
 
 //lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/demo"))
 lazy val `application`      = applicationProject(project in file("annette/application"))
-lazy val `attributes`       = attributesProject(project in file("annette/attributes"))
+//lazy val `attributes`       = attributesProject(project in file("annette/attributes"))
 lazy val `authorization`    = authorizationProject(project in file("annette/authorization"))
 lazy val `org-structure`    = orgStructureProject(project in file("annette/org-structure"))
 lazy val `persons`          = personsProject(project in file("annette/persons"))

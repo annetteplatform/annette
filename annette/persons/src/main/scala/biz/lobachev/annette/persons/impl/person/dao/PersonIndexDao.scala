@@ -46,6 +46,8 @@ class PersonIndexDao(client: ElasticClient)(implicit
       "categoryId" -> event.categoryId,
       "phone"      -> event.phone,
       "email"      -> event.email,
+      "source"     -> event.source,
+      "externalId" -> event.externalId,
       "updatedAt"  -> event.createdAt
     )
 
@@ -59,6 +61,8 @@ class PersonIndexDao(client: ElasticClient)(implicit
       "categoryId" -> event.categoryId,
       "phone"      -> event.phone,
       "email"      -> event.email,
+      "source"     -> event.source,
+      "externalId" -> event.externalId,
       "updatedAt"  -> event.updatedAt
     )
 
@@ -83,9 +87,12 @@ class PersonIndexDao(client: ElasticClient)(implicit
     val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
     val categoryQuery          =
       query.categories.map(category => termsSetQuery(alias2FieldName("categoryId"), category, script("1"))).toSeq
+    val sourceQuery            = query.sources.map(sources => termsSetQuery(alias2FieldName("source"), sources, script("1"))).toSeq
+    val externalIdQuery        =
+      query.externalIds.map(externalIds => termsSetQuery(alias2FieldName("externalId"), externalIds, script("1"))).toSeq
 
     val searchRequest = search(indexName)
-      .bool(must(filterQuery ++ fieldQuery ++ categoryQuery))
+      .bool(must(filterQuery ++ fieldQuery ++ categoryQuery ++ sourceQuery ++ externalIdQuery))
       .from(query.offset)
       .size(query.size)
       .sortBy(sortBy)

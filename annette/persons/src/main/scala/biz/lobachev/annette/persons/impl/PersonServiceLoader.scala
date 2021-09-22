@@ -18,11 +18,10 @@ package biz.lobachev.annette.persons.impl
 
 import akka.cluster.sharding.typed.scaladsl.Entity
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
-import biz.lobachev.annette.microservice_core.category.{CategoryEntity, CategoryProvider}
-import biz.lobachev.annette.microservice_core.category.model.CategorySerializerRegistry
-import biz.lobachev.annette.microservice_core.elastic.ElasticModule
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
 import biz.lobachev.annette.persons.api.PersonServiceApi
+import biz.lobachev.annette.persons.impl.category.model.CategorySerializerRegistry
+import biz.lobachev.annette.persons.impl.category.{CategoryEntity, CategoryProvider}
 import biz.lobachev.annette.persons.impl.person._
 import biz.lobachev.annette.persons.impl.person.dao.{PersonCassandraDbDao, PersonIndexDao}
 import biz.lobachev.annette.persons.impl.person.model.PersonSerializerRegistry
@@ -62,9 +61,6 @@ abstract class PersonServiceApplication(context: LagomApplicationContext)
 
   lazy val jsonSerializerRegistry = PersonRepositorySerializerRegistry
 
-  val elasticModule = new ElasticModule(config)
-  import elasticModule.elasticSettings
-
   val indexingModule = new IndexingModule()
   import indexingModule._
 
@@ -84,7 +80,7 @@ abstract class PersonServiceApplication(context: LagomApplicationContext)
     typeKeyName = "Category",
     tableName = "categories",
     dbReadSideId = "category-cassandra",
-    indexName = "persons-category",
+    configPath = "indexing.category-index",
     indexReadSideId = "category-elastic"
   )
 
@@ -98,12 +94,6 @@ abstract class PersonServiceApplication(context: LagomApplicationContext)
       CategoryEntity(entityContext)
     }
   )
-
-//  lazy val attributeService       = serviceClient.implement[AttributeServiceApi]
-//  val enableAttributeSubscription =
-//    Try(config.getBoolean("annette.attributes-service.enable-subscription")).toOption.getOrElse(true)
-//  if (enableAttributeSubscription)
-//    wire[AttributeServiceSubscriber]
 
 }
 
