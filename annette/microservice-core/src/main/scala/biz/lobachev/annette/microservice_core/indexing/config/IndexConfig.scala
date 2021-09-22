@@ -21,12 +21,12 @@ import com.sksamuel.elastic4s.requests.mappings.FieldDefinition
 
 case class IndexConfig(
   index: String,
-  mappings: Map[String, IndexField] = Map.empty,
+  mappings: Map[String, IndexFieldConf] = Map.empty,
   analyzers: Map[String, AnalyzerConf] = Map.empty,
   tokenizers: Map[String, TokenizerConf] = Map.empty
-//  tokenFilters: Option[Map[String, TokenFilterConf]] = None,
-//  charFilters: Option[Map[String, CharFilterConf]] = None,
-//  normalizers: Option[Map[String, Normalizer]Conf] = None,
+  //  tokenFilters: Option[Map[String, TokenFilterConf]] = None,
+  //  charFilters: Option[Map[String, CharFilterConf]] = None,
+  //  normalizers: Option[Map[String, Normalizer]Conf] = None,
 ) {
   def getProperties(aliases: Seq[String]): Seq[FieldDefinition] =
     aliases.map(alias => mappings(alias).fieldDefinition(alias))

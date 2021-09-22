@@ -26,9 +26,9 @@ object IndexingRequestFailure extends AnnetteTransportExceptionCompanion2 {
   val Arg2Key: String = "causedBy"
 }
 
-object AliasNotFound extends AnnetteTransportExceptionCompanion1 {
+object InvalidAlias extends AnnetteTransportExceptionCompanion1 {
   val ErrorCode       = TransportErrorCode.BadRequest
-  val MessageCode     = "annette.core.indexing.aliasNotFound"
+  val MessageCode     = "annette.core.indexing.invalidAlias"
   val Arg1Key: String = "alias"
 }
 

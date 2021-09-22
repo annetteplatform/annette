@@ -56,7 +56,7 @@ class IndexDaoSpec extends AnyWordSpec with Matchers {
 
   def processResponse[T]: PartialFunction[Response[T], T] = {
     case failure: RequestFailure    =>
-      throw IndexingRequestFailure(failure.error.reason)
+      throw IndexingRequestFailure(failure.error.reason, failure.error.causedBy.map(_.reason).getOrElse(""))
     case success: RequestSuccess[T] => success.result
   }
 

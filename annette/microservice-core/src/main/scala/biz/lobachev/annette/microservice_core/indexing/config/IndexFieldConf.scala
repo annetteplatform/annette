@@ -20,7 +20,7 @@ import com.sksamuel.elastic4s.requests.mappings.FieldDefinition
 import pureconfig.generic.FieldCoproductHint
 import com.sksamuel.elastic4s.requests.mappings
 
-sealed trait IndexField {
+sealed trait IndexFieldConf {
   val field: Option[String]
   def fieldType: String
   def fieldDefinition(alias: String): FieldDefinition =
@@ -30,13 +30,13 @@ sealed trait IndexField {
     )
 }
 
-case class TextField(
+case class TextFieldConf(
   field: Option[String] = None,
   fielddata: Boolean = false,
   analyzer: Option[String] = None,
   searchAnalyzer: Option[String] = None,
-  fields: Map[String, IndexField] = Map.empty
-) extends IndexField {
+  fields: Map[String, IndexFieldConf] = Map.empty
+) extends IndexFieldConf {
   override def fieldType: String = "text"
 
   override def fieldDefinition(alias: String): FieldDefinition =
@@ -52,9 +52,9 @@ case class TextField(
 
 }
 
-case class KeywordField(
+case class KeywordFieldConf(
   field: Option[String] = None
-) extends IndexField {
+) extends IndexFieldConf {
   override def fieldType: String = "keyword"
 
   override def fieldDefinition(alias: String): FieldDefinition =
@@ -63,32 +63,32 @@ case class KeywordField(
     )
 }
 
-case class DateField(
+case class DateFieldConf(
   field: Option[String] = None
-) extends IndexField {
+) extends IndexFieldConf {
   override def fieldType: String = "date"
 }
 
-case class BooleanField(
+case class BooleanFieldConf(
   field: Option[String] = None
-) extends IndexField {
+) extends IndexFieldConf {
   override def fieldType: String = "boolean"
 }
 
-case class LongField(
+case class LongFieldConf(
   field: Option[String] = None
-) extends IndexField {
+) extends IndexFieldConf {
   override def fieldType: String = "long"
 }
 
-case class DoubleField(
+case class DoubleFieldConf(
   field: Option[String] = None
-) extends IndexField {
+) extends IndexFieldConf {
   override def fieldType: String = "double"
 }
 
-object IndexField {
-  implicit val confHint = new FieldCoproductHint[IndexField]("type") {
-    override def fieldValue(name: String) = name.dropRight("Field".length).toLowerCase
+object IndexFieldConf {
+  implicit val confHint = new FieldCoproductHint[IndexFieldConf]("type") {
+    override def fieldValue(name: String) = name.dropRight("FieldConf".length).toLowerCase
   }
 }

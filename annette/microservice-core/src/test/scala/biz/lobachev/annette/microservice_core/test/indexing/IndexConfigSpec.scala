@@ -43,20 +43,20 @@ class IndexConfigSpec extends AnyWordSpec with Matchers {
       config shouldBe IndexConfig(
         index = "person-category",
         mappings = Map(
-          "id"        -> KeywordField(
+          "id"        -> KeywordFieldConf(
             field = Some("id")
           ),
-          "updatedAt" -> DateField(
+          "updatedAt" -> DateFieldConf(
             field = Some("updatedAt")
           ),
-          "name"      -> TextField(
+          "name"      -> TextFieldConf(
             field = Some("name"),
             fielddata = true,
             analyzer = Some("name_analyzer"),
             searchAnalyzer = Some("standard"),
             fields = Map(
-              "keyword" -> KeywordField(None),
-              "english" -> TextField(
+              "keyword" -> KeywordFieldConf(None),
+              "english" -> TextFieldConf(
                 field = Some("english"),
                 fielddata = false,
                 analyzer = Some("english"),

@@ -18,10 +18,11 @@ package biz.lobachev.annette.microservice_core.indexing.dao
 
 import akka.Done
 import biz.lobachev.annette.core.model.elastic.{FindResult, HitResult, SortBy}
+import biz.lobachev.annette.microservice_core.indexing.config.TextFieldConf
 import biz.lobachev.annette.microservice_core.indexing.{
-  AliasNotFound,
   IndexingProvider,
   IndexingRequestFailure,
+  InvalidAlias,
   InvalidIndexError
 }
 import com.sksamuel.elastic4s.ElasticDsl._
@@ -149,11 +150,34 @@ abstract class AbstractIndexDao(client: ElasticClient)(implicit
         Done
       }
 
-  protected def alias2FieldName(alias: String): String =
-    indexConfig.mappings
-      .get(alias)
-      .map(_.field.getOrElse(alias))
-      .getOrElse(throw AliasNotFound(alias))
+  protected def alias2FieldName(alias: String): String = {
+    val aliases = alias.split("\\.")
+    if (aliases.length == 1 || aliases.length == 2)
+      indexConfig.mappings
+        .get(aliases(0))
+        .map {
+          case textField: TextFieldConf =>
+            val field1 = textField.field.getOrElse(aliases(0))
+            if (aliases.length == 1)
+              field1
+            else {
+              val field2 = textField.fields
+                .get(aliases(1))
+                .map(_.field.getOrElse(aliases(1)))
+                .getOrElse(throw InvalidAlias(alias))
+              s"$field1.$field2"
+            }
+          case indexField               =>
+            val field1 = indexField.field.getOrElse(aliases(0))
+            if (aliases.length == 1)
+              field1
+            else
+              throw InvalidAlias(alias)
+        }
+        .getOrElse(throw InvalidAlias(alias))
+    else
+      throw InvalidAlias(alias)
+  }
 
   protected def alias2FieldNameDoc(doc: Seq[(String, Any)]): Seq[(String, Any)] =
     doc.map {
@@ -229,7 +253,43 @@ abstract class AbstractIndexDao(client: ElasticClient)(implicit
       val sortOrder =
         if (maybeDescending.getOrElse(true)) SortOrder.Desc
         else SortOrder.Asc
-      FieldSort(alias2FieldName(alias), order = sortOrder)
+      FieldSort(alias2SortFieldName(alias), order = sortOrder)
+  }
+
+  protected def alias2SortFieldName(alias: String): String = {
+    val aliases = alias.split("\\.")
+    if (aliases.length == 1 || aliases.length == 2)
+      indexConfig.mappings
+        .get(aliases(0))
+        .map {
+          case textField: TextFieldConf =>
+            val field1 = textField.field.getOrElse(aliases(0))
+            if (aliases.length == 1)
+              if (textField.fielddata) field1
+              else {
+                val field2 = textField.fields
+                  .find(_._2.fieldType == "keyword")
+                  .map { case k -> v => v.field.getOrElse(k) }
+                  .getOrElse(throw InvalidAlias(alias))
+                s"$field1.$field2"
+              }
+            else {
+              val field2 = textField.fields
+                .get(aliases(1))
+                .map(_.field.getOrElse(aliases(1)))
+                .getOrElse(throw InvalidAlias(alias))
+              s"$field1.$field2"
+            }
+          case indexField               =>
+            val field1 = indexField.field.getOrElse(aliases(0))
+            if (aliases.length == 1)
+              field1
+            else
+              throw InvalidAlias(alias)
+        }
+        .getOrElse(throw InvalidAlias(alias))
+    else
+      throw InvalidAlias(alias)
   }
 
 }
