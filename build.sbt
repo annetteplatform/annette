@@ -418,7 +418,7 @@ lazy val `persons-api` = (project in file("annette/persons-api"))
     )
   )
   .settings(annetteSettings: _*)
-  .dependsOn(`microservice-core`, `attributes-api`)
+  .dependsOn(`microservice-core`)
 
 def personsProject(pr: Project) =
   pr

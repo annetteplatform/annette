@@ -83,13 +83,11 @@ abstract class AbstractIndexDao(client: ElasticClient)(implicit
         case alias -> field =>
           val fieldName       = field.field.getOrElse(alias)
           val maybeIndexField = indexResponse.mappings.properties.get(fieldName)
-          val r               = maybeIndexField.map { indexField =>
+          maybeIndexField.map { indexField =>
             if (indexField.`type` == Some(field.fieldType))
               IndexValid
             else IndexInvalid(Seq(alias))
           }.getOrElse(IndexRequireUpdate(Seq(alias)))
-          println(s"$alias -> $r")
-          r
       }
 
       val invalidAliases = result.map {

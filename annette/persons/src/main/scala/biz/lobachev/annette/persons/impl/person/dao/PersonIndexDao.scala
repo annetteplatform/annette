@@ -99,8 +99,6 @@ class PersonIndexDao(client: ElasticClient)(implicit
       .sourceInclude(alias2FieldName("updatedAt"))
       .trackTotalHits(true)
 
-    //println(elasticClient.show(searchRequest))
-
     findEntity(searchRequest)
 
   }

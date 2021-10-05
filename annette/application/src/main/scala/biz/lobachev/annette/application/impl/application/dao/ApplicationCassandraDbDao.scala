@@ -16,7 +16,6 @@
 
 package biz.lobachev.annette.application.impl.application.dao
 
-import java.time.OffsetDateTime
 import akka.Done
 import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.impl.application.ApplicationEntity
@@ -26,12 +25,14 @@ import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 import org.slf4j.LoggerFactory
 
+import java.time.OffsetDateTime
 import scala.collection.immutable.{Seq, _}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 
-private[impl] class ApplicationCassandraDbDao(session: CassandraSession)(implicit ec: ExecutionContext)
-    extends ApplicationDbDao {
+private[impl] class ApplicationCassandraDbDao(
+  session: CassandraSession
+)(implicit ec: ExecutionContext) {
 
   val log = LoggerFactory.getLogger(this.getClass)
 
@@ -42,7 +43,7 @@ private[impl] class ApplicationCassandraDbDao(session: CassandraSession)(implici
   private var updateApplicationServerUrlStatement: PreparedStatement    = _
   private var deleteApplicationStatement: PreparedStatement             = _
 
-  override def createTables(): Future[Done] =
+  def createTables(): Future[Done] =
     for {
       _ <- session.executeCreateTable("""
                                         |CREATE TABLE IF NOT EXISTS applications (
@@ -59,7 +60,7 @@ private[impl] class ApplicationCassandraDbDao(session: CassandraSession)(implici
                                         |""".stripMargin)
     } yield Done
 
-  override def prepareStatements(): Future[Done] =
+  def prepareStatements(): Future[Done] =
     for {
       createApplicationStmt             <- session.prepare(
                                              """
@@ -144,7 +145,7 @@ private[impl] class ApplicationCassandraDbDao(session: CassandraSession)(implici
       Done
     }
 
-  override def createApplication(event: ApplicationEntity.ApplicationCreated): Seq[BoundStatement] = {
+  def createApplication(event: ApplicationEntity.ApplicationCreated): Seq[BoundStatement] = {
     val (captionText, captionTranslationId) = event.caption match {
       case TextCaption(text)                 => (text, null)
       case TranslationCaption(translationId) => (null, translationId)
@@ -164,7 +165,7 @@ private[impl] class ApplicationCassandraDbDao(session: CassandraSession)(implici
     )
   }
 
-  override def updateApplicationName(event: ApplicationEntity.ApplicationNameUpdated): Seq[BoundStatement] =
+  def updateApplicationName(event: ApplicationEntity.ApplicationNameUpdated): Seq[BoundStatement] =
     Seq(
       updateApplicationNameStatement
         .bind()
@@ -175,7 +176,7 @@ private[impl] class ApplicationCassandraDbDao(session: CassandraSession)(implici
         .setString("updated_by_id", event.updatedBy.principalId)
     )
 
-  override def updateApplicationCaption(event: ApplicationEntity.ApplicationCaptionUpdated): Seq[BoundStatement] = {
+  def updateApplicationCaption(event: ApplicationEntity.ApplicationCaptionUpdated): Seq[BoundStatement] = {
     val (captionText, captionTranslationId) = event.caption match {
       case TextCaption(text)                 => (text, null)
       case TranslationCaption(translationId) => (null, translationId)
@@ -192,7 +193,7 @@ private[impl] class ApplicationCassandraDbDao(session: CassandraSession)(implici
     )
   }
 
-  override def updateApplicationTranslations(
+  def updateApplicationTranslations(
     event: ApplicationEntity.ApplicationTranslationsUpdated
   ): Seq[BoundStatement] =
     Seq(
@@ -205,7 +206,7 @@ private[impl] class ApplicationCassandraDbDao(session: CassandraSession)(implici
         .setString("updated_by_id", event.updatedBy.principalId)
     )
 
-  override def updateApplicationServerUrl(event: ApplicationEntity.ApplicationServerUrlUpdated): Seq[BoundStatement] =
+  def updateApplicationServerUrl(event: ApplicationEntity.ApplicationServerUrlUpdated): Seq[BoundStatement] =
     Seq(
       updateApplicationServerUrlStatement
         .bind()
@@ -216,20 +217,20 @@ private[impl] class ApplicationCassandraDbDao(session: CassandraSession)(implici
         .setString("updated_by_id", event.updatedBy.principalId)
     )
 
-  override def deleteApplication(event: ApplicationEntity.ApplicationDeleted): Seq[BoundStatement] =
+  def deleteApplication(event: ApplicationEntity.ApplicationDeleted): Seq[BoundStatement] =
     Seq(
       deleteApplicationStatement
         .bind()
         .setString("id", event.id)
     )
 
-  override def getApplicationById(id: ApplicationId): Future[Option[Application]] =
+  def getApplicationById(id: ApplicationId): Future[Option[Application]] =
     for {
       stmt        <- session.prepare("SELECT * FROM applications WHERE id = :id")
       maybeEntity <- session.selectOne(stmt.bind().setString("id", id)).map(_.map(convertApplication))
     } yield maybeEntity
 
-  override def getApplicationsById(ids: Set[ApplicationId]): Future[Seq[Application]] =
+  def getApplicationsById(ids: Set[ApplicationId]): Future[Seq[Application]] =
     for {
       stmt   <- session.prepare("SELECT * FROM applications WHERE id IN ?")
       result <- session.selectAll(stmt.bind(ids.toList.asJava)).map(_.map(convertApplication))

@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.application.impl.language
 
-import biz.lobachev.annette.application.impl.language.dao.LanguageElasticIndexDao
+import biz.lobachev.annette.application.impl.language.dao.{LanguageIndexDao}
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
@@ -26,7 +26,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class LanguageIndexEventProcessor(
   readSide: CassandraReadSide,
-  indexDao: LanguageElasticIndexDao
+  indexDao: LanguageIndexDao
 )(implicit
   ec: ExecutionContext
 ) extends ReadSideProcessor[LanguageEntity.Event] {

@@ -23,7 +23,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.application.api.application._
-import biz.lobachev.annette.application.impl.application.dao.{ApplicationDbDao, ApplicationIndexDao}
+import biz.lobachev.annette.application.impl.application.dao.{ApplicationCassandraDbDao, ApplicationIndexDao}
 import biz.lobachev.annette.core.model.elastic.FindResult
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
@@ -34,7 +34,7 @@ import scala.util.Try
 
 class ApplicationEntityService(
   clusterSharding: ClusterSharding,
-  dbDao: ApplicationDbDao,
+  dbDao: ApplicationCassandraDbDao,
   indexDao: ApplicationIndexDao,
   config: Config
 )(implicit

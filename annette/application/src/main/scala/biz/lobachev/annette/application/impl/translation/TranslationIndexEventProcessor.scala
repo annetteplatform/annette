@@ -17,7 +17,7 @@
 package biz.lobachev.annette.application.impl.translation
 
 import akka.Done
-import biz.lobachev.annette.application.impl.translation.dao.TranslationElasticIndexDao
+import biz.lobachev.annette.application.impl.translation.dao.{TranslationIndexDao}
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
@@ -27,7 +27,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class TranslationIndexEventProcessor(
   readSide: CassandraReadSide,
-  elasticRepository: TranslationElasticIndexDao
+  elasticRepository: TranslationIndexDao
 )(implicit
   ec: ExecutionContext
 ) extends ReadSideProcessor[TranslationEntity.Event] {

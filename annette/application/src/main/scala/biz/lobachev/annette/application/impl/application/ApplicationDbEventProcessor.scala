@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.application.impl.application
 
-import biz.lobachev.annette.application.impl.application.dao.ApplicationDbDao
+import biz.lobachev.annette.application.impl.application.dao.ApplicationCassandraDbDao
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
@@ -26,7 +26,7 @@ import scala.concurrent.Future
 
 private[impl] class ApplicationDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: ApplicationDbDao
+  dbDao: ApplicationCassandraDbDao
 ) extends ReadSideProcessor[ApplicationEntity.Event] {
 
   val log = LoggerFactory.getLogger(this.getClass)

@@ -22,7 +22,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.application.api.language._
-import biz.lobachev.annette.application.impl.language.dao.{LanguageCassandraDbDao, LanguageElasticIndexDao}
+import biz.lobachev.annette.application.impl.language.dao.{LanguageCassandraDbDao, LanguageIndexDao}
 import biz.lobachev.annette.core.model.LanguageId
 import biz.lobachev.annette.core.model.elastic.FindResult
 import com.typesafe.config.Config
@@ -36,7 +36,7 @@ import scala.util.Try
 class LanguageEntityService(
   clusterSharding: ClusterSharding,
   dbDao: LanguageCassandraDbDao,
-  indexDao: LanguageElasticIndexDao,
+  indexDao: LanguageIndexDao,
   config: Config
 )(implicit
   ec: ExecutionContext,
