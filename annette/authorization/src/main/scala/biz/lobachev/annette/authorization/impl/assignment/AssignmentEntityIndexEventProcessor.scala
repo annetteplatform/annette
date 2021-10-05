@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.authorization.impl.assignment
 
-import biz.lobachev.annette.authorization.impl.assignment.dao.AssignmentElasticIndexDao
+import biz.lobachev.annette.authorization.impl.assignment.dao.{AssignmentIndexDao}
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
@@ -25,7 +25,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class AssignmentEntityIndexEventProcessor(
   readSide: CassandraReadSide,
-  indexDao: AssignmentElasticIndexDao
+  indexDao: AssignmentIndexDao
 )(implicit
   ec: ExecutionContext
 ) extends ReadSideProcessor[AssignmentEntity.Event] {

@@ -23,7 +23,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.authorization.api.role._
-import biz.lobachev.annette.authorization.impl.role.dao.{RoleDbDao, RoleIndexDao}
+import biz.lobachev.annette.authorization.impl.role.dao.{RoleCassandraDbDao, RoleIndexDao}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.elastic.FindResult
 import com.typesafe.config.Config
@@ -34,7 +34,7 @@ import scala.util.Try
 
 class RoleEntityService(
   clusterSharding: ClusterSharding,
-  dbDao: RoleDbDao,
+  dbDao: RoleCassandraDbDao,
   indexDao: RoleIndexDao,
   config: Config
 )(implicit

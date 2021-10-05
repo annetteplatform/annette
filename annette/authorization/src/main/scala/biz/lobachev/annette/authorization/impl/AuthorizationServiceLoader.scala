@@ -19,13 +19,13 @@ package biz.lobachev.annette.authorization.impl
 import akka.cluster.sharding.typed.scaladsl.Entity
 import biz.lobachev.annette.authorization.api._
 import biz.lobachev.annette.authorization.impl.assignment._
-import biz.lobachev.annette.authorization.impl.assignment.dao.{AssignmentCassandraDbDao, AssignmentElasticIndexDao}
+import biz.lobachev.annette.authorization.impl.assignment.dao.{AssignmentCassandraDbDao, AssignmentIndexDao}
 import biz.lobachev.annette.authorization.impl.assignment.model.AssignmentSerializerRegistry
 import biz.lobachev.annette.authorization.impl.role._
-import biz.lobachev.annette.authorization.impl.role.dao.{RoleCassandraDbDao, RoleElasticIndexDao}
+import biz.lobachev.annette.authorization.impl.role.dao.{RoleCassandraDbDao, RoleIndexDao}
 import biz.lobachev.annette.authorization.impl.role.model.RoleSerializerRegistry
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
-import biz.lobachev.annette.microservice_core.elastic.ElasticModule
+import biz.lobachev.annette.microservice_core.indexing.IndexingModule
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
@@ -62,13 +62,12 @@ abstract class AuthorizationServiceApplication(context: LagomApplicationContext)
 
   lazy val jsonSerializerRegistry = AuthorizationSerializerRegistry
 
-  val elasticModule = new ElasticModule(config)
-
-  import elasticModule._
+  val indexingModule = new IndexingModule()
+  import indexingModule._
 
   override lazy val lagomServer = serverFor[AuthorizationServiceApi](wire[AuthorizationServiceApiImpl])
 
-  lazy val wiredRoleElastic       = wire[RoleElasticIndexDao]
+  lazy val wiredRoleElastic       = wire[RoleIndexDao]
   lazy val wiredRoleRepository    = wire[RoleCassandraDbDao]
   readSide.register(wire[RoleEntityIndexEventProcessor])
   readSide.register(wire[RoleEntityDbEventProcessor])
@@ -80,7 +79,7 @@ abstract class AuthorizationServiceApplication(context: LagomApplicationContext)
     }
   )
 
-  lazy val wiredAssignmentElastic       = wire[AssignmentElasticIndexDao]
+  lazy val wiredAssignmentElastic       = wire[AssignmentIndexDao]
   lazy val wiredAssignmentRepository    = wire[AssignmentCassandraDbDao]
   readSide.register(wire[AssignmentEntityDbEventProcessor])
   readSide.register(wire[AssignmentEntityIndexEventProcessor])
