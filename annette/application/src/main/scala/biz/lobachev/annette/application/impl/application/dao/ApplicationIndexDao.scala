@@ -40,7 +40,7 @@ class ApplicationIndexDao(client: ElasticClient)(implicit
   def findApplications(query: FindApplicationQuery): Future[FindResult] = {
     val filterQuery            = buildFilterQuery(
       query.filter,
-      Seq(alias2FieldName("name") -> 3.0, alias2FieldName("id") -> 1.0)
+      Seq("name" -> 3.0, "id" -> 1.0)
     )
     val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
 

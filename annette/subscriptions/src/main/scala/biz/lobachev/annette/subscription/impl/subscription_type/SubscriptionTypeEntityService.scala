@@ -25,7 +25,7 @@ import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.subscription.api.subscription_type._
 import biz.lobachev.annette.subscription.impl.subscription_type.dao.{
   SubscriptionTypeCassandraDbDao,
-  SubscriptionTypeElasticIndexDao
+  SubscriptionTypeIndexDao
 }
 import com.typesafe.config.Config
 
@@ -37,7 +37,7 @@ import scala.util.Try
 class SubscriptionTypeEntityService(
   clusterSharding: ClusterSharding,
   dbDao: SubscriptionTypeCassandraDbDao,
-  indexDao: SubscriptionTypeElasticIndexDao,
+  indexDao: SubscriptionTypeIndexDao,
   config: Config
 )(implicit
   ec: ExecutionContext,

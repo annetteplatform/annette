@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.application.impl.language.dao
+package biz.lobachev.annette.subscription.impl.subscription_type.dao
 
-import biz.lobachev.annette.application.api.language.FindLanguageQuery
-import biz.lobachev.annette.application.impl.language.LanguageEntity
 import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
+import biz.lobachev.annette.subscription.api.subscription_type.SubscriptionTypeFindQuery
+import biz.lobachev.annette.subscription.impl.subscription_type.SubscriptionTypeEntity
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.requests.searches.sort.FieldSort
@@ -27,15 +27,15 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class LanguageIndexDao(client: ElasticClient)(implicit
+class SubscriptionTypeIndexDao(client: ElasticClient)(implicit
   override val ec: ExecutionContext
 ) extends AbstractIndexDao(client) {
 
   override val log = LoggerFactory.getLogger(this.getClass)
 
-  override def indexConfigPath = "indexing.language-index"
+  override def indexConfigPath = "indexing.subscription-type-index"
 
-  def createLanguage(event: LanguageEntity.LanguageCreated) =
+  def createSubscriptionType(event: SubscriptionTypeEntity.SubscriptionTypeCreated) =
     createIndexDoc(
       event.id,
       "id"        -> event.id,
@@ -43,25 +43,27 @@ class LanguageIndexDao(client: ElasticClient)(implicit
       "updatedAt" -> event.createdAt
     )
 
-  def updateLanguage(event: LanguageEntity.LanguageUpdated) =
+  def updateSubscriptionType(event: SubscriptionTypeEntity.SubscriptionTypeUpdated) =
     updateIndexDoc(
       event.id,
+      "id"        -> event.id,
       "name"      -> event.name,
       "updatedAt" -> event.updatedAt
     )
 
-  def deleteLanguage(event: LanguageEntity.LanguageDeleted) =
+  def deleteSubscriptionType(event: SubscriptionTypeEntity.SubscriptionTypeDeleted) =
     deleteIndexDoc(event.id)
 
-  def findLanguages(query: FindLanguageQuery): Future[FindResult] = {
-    val filterQuery            = buildFilterQuery(
-      query.filter,
-      Seq("name" -> 3.0, "id" -> 1.0)
-    )
+  def findSubscriptionTypes(query: SubscriptionTypeFindQuery): Future[FindResult] = {
+
+    val fieldQuery             = Seq(
+      query.name.map(matchQuery(alias2FieldName("name"), _))
+    ).flatten
+    val filterQuery            = buildFilterQuery(query.filter, Seq("name" -> 3.0))
     val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
 
     val searchRequest = search(indexName)
-      .bool(must(filterQuery))
+      .bool(must(filterQuery ++ fieldQuery)) // ++ fieldQuery))
       .from(query.offset)
       .size(query.size)
       .sortBy(sortBy)

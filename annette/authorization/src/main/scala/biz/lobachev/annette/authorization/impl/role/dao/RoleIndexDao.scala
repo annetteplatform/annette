@@ -66,7 +66,7 @@ class RoleIndexDao(client: ElasticClient)(implicit
   def findRoles(query: AuthRoleFindQuery): Future[FindResult] = {
     val filterQuery            = buildFilterQuery(
       query.filter,
-      Seq(alias2FieldName("name") -> 3.0, alias2FieldName("description") -> 1.0)
+      Seq("name" -> 3.0, "description" -> 1.0)
     )
     val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
 

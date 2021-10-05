@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.subscription.impl.subscription
 
-import biz.lobachev.annette.subscription.impl.subscription.dao.SubscriptionElasticIndexDao
+import biz.lobachev.annette.subscription.impl.subscription.dao.{SubscriptionIndexDao}
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
@@ -24,14 +24,14 @@ import scala.concurrent.ExecutionContext
 
 private[impl] class SubscriptionIndexEventProcessor(
   readSide: CassandraReadSide,
-  indexDao: SubscriptionElasticIndexDao
+  indexDao: SubscriptionIndexDao
 )(implicit
   ec: ExecutionContext
 ) extends ReadSideProcessor[SubscriptionEntity.Event] {
 
   def buildHandler() =
     readSide
-      .builder[SubscriptionEntity.Event]("Subscription_Subscription_ElasticEventOffset")
+      .builder[SubscriptionEntity.Event]("subscription-elastic")
       .setGlobalPrepare(() => indexDao.createEntityIndex())
       .setEventHandler[SubscriptionEntity.SubscriptionCreated](e =>
         indexDao

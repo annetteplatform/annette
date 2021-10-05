@@ -18,7 +18,7 @@ package biz.lobachev.annette.subscription.impl
 
 import akka.cluster.sharding.typed.scaladsl.Entity
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
-import biz.lobachev.annette.microservice_core.elastic.ElasticModule
+import biz.lobachev.annette.microservice_core.indexing.IndexingModule
 import biz.lobachev.annette.subscription.api.SubscriptionServiceApi
 import biz.lobachev.annette.subscription.impl.subscription_type.{
   SubscriptionTypeDbEventProcessor,
@@ -28,11 +28,11 @@ import biz.lobachev.annette.subscription.impl.subscription_type.{
 }
 import biz.lobachev.annette.subscription.impl.subscription_type.dao.{
   SubscriptionTypeCassandraDbDao,
-  SubscriptionTypeElasticIndexDao
+  SubscriptionTypeIndexDao
 }
 import biz.lobachev.annette.subscription.impl.subscription_type.model.SubscriptionTypeSerializerRegistry
 import biz.lobachev.annette.subscription.impl.subscription._
-import biz.lobachev.annette.subscription.impl.subscription.dao.{SubscriptionCassandraDbDao, SubscriptionElasticIndexDao}
+import biz.lobachev.annette.subscription.impl.subscription.dao.{SubscriptionCassandraDbDao, SubscriptionIndexDao}
 import biz.lobachev.annette.subscription.impl.subscription.model.SubscriptionSerializerRegistry
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaClientComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
@@ -70,11 +70,11 @@ abstract class SubscriptionServiceApplication(context: LagomApplicationContext)
 
   lazy val jsonSerializerRegistry = SubscriptionRepositorySerializerRegistry
 
-  val elasticModule = new ElasticModule(config)
-  import elasticModule._
+  val indexingModule = new IndexingModule()
+  import indexingModule._
 
   override lazy val lagomServer   = serverFor[SubscriptionServiceApi](wire[SubscriptionServiceApiImpl])
-  lazy val subscriptionElastic    = wire[SubscriptionElasticIndexDao]
+  lazy val subscriptionIndexDao   = wire[SubscriptionIndexDao]
   lazy val subscriptionService    = wire[SubscriptionEntityService]
   lazy val subscriptionRepository = wire[SubscriptionCassandraDbDao]
   readSide.register(wire[SubscriptionDbEventProcessor])
@@ -86,7 +86,7 @@ abstract class SubscriptionServiceApplication(context: LagomApplicationContext)
   )
 
   lazy val subscriptionTypeEntityService = wire[SubscriptionTypeEntityService]
-  lazy val subscriptionTypeElastic       = wire[SubscriptionTypeElasticIndexDao]
+  lazy val subscriptionTypeIndexDao      = wire[SubscriptionTypeIndexDao]
   lazy val subscriptionTypeRepository    = wire[SubscriptionTypeCassandraDbDao]
   readSide.register(wire[SubscriptionTypeDbEventProcessor])
   readSide.register(wire[SubscriptionTypeIndexEventProcessor])
