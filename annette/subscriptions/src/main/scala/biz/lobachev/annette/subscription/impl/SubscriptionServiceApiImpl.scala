@@ -18,7 +18,7 @@ package biz.lobachev.annette.subscription.impl
 
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.subscription.api.SubscriptionServiceApi
 import biz.lobachev.annette.subscription.api.subscription_type._
 import biz.lobachev.annette.subscription.api.subscription.{

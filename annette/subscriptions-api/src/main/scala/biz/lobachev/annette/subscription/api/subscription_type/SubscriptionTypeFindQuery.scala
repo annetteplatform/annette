@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.subscription.api.subscription_type
 
-import biz.lobachev.annette.core.model.elastic.SortBy
+import biz.lobachev.annette.core.model.indexing.SortBy
 import play.api.libs.json.Json
 
 case class SubscriptionTypeFindQuery(

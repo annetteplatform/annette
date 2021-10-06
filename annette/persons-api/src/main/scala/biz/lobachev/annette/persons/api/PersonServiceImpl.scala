@@ -19,7 +19,7 @@ package biz.lobachev.annette.persons.api
 import akka.Done
 import io.scalaland.chimney.dsl._
 import biz.lobachev.annette.core.model.PersonId
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.core.model.category.{
   Category,
   CategoryAlreadyExist,

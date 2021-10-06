@@ -21,7 +21,7 @@ import biz.lobachev.annette.authorization.api.assignment._
 import biz.lobachev.annette.authorization.api.role._
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 
 trait AuthorizationServiceApi extends Service {

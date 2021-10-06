@@ -33,7 +33,7 @@ private[impl] class RoleCassandraDbDao(
 )(implicit
   ec: ExecutionContext,
   materializer: Materializer
-) extends RoleDbDao {
+) {
 
   private var createRoleStatement: PreparedStatement            = _
   private var updateRoleNameStatement: PreparedStatement        = _

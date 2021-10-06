@@ -32,7 +32,7 @@ private[impl] class CategoryIndexEventProcessor(
 
   def buildHandler() =
     readSide
-      .builder[CategoryEntity.Event]("category-elastic")
+      .builder[CategoryEntity.Event]("category-indexing")
       .setGlobalPrepare(indexDao.createEntityIndex)
       .setEventHandler[CategoryEntity.CategoryCreated](e => createCategory(e.event))
       .setEventHandler[CategoryEntity.CategoryUpdated](e => updateCategory(e.event))

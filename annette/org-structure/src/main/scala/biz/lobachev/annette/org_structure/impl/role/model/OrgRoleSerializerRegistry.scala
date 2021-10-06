@@ -15,7 +15,7 @@
  */
 
 package biz.lobachev.annette.org_structure.impl.role.model
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.org_structure.api.role._
 import biz.lobachev.annette.org_structure.impl.role.OrgRoleEntity.{
   AlreadyExist,

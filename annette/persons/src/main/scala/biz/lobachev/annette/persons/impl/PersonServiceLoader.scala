@@ -17,14 +17,13 @@
 package biz.lobachev.annette.persons.impl
 
 import akka.cluster.sharding.typed.scaladsl.Entity
-import biz.lobachev.annette.attributes.api.AttributeServiceApi
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
-import biz.lobachev.annette.microservice_core.category.{CategoryEntity, CategoryProvider}
-import biz.lobachev.annette.microservice_core.category.model.CategorySerializerRegistry
-import biz.lobachev.annette.microservice_core.elastic.ElasticModule
+import biz.lobachev.annette.microservice_core.indexing.IndexingModule
 import biz.lobachev.annette.persons.api.PersonServiceApi
+import biz.lobachev.annette.persons.impl.category.model.CategorySerializerRegistry
+import biz.lobachev.annette.persons.impl.category.{CategoryEntity, CategoryProvider}
 import biz.lobachev.annette.persons.impl.person._
-import biz.lobachev.annette.persons.impl.person.dao.{PersonCassandraDbDao, PersonElasticIndexDao}
+import biz.lobachev.annette.persons.impl.person.dao.{PersonCassandraDbDao, PersonIndexDao}
 import biz.lobachev.annette.persons.impl.person.model.PersonSerializerRegistry
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaClientComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
@@ -36,7 +35,6 @@ import play.api.LoggerConfigurator
 import play.api.libs.ws.ahc.AhcWSComponents
 
 import scala.collection.immutable
-import scala.util.Try
 
 class PersonServiceLoader extends LagomApplicationLoader {
 
@@ -63,11 +61,11 @@ abstract class PersonServiceApplication(context: LagomApplicationContext)
 
   lazy val jsonSerializerRegistry = PersonRepositorySerializerRegistry
 
-  val elasticModule = new ElasticModule(config)
-  import elasticModule._
+  val indexingModule = new IndexingModule()
+  import indexingModule._
 
   override lazy val lagomServer = serverFor[PersonServiceApi](wire[PersonServiceApiImpl])
-  lazy val personElastic        = wire[PersonElasticIndexDao]
+  lazy val personElastic        = wire[PersonIndexDao]
   lazy val personService        = wire[PersonEntityService]
   lazy val personRepository     = wire[PersonCassandraDbDao]
   readSide.register(wire[PersonDbEventProcessor])
@@ -82,8 +80,8 @@ abstract class PersonServiceApplication(context: LagomApplicationContext)
     typeKeyName = "Category",
     tableName = "categories",
     dbReadSideId = "category-cassandra",
-    indexName = "persons-category",
-    indexReadSideId = "category-elastic"
+    configPath = "indexing.category-index",
+    indexReadSideId = "category-indexing"
   )
 
   lazy val categoryElastic       = wireWith(categoryProvider.createIndexDao _)
@@ -96,12 +94,6 @@ abstract class PersonServiceApplication(context: LagomApplicationContext)
       CategoryEntity(entityContext)
     }
   )
-
-  lazy val attributeService       = serviceClient.implement[AttributeServiceApi]
-  val enableAttributeSubscription =
-    Try(config.getBoolean("annette.attributes-service.enable-subscription")).toOption.getOrElse(true)
-  if (enableAttributeSubscription)
-    wire[AttributeServiceSubscriber]
 
 }
 

@@ -19,19 +19,19 @@ package biz.lobachev.annette.cms.impl
 import akka.cluster.sharding.typed.scaladsl.Entity
 import akka.stream.Materializer
 import biz.lobachev.annette.cms.api._
+import biz.lobachev.annette.cms.impl.category.{CategoryEntity, CategoryProvider}
 import biz.lobachev.annette.cms.impl.hierarchy.dao.HierarchyCassandraDbDao
 import biz.lobachev.annette.cms.impl.hierarchy.model.HierarchySerializerRegistry
 import biz.lobachev.annette.cms.impl.hierarchy.{HierarchyDbEventProcessor, HierarchyEntity, HierarchyEntityService}
 import biz.lobachev.annette.cms.impl.post._
-import biz.lobachev.annette.cms.impl.post.dao.{PostCassandraDbDao, PostElasticIndexDao}
+import biz.lobachev.annette.cms.impl.post.dao.{PostCassandraDbDao, PostIndexDao}
 import biz.lobachev.annette.cms.impl.post.model.PostSerializerRegistry
 import biz.lobachev.annette.cms.impl.space._
-import biz.lobachev.annette.cms.impl.space.dao.{SpaceCassandraDbDao, SpaceElasticIndexDao}
+import biz.lobachev.annette.cms.impl.space.dao.{SpaceCassandraDbDao, SpaceIndexDao}
 import biz.lobachev.annette.cms.impl.space.model.SpaceSerializerRegistry
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
-import biz.lobachev.annette.microservice_core.category.model.CategorySerializerRegistry
-import biz.lobachev.annette.microservice_core.category.{CategoryEntity, CategoryProvider}
-import biz.lobachev.annette.microservice_core.elastic.ElasticModule
+import biz.lobachev.annette.cms.impl.category.model.CategorySerializerRegistry
+import biz.lobachev.annette.microservice_core.indexing.IndexingModule
 import com.lightbend.lagom.scaladsl.api.LagomConfigComponent
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
@@ -71,30 +71,19 @@ trait CmsComponents
   def environment: Environment
   implicit def materializer: Materializer
 
-  val elasticModule = new ElasticModule(config)
-  import elasticModule._
+  val indexingModule = new IndexingModule()
+  import indexingModule._
 
   override lazy val lagomServer = serverFor[CmsServiceApi](wire[CmsServiceApiImpl])
 
   lazy val jsonSerializerRegistry = ServiceSerializerRegistry
 
-//  lazy val wiredCategoryCasRepository     = wire[CategoryCassandraDbDao]
-//  lazy val wiredCategoryElasticRepository = wire[CategoryElasticIndexDao]
-//  readSide.register(wire[CategoryDbEventProcessor])
-//  readSide.register(wire[CategoryIndexEventProcessor])
-//  lazy val wiredCategoryEntityService     = wire[CategoryEntityService]
-//  clusterSharding.init(
-//    Entity(CategoryEntity.typeKey) { entityContext =>
-//      CategoryEntity(entityContext)
-//    }
-//  )
-
   val categoryProvider = new CategoryProvider(
     typeKeyName = "Category",
     tableName = "categories",
     dbReadSideId = "category-cassandra",
-    indexName = "cms-category",
-    indexReadSideId = "category-elastic"
+    configPath = "indexing.category-index",
+    indexReadSideId = "category-indexing"
   )
 
   lazy val categoryElastic       = wireWith(categoryProvider.createIndexDao _)
@@ -109,7 +98,7 @@ trait CmsComponents
   )
 
   lazy val wiredSpaceCasRepository     = wire[SpaceCassandraDbDao]
-  lazy val wiredSpaceElasticRepository = wire[SpaceElasticIndexDao]
+  lazy val wiredSpaceElasticRepository = wire[SpaceIndexDao]
   readSide.register(wire[SpaceDbEventProcessor])
   readSide.register(wire[SpaceIndexEventProcessor])
   lazy val wiredSpaceEntityService     = wire[SpaceEntityService]
@@ -129,7 +118,7 @@ trait CmsComponents
   )
 
   lazy val wiredPostCasRepository     = wire[PostCassandraDbDao]
-  lazy val wiredPostElasticRepository = wire[PostElasticIndexDao]
+  lazy val wiredPostElasticRepository = wire[PostIndexDao]
   readSide.register(wire[PostDbEventProcessor])
   readSide.register(wire[PostIndexEventProcessor])
   lazy val wiredPostEntityService     = wire[PostEntityService]
@@ -138,7 +127,6 @@ trait CmsComponents
       PostEntity(entityContext)
     }
   )
-
 }
 
 abstract class CmsServiceApplication(context: LagomApplicationContext)

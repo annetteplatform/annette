@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.authorization.impl.role
 
-import biz.lobachev.annette.authorization.impl.role.dao.RoleDbDao
+import biz.lobachev.annette.authorization.impl.role.dao.RoleCassandraDbDao
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
@@ -25,12 +25,12 @@ import scala.concurrent.Future
 
 private[impl] class RoleEntityDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: RoleDbDao
+  dbDao: RoleCassandraDbDao
 ) extends ReadSideProcessor[RoleEntity.Event] {
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[RoleEntity.Event] =
     readSide
-      .builder[RoleEntity.Event]("Authorization_Role_Db_EventOffset")
+      .builder[RoleEntity.Event]("role-cassandra")
       .setGlobalPrepare(dbDao.createTables)
       .setPrepare(_ => dbDao.prepareStatements())
       .setEventHandler[RoleEntity.RoleCreated](e => createRole(e.event))

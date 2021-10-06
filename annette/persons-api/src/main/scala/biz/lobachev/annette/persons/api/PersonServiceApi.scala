@@ -27,7 +27,7 @@ import biz.lobachev.annette.core.model.category.{
   DeleteCategoryPayload,
   UpdateCategoryPayload
 }
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.persons.api.person._
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 

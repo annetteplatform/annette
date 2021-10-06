@@ -17,7 +17,7 @@
 package biz.lobachev.annette.org_structure.impl.category
 
 import biz.lobachev.annette.org_structure.impl.category.CategoryEntity._
-import biz.lobachev.annette.org_structure.impl.category.dao.CategoryDbDao
+import biz.lobachev.annette.org_structure.impl.category.dao.CategoryCassandraDbDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
@@ -25,7 +25,7 @@ import scala.concurrent.Future
 
 private[impl] class CategoryDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: CategoryDbDao
+  dbDao: CategoryCassandraDbDao
 ) extends ReadSideProcessor[CategoryEntity.Event] {
 
   def buildHandler() =

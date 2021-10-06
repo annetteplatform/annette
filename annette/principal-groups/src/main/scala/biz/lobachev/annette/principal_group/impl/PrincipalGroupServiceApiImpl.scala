@@ -18,10 +18,9 @@ package biz.lobachev.annette.principal_group.impl
 
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.principal_group.api.PrincipalGroupServiceApi
 import biz.lobachev.annette.core.model.category._
-import biz.lobachev.annette.microservice_core.category.CategoryEntityService
 import biz.lobachev.annette.principal_group.api.group.{
   AssignPrincipalPayload,
   CreatePrincipalGroupPayload,
@@ -34,6 +33,7 @@ import biz.lobachev.annette.principal_group.api.group.{
   UpdatePrincipalGroupDescriptionPayload,
   UpdatePrincipalGroupNamePayload
 }
+import biz.lobachev.annette.principal_group.impl.category.CategoryEntityService
 import biz.lobachev.annette.principal_group.impl.group.PrincipalGroupEntityService
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 

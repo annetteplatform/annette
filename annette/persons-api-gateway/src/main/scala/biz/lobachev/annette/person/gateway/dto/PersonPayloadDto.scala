@@ -27,7 +27,9 @@ case class PersonPayloadDto(
   middlename: Option[String], // middle name
   categoryId: CategoryId,
   phone: Option[String],      // phone
-  email: Option[String]       // email
+  email: Option[String],      // email
+  source: Option[String] = None,
+  externalId: Option[String] = None
 )
 
 object PersonPayloadDto {

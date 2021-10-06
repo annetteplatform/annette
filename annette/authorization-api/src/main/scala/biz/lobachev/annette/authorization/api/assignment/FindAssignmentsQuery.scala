@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.authorization.api.assignment
 
-import biz.lobachev.annette.core.model.elastic.SortBy
+import biz.lobachev.annette.core.model.indexing.SortBy
 import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
 import play.api.libs.json.Json
 

@@ -16,25 +16,91 @@
 
 package biz.lobachev.annette.persons.impl.person.dao
 
-import akka.Done
-import biz.lobachev.annette.attributes.api.query.AttributeIndexDao
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
+import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
 import biz.lobachev.annette.persons.api.person._
 import biz.lobachev.annette.persons.impl.person.PersonEntity
 import biz.lobachev.annette.persons.impl.person.PersonEntity.PersonDeleted
+import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s._
+import com.sksamuel.elastic4s.requests.searches.sort.FieldSort
+import org.slf4j.LoggerFactory
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-trait PersonIndexDao extends AttributeIndexDao {
+class PersonIndexDao(client: ElasticClient)(implicit
+  override val ec: ExecutionContext
+) extends AbstractIndexDao(client) {
 
-  def createEntityIndex(): Future[Done]
+  override val log = LoggerFactory.getLogger(this.getClass)
 
-  def createPerson(event: PersonEntity.PersonCreated): Future[Unit]
+  override def indexConfigPath = "indexing.person-index"
 
-  def updatePerson(event: PersonEntity.PersonUpdated): Future[Unit]
+  def createPerson(event: PersonEntity.PersonCreated) =
+    createIndexDoc(
+      event.id,
+      "id"         -> event.id,
+      "lastname"   -> event.lastname,
+      "firstname"  -> event.firstname,
+      "middlename" -> event.middlename,
+      "categoryId" -> event.categoryId,
+      "phone"      -> event.phone,
+      "email"      -> event.email,
+      "source"     -> event.source,
+      "externalId" -> event.externalId,
+      "updatedAt"  -> event.createdAt
+    )
 
-  def deletePerson(event: PersonDeleted): Future[Unit]
+  def updatePerson(event: PersonEntity.PersonUpdated) =
+    updateIndexDoc(
+      event.id,
+      "id"         -> event.id,
+      "lastname"   -> event.lastname,
+      "firstname"  -> event.firstname,
+      "middlename" -> event.middlename,
+      "categoryId" -> event.categoryId,
+      "phone"      -> event.phone,
+      "email"      -> event.email,
+      "source"     -> event.source,
+      "externalId" -> event.externalId,
+      "updatedAt"  -> event.updatedAt
+    )
 
-  def findPerson(query: PersonFindQuery): Future[FindResult]
+  def deletePerson(event: PersonDeleted) =
+    deleteIndexDoc(event.id)
+
+  // *************************** Search API ***************************
+
+  def findPerson(query: PersonFindQuery): Future[FindResult] = {
+
+    val fieldQuery             = Seq(
+      query.firstname.map(matchQuery(alias2FieldName("firstname"), _)),
+      query.lastname.map(matchQuery(alias2FieldName("lastname"), _)),
+      query.middlename.map(matchQuery(alias2FieldName("middlename"), _)),
+      query.phone.map(matchQuery(alias2FieldName("phone"), _)),
+      query.email.map(matchQuery(alias2FieldName("email"), _))
+    ).flatten
+    val filterQuery            = buildFilterQuery(
+      query.filter,
+      Seq("lastname" -> 3.0, "firstname" -> 2.0, "middlename" -> 1.0, "email" -> 3.0, "phone" -> 1.0)
+    )
+    val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
+    val categoryQuery          =
+      query.categories.map(category => termsSetQuery(alias2FieldName("categoryId"), category, script("1"))).toSeq
+    val sourceQuery            = query.sources.map(sources => termsSetQuery(alias2FieldName("source"), sources, script("1"))).toSeq
+    val externalIdQuery        =
+      query.externalIds.map(externalIds => termsSetQuery(alias2FieldName("externalId"), externalIds, script("1"))).toSeq
+
+    val searchRequest = search(indexName)
+      .bool(must(filterQuery ++ fieldQuery ++ categoryQuery ++ sourceQuery ++ externalIdQuery))
+      .from(query.offset)
+      .size(query.size)
+      .sortBy(sortBy)
+      .sourceInclude(alias2FieldName("updatedAt"))
+      .trackTotalHits(true)
+
+    findEntity(searchRequest)
+
+  }
 
 }

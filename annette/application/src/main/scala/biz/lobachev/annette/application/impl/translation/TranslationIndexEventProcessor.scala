@@ -17,7 +17,7 @@
 package biz.lobachev.annette.application.impl.translation
 
 import akka.Done
-import biz.lobachev.annette.application.impl.translation.dao.TranslationElasticIndexDao
+import biz.lobachev.annette.application.impl.translation.dao.{TranslationIndexDao}
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
@@ -27,7 +27,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class TranslationIndexEventProcessor(
   readSide: CassandraReadSide,
-  elasticRepository: TranslationElasticIndexDao
+  indexDao: TranslationIndexDao
 )(implicit
   ec: ExecutionContext
 ) extends ReadSideProcessor[TranslationEntity.Event] {
@@ -36,7 +36,7 @@ private[impl] class TranslationIndexEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[TranslationEntity.Event] =
     readSide
-      .builder[TranslationEntity.Event]("translation-elastic")
+      .builder[TranslationEntity.Event]("translation-indexing")
       .setGlobalPrepare(globalPrepare)
       .setEventHandler[TranslationEntity.TranslationCreated](e => createTranslation(e.event))
       .setEventHandler[TranslationEntity.TranslationUpdated](e => updateTranslation(e.event))
@@ -46,22 +46,22 @@ private[impl] class TranslationIndexEventProcessor(
   def aggregateTags: Set[AggregateEventTag[TranslationEntity.Event]] = TranslationEntity.Event.Tag.allTags
 
   def globalPrepare(): Future[Done] =
-    elasticRepository
+    indexDao
       .createEntityIndex()
       .map(_ => Done)
 
   def createTranslation(event: TranslationEntity.TranslationCreated): Future[Seq[BoundStatement]] =
-    elasticRepository
+    indexDao
       .createTranslation(event)
       .map(_ => Seq.empty)
 
   def updateTranslation(event: TranslationEntity.TranslationUpdated): Future[Seq[BoundStatement]] =
-    elasticRepository
+    indexDao
       .updateTranslation(event)
       .map(_ => Seq.empty)
 
   def deleteTranslation(event: TranslationEntity.TranslationDeleted): Future[Seq[BoundStatement]] =
-    elasticRepository
+    indexDao
       .deleteTranslation(event)
       .map(_ => Seq.empty)
 

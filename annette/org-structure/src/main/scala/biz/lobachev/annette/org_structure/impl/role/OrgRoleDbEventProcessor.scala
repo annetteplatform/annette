@@ -17,7 +17,7 @@
 package biz.lobachev.annette.org_structure.impl.role
 
 import biz.lobachev.annette.org_structure.impl.role.OrgRoleEntity._
-import biz.lobachev.annette.org_structure.impl.role.dao.OrgRoleDbDao
+import biz.lobachev.annette.org_structure.impl.role.dao.OrgRoleCassandraDbDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
@@ -25,7 +25,7 @@ import scala.concurrent.Future
 
 private[impl] class OrgRoleDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: OrgRoleDbDao
+  dbDao: OrgRoleCassandraDbDao
 ) extends ReadSideProcessor[OrgRoleEntity.Event] {
 
   def buildHandler() =

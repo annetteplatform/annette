@@ -23,10 +23,10 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.principal_group.api.group._
 import biz.lobachev.annette.principal_group.impl.group.PrincipalGroupEntity._
-import biz.lobachev.annette.principal_group.impl.group.dao.{GroupCassandraDbDao, GroupElasticIndexDao}
+import biz.lobachev.annette.principal_group.impl.group.dao.{PrincipalGroupCassandraDbDao, PrincipalGroupIndexDao}
 import com.typesafe.config.Config
 import io.scalaland.chimney.dsl._
 
@@ -36,8 +36,8 @@ import scala.util.Try
 
 class PrincipalGroupEntityService(
   clusterSharding: ClusterSharding,
-  dbDao: GroupCassandraDbDao,
-  indexDao: GroupElasticIndexDao,
+  dbDao: PrincipalGroupCassandraDbDao,
+  indexDao: PrincipalGroupIndexDao,
   config: Config
 )(implicit
   ec: ExecutionContext,

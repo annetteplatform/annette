@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.org_structure.api.category
 
-import biz.lobachev.annette.core.model.elastic.SortBy
+import biz.lobachev.annette.core.model.indexing.SortBy
 import play.api.libs.json.Json
 
 case class OrgCategoryFindQuery(
@@ -27,7 +27,7 @@ case class OrgCategoryFindQuery(
   forOrganization: Option[Boolean] = None,
   forUnit: Option[Boolean] = None,
   forPosition: Option[Boolean] = None,
-  sortBy: Option[SortBy] = None
+  sortBy: Option[Seq[SortBy]] = None
 )
 
 object OrgCategoryFindQuery {

@@ -29,6 +29,8 @@ case class UpdatePersonPayload(
   categoryId: CategoryId,
   phone: Option[String],      // phone
   email: Option[String],      // email
+  source: Option[String] = None,
+  externalId: Option[String] = None,
   updatedBy: AnnettePrincipal
 )
 

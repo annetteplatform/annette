@@ -33,7 +33,7 @@ private[impl] class RoleEntityAssigmentEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[RoleEntity.Event] =
     readSide
-      .builder[RoleEntity.Event]("Authorization_Role_Assignment_EventOffset")
+      .builder[RoleEntity.Event]("role-assignment")
       .setEventHandler[RoleEntity.AssignmentCreated](e => createAssignment(e.event))
       .setEventHandler[RoleEntity.AssignmentDeleted](e => deleteAssignment(e.event))
       .build()

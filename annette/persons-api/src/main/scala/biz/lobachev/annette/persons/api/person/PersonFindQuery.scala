@@ -16,9 +16,8 @@
 
 package biz.lobachev.annette.persons.api.person
 
-import biz.lobachev.annette.attributes.api.query.AttributeQuery
 import biz.lobachev.annette.core.model.category.CategoryId
-import biz.lobachev.annette.core.model.elastic.SortBy
+import biz.lobachev.annette.core.model.indexing.SortBy
 import play.api.libs.json.{Format, Json}
 
 case class PersonFindQuery(
@@ -31,7 +30,8 @@ case class PersonFindQuery(
   phone: Option[String] = None,      //search in phone
   email: Option[String] = None,      //search in email
   categories: Option[Set[CategoryId]] = None,
-  attributes: Option[AttributeQuery] = None,
+  sources: Option[Set[String]] = None,
+  externalIds: Option[Set[String]] = None,
   sortBy: Option[Seq[SortBy]] = None
 )
 

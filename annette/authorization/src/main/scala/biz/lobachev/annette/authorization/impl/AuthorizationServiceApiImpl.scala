@@ -25,7 +25,7 @@ import biz.lobachev.annette.authorization.api.role._
 import biz.lobachev.annette.authorization.impl.assignment.AssignmentEntityService
 import biz.lobachev.annette.authorization.impl.role.RoleEntityService
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.typesafe.config.Config
 

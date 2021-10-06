@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.authorization.impl.assignment
 
-import biz.lobachev.annette.authorization.impl.assignment.dao.AssignmentDbDao
+import biz.lobachev.annette.authorization.impl.assignment.dao.AssignmentCassandraDbDao
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
@@ -25,12 +25,12 @@ import scala.concurrent.Future
 
 private[impl] class AssignmentEntityDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: AssignmentDbDao
+  dbDao: AssignmentCassandraDbDao
 ) extends ReadSideProcessor[AssignmentEntity.Event] {
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[AssignmentEntity.Event] =
     readSide
-      .builder[AssignmentEntity.Event]("Authorization_Assignment_Db_EventOffset")
+      .builder[AssignmentEntity.Event]("assignment-cassandra")
       .setGlobalPrepare(dbDao.createTables)
       .setPrepare(_ => dbDao.prepareStatements())
       .setEventHandler[AssignmentEntity.PermissionAssigned](e => assignPermission(e.event))

@@ -27,8 +27,7 @@ import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 
-private[impl] class AssignmentCassandraDbDao(session: CassandraSession)(implicit ec: ExecutionContext)
-    extends AssignmentDbDao {
+private[impl] class AssignmentCassandraDbDao(session: CassandraSession)(implicit ec: ExecutionContext) {
 
   private var onPermissionAssignedStatement: PreparedStatement   = _
   private var onPermissionUnassignedStatement: PreparedStatement = _

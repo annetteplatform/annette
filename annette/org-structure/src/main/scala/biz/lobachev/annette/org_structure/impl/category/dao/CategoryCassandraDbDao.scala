@@ -33,7 +33,7 @@ import scala.jdk.CollectionConverters._
 
 private[impl] class CategoryCassandraDbDao(session: CassandraSession)(implicit
   ec: ExecutionContext
-) extends CategoryDbDao {
+) {
 
   private var insertCategoryStatement: PreparedStatement = null
   private var updateCategoryStatement: PreparedStatement = null

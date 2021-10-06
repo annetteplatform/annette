@@ -27,7 +27,7 @@ private[impl] class SubscriptionDbEventProcessor(
 
   def buildHandler() =
     readSide
-      .builder[SubscriptionEntity.Event]("Subscription_Subscription_CasEventOffset")
+      .builder[SubscriptionEntity.Event]("subscription-cassandra")
       .setGlobalPrepare(dbDao.createTables)
       .setPrepare(_ => dbDao.prepareStatements())
       .setEventHandler[SubscriptionEntity.SubscriptionCreated](e => dbDao.createSubscription(e.event))

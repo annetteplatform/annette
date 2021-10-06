@@ -21,7 +21,7 @@ import biz.lobachev.annette.cms.api.space._
 import biz.lobachev.annette.cms.api.post._
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
 import biz.lobachev.annette.core.model.category._
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 
 trait CmsServiceApi extends Service {

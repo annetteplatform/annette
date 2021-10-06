@@ -20,23 +20,23 @@ import akka.cluster.sharding.typed.scaladsl.Entity
 import akka.stream.Materializer
 import biz.lobachev.annette.application.api._
 import biz.lobachev.annette.application.impl.application._
-import biz.lobachev.annette.application.impl.application.dao.{ApplicationCassandraDbDao, ApplicationElasticIndexDao}
+import biz.lobachev.annette.application.impl.application.dao.{ApplicationCassandraDbDao, ApplicationIndexDao}
 import biz.lobachev.annette.application.impl.application.model.ApplicationSerializerRegistry
 import biz.lobachev.annette.application.impl.language._
-import biz.lobachev.annette.application.impl.language.dao.{LanguageCassandraDbDao, LanguageElasticIndexDao}
+import biz.lobachev.annette.application.impl.language.dao.{LanguageCassandraDbDao, LanguageIndexDao}
 import biz.lobachev.annette.application.impl.language.model.LanguageSerializerRegistry
 import biz.lobachev.annette.application.impl.translation._
-import biz.lobachev.annette.application.impl.translation.dao.{TranslationCassandraDbDao, TranslationElasticIndexDao}
+import biz.lobachev.annette.application.impl.translation.dao.{TranslationCassandraDbDao, TranslationIndexDao}
 import biz.lobachev.annette.application.impl.translation.model.TranslationSerializerRegistry
+import biz.lobachev.annette.application.impl.translation_json.dao.TranslationJsonCassandraDbDao
+import biz.lobachev.annette.application.impl.translation_json.model.TranslationJsonSerializerRegistry
 import biz.lobachev.annette.application.impl.translation_json.{
   TranslationJsonDbEventProcessor,
   TranslationJsonEntity,
   TranslationJsonEntityService
 }
-import biz.lobachev.annette.application.impl.translation_json.dao.TranslationJsonCassandraDbDao
-import biz.lobachev.annette.application.impl.translation_json.model.TranslationJsonSerializerRegistry
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
-import biz.lobachev.annette.microservice_core.elastic.ElasticModule
+import biz.lobachev.annette.microservice_core.indexing.IndexingModule
 import com.lightbend.lagom.scaladsl.api.LagomConfigComponent
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
 import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
@@ -78,29 +78,29 @@ trait ApplicationComponents
   def environment: Environment
   implicit def materializer: Materializer
 
-  val elasticModule = new ElasticModule(config)
-  import elasticModule._
+  val indexingModule = new IndexingModule()
+  import indexingModule._
 
   override lazy val lagomServer = serverFor[ApplicationServiceApi](wire[ApplicationServiceApiImpl])
 
   lazy val jsonSerializerRegistry = ApplicationServiceSerializerRegistry
 
-  lazy val wiredLanguageCasRepository   = wire[LanguageCassandraDbDao]
-  lazy val wiredLanguageElasticIndexDao = wire[LanguageElasticIndexDao]
+  lazy val wiredLanguageCasRepository = wire[LanguageCassandraDbDao]
+  lazy val wiredLanguageIndexDao      = wire[LanguageIndexDao]
   readSide.register(wire[LanguageDbEventProcessor])
   readSide.register(wire[LanguageIndexEventProcessor])
-  lazy val wiredLanguageEntityService   = wire[LanguageEntityService]
+  lazy val wiredLanguageEntityService = wire[LanguageEntityService]
   clusterSharding.init(
     Entity(LanguageEntity.typeKey) { entityContext =>
       LanguageEntity(entityContext)
     }
   )
 
-  lazy val wiredTranslationCasRepository     = wire[TranslationCassandraDbDao]
-  lazy val wiredTranslationElasticRepository = wire[TranslationElasticIndexDao]
+  lazy val wiredTranslationCasRepository = wire[TranslationCassandraDbDao]
+  lazy val wiredTranslationIndexDao      = wire[TranslationIndexDao]
   readSide.register(wire[TranslationDbEventProcessor])
   readSide.register(wire[TranslationIndexEventProcessor])
-  lazy val wiredTranslationEntityService     = wire[TranslationEntityService]
+  lazy val wiredTranslationEntityService = wire[TranslationEntityService]
   clusterSharding.init(
     Entity(TranslationEntity.typeKey) { entityContext =>
       TranslationEntity(entityContext)
@@ -116,11 +116,11 @@ trait ApplicationComponents
     }
   )
 
-  lazy val wiredApplicationCassandraDbDao  = wire[ApplicationCassandraDbDao]
-  lazy val wiredApplicationElasticIndexDao = wire[ApplicationElasticIndexDao]
+  lazy val wiredApplicationCassandraDbDao = wire[ApplicationCassandraDbDao]
+  lazy val wiredApplicationIndexDao       = wire[ApplicationIndexDao]
   readSide.register(wire[ApplicationDbEventProcessor])
   readSide.register(wire[ApplicationIndexEventProcessor])
-  lazy val wiredApplicationEntityService   = wire[ApplicationEntityService]
+  lazy val wiredApplicationEntityService  = wire[ApplicationEntityService]
   clusterSharding.init(
     Entity(ApplicationEntity.typeKey) { entityContext =>
       ApplicationEntity(entityContext)

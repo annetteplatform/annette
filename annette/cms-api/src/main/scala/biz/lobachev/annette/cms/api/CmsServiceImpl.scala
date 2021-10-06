@@ -20,7 +20,7 @@ import akka.Done
 import biz.lobachev.annette.cms.api.space._
 import biz.lobachev.annette.cms.api.post._
 import biz.lobachev.annette.core.model.category._
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 
 import scala.concurrent.Future
 

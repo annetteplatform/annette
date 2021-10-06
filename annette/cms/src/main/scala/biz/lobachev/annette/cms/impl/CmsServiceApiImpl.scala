@@ -21,12 +21,12 @@ import akka.{Done, NotUsed}
 import biz.lobachev.annette.cms.api._
 import biz.lobachev.annette.cms.api.space._
 import biz.lobachev.annette.cms.api.post._
+import biz.lobachev.annette.cms.impl.category.CategoryEntityService
 import biz.lobachev.annette.cms.impl.space._
 import biz.lobachev.annette.cms.impl.hierarchy.HierarchyEntityService
 import biz.lobachev.annette.cms.impl.post._
 import biz.lobachev.annette.core.model.category._
-import biz.lobachev.annette.core.model.elastic.FindResult
-import biz.lobachev.annette.microservice_core.category.CategoryEntityService
+import biz.lobachev.annette.core.model.indexing.FindResult
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import org.slf4j.LoggerFactory
 

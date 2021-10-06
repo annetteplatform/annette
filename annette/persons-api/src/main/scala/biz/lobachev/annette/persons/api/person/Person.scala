@@ -30,6 +30,8 @@ case class Person(
   categoryId: CategoryId,
   phone: Option[String] = None,      // phone
   email: Option[String] = None,      // email
+  source: Option[String] = None,
+  externalId: Option[String] = None,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 )

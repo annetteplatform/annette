@@ -18,7 +18,7 @@ package biz.lobachev.annette.persons.impl.person
 
 import akka.Done
 import biz.lobachev.annette.persons.impl.person.PersonEntity._
-import biz.lobachev.annette.persons.impl.person.dao.{PersonIndexDao}
+import biz.lobachev.annette.persons.impl.person.dao.PersonIndexDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
@@ -33,7 +33,7 @@ private[impl] class PersonIndexEventProcessor(
 
   def buildHandler() =
     readSide
-      .builder[PersonEntity.Event]("person-elastic")
+      .builder[PersonEntity.Event]("person-indexing")
       .setGlobalPrepare(globalPrepare)
       .setEventHandler[PersonEntity.PersonCreated](e => createPerson(e.event))
       .setEventHandler[PersonEntity.PersonUpdated](e => updatePerson(e.event))

@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.principal_group.impl.group
 
-import biz.lobachev.annette.principal_group.impl.group.dao.GroupElasticIndexDao
+import biz.lobachev.annette.principal_group.impl.group.dao.PrincipalGroupIndexDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
@@ -24,14 +24,14 @@ import scala.concurrent.ExecutionContext
 
 private[impl] class PrincipalGroupIndexEventProcessor(
   readSide: CassandraReadSide,
-  indexDao: GroupElasticIndexDao
+  indexDao: PrincipalGroupIndexDao
 )(implicit
   ec: ExecutionContext
 ) extends ReadSideProcessor[PrincipalGroupEntity.Event] {
 
   def buildHandler() =
     readSide
-      .builder[PrincipalGroupEntity.Event]("PrincipalGroup_Group_ElasticEventOffset")
+      .builder[PrincipalGroupEntity.Event]("principalGroup-indexing")
       .setGlobalPrepare(() => indexDao.createEntityIndex())
       .setEventHandler[PrincipalGroupEntity.PrincipalGroupCreated](e =>
         indexDao

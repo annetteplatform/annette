@@ -13,7 +13,7 @@ object Dependencies {
     val akkaKubernetesDiscovery = "1.0.8"
     val logstashEncoder         = "6.4"
     val chimney                 = "0.6.1"
-    val pureConfig              = "0.14.0"
+    val pureConfig              = "0.16.0"
   }
 
   val macwire = "com.softwaremill.macwire" %% "macros" % Version.macwire % "provided"
