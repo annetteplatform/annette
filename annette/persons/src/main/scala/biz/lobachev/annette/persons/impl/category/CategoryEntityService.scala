@@ -35,7 +35,7 @@ import scala.util.Try
 class CategoryEntityService(
   clusterSharding: ClusterSharding,
   dbDao: dao.CategoryCassandraDbDao,
-  indexDao: dao.CategoryElasticIndexDao,
+  indexDao: dao.CategoryIndexDao,
   config: Config,
   typeKey: EntityTypeKey[Command]
 )(implicit

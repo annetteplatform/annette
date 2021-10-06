@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CategoryElasticIndexDao(client: ElasticClient, configPath: String)(implicit
+class CategoryIndexDao(client: ElasticClient, configPath: String)(implicit
   override val ec: ExecutionContext
 ) extends AbstractIndexDao(client) {
 

@@ -23,7 +23,7 @@ import scala.concurrent.ExecutionContext
 
 class CategoryIndexEventProcessor(
   readSide: CassandraReadSide,
-  indexDao: dao.CategoryElasticIndexDao,
+  indexDao: dao.CategoryIndexDao,
   readSideId: String
 )(implicit
   ec: ExecutionContext

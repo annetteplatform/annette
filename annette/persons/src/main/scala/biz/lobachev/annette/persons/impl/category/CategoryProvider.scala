@@ -47,12 +47,12 @@ class CategoryProvider(
   def createIndexDao(
     elasticClient: ElasticClient,
     ec: ExecutionContext
-  ): dao.CategoryElasticIndexDao =
-    new dao.CategoryElasticIndexDao(elasticClient, configPath)(ec)
+  ): dao.CategoryIndexDao =
+    new dao.CategoryIndexDao(elasticClient, configPath)(ec)
 
   def createIndexProcessor(
     readSide: CassandraReadSide,
-    indexDao: dao.CategoryElasticIndexDao,
+    indexDao: dao.CategoryIndexDao,
     ec: ExecutionContext
   ): CategoryIndexEventProcessor =
     new CategoryIndexEventProcessor(readSide, indexDao, indexReadSideId)(ec)
@@ -60,7 +60,7 @@ class CategoryProvider(
   def createEntityService(
     clusterSharding: ClusterSharding,
     dbDao: dao.CategoryCassandraDbDao,
-    indexDao: dao.CategoryElasticIndexDao,
+    indexDao: dao.CategoryIndexDao,
     config: Config,
     ec: ExecutionContext,
     materializer: Materializer
