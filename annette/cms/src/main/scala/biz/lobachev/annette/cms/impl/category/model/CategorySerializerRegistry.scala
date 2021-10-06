@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.microservice_core.category.model
+package biz.lobachev.annette.cms.impl.category.model
 
-import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.core.model.category._
-import biz.lobachev.annette.microservice_core.category.CategoryEntity._
+import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.cms.impl.category.CategoryEntity._
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
 object CategorySerializerRegistry extends JsonSerializerRegistry {
@@ -27,9 +27,6 @@ object CategorySerializerRegistry extends JsonSerializerRegistry {
       // state
       JsonSerializer[Category],
       JsonSerializer[CategoryState],
-      JsonSerializer[CreateCategoryPayload],
-      JsonSerializer[UpdateCategoryPayload],
-      JsonSerializer[DeleteCategoryPayload],
       // responses
       JsonSerializer[Confirmation],
       JsonSerializer[Success.type],

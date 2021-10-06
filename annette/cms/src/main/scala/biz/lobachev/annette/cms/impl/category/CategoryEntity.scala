@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.microservice_core.category
+package biz.lobachev.annette.cms.impl.category
 
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl._
@@ -22,7 +22,6 @@ import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category._
-import biz.lobachev.annette.microservice_core.category.model.CategoryState
 import com.lightbend.lagom.scaladsl.persistence._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json._
@@ -116,7 +115,7 @@ object CategoryEntity {
   implicit val categoryEntityFormat: Format[CategoryEntity] = Json.format
 }
 
-final case class CategoryEntity(maybeState: Option[CategoryState]) {
+final case class CategoryEntity(maybeState: Option[model.CategoryState]) {
 
   import CategoryEntity._
 
@@ -181,7 +180,7 @@ final case class CategoryEntity(maybeState: Option[CategoryState]) {
     CategoryEntity(
       Some(
         event
-          .into[CategoryState]
+          .into[model.CategoryState]
           .withFieldConst(_.updatedAt, event.createdAt)
           .withFieldConst(_.updatedBy, event.createdBy)
           .transform
@@ -192,7 +191,7 @@ final case class CategoryEntity(maybeState: Option[CategoryState]) {
     CategoryEntity(
       Some(
         event
-          .into[CategoryState]
+          .into[model.CategoryState]
           .withFieldConst(_.updatedAt, event.updatedAt)
           .transform
       )

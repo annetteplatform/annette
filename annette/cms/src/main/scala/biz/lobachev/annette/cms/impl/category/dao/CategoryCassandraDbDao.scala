@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.microservice_core.category.dao
+package biz.lobachev.annette.cms.impl.category.dao
 
-import java.time.OffsetDateTime
 import akka.Done
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.{Category, CategoryId}
-import biz.lobachev.annette.microservice_core.category.CategoryEntity
+import biz.lobachev.annette.cms.impl.category.CategoryEntity
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 
+import java.time.OffsetDateTime
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 

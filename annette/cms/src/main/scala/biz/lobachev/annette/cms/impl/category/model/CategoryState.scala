@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.microservice_core.category.model
+package biz.lobachev.annette.cms.impl.category.model
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-
-import java.time.OffsetDateTime
 import biz.lobachev.annette.core.model.category.{Category, CategoryId}
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
+
+import java.time.OffsetDateTime
 
 case class CategoryState(
   id: CategoryId,

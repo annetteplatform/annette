@@ -14,25 +14,25 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.microservice_core.category
+package biz.lobachev.annette.cms.impl.category
 
-import biz.lobachev.annette.microservice_core.category.dao.CategoryCassandraDbDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
-class CategoryDbEventProcessor(
+class CategoryIndexEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: CategoryCassandraDbDao,
+  indexDao: dao.CategoryIndexDao,
   readSideId: String
+)(implicit
+  ec: ExecutionContext
 ) extends ReadSideProcessor[CategoryEntity.Event] {
 
   def buildHandler() =
     readSide
       .builder[CategoryEntity.Event](readSideId)
-      .setGlobalPrepare(dbDao.createTables)
-      .setPrepare(_ => dbDao.prepareStatements())
+      .setGlobalPrepare(indexDao.createEntityIndex)
       .setEventHandler[CategoryEntity.CategoryCreated](e => createCategory(e.event))
       .setEventHandler[CategoryEntity.CategoryUpdated](e => updateCategory(e.event))
       .setEventHandler[CategoryEntity.CategoryDeleted](e => deleteCategory(e.event))
@@ -41,12 +41,18 @@ class CategoryDbEventProcessor(
   def aggregateTags = CategoryEntity.Event.Tag.allTags
 
   private def createCategory(event: CategoryEntity.CategoryCreated) =
-    Future.successful(dbDao.createCategory(event))
+    for {
+      _ <- indexDao.createCategory(event)
+    } yield List.empty
 
   private def updateCategory(event: CategoryEntity.CategoryUpdated) =
-    Future.successful(dbDao.updateCategory(event))
+    for {
+      _ <- indexDao.updateCategory(event)
+    } yield List.empty
 
   private def deleteCategory(event: CategoryEntity.CategoryDeleted) =
-    Future.successful(dbDao.deleteCategory(event))
+    for {
+      _ <- indexDao.deleteCategory(event)
+    } yield List.empty
 
 }

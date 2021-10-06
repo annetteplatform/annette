@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.cms.impl.space
 
-import biz.lobachev.annette.cms.impl.space.dao.SpaceElasticIndexDao
+import biz.lobachev.annette.cms.impl.space.dao.SpaceIndexDao
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
@@ -26,7 +26,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class SpaceIndexEventProcessor(
   readSide: CassandraReadSide,
-  elasticRepository: SpaceElasticIndexDao
+  elasticRepository: SpaceIndexDao
 )(implicit
   ec: ExecutionContext
 ) extends ReadSideProcessor[SpaceEntity.Event] {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.microservice_core.category
+package biz.lobachev.annette.cms.impl.category
 
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef, EntityTypeKey}
@@ -23,8 +23,6 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.elastic.FindResult
-import biz.lobachev.annette.microservice_core.category.CategoryEntity.Command
-import biz.lobachev.annette.microservice_core.category.dao.{CategoryCassandraDbDao, CategoryElasticIndexDao}
 import com.typesafe.config.Config
 import io.scalaland.chimney.dsl._
 
@@ -35,10 +33,10 @@ import scala.util.Try
 
 class CategoryEntityService(
   clusterSharding: ClusterSharding,
-  dbDao: CategoryCassandraDbDao,
-  indexDao: CategoryElasticIndexDao,
+  dbDao: dao.CategoryCassandraDbDao,
+  indexDao: dao.CategoryIndexDao,
   config: Config,
-  typeKey: EntityTypeKey[Command]
+  typeKey: EntityTypeKey[CategoryEntity.Command]
 )(implicit
   ec: ExecutionContext,
   val materializer: Materializer

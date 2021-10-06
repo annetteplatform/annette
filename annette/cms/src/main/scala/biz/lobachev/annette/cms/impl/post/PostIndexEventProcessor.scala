@@ -17,7 +17,7 @@
 package biz.lobachev.annette.cms.impl.post
 
 import akka.Done
-import biz.lobachev.annette.cms.impl.post.dao.PostElasticIndexDao
+import biz.lobachev.annette.cms.impl.post.dao.PostIndexDao
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
@@ -27,7 +27,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class PostIndexEventProcessor(
   readSide: CassandraReadSide,
-  elasticRepository: PostElasticIndexDao
+  elasticRepository: PostIndexDao
 )(implicit
   ec: ExecutionContext
 ) extends ReadSideProcessor[PostEntity.Event] {

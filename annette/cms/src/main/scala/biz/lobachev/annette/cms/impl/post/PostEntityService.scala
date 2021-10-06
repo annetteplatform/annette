@@ -25,7 +25,7 @@ import io.scalaland.chimney.dsl._
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import biz.lobachev.annette.cms.api.post.{GetPostMetricPayload, _}
-import biz.lobachev.annette.cms.impl.post.dao.{PostCassandraDbDao, PostElasticIndexDao}
+import biz.lobachev.annette.cms.impl.post.dao.{PostCassandraDbDao, PostIndexDao}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.elastic.FindResult
 
@@ -34,7 +34,7 @@ import scala.collection.immutable.Set
 class PostEntityService(
   clusterSharding: ClusterSharding,
   dbDao: PostCassandraDbDao,
-  indexDao: PostElasticIndexDao
+  indexDao: PostIndexDao
 )(implicit
   ec: ExecutionContext
 ) {
