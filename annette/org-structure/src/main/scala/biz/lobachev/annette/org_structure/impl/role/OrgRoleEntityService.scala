@@ -24,7 +24,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.org_structure.api.role._
-import biz.lobachev.annette.org_structure.impl.role.dao.{OrgRoleDbDao, OrgRoleIndexDao}
+import biz.lobachev.annette.org_structure.impl.role.dao.{OrgRoleCassandraDbDao, OrgRoleIndexDao}
 import com.typesafe.config.Config
 
 import scala.concurrent.duration._
@@ -33,7 +33,7 @@ import scala.util.Try
 
 class OrgRoleEntityService(
   clusterSharding: ClusterSharding,
-  dbDao: OrgRoleDbDao,
+  dbDao: OrgRoleCassandraDbDao,
   indexDao: OrgRoleIndexDao,
   config: Config
 )(implicit

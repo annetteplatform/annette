@@ -17,9 +17,8 @@
 package biz.lobachev.annette.org_structure.impl
 
 import akka.cluster.sharding.typed.scaladsl.Entity
-import biz.lobachev.annette.attributes.api.AttributeServiceApi
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
-import biz.lobachev.annette.microservice_core.elastic.ElasticModule
+import biz.lobachev.annette.microservice_core.indexing.IndexingModule
 import biz.lobachev.annette.org_structure.api.OrgStructureServiceApi
 import biz.lobachev.annette.org_structure.impl.category.{
   CategoryDbEventProcessor,
@@ -27,13 +26,13 @@ import biz.lobachev.annette.org_structure.impl.category.{
   CategoryEntityService,
   CategoryIndexEventProcessor
 }
-import biz.lobachev.annette.org_structure.impl.category.dao.{CategoryCassandraDbDao, CategoryElasticIndexDao}
+import biz.lobachev.annette.org_structure.impl.category.dao.{CategoryCassandraDbDao, CategoryIndexDao}
 import biz.lobachev.annette.org_structure.impl.category.model.CategorySerializerRegistry
 import biz.lobachev.annette.org_structure.impl.hierarchy._
-import biz.lobachev.annette.org_structure.impl.hierarchy.dao.{HierarchyCassandraDbDao, HierarchyElasticIndexDao}
+import biz.lobachev.annette.org_structure.impl.hierarchy.dao.{HierarchyCassandraDbDao, HierarchyIndexDao}
 import biz.lobachev.annette.org_structure.impl.hierarchy.entity.{HierarchyEntity, HierarchySerializerRegistry}
 import biz.lobachev.annette.org_structure.impl.role._
-import biz.lobachev.annette.org_structure.impl.role.dao.{OrgRoleCassandraDbDao, OrgRoleElasticIndexDao}
+import biz.lobachev.annette.org_structure.impl.role.dao.{OrgRoleCassandraDbDao, OrgRoleIndexDao}
 import biz.lobachev.annette.org_structure.impl.role.model.OrgRoleSerializerRegistry
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
@@ -45,7 +44,6 @@ import play.api.LoggerConfigurator
 import play.api.libs.ws.ahc.AhcWSComponents
 
 import scala.collection.immutable
-import scala.util.Try
 
 class OrgStructureServiceLoader extends LagomApplicationLoader {
 
@@ -72,12 +70,12 @@ abstract class OrgStructureServiceApplication(context: LagomApplicationContext)
 
   lazy val jsonSerializerRegistry = OrgStructureSerializerRegistry
 
-  val elasticModule = new ElasticModule(config)
+  val indexingModule = new IndexingModule()
+  import indexingModule._
 
-  import elasticModule._
+  override lazy val lagomServer = serverFor[OrgStructureServiceApi](wire[OrgStructureServiceApiImpl])
 
-  override lazy val lagomServer   = serverFor[OrgStructureServiceApi](wire[OrgStructureServiceApiImpl])
-  lazy val hierarchyElastic       = wire[HierarchyElasticIndexDao]
+  lazy val hierarchyElastic       = wire[HierarchyIndexDao]
   lazy val hierarchyRepository    = wire[HierarchyCassandraDbDao]
   readSide.register(wire[HierarchyDbEventProcessor])
   readSide.register(wire[HierarchyIndexEventProcessor])
@@ -88,7 +86,7 @@ abstract class OrgStructureServiceApplication(context: LagomApplicationContext)
     }
   )
 
-  lazy val orgRoleElastic       = wire[OrgRoleElasticIndexDao]
+  lazy val orgRoleElastic       = wire[OrgRoleIndexDao]
   lazy val orgRoleEntityService = wire[OrgRoleEntityService]
   lazy val orgRoleRepository    = wire[OrgRoleCassandraDbDao]
   readSide.register(wire[OrgRoleDbEventProcessor])
@@ -99,7 +97,7 @@ abstract class OrgStructureServiceApplication(context: LagomApplicationContext)
     }
   )
 
-  lazy val categoryElastic       = wire[CategoryElasticIndexDao]
+  lazy val categoryElastic       = wire[CategoryIndexDao]
   lazy val categoryEntityService = wire[CategoryEntityService]
   lazy val categoryRepository    = wire[CategoryCassandraDbDao]
   readSide.register(wire[CategoryDbEventProcessor])
@@ -109,13 +107,6 @@ abstract class OrgStructureServiceApplication(context: LagomApplicationContext)
       CategoryEntity(entityContext)
     }
   )
-
-  lazy val attributeService       = serviceClient.implement[AttributeServiceApi]
-  val enableAttributeSubscription =
-    Try(config.getBoolean("annette.attributes-service.enable-subscription")).toOption.getOrElse(true)
-  if (enableAttributeSubscription)
-    wire[AttributeServiceSubscriber]
-
 }
 
 object OrgStructureSerializerRegistry extends JsonSerializerRegistry {

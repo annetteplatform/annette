@@ -27,7 +27,7 @@ case class OrgCategoryFindQuery(
   forOrganization: Option[Boolean] = None,
   forUnit: Option[Boolean] = None,
   forPosition: Option[Boolean] = None,
-  sortBy: Option[SortBy] = None
+  sortBy: Option[Seq[SortBy]] = None
 )
 
 object OrgCategoryFindQuery {

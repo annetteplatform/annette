@@ -24,7 +24,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.org_structure.api.category._
-import biz.lobachev.annette.org_structure.impl.category.dao.{CategoryDbDao, CategoryIndexDao}
+import biz.lobachev.annette.org_structure.impl.category.dao.{CategoryCassandraDbDao, CategoryIndexDao}
 import com.typesafe.config.Config
 
 import scala.concurrent.duration._
@@ -33,7 +33,7 @@ import scala.util.Try
 
 class CategoryEntityService(
   clusterSharding: ClusterSharding,
-  dbDao: CategoryDbDao,
+  dbDao: CategoryCassandraDbDao,
   indexDao: CategoryIndexDao,
   config: Config
 )(implicit

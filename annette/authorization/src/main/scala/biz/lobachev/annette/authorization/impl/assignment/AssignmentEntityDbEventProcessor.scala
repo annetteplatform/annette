@@ -30,7 +30,7 @@ private[impl] class AssignmentEntityDbEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[AssignmentEntity.Event] =
     readSide
-      .builder[AssignmentEntity.Event]("Authorization_Assignment_Db_EventOffset")
+      .builder[AssignmentEntity.Event]("assignment-cassandra")
       .setGlobalPrepare(dbDao.createTables)
       .setPrepare(_ => dbDao.prepareStatements())
       .setEventHandler[AssignmentEntity.PermissionAssigned](e => assignPermission(e.event))

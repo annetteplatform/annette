@@ -81,10 +81,34 @@ case class LongFieldConf(
   override def fieldType: String = "long"
 }
 
+case class IntegerFieldConf(
+  field: Option[String] = None
+) extends IndexFieldConf {
+  override def fieldType: String = "integer"
+}
+
+case class ShortFieldConf(
+  field: Option[String] = None
+) extends IndexFieldConf {
+  override def fieldType: String = "short"
+}
+
+case class ByteFieldConf(
+  field: Option[String] = None
+) extends IndexFieldConf {
+  override def fieldType: String = "byte"
+}
+
 case class DoubleFieldConf(
   field: Option[String] = None
 ) extends IndexFieldConf {
   override def fieldType: String = "double"
+}
+
+case class FloatFieldConf(
+  field: Option[String] = None
+) extends IndexFieldConf {
+  override def fieldType: String = "float"
 }
 
 object IndexFieldConf {

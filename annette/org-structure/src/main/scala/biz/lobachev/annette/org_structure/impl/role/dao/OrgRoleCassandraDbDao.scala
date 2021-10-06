@@ -29,7 +29,7 @@ import scala.jdk.CollectionConverters._
 
 private[impl] class OrgRoleCassandraDbDao(session: CassandraSession)(implicit
   ec: ExecutionContext
-) extends OrgRoleDbDao {
+) {
 
   private var insertOrgRoleStatement: PreparedStatement = null
   private var updateOrgRoleStatement: PreparedStatement = null

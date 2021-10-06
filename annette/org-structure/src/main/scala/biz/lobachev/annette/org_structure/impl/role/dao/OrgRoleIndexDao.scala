@@ -16,24 +16,65 @@
 
 package biz.lobachev.annette.org_structure.impl.role.dao
 
-import akka.Done
 import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
 import biz.lobachev.annette.org_structure.api.role._
 import biz.lobachev.annette.org_structure.impl.role.OrgRoleEntity
 import biz.lobachev.annette.org_structure.impl.role.OrgRoleEntity.OrgRoleDeleted
+import com.sksamuel.elastic4s.ElasticDsl._
+import com.sksamuel.elastic4s._
+import com.sksamuel.elastic4s.requests.searches.sort.FieldSort
+import org.slf4j.LoggerFactory
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 
-trait OrgRoleIndexDao {
+class OrgRoleIndexDao(client: ElasticClient)(implicit
+  override val ec: ExecutionContext
+) extends AbstractIndexDao(client) {
 
-  def createEntityIndex(): Future[Done]
+  override val log = LoggerFactory.getLogger(this.getClass)
 
-  def createOrgRole(event: OrgRoleEntity.OrgRoleCreated): Future[Unit]
+  override def indexConfigPath = "indexing.role-index"
 
-  def updateOrgRole(event: OrgRoleEntity.OrgRoleUpdated): Future[Unit]
+  def createOrgRole(event: OrgRoleEntity.OrgRoleCreated) =
+    createIndexDoc(
+      event.id,
+      "id"          -> event.id,
+      "name"        -> event.name,
+      "description" -> event.description,
+      "updatedAt"   -> event.createdAt
+    )
 
-  def deleteOrgRole(event: OrgRoleDeleted): Future[Unit]
+  def updateOrgRole(event: OrgRoleEntity.OrgRoleUpdated) =
+    updateIndexDoc(
+      event.id,
+      "id"          -> event.id,
+      "name"        -> event.name,
+      "description" -> event.description,
+      "updatedAt"   -> event.updatedAt
+    )
 
-  def findOrgRole(query: OrgRoleFindQuery): Future[FindResult]
+  def deleteOrgRole(event: OrgRoleDeleted) =
+    deleteIndexDoc(event.id)
+
+  def findOrgRole(query: OrgRoleFindQuery): Future[FindResult] = {
+
+    val fieldQuery             = Seq(
+      query.name.map(matchQuery(alias2FieldName("name"), _)),
+      query.description.map(matchQuery(alias2FieldName("description"), _))
+    ).flatten
+    val filterQuery            = buildFilterQuery(query.filter, Seq("name" -> 3.0, "description" -> 2.0))
+    val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
+
+    val searchRequest = search(indexName)
+      .bool(must(filterQuery ++ fieldQuery)) // ++ fieldQuery))
+      .from(query.offset)
+      .size(query.size)
+      .sortBy(sortBy)
+      .sourceInclude(alias2FieldName("updatedAt"))
+      .trackTotalHits(true)
+
+    findEntity(searchRequest)
+  }
 
 }

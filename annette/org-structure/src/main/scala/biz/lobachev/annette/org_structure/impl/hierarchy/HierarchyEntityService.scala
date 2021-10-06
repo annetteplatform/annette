@@ -27,7 +27,7 @@ import biz.lobachev.annette.core.model.elastic.FindResult
 import biz.lobachev.annette.org_structure.api.category.OrgCategory
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
-import biz.lobachev.annette.org_structure.impl.hierarchy.dao.{HierarchyCassandraDbDao, HierarchyElasticIndexDao}
+import biz.lobachev.annette.org_structure.impl.hierarchy.dao.{HierarchyCassandraDbDao, HierarchyIndexDao}
 import biz.lobachev.annette.org_structure.impl.hierarchy.entity.HierarchyEntity
 import com.typesafe.config.Config
 import io.scalaland.chimney.dsl._
@@ -41,7 +41,7 @@ import scala.util.Try
 class HierarchyEntityService(
   clusterSharding: ClusterSharding,
   dbDao: HierarchyCassandraDbDao,
-  indexDao: HierarchyElasticIndexDao,
+  indexDao: HierarchyIndexDao,
   config: Config
 )(implicit
   ec: ExecutionContext,
