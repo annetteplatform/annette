@@ -286,34 +286,34 @@ lazy val `application-api-gateway` = (project in file("annette/application-api-g
     `application-api`
   )
 
-lazy val `attributes-api` = (project in file("annette/attributes-api"))
-  .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslApi,
-      lagomScaladslTestKit,
-      Dependencies.chimney
-    ) ++ Dependencies.tests
-  )
-  .settings(annetteSettings: _*)
-  .dependsOn(`microservice-core`)
+//lazy val `attributes-api` = (project in file("annette/attributes-api"))
+//  .settings(
+//    libraryDependencies ++= Seq(
+//      lagomScaladslApi,
+//      lagomScaladslTestKit,
+//      Dependencies.chimney
+//    ) ++ Dependencies.tests
+//  )
+//  .settings(annetteSettings: _*)
+//  .dependsOn(`microservice-core`)
 
-def attributesProject(pr: Project) =
-  pr
-    .enablePlugins(LagomScala)
-    .settings(
-      libraryDependencies ++= Seq(
-        lagomScaladslPersistenceCassandra,
-        lagomScaladslKafkaBroker,
-        lagomScaladslTestKit,
-        Dependencies.macwire,
-        Dependencies.chimney
-      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
-    )
-    .settings(lagomForkedTestSettings: _*)
-    .settings(confDirSettings: _*)
-    .settings(annetteSettings: _*)
-    .settings(dockerSettings: _*)
-    .dependsOn(`attributes-api`)
+//def attributesProject(pr: Project) =
+//  pr
+//    .enablePlugins(LagomScala)
+//    .settings(
+//      libraryDependencies ++= Seq(
+//        lagomScaladslPersistenceCassandra,
+//        lagomScaladslKafkaBroker,
+//        lagomScaladslTestKit,
+//        Dependencies.macwire,
+//        Dependencies.chimney
+//      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
+//    )
+//    .settings(lagomForkedTestSettings: _*)
+//    .settings(confDirSettings: _*)
+//    .settings(annetteSettings: _*)
+//    .settings(dockerSettings: _*)
+//    .dependsOn(`attributes-api`)
 
 lazy val `authorization-api` = (project in file("annette/authorization-api"))
   .settings(
