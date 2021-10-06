@@ -23,7 +23,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.application.impl.translation.dao.{TranslationCassandraDbDao, TranslationIndexDao}
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 

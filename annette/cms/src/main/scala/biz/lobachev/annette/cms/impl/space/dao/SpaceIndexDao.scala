@@ -18,7 +18,7 @@ package biz.lobachev.annette.cms.impl.space.dao
 
 import biz.lobachev.annette.cms.api.space.SpaceFindQuery
 import biz.lobachev.annette.cms.impl.space.SpaceEntity
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._

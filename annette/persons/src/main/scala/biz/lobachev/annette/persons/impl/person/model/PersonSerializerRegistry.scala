@@ -15,7 +15,7 @@
  */
 
 package biz.lobachev.annette.persons.impl.person.model
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.persons.api.person._
 import biz.lobachev.annette.persons.impl.person.PersonEntity.{
   AlreadyExist,

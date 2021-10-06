@@ -14,15 +14,27 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.core.model.elastic
+package biz.lobachev.annette.core.model.indexing
 
 import play.api.libs.json.{Format, Json}
 
-case class SortBy(
-  field: String,
-  descending: Option[Boolean] = None
+import java.time.OffsetDateTime
+
+case class FindResult(
+  total: Long,         // total items in query
+  hits: Seq[HitResult] // results of search
 )
 
-object SortBy {
-  implicit val format: Format[SortBy] = Json.format
+object FindResult {
+  implicit val format: Format[FindResult] = Json.format
+}
+
+case class HitResult(
+  id: String,               //  id
+  score: Float,             // store of this hit
+  updatedAt: OffsetDateTime // date/time of last update
+)
+
+object HitResult {
+  implicit val format: Format[HitResult] = Json.format
 }

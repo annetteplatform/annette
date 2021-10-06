@@ -27,7 +27,7 @@ import biz.lobachev.annette.application.impl.language._
 import biz.lobachev.annette.application.impl.translation._
 import biz.lobachev.annette.application.impl.translation_json.TranslationJsonEntityService
 import biz.lobachev.annette.core.model.LanguageId
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory

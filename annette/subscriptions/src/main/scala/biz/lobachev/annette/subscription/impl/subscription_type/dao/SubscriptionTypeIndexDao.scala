@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.subscription.impl.subscription_type.dao
 
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
 import biz.lobachev.annette.subscription.api.subscription_type.SubscriptionTypeFindQuery
 import biz.lobachev.annette.subscription.impl.subscription_type.SubscriptionTypeEntity

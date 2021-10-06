@@ -31,7 +31,7 @@ private[impl] class SubscriptionTypeIndexEventProcessor(
 
   def buildHandler() =
     readSide
-      .builder[SubscriptionTypeEntity.Event]("subscriptionType-elastic")
+      .builder[SubscriptionTypeEntity.Event]("subscriptionType-indexing")
       .setGlobalPrepare(indexDao.createEntityIndex)
       .setEventHandler[SubscriptionTypeEntity.SubscriptionTypeCreated](e => createSubscriptionType(e.event))
       .setEventHandler[SubscriptionTypeEntity.SubscriptionTypeUpdated](e => updateSubscriptionType(e.event))

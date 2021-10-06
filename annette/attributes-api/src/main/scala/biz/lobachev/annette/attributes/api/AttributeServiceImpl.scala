@@ -23,7 +23,7 @@ import biz.lobachev.annette.attributes.api.assignment.{
   UnassignAttributePayload
 }
 import biz.lobachev.annette.attributes.api.schema._
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}

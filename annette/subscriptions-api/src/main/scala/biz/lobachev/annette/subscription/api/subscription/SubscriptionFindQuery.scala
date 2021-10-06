@@ -17,7 +17,7 @@
 package biz.lobachev.annette.subscription.api.subscription
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.elastic.SortBy
+import biz.lobachev.annette.core.model.indexing.SortBy
 import biz.lobachev.annette.subscription.api.subscription_type.SubscriptionTypeId
 import play.api.libs.json.{Format, Json}
 

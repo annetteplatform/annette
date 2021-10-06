@@ -90,7 +90,7 @@ lazy val root = (project in file("."))
     `principal-groups-api-gateway`,
     // microservices API
     `application-api`,
-    `attributes-api`,
+//    `attributes-api`,
     `authorization-api`,
     `org-structure-api`,
     `persons-api`,
@@ -370,7 +370,7 @@ lazy val `org-structure-api` = (project in file("annette/org-structure-api"))
     )
   )
   .settings(annetteSettings: _*)
-  .dependsOn(`microservice-core`, `attributes-api`)
+  .dependsOn(`microservice-core`)
 
 def orgStructureProject(pr: Project) =
   pr
@@ -389,7 +389,7 @@ def orgStructureProject(pr: Project) =
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`org-structure-api`, `attributes-api`)
+    .dependsOn(`org-structure-api`)
 
 lazy val `org-structure-api-gateway` = (project in file("annette/org-structure-api-gateway"))
   .settings(

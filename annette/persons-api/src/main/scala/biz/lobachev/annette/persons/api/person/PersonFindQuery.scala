@@ -17,7 +17,7 @@
 package biz.lobachev.annette.persons.api.person
 
 import biz.lobachev.annette.core.model.category.CategoryId
-import biz.lobachev.annette.core.model.elastic.SortBy
+import biz.lobachev.annette.core.model.indexing.SortBy
 import play.api.libs.json.{Format, Json}
 
 case class PersonFindQuery(

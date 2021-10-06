@@ -31,7 +31,7 @@ private[impl] class PrincipalGroupIndexEventProcessor(
 
   def buildHandler() =
     readSide
-      .builder[PrincipalGroupEntity.Event]("principalGroup-elastic")
+      .builder[PrincipalGroupEntity.Event]("principalGroup-indexing")
       .setGlobalPrepare(() => indexDao.createEntityIndex())
       .setEventHandler[PrincipalGroupEntity.PrincipalGroupCreated](e =>
         indexDao

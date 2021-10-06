@@ -2,7 +2,7 @@ package biz.lobachev.annette.application.impl.application.dao
 
 import biz.lobachev.annette.application.api.application.FindApplicationQuery
 import biz.lobachev.annette.application.impl.application.ApplicationEntity
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
 import com.sksamuel.elastic4s.ElasticClient
 import com.sksamuel.elastic4s.ElasticDsl.{must, search}

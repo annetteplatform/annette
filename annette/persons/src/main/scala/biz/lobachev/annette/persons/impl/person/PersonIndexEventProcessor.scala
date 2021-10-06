@@ -33,7 +33,7 @@ private[impl] class PersonIndexEventProcessor(
 
   def buildHandler() =
     readSide
-      .builder[PersonEntity.Event]("person-elastic")
+      .builder[PersonEntity.Event]("person-indexing")
       .setGlobalPrepare(globalPrepare)
       .setEventHandler[PersonEntity.PersonCreated](e => createPerson(e.event))
       .setEventHandler[PersonEntity.PersonUpdated](e => updatePerson(e.event))

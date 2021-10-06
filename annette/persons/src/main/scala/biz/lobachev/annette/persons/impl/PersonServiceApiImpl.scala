@@ -26,7 +26,7 @@ import biz.lobachev.annette.core.model.category.{
   DeleteCategoryPayload,
   UpdateCategoryPayload
 }
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.persons.impl.category.CategoryEntityService
 import biz.lobachev.annette.persons.api.PersonServiceApi
 import biz.lobachev.annette.persons.api.person._

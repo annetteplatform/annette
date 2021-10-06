@@ -22,7 +22,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.core.model.category._
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.persons.impl.category.CategoryEntity.Command
 import com.typesafe.config.Config
 import io.scalaland.chimney.dsl._

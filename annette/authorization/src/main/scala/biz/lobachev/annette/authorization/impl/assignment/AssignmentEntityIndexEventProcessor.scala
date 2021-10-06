@@ -32,7 +32,7 @@ private[impl] class AssignmentEntityIndexEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[AssignmentEntity.Event] =
     readSide
-      .builder[AssignmentEntity.Event]("assignment-elastic")
+      .builder[AssignmentEntity.Event]("assignment-indexing")
       .setGlobalPrepare(indexDao.createEntityIndex)
       .setEventHandler[AssignmentEntity.PermissionAssigned](e => assignPermission(e.event))
       .setEventHandler[AssignmentEntity.PermissionUnassigned](e => unassignPermission(e.event))

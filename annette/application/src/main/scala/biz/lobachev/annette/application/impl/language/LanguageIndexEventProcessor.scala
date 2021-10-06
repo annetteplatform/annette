@@ -35,7 +35,7 @@ private[impl] class LanguageIndexEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[LanguageEntity.Event] =
     readSide
-      .builder[LanguageEntity.Event]("language-elastic")
+      .builder[LanguageEntity.Event]("language-indexing")
       .setGlobalPrepare(indexDao.createEntityIndex)
       .setEventHandler[LanguageEntity.LanguageCreated](e => createLanguage(e.event))
       .setEventHandler[LanguageEntity.LanguageUpdated](e => updateLanguage(e.event))

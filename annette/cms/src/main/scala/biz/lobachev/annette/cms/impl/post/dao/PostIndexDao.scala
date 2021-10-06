@@ -18,7 +18,7 @@ package biz.lobachev.annette.cms.impl.post.dao
 
 import biz.lobachev.annette.cms.api.post.{HtmlContent, MarkdownContent, PostContent, PostFindQuery}
 import biz.lobachev.annette.cms.impl.post.PostEntity
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._

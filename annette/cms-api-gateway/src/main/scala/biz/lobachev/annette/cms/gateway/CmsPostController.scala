@@ -21,7 +21,7 @@ import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.CmsService
 import biz.lobachev.annette.cms.api.post._
 import biz.lobachev.annette.cms.gateway.post._
-import biz.lobachev.annette.core.model.elastic.SortBy
+import biz.lobachev.annette.core.model.indexing.SortBy
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, Action, ControllerComponents}

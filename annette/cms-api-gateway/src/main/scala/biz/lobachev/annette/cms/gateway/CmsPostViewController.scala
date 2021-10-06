@@ -23,7 +23,7 @@ import biz.lobachev.annette.cms.api.post._
 import biz.lobachev.annette.cms.api.space._
 import biz.lobachev.annette.cms.gateway.post._
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.elastic.{FindResult, SortBy}
+import biz.lobachev.annette.core.model.indexing.{FindResult, SortBy}
 import biz.lobachev.annette.subscription.api.SubscriptionService
 import biz.lobachev.annette.subscription.api.subscription.{SubscriptionFindQuery}
 import io.scalaland.chimney.dsl._

@@ -18,7 +18,7 @@ package biz.lobachev.annette.org_structure.impl.hierarchy.dao
 
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
 import biz.lobachev.annette.org_structure.api.hierarchy
 import biz.lobachev.annette.org_structure.api.hierarchy.{CompositeOrgItemId, ItemTypes, OrgItemFindQuery, OrgItemKey}

@@ -32,7 +32,7 @@ private[impl] class OrgRoleIndexEventProcessor(
 
   def buildHandler() =
     readSide
-      .builder[OrgRoleEntity.Event]("role-elastic")
+      .builder[OrgRoleEntity.Event]("role-indexing")
       .setGlobalPrepare(indexDao.createEntityIndex)
       .setEventHandler[OrgRoleEntity.OrgRoleCreated](e => createOrgRole(e.event))
       .setEventHandler[OrgRoleEntity.OrgRoleUpdated](e => updateOrgRole(e.event))

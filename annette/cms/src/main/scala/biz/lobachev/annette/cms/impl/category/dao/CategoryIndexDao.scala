@@ -17,7 +17,7 @@
 package biz.lobachev.annette.cms.impl.category.dao
 
 import biz.lobachev.annette.core.model.category.CategoryFindQuery
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
 import biz.lobachev.annette.cms.impl.category.CategoryEntity
 import com.sksamuel.elastic4s.ElasticDsl._

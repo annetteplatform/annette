@@ -24,7 +24,7 @@ import biz.lobachev.annette.attributes.api.assignment.{
   UnassignAttributePayload
 }
 import biz.lobachev.annette.attributes.api.schema._
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 
 import scala.collection.immutable.Map
 import scala.concurrent.Future

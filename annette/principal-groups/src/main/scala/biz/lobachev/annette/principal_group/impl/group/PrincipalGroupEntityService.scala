@@ -23,7 +23,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.principal_group.api.group._
 import biz.lobachev.annette.principal_group.impl.group.PrincipalGroupEntity._
 import biz.lobachev.annette.principal_group.impl.group.dao.{PrincipalGroupCassandraDbDao, PrincipalGroupIndexDao}

@@ -81,7 +81,7 @@ abstract class PersonServiceApplication(context: LagomApplicationContext)
     tableName = "categories",
     dbReadSideId = "category-cassandra",
     configPath = "indexing.category-index",
-    indexReadSideId = "category-elastic"
+    indexReadSideId = "category-indexing"
   )
 
   lazy val categoryElastic       = wireWith(categoryProvider.createIndexDao _)

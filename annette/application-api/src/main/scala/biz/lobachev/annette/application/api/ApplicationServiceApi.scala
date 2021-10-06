@@ -22,7 +22,7 @@ import biz.lobachev.annette.application.api.language._
 import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
 import biz.lobachev.annette.core.model.LanguageId
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 import play.api.libs.json.JsObject
 

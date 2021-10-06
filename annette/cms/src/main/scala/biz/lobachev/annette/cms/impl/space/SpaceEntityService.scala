@@ -21,7 +21,7 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
 import biz.lobachev.annette.cms.api.space.{GetSpaceViewsPayload, _}
 import biz.lobachev.annette.cms.impl.space.dao.{SpaceCassandraDbDao, SpaceIndexDao}
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
 

@@ -32,7 +32,7 @@ private[impl] class RoleEntityIndexEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[RoleEntity.Event] =
     readSide
-      .builder[RoleEntity.Event]("role-elastic")
+      .builder[RoleEntity.Event]("role-indexing")
       .setGlobalPrepare(indexDao.createEntityIndex)
       .setEventHandler[RoleEntity.RoleCreated](e => createRole(e.event))
       .setEventHandler[RoleEntity.RoleUpdated](e => updateRole(e.event))

@@ -21,7 +21,7 @@ import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.api.language._
 import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.core.model.LanguageId
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import play.api.libs.json.JsObject
 
 import scala.concurrent.Future

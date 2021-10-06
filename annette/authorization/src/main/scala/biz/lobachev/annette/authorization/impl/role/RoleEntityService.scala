@@ -25,7 +25,7 @@ import akka.util.Timeout
 import biz.lobachev.annette.authorization.api.role._
 import biz.lobachev.annette.authorization.impl.role.dao.{RoleCassandraDbDao, RoleIndexDao}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import com.typesafe.config.Config
 
 import scala.concurrent.duration._

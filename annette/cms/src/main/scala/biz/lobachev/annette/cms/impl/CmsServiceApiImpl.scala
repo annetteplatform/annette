@@ -26,7 +26,7 @@ import biz.lobachev.annette.cms.impl.space._
 import biz.lobachev.annette.cms.impl.hierarchy.HierarchyEntityService
 import biz.lobachev.annette.cms.impl.post._
 import biz.lobachev.annette.core.model.category._
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import org.slf4j.LoggerFactory
 

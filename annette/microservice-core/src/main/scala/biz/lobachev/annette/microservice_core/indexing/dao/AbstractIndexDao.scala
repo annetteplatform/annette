@@ -17,7 +17,7 @@
 package biz.lobachev.annette.microservice_core.indexing.dao
 
 import akka.Done
-import biz.lobachev.annette.core.model.elastic.{FindResult, HitResult, SortBy}
+import biz.lobachev.annette.core.model.indexing.{FindResult, HitResult, SortBy}
 import biz.lobachev.annette.microservice_core.indexing.config.TextFieldConf
 import biz.lobachev.annette.microservice_core.indexing.{
   IndexingProvider,

@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.org_structure.api.role
 
-import biz.lobachev.annette.core.model.elastic.SortBy
+import biz.lobachev.annette.core.model.indexing.SortBy
 import play.api.libs.json.{Format, Json}
 
 case class OrgRoleFindQuery(

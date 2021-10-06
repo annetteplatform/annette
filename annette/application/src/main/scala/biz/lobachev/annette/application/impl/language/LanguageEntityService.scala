@@ -24,7 +24,7 @@ import akka.util.Timeout
 import biz.lobachev.annette.application.api.language._
 import biz.lobachev.annette.application.impl.language.dao.{LanguageCassandraDbDao, LanguageIndexDao}
 import biz.lobachev.annette.core.model.LanguageId
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
 

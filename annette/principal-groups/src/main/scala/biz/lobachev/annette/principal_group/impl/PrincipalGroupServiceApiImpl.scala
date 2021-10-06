@@ -18,7 +18,7 @@ package biz.lobachev.annette.principal_group.impl
 
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.principal_group.api.PrincipalGroupServiceApi
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.principal_group.api.group.{

@@ -36,7 +36,7 @@ private[impl] class HierarchyIndexEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[HierarchyEntity.Event] =
     readSide
-      .builder[HierarchyEntity.Event]("hierarchy-elastic")
+      .builder[HierarchyEntity.Event]("hierarchy-indexing")
       .setGlobalPrepare(indexDao.createEntityIndex)
       .setEventHandler[HierarchyEntity.OrganizationCreated](e => createOrganization(e.event))
       .setEventHandler[HierarchyEntity.UnitCreated](e => createUnit(e.event))

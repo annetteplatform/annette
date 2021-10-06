@@ -37,7 +37,7 @@ import biz.lobachev.annette.authorization.api.role.{
   UpdateRolePayload
 }
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.elastic.FindResult
+import biz.lobachev.annette.core.model.indexing.FindResult
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
