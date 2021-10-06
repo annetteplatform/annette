@@ -16,18 +16,18 @@
 
 package biz.lobachev.annette.principal_group.impl.group
 
-import biz.lobachev.annette.principal_group.impl.group.dao.GroupCassandraDbDao
+import biz.lobachev.annette.principal_group.impl.group.dao.PrincipalGroupCassandraDbDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
 private[impl] class PrincipalGroupDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: GroupCassandraDbDao
+  dbDao: PrincipalGroupCassandraDbDao
 ) extends ReadSideProcessor[PrincipalGroupEntity.Event] {
 
   def buildHandler() =
     readSide
-      .builder[PrincipalGroupEntity.Event]("PrincipalGroup_Group_CasEventOffset")
+      .builder[PrincipalGroupEntity.Event]("principalGroup-cassandra")
       .setGlobalPrepare(dbDao.createTables)
       .setPrepare(_ => dbDao.prepareStatements())
       .setEventHandler[PrincipalGroupEntity.PrincipalGroupCreated](e => dbDao.createPrincipalGroup(e.event))

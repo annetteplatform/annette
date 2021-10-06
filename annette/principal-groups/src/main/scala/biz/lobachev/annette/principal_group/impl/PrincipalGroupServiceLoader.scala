@@ -18,12 +18,12 @@ package biz.lobachev.annette.principal_group.impl
 
 import akka.cluster.sharding.typed.scaladsl.Entity
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
-import biz.lobachev.annette.microservice_core.category.model.CategorySerializerRegistry
-import biz.lobachev.annette.microservice_core.category.{CategoryEntity, CategoryProvider}
-import biz.lobachev.annette.microservice_core.elastic.ElasticModule
+import biz.lobachev.annette.microservice_core.indexing.IndexingModule
 import biz.lobachev.annette.principal_group.api.PrincipalGroupServiceApi
+import biz.lobachev.annette.principal_group.impl.category.model.CategorySerializerRegistry
+import biz.lobachev.annette.principal_group.impl.category.{CategoryEntity, CategoryProvider}
 import biz.lobachev.annette.principal_group.impl.group._
-import biz.lobachev.annette.principal_group.impl.group.dao.{GroupCassandraDbDao, GroupElasticIndexDao}
+import biz.lobachev.annette.principal_group.impl.group.dao.{PrincipalGroupCassandraDbDao, PrincipalGroupIndexDao}
 import biz.lobachev.annette.principal_group.impl.group.model.GroupSerializerRegistry
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaClientComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
@@ -61,13 +61,13 @@ abstract class PrincipalGroupServiceApplication(context: LagomApplicationContext
 
   lazy val jsonSerializerRegistry = PrincipalGroupRepositorySerializerRegistry
 
-  val elasticModule = new ElasticModule(config)
-  import elasticModule._
+  val indexingModule = new IndexingModule()
+  import indexingModule._
 
   override lazy val lagomServer     = serverFor[PrincipalGroupServiceApi](wire[PrincipalGroupServiceApiImpl])
-  lazy val principalGroupElastic    = wire[GroupElasticIndexDao]
+  lazy val principalGroupElastic    = wire[PrincipalGroupIndexDao]
   lazy val principalGroupService    = wire[PrincipalGroupEntityService]
-  lazy val principalGroupRepository = wire[GroupCassandraDbDao]
+  lazy val principalGroupRepository = wire[PrincipalGroupCassandraDbDao]
   readSide.register(wire[PrincipalGroupDbEventProcessor])
   readSide.register(wire[PrincipalGroupIndexEventProcessor])
   clusterSharding.init(
@@ -80,7 +80,7 @@ abstract class PrincipalGroupServiceApplication(context: LagomApplicationContext
     typeKeyName = "Category",
     tableName = "categories",
     dbReadSideId = "category-cassandra",
-    indexName = "principal-groups-category",
+    configPath = "indexing.category-index",
     indexReadSideId = "category-elastic"
   )
 

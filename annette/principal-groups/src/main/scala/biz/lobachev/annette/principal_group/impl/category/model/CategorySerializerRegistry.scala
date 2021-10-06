@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.impl.category.model
+package biz.lobachev.annette.principal_group.impl.category.model
 
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.elastic.FindResult
-import biz.lobachev.annette.persons.impl.category.CategoryEntity._
+import biz.lobachev.annette.principal_group.impl.category.CategoryEntity._
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
 object CategorySerializerRegistry extends JsonSerializerRegistry {

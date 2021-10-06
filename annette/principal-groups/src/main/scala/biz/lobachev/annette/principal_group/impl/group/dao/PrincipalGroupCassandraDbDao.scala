@@ -39,7 +39,7 @@ import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 
-private[impl] class GroupCassandraDbDao(
+private[impl] class PrincipalGroupCassandraDbDao(
   session: CassandraSession
 )(implicit
   ec: ExecutionContext,
