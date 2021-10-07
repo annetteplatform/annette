@@ -18,7 +18,7 @@ package biz.lobachev.annette.persons.impl.category.dao
 
 import akka.Done
 import biz.lobachev.annette.core.model.category.{Category, CategoryId}
-import biz.lobachev.annette.microservice_core.db.CassandraQuillDao
+import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
 import biz.lobachev.annette.persons.impl.category.CategoryEntity
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 import io.scalaland.chimney.dsl._
@@ -40,18 +40,19 @@ class CategoryDbDao(
   println(insertCategoryMeta.toString)
   println(updateCategoryMeta.toString)
 
-  def createTables(): Future[Done] =
+  def createTables(): Future[Done] = {
+    import CassandraTableBuilder.types._
     for {
-      _ <- session.executeCreateTable(s"""
-                                         |CREATE TABLE IF NOT EXISTS categories (
-                                         |          id text PRIMARY KEY,
-                                         |          name text,
-                                         |          updated_at timestamp,
-                                         |          updated_by text,
-                                         |)
-                                         |""".stripMargin)
-
+      _ <- session.executeCreateTable(
+             CassandraTableBuilder("categories")
+               .column("id", Text, true)
+               .column("name", Text)
+               .column("updated_at", Timestamp)
+               .column("updated_by", Text)
+               .build
+           )
     } yield Done
+  }
 
   def createCategory(event: CategoryEntity.CategoryCreated): Future[Done] = {
     val category = event
@@ -67,7 +68,7 @@ class CategoryDbDao(
     ctx.run(categorySchema.filter(_.id == lift(category.id)).update(lift(category)))
   }
 
-  def deleteCategory(event: CategoryEntity.CategoryDeleted) =
+  def deleteCategory(event: CategoryEntity.CategoryDeleted): Future[Done] =
     ctx.run(categorySchema.filter(_.id == lift(event.id)).delete)
 
   def getCategoryById(id: CategoryId): Future[Option[Category]] =

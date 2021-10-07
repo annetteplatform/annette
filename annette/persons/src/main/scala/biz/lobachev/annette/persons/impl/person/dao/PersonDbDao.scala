@@ -18,7 +18,7 @@ package biz.lobachev.annette.persons.impl.person.dao
 
 import akka.Done
 import biz.lobachev.annette.core.model.PersonId
-import biz.lobachev.annette.microservice_core.db.CassandraQuillDao
+import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
 import biz.lobachev.annette.persons.api.person.Person
 import biz.lobachev.annette.persons.impl.person.PersonEntity.{PersonCreated, PersonDeleted, PersonUpdated}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
@@ -39,27 +39,27 @@ private[impl] class PersonDbDao(override val session: CassandraSession)(implicit
   println(insertPersonMeta.toString)
   println(updatePersonMeta.toString)
 
-  def createTables(): Future[Done] =
+  def createTables(): Future[Done] = {
+    import CassandraTableBuilder.types._
     for {
-      _ <- session.executeCreateTable(
-             """
-               |CREATE TABLE IF NOT EXISTS persons (
-               |          id text PRIMARY KEY,
-               |          lastname text,
-               |          firstname text,
-               |          middlename text,
-               |          category_id text,
-               |          phone text,
-               |          email text,
-               |          source text,
-               |          external_id text,
-               |          updated_at timestamp,
-               |          updated_by text,
-               |)
-               |""".stripMargin
-           )
 
+      _ <- session.executeCreateTable(
+             CassandraTableBuilder("persons")
+               .column("id", Text, true)
+               .column("lastname", Text)
+               .column("firstname", Text)
+               .column("middlename", Text)
+               .column("category_id", Text)
+               .column("phone", Text)
+               .column("email", Text)
+               .column("source", Text)
+               .column("external_id", Text)
+               .column("updated_at", Timestamp)
+               .column("updated_by", Text)
+               .build
+           )
     } yield Done
+  }
 
   def createPerson(event: PersonCreated): Future[Done] = {
     val person = event
@@ -75,7 +75,7 @@ private[impl] class PersonDbDao(override val session: CassandraSession)(implicit
     ctx.run(personSchema.filter(_.id == lift(person.id)).update(lift(person)))
   }
 
-  def deletePerson(event: PersonDeleted) =
+  def deletePerson(event: PersonDeleted): Future[Done] =
     ctx.run(personSchema.filter(_.id == lift(event.id)).delete)
 
   def getPersonById(id: PersonId): Future[Option[Person]] =
