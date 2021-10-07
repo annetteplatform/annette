@@ -20,7 +20,7 @@ import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
 import biz.lobachev.annette.cms.api.space.{GetSpaceViewsPayload, _}
-import biz.lobachev.annette.cms.impl.space.dao.{SpaceCassandraDbDao, SpaceIndexDao}
+import biz.lobachev.annette.cms.impl.space.dao.{SpaceDbDao, SpaceIndexDao}
 import biz.lobachev.annette.core.model.indexing.FindResult
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
@@ -30,7 +30,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class SpaceEntityService(
   clusterSharding: ClusterSharding,
-  dbDao: SpaceCassandraDbDao,
+  dbDao: SpaceDbDao,
   indexDao: SpaceIndexDao
 )(implicit
   ec: ExecutionContext

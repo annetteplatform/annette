@@ -27,7 +27,7 @@ import biz.lobachev.annette.cms.impl.post._
 import biz.lobachev.annette.cms.impl.post.dao.{PostCassandraDbDao, PostIndexDao}
 import biz.lobachev.annette.cms.impl.post.model.PostSerializerRegistry
 import biz.lobachev.annette.cms.impl.space._
-import biz.lobachev.annette.cms.impl.space.dao.{SpaceCassandraDbDao, SpaceIndexDao}
+import biz.lobachev.annette.cms.impl.space.dao.{SpaceDbDao, SpaceIndexDao}
 import biz.lobachev.annette.cms.impl.space.model.SpaceSerializerRegistry
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.cms.impl.category.model.CategorySerializerRegistry
@@ -97,7 +97,7 @@ trait CmsComponents
     }
   )
 
-  lazy val wiredSpaceCasRepository     = wire[SpaceCassandraDbDao]
+  lazy val wiredSpaceCasRepository     = wire[SpaceDbDao]
   lazy val wiredSpaceElasticRepository = wire[SpaceIndexDao]
   readSide.register(wire[SpaceDbEventProcessor])
   readSide.register(wire[SpaceIndexEventProcessor])

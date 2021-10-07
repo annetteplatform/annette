@@ -154,7 +154,7 @@ private[impl] class AssignmentCassandraDbDao(session: CassandraSession)(implicit
     } yield result
 
   private def convertToPermissionAssignment(row: Row): PermissionAssignment = {
-    val principal = AnnettePrincipal.fromCode(row.getString("principal")).getOrElse(AnnettePrincipal("", ""))
+    val principal = AnnettePrincipal.fromCode(row.getString("principal"))
     val source    = AuthSource.fromCode(row.getString("source")).getOrElse(AuthSource("", ""))
     PermissionAssignment(
       principal = principal,

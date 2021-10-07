@@ -14,6 +14,7 @@ object Dependencies {
     val logstashEncoder         = "6.4"
     val chimney                 = "0.6.1"
     val pureConfig              = "0.16.0"
+    val quill                   = "3.10.0"
   }
 
   val macwire = "com.softwaremill.macwire" %% "macros" % Version.macwire % "provided"
@@ -44,4 +45,13 @@ object Dependencies {
   val pureConfig = "com.github.pureconfig" %% "pureconfig" % Version.pureConfig
 
   val chimney = "io.scalaland" %% "chimney" % Version.chimney
+
+  val quillCore = "io.getquill" %% "quill-core" % Version.quill
+
+  val quill: Seq[ModuleID] = Seq(
+    quillCore,
+    "io.getquill" %% "quill-cassandra"       % Version.quill,
+    "io.getquill" %% "quill-cassandra-lagom" % Version.quill
+  )
+
 }
