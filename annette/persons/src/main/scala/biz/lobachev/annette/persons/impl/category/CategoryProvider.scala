@@ -27,7 +27,6 @@ import scala.concurrent.ExecutionContext
 
 class CategoryProvider(
   typeKeyName: String,
-  tableName: String,
   dbReadSideId: String,
   configPath: String,
   indexReadSideId: String
@@ -35,14 +34,15 @@ class CategoryProvider(
 
   val typeKey: EntityTypeKey[Command] = EntityTypeKey[Command](typeKeyName)
 
-  def createDbDao(session: CassandraSession, ec: ExecutionContext): dao.CategoryCassandraDbDao =
-    new dao.CategoryCassandraDbDao(session, tableName)(ec)
+  def createDbDao(session: CassandraSession, ec: ExecutionContext): dao.CategoryDbDao =
+    new dao.CategoryDbDao(session)(ec)
 
   def createDbProcessor(
     readSide: CassandraReadSide,
-    dbDao: dao.CategoryCassandraDbDao
+    dbDao: dao.CategoryDbDao,
+    ec: ExecutionContext
   ): CategoryDbEventProcessor =
-    new CategoryDbEventProcessor(readSide, dbDao, dbReadSideId)
+    new CategoryDbEventProcessor(readSide, dbDao, dbReadSideId)(ec)
 
   def createIndexDao(
     elasticClient: ElasticClient,
@@ -59,7 +59,7 @@ class CategoryProvider(
 
   def createEntityService(
     clusterSharding: ClusterSharding,
-    dbDao: dao.CategoryCassandraDbDao,
+    dbDao: dao.CategoryDbDao,
     indexDao: dao.CategoryIndexDao,
     config: Config,
     ec: ExecutionContext,

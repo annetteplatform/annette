@@ -78,7 +78,6 @@ abstract class PersonServiceApplication(context: LagomApplicationContext)
 
   val categoryProvider = new CategoryProvider(
     typeKeyName = "Category",
-    tableName = "categories",
     dbReadSideId = "category-cassandra",
     configPath = "indexing.category-index",
     indexReadSideId = "category-indexing"
