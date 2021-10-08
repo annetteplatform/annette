@@ -20,15 +20,15 @@ import akka.cluster.sharding.typed.scaladsl.Entity
 import akka.stream.Materializer
 import biz.lobachev.annette.application.api._
 import biz.lobachev.annette.application.impl.application._
-import biz.lobachev.annette.application.impl.application.dao.{ApplicationCassandraDbDao, ApplicationIndexDao}
+import biz.lobachev.annette.application.impl.application.dao.{ApplicationDbDao, ApplicationIndexDao}
 import biz.lobachev.annette.application.impl.application.model.ApplicationSerializerRegistry
 import biz.lobachev.annette.application.impl.language._
-import biz.lobachev.annette.application.impl.language.dao.{LanguageCassandraDbDao, LanguageIndexDao}
+import biz.lobachev.annette.application.impl.language.dao.{LanguageDbDao, LanguageIndexDao}
 import biz.lobachev.annette.application.impl.language.model.LanguageSerializerRegistry
 import biz.lobachev.annette.application.impl.translation._
-import biz.lobachev.annette.application.impl.translation.dao.{TranslationCassandraDbDao, TranslationIndexDao}
+import biz.lobachev.annette.application.impl.translation.dao.{TranslationDbDao, TranslationIndexDao}
 import biz.lobachev.annette.application.impl.translation.model.TranslationSerializerRegistry
-import biz.lobachev.annette.application.impl.translation_json.dao.TranslationJsonCassandraDbDao
+import biz.lobachev.annette.application.impl.translation_json.dao.TranslationJsonDbDao
 import biz.lobachev.annette.application.impl.translation_json.model.TranslationJsonSerializerRegistry
 import biz.lobachev.annette.application.impl.translation_json.{
   TranslationJsonDbEventProcessor,
@@ -85,7 +85,7 @@ trait ApplicationComponents
 
   lazy val jsonSerializerRegistry = ApplicationServiceSerializerRegistry
 
-  lazy val wiredLanguageCasRepository = wire[LanguageCassandraDbDao]
+  lazy val wiredLanguageCasRepository = wire[LanguageDbDao]
   lazy val wiredLanguageIndexDao      = wire[LanguageIndexDao]
   readSide.register(wire[LanguageDbEventProcessor])
   readSide.register(wire[LanguageIndexEventProcessor])
@@ -96,7 +96,7 @@ trait ApplicationComponents
     }
   )
 
-  lazy val wiredTranslationCasRepository = wire[TranslationCassandraDbDao]
+  lazy val wiredTranslationCasRepository = wire[TranslationDbDao]
   lazy val wiredTranslationIndexDao      = wire[TranslationIndexDao]
   readSide.register(wire[TranslationDbEventProcessor])
   readSide.register(wire[TranslationIndexEventProcessor])
@@ -107,7 +107,7 @@ trait ApplicationComponents
     }
   )
 
-  lazy val wiredTranslationJsonCasRepository = wire[TranslationJsonCassandraDbDao]
+  lazy val wiredTranslationJsonCasRepository = wire[TranslationJsonDbDao]
   readSide.register(wire[TranslationJsonDbEventProcessor])
   lazy val wiredTranslationJsonEntityService = wire[TranslationJsonEntityService]
   clusterSharding.init(
@@ -116,7 +116,7 @@ trait ApplicationComponents
     }
   )
 
-  lazy val wiredApplicationCassandraDbDao = wire[ApplicationCassandraDbDao]
+  lazy val wiredApplicationCassandraDbDao = wire[ApplicationDbDao]
   lazy val wiredApplicationIndexDao       = wire[ApplicationIndexDao]
   readSide.register(wire[ApplicationDbEventProcessor])
   readSide.register(wire[ApplicationIndexEventProcessor])

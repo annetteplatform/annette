@@ -17,46 +17,29 @@
 package biz.lobachev.annette.application.impl.application
 
 import biz.lobachev.annette.application.impl.application.dao.ApplicationIndexDao
-import com.datastax.driver.core.BoundStatement
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
-import org.slf4j.LoggerFactory
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 private[impl] class ApplicationIndexEventProcessor(
   readSide: CassandraReadSide,
   indexDao: ApplicationIndexDao
 )(implicit
   ec: ExecutionContext
-) extends ReadSideProcessor[ApplicationEntity.Event] {
-
-  val log = LoggerFactory.getLogger(this.getClass)
+) extends ReadSideProcessor[ApplicationEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[ApplicationEntity.Event] =
     readSide
       .builder[ApplicationEntity.Event]("application-indexing")
       .setGlobalPrepare(indexDao.createEntityIndex)
-      .setEventHandler[ApplicationEntity.ApplicationCreated](e => createApplication(e.event))
-      .setEventHandler[ApplicationEntity.ApplicationNameUpdated](e => updateApplicationName(e.event))
-      .setEventHandler[ApplicationEntity.ApplicationDeleted](e => deleteApplication(e.event))
+      .setEventHandler[ApplicationEntity.ApplicationCreated](handle(indexDao.createApplication))
+      .setEventHandler[ApplicationEntity.ApplicationNameUpdated](handle(indexDao.updateApplicationName))
+      .setEventHandler[ApplicationEntity.ApplicationDeleted](handle(indexDao.deleteApplication))
       .build()
 
   def aggregateTags: Set[AggregateEventTag[ApplicationEntity.Event]] = ApplicationEntity.Event.Tag.allTags
-
-  def createApplication(event: ApplicationEntity.ApplicationCreated): Future[Seq[BoundStatement]] =
-    indexDao
-      .createApplication(event)
-      .map(_ => Seq.empty)
-
-  def updateApplicationName(event: ApplicationEntity.ApplicationNameUpdated): Future[Seq[BoundStatement]] =
-    indexDao
-      .updateApplicationName(event)
-      .map(_ => Seq.empty)
-
-  def deleteApplication(event: ApplicationEntity.ApplicationDeleted): Future[Seq[BoundStatement]] =
-    indexDao
-      .deleteApplication(event)
-      .map(_ => Seq.empty)
 
 }

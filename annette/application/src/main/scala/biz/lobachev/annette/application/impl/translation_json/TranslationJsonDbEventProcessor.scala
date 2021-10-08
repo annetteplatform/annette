@@ -16,48 +16,29 @@
 
 package biz.lobachev.annette.application.impl.translation_json
 
-import akka.Done
-import biz.lobachev.annette.application.impl.translation_json.dao.TranslationJsonCassandraDbDao
-import com.datastax.driver.core.BoundStatement
+import biz.lobachev.annette.application.impl.translation_json.dao.TranslationJsonDbDao
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
-import org.slf4j.LoggerFactory
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 private[impl] class TranslationJsonDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: TranslationJsonCassandraDbDao
+  dbDao: TranslationJsonDbDao
 )(implicit
   ec: ExecutionContext
-) extends ReadSideProcessor[TranslationJsonEntity.Event] {
-
-  val log = LoggerFactory.getLogger(this.getClass)
+) extends ReadSideProcessor[TranslationJsonEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[TranslationJsonEntity.Event] =
     readSide
       .builder[TranslationJsonEntity.Event]("translationJson-cassandra")
-      .setGlobalPrepare(globalPrepare)
-      .setPrepare(_ => dbDao.prepareStatements())
-      .setEventHandler[TranslationJsonEntity.TranslationJsonUpdated](e => updateTranslationJson(e.event))
-      .setEventHandler[TranslationJsonEntity.TranslationJsonDeleted](e => deleteTranslationJson(e.event))
+      .setGlobalPrepare(dbDao.createTables)
+      .setEventHandler[TranslationJsonEntity.TranslationJsonUpdated](handle(dbDao.updateTranslationJson))
+      .setEventHandler[TranslationJsonEntity.TranslationJsonDeleted](handle(dbDao.deleteTranslationJson))
       .build()
 
   def aggregateTags: Set[AggregateEventTag[TranslationJsonEntity.Event]] = TranslationJsonEntity.Event.Tag.allTags
-
-  def globalPrepare(): Future[Done] =
-    dbDao
-      .createTables()
-      .map(_ => Done)
-
-  def updateTranslationJson(event: TranslationJsonEntity.TranslationJsonUpdated): Future[Seq[BoundStatement]] =
-    Future.successful(
-      dbDao.updateTranslationJson(event)
-    )
-
-  def deleteTranslationJson(event: TranslationJsonEntity.TranslationJsonDeleted): Future[Seq[BoundStatement]] =
-    Future.successful(
-      dbDao.deleteTranslationJson(event)
-    )
 
 }

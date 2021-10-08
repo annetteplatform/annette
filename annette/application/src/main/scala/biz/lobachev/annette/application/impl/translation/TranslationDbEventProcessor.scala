@@ -16,54 +16,29 @@
 
 package biz.lobachev.annette.application.impl.translation
 
-import akka.Done
-import biz.lobachev.annette.application.impl.translation.dao.TranslationCassandraDbDao
-import com.datastax.driver.core.BoundStatement
+import biz.lobachev.annette.application.impl.translation.dao.TranslationDbDao
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
-import org.slf4j.LoggerFactory
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 private[impl] class TranslationDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: TranslationCassandraDbDao
+  dbDao: TranslationDbDao
 )(implicit
   ec: ExecutionContext
-) extends ReadSideProcessor[TranslationEntity.Event] {
-
-  val log = LoggerFactory.getLogger(this.getClass)
+) extends ReadSideProcessor[TranslationEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[TranslationEntity.Event] =
     readSide
       .builder[TranslationEntity.Event]("translation-cassandra")
-      .setGlobalPrepare(globalPrepare)
-      .setPrepare(_ => dbDao.prepareStatements())
-      .setEventHandler[TranslationEntity.TranslationCreated](e => createTranslation(e.event))
-      .setEventHandler[TranslationEntity.TranslationUpdated](e => updateTranslation(e.event))
-      .setEventHandler[TranslationEntity.TranslationDeleted](e => deleteTranslation(e.event))
+      .setGlobalPrepare(dbDao.createTables)
+      .setEventHandler[TranslationEntity.TranslationUpdated](handle(dbDao.updateTranslation))
+      .setEventHandler[TranslationEntity.TranslationCreated](handle(dbDao.createTranslation))
+      .setEventHandler[TranslationEntity.TranslationDeleted](handle(dbDao.deleteTranslation))
       .build()
 
   def aggregateTags: Set[AggregateEventTag[TranslationEntity.Event]] = TranslationEntity.Event.Tag.allTags
-
-  def globalPrepare(): Future[Done] =
-    dbDao
-      .createTables()
-      .map(_ => Done)
-
-  def createTranslation(event: TranslationEntity.TranslationCreated): Future[Seq[BoundStatement]] =
-    Future.successful(
-      dbDao.createTranslation(event)
-    )
-
-  def updateTranslation(event: TranslationEntity.TranslationUpdated): Future[Seq[BoundStatement]] =
-    Future.successful(
-      dbDao.updateTranslation(event)
-    )
-
-  def deleteTranslation(event: TranslationEntity.TranslationDeleted): Future[Seq[BoundStatement]] =
-    Future.successful(
-      dbDao.deleteTranslation(event)
-    )
-
 }

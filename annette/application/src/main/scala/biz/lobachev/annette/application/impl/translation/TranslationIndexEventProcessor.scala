@@ -16,53 +16,29 @@
 
 package biz.lobachev.annette.application.impl.translation
 
-import akka.Done
-import biz.lobachev.annette.application.impl.translation.dao.{TranslationIndexDao}
-import com.datastax.driver.core.BoundStatement
+import biz.lobachev.annette.application.impl.translation.dao.TranslationIndexDao
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
-import org.slf4j.LoggerFactory
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 private[impl] class TranslationIndexEventProcessor(
   readSide: CassandraReadSide,
   indexDao: TranslationIndexDao
 )(implicit
   ec: ExecutionContext
-) extends ReadSideProcessor[TranslationEntity.Event] {
-
-  val log = LoggerFactory.getLogger(this.getClass)
+) extends ReadSideProcessor[TranslationEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[TranslationEntity.Event] =
     readSide
       .builder[TranslationEntity.Event]("translation-indexing")
-      .setGlobalPrepare(globalPrepare)
-      .setEventHandler[TranslationEntity.TranslationCreated](e => createTranslation(e.event))
-      .setEventHandler[TranslationEntity.TranslationUpdated](e => updateTranslation(e.event))
-      .setEventHandler[TranslationEntity.TranslationDeleted](e => deleteTranslation(e.event))
+      .setGlobalPrepare(indexDao.createEntityIndex)
+      .setEventHandler[TranslationEntity.TranslationCreated](handle(indexDao.createTranslation))
+      .setEventHandler[TranslationEntity.TranslationUpdated](handle(indexDao.updateTranslation))
+      .setEventHandler[TranslationEntity.TranslationDeleted](handle(indexDao.deleteTranslation))
       .build()
 
   def aggregateTags: Set[AggregateEventTag[TranslationEntity.Event]] = TranslationEntity.Event.Tag.allTags
-
-  def globalPrepare(): Future[Done] =
-    indexDao
-      .createEntityIndex()
-      .map(_ => Done)
-
-  def createTranslation(event: TranslationEntity.TranslationCreated): Future[Seq[BoundStatement]] =
-    indexDao
-      .createTranslation(event)
-      .map(_ => Seq.empty)
-
-  def updateTranslation(event: TranslationEntity.TranslationUpdated): Future[Seq[BoundStatement]] =
-    indexDao
-      .updateTranslation(event)
-      .map(_ => Seq.empty)
-
-  def deleteTranslation(event: TranslationEntity.TranslationDeleted): Future[Seq[BoundStatement]] =
-    indexDao
-      .deleteTranslation(event)
-      .map(_ => Seq.empty)
-
 }

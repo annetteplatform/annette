@@ -18,7 +18,7 @@ package biz.lobachev.annette.microservice_core.db
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import io.getquill.MappedEncoding
-//import play.api.libs.json.{Json, Reads, Writes}
+import play.api.libs.json.{Json, Reads, Writes}
 
 import java.time.{OffsetDateTime, ZoneOffset}
 import java.util.Date
@@ -36,12 +36,12 @@ trait QuillEncoders {
   implicit val principalDecoder: MappedEncoding[String, AnnettePrincipal] =
     MappedEncoding[String, AnnettePrincipal](AnnettePrincipal.fromCode)
 
-//  def genericJsonEncoder[T](implicit writes: Writes[T]): MappedEncoding[T, String] =
-//    MappedEncoding[T, String](t => Json.toJson(t).toString())
-//
-//  def genericJsonDecoder[T](implicit reads: Reads[T]): MappedEncoding[String, T] =
-//    MappedEncoding[String, T](string => Json.parse(string).validate[T].get)
-//
+  def genericJsonEncoder[T](implicit writes: Writes[T]): MappedEncoding[T, String] =
+    MappedEncoding[T, String](t => Json.toJson(t).toString())
+
+  def genericJsonDecoder[T](implicit reads: Reads[T]): MappedEncoding[String, T] =
+    MappedEncoding[String, T](string => Json.parse(string).validate[T].get)
+
 //  def genericStringEncoder[T]: MappedEncoding[T, String] = MappedEncoding[T, String](_.toString)
 //
 //  def genericStringDecoder[T](d: String => T): MappedEncoding[String, T] = MappedEncoding[String, T](d)
