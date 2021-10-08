@@ -22,7 +22,7 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.stream.Materializer
 import akka.util.Timeout
 import biz.lobachev.annette.authorization.api.assignment._
-import biz.lobachev.annette.authorization.impl.assignment.dao.{AssignmentCassandraDbDao, AssignmentIndexDao}
+import biz.lobachev.annette.authorization.impl.assignment.dao.{AssignmentDbDao, AssignmentIndexDao}
 import com.typesafe.config.Config
 
 import scala.concurrent.duration._
@@ -31,7 +31,7 @@ import scala.util.Try
 
 class AssignmentEntityService(
   clusterSharding: ClusterSharding,
-  dbDao: AssignmentCassandraDbDao,
+  dbDao: AssignmentDbDao,
   indexDao: AssignmentIndexDao,
   config: Config
 )(implicit

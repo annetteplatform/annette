@@ -16,38 +16,28 @@
 
 package biz.lobachev.annette.authorization.impl.assignment
 
-import biz.lobachev.annette.authorization.impl.assignment.dao.{AssignmentIndexDao}
-import com.datastax.driver.core.BoundStatement
+import biz.lobachev.annette.authorization.impl.assignment.dao.AssignmentIndexDao
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 private[impl] class AssignmentEntityIndexEventProcessor(
   readSide: CassandraReadSide,
   indexDao: AssignmentIndexDao
 )(implicit
   ec: ExecutionContext
-) extends ReadSideProcessor[AssignmentEntity.Event] {
+) extends ReadSideProcessor[AssignmentEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[AssignmentEntity.Event] =
     readSide
       .builder[AssignmentEntity.Event]("assignment-indexing")
       .setGlobalPrepare(indexDao.createEntityIndex)
-      .setEventHandler[AssignmentEntity.PermissionAssigned](e => assignPermission(e.event))
-      .setEventHandler[AssignmentEntity.PermissionUnassigned](e => unassignPermission(e.event))
+      .setEventHandler[AssignmentEntity.PermissionAssigned](handle(indexDao.assignPermission))
+      .setEventHandler[AssignmentEntity.PermissionUnassigned](handle(indexDao.unassignPermission))
       .build()
 
   def aggregateTags: Set[AggregateEventTag[AssignmentEntity.Event]] = AssignmentEntity.Event.Tag.allTags
-
-  def assignPermission(event: AssignmentEntity.PermissionAssigned): Future[Seq[BoundStatement]] =
-    for {
-      _ <- indexDao.assignPermission(event)
-    } yield List.empty
-
-  def unassignPermission(event: AssignmentEntity.PermissionUnassigned): Future[Seq[BoundStatement]] =
-    for {
-      _ <- indexDao.unassignPermission(event)
-    } yield List.empty
-
 }

@@ -28,12 +28,11 @@ case class AuthSource(
 object AuthSource {
   implicit val format = Json.format[AuthSource]
 
-  def fromCode(code: String): Option[AuthSource] = {
+  def fromCode(code: String): AuthSource = {
     val arr = code.split("~")
-    if (arr.length == 2) {
-      Some(AuthSource(arr(0), arr(1)))
-    } else {
-      None
-    }
+    if (arr.length == 2)
+      AuthSource(arr(0), arr(1))
+    else
+      AuthSource(code, "")
   }
 }

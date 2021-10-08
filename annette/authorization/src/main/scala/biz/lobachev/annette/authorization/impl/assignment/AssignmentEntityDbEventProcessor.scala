@@ -16,41 +16,28 @@
 
 package biz.lobachev.annette.authorization.impl.assignment
 
-import biz.lobachev.annette.authorization.impl.assignment.dao.AssignmentCassandraDbDao
-import com.datastax.driver.core.BoundStatement
+import biz.lobachev.annette.authorization.impl.assignment.dao.AssignmentDbDao
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
 private[impl] class AssignmentEntityDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: AssignmentCassandraDbDao
-) extends ReadSideProcessor[AssignmentEntity.Event] {
+  dbDao: AssignmentDbDao
+)(implicit
+  ec: ExecutionContext
+) extends ReadSideProcessor[AssignmentEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[AssignmentEntity.Event] =
     readSide
       .builder[AssignmentEntity.Event]("assignment-cassandra")
       .setGlobalPrepare(dbDao.createTables)
-      .setPrepare(_ => dbDao.prepareStatements())
-      .setEventHandler[AssignmentEntity.PermissionAssigned](e => assignPermission(e.event))
-      .setEventHandler[AssignmentEntity.PermissionUnassigned](e => unassignPermission(e.event))
+      .setEventHandler[AssignmentEntity.PermissionAssigned](handle(dbDao.assignPermission))
+      .setEventHandler[AssignmentEntity.PermissionUnassigned](handle(dbDao.unassignPermission))
       .build()
 
   def aggregateTags: Set[AggregateEventTag[AssignmentEntity.Event]] = AssignmentEntity.Event.Tag.allTags
-
-  def assignPermission(event: AssignmentEntity.PermissionAssigned): Future[Seq[BoundStatement]] =
-    Future.successful(
-      List(
-        dbDao.assignPermission(event)
-      )
-    )
-
-  def unassignPermission(event: AssignmentEntity.PermissionUnassigned): Future[Seq[BoundStatement]] =
-    Future.successful(
-      List(
-        dbDao.unassignPermission(event)
-      )
-    )
-
 }

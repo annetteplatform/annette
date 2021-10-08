@@ -19,7 +19,7 @@ package biz.lobachev.annette.authorization.impl
 import akka.cluster.sharding.typed.scaladsl.Entity
 import biz.lobachev.annette.authorization.api._
 import biz.lobachev.annette.authorization.impl.assignment._
-import biz.lobachev.annette.authorization.impl.assignment.dao.{AssignmentCassandraDbDao, AssignmentIndexDao}
+import biz.lobachev.annette.authorization.impl.assignment.dao.{AssignmentDbDao, AssignmentIndexDao}
 import biz.lobachev.annette.authorization.impl.assignment.model.AssignmentSerializerRegistry
 import biz.lobachev.annette.authorization.impl.role._
 import biz.lobachev.annette.authorization.impl.role.dao.{RoleCassandraDbDao, RoleIndexDao}
@@ -80,7 +80,7 @@ abstract class AuthorizationServiceApplication(context: LagomApplicationContext)
   )
 
   lazy val wiredAssignmentElastic       = wire[AssignmentIndexDao]
-  lazy val wiredAssignmentRepository    = wire[AssignmentCassandraDbDao]
+  lazy val wiredAssignmentRepository    = wire[AssignmentDbDao]
   readSide.register(wire[AssignmentEntityDbEventProcessor])
   readSide.register(wire[AssignmentEntityIndexEventProcessor])
   lazy val wiredAssignmentEntityService = wire[AssignmentEntityService]
