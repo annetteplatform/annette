@@ -4,7 +4,7 @@ import biz.lobachev.annette.authorization.api.assignment.{AuthSource, Permission
 import biz.lobachev.annette.core.model.PermissionId
 import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
 
-case class AssignmentTable(
+case class AssignmentRecord(
   principal: AnnettePrincipal,
   permissionId: PermissionId,
   arg1: String = "",
@@ -25,9 +25,9 @@ case class AssignmentTable(
     )
 }
 
-object AssignmentTable {
-  def apply(principal: AnnettePrincipal, permission: Permission, source: AuthSource): AssignmentTable =
-    AssignmentTable(
+object AssignmentRecord {
+  def apply(principal: AnnettePrincipal, permission: Permission, source: AuthSource): AssignmentRecord =
+    AssignmentRecord(
       principal,
       permission.id,
       permission.arg1,

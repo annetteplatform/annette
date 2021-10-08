@@ -33,12 +33,12 @@ private[impl] class AssignmentDbDao(
 
   import ctx._
 
-  private val schema = quote(querySchema[AssignmentTable]("permission_assignments"))
+  private val schema = quote(querySchema[AssignmentRecord]("permission_assignments"))
 
   private implicit val sourceEncoder: MappedEncoding[AuthSource, String] = MappedEncoding[AuthSource, String](_.code)
   private implicit val sourceDecoder: MappedEncoding[String, AuthSource] =
     MappedEncoding[String, AuthSource](AuthSource.fromCode)
-  private implicit val insertEntityMeta                                  = insertMeta[AssignmentTable]()
+  private implicit val insertEntityMeta                                  = insertMeta[AssignmentRecord]()
   println(sourceEncoder.toString)
   println(sourceDecoder.toString)
   println(insertEntityMeta.toString)
@@ -61,7 +61,7 @@ private[impl] class AssignmentDbDao(
   }
 
   def assignPermission(event: AssignmentEntity.PermissionAssigned) = {
-    val entity = AssignmentTable(event.principal, event.permission, event.source)
+    val entity = AssignmentRecord(event.principal, event.permission, event.source)
     ctx.run(schema.insert(lift(entity)))
   }
 
@@ -120,6 +120,6 @@ private[impl] class AssignmentDbDao(
               liftQuery(payload.permissionIds).contains(e.permissionId)
           )
       )
-      .map(_.toSet.map((r: AssignmentTable) => r.toPermissionAssignment))
+      .map(_.toSet.map((r: AssignmentRecord) => r.toPermissionAssignment))
 
 }

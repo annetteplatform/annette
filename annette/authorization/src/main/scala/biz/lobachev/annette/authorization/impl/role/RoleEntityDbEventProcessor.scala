@@ -16,45 +16,31 @@
 
 package biz.lobachev.annette.authorization.impl.role
 
-import biz.lobachev.annette.authorization.impl.role.dao.RoleCassandraDbDao
-import com.datastax.driver.core.BoundStatement
+import biz.lobachev.annette.authorization.impl.role.dao.RoleDbDao
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
 private[impl] class RoleEntityDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: RoleCassandraDbDao
-) extends ReadSideProcessor[RoleEntity.Event] {
+  dbDao: RoleDbDao
+)(implicit
+  ec: ExecutionContext
+) extends ReadSideProcessor[RoleEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[RoleEntity.Event] =
     readSide
       .builder[RoleEntity.Event]("role-cassandra")
       .setGlobalPrepare(dbDao.createTables)
-      .setPrepare(_ => dbDao.prepareStatements())
-      .setEventHandler[RoleEntity.RoleCreated](e => createRole(e.event))
-      .setEventHandler[RoleEntity.RoleUpdated](e => updateRole(e.event))
-      .setEventHandler[RoleEntity.RoleDeleted](e => deleteRole(e.event))
-      .setEventHandler[RoleEntity.PrincipalAssigned](e => assignPrincipal(e.event))
-      .setEventHandler[RoleEntity.PrincipalUnassigned](e => unassignPrincipal(e.event))
+      .setEventHandler[RoleEntity.RoleCreated](handle(dbDao.createRole))
+      .setEventHandler[RoleEntity.RoleUpdated](handle(dbDao.updateRole))
+      .setEventHandler[RoleEntity.RoleDeleted](handle(dbDao.deleteRole))
+      .setEventHandler[RoleEntity.PrincipalAssigned](handle(dbDao.assignPrincipal))
+      .setEventHandler[RoleEntity.PrincipalUnassigned](handle(dbDao.unassignPrincipal))
       .build()
 
   def aggregateTags: Set[AggregateEventTag[RoleEntity.Event]] = RoleEntity.Event.Tag.allTags
-
-  def createRole(event: RoleEntity.RoleCreated): Future[Seq[BoundStatement]] =
-    Future.successful(dbDao.createRole(event))
-
-  def updateRole(event: RoleEntity.RoleUpdated): Future[Seq[BoundStatement]] =
-    Future.successful(dbDao.updateRole(event))
-
-  def deleteRole(event: RoleEntity.RoleDeleted): Future[Seq[BoundStatement]] =
-    Future.successful(dbDao.deleteRole(event))
-
-  def assignPrincipal(event: RoleEntity.PrincipalAssigned): Future[Seq[BoundStatement]] =
-    Future.successful(dbDao.assignPrincipal(event))
-
-  def unassignPrincipal(event: RoleEntity.PrincipalUnassigned): Future[Seq[BoundStatement]] =
-    Future.successful(dbDao.unassignPrincipal(event))
-
 }

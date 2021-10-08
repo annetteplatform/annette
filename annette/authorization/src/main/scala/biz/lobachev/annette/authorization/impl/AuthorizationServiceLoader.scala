@@ -22,7 +22,7 @@ import biz.lobachev.annette.authorization.impl.assignment._
 import biz.lobachev.annette.authorization.impl.assignment.dao.{AssignmentDbDao, AssignmentIndexDao}
 import biz.lobachev.annette.authorization.impl.assignment.model.AssignmentSerializerRegistry
 import biz.lobachev.annette.authorization.impl.role._
-import biz.lobachev.annette.authorization.impl.role.dao.{RoleCassandraDbDao, RoleIndexDao}
+import biz.lobachev.annette.authorization.impl.role.dao.{RoleDbDao, RoleIndexDao}
 import biz.lobachev.annette.authorization.impl.role.model.RoleSerializerRegistry
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
@@ -68,7 +68,7 @@ abstract class AuthorizationServiceApplication(context: LagomApplicationContext)
   override lazy val lagomServer = serverFor[AuthorizationServiceApi](wire[AuthorizationServiceApiImpl])
 
   lazy val wiredRoleElastic       = wire[RoleIndexDao]
-  lazy val wiredRoleRepository    = wire[RoleCassandraDbDao]
+  lazy val wiredRoleRepository    = wire[RoleDbDao]
   readSide.register(wire[RoleEntityIndexEventProcessor])
   readSide.register(wire[RoleEntityDbEventProcessor])
   readSide.register(wire[RoleEntityAssigmentEventProcessor])
