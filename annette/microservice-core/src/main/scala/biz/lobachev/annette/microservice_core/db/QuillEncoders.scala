@@ -42,8 +42,8 @@ trait QuillEncoders {
   def genericJsonDecoder[T](implicit reads: Reads[T]): MappedEncoding[String, T] =
     MappedEncoding[String, T](string => Json.parse(string).validate[T].get)
 
-//  def genericStringEncoder[T]: MappedEncoding[T, String] = MappedEncoding[T, String](_.toString)
-//
-//  def genericStringDecoder[T](d: String => T): MappedEncoding[String, T] = MappedEncoding[String, T](d)
+  def genericStringEncoder[T]: MappedEncoding[T, String] = MappedEncoding[T, String](_.toString)
+
+  def genericStringDecoder[T](d: String => T): MappedEncoding[String, T] = MappedEncoding[String, T](d)
 
 }

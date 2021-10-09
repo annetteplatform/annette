@@ -20,7 +20,6 @@ import biz.lobachev.annette.cms.impl.space.dao.SpaceDbDao
 import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
-import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
 
@@ -31,13 +30,10 @@ private[impl] class SpaceDbEventProcessor(
     extends ReadSideProcessor[SpaceEntity.Event]
     with SimpleEventHandling {
 
-  val log = LoggerFactory.getLogger(this.getClass)
-
   def buildHandler(): ReadSideProcessor.ReadSideHandler[SpaceEntity.Event] =
     readSide
       .builder[SpaceEntity.Event]("cms-space-cas")
-      .setGlobalPrepare(() => dbDao.createTables())
-      .setPrepare(_ => dbDao.prepareStatements())
+      .setGlobalPrepare(dbDao.createTables)
       .setEventHandler[SpaceEntity.SpaceCreated](handle(dbDao.createSpace))
       .setEventHandler[SpaceEntity.SpaceNameUpdated](handle(dbDao.updateSpaceName))
       .setEventHandler[SpaceEntity.SpaceDescriptionUpdated](handle(dbDao.updateSpaceDescription))

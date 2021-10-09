@@ -17,82 +17,34 @@
 package biz.lobachev.annette.cms.impl.space
 
 import biz.lobachev.annette.cms.impl.space.dao.SpaceIndexDao
-import com.datastax.driver.core.BoundStatement
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
-import org.slf4j.LoggerFactory
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext}
 
 private[impl] class SpaceIndexEventProcessor(
   readSide: CassandraReadSide,
-  elasticRepository: SpaceIndexDao
-)(implicit
-  ec: ExecutionContext
-) extends ReadSideProcessor[SpaceEntity.Event] {
-
-  val log = LoggerFactory.getLogger(this.getClass)
+  indexDao: SpaceIndexDao
+)(implicit ec: ExecutionContext)
+    extends ReadSideProcessor[SpaceEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[SpaceEntity.Event] =
     readSide
       .builder[SpaceEntity.Event]("cms-space-index")
-      .setGlobalPrepare(elasticRepository.createEntityIndex)
-      .setEventHandler[SpaceEntity.SpaceCreated](e => createSpace(e.event))
-      .setEventHandler[SpaceEntity.SpaceNameUpdated](e => updateSpaceName(e.event))
-      .setEventHandler[SpaceEntity.SpaceDescriptionUpdated](e => updateSpaceDescription(e.event))
-      .setEventHandler[SpaceEntity.SpaceCategoryUpdated](e => updateSpaceCategory(e.event))
-      .setEventHandler[SpaceEntity.SpaceTargetPrincipalAssigned](e => assignSpaceTargetPrincipal(e.event))
-      .setEventHandler[SpaceEntity.SpaceTargetPrincipalUnassigned](e => unassignSpaceTargetPrincipal(e.event))
-      .setEventHandler[SpaceEntity.SpaceActivated](e => activateSpace(e.event))
-      .setEventHandler[SpaceEntity.SpaceDeactivated](e => deactivateSpace(e.event))
-      .setEventHandler[SpaceEntity.SpaceDeleted](e => deleteSpace(e.event))
+      .setGlobalPrepare(indexDao.createEntityIndex)
+      .setEventHandler[SpaceEntity.SpaceCreated](handle(indexDao.createSpace))
+      .setEventHandler[SpaceEntity.SpaceNameUpdated](handle(indexDao.updateSpaceName))
+      .setEventHandler[SpaceEntity.SpaceDescriptionUpdated](handle(indexDao.updateSpaceDescription))
+      .setEventHandler[SpaceEntity.SpaceCategoryUpdated](handle(indexDao.updateSpaceCategory))
+      .setEventHandler[SpaceEntity.SpaceTargetPrincipalAssigned](handle(indexDao.assignSpaceTargetPrincipal))
+      .setEventHandler[SpaceEntity.SpaceTargetPrincipalUnassigned](handle(indexDao.unassignSpaceTargetPrincipal))
+      .setEventHandler[SpaceEntity.SpaceActivated](handle(indexDao.activateSpace))
+      .setEventHandler[SpaceEntity.SpaceDeactivated](handle(indexDao.deactivateSpace))
+      .setEventHandler[SpaceEntity.SpaceDeleted](handle(indexDao.deleteSpace))
       .build()
 
   def aggregateTags: Set[AggregateEventTag[SpaceEntity.Event]] = SpaceEntity.Event.Tag.allTags
-
-  def createSpace(event: SpaceEntity.SpaceCreated): Future[Seq[BoundStatement]] =
-    elasticRepository
-      .createSpace(event)
-      .map(_ => Seq.empty)
-
-  def updateSpaceName(event: SpaceEntity.SpaceNameUpdated): Future[Seq[BoundStatement]] =
-    elasticRepository
-      .updateSpaceName(event)
-      .map(_ => Seq.empty)
-
-  def updateSpaceDescription(event: SpaceEntity.SpaceDescriptionUpdated): Future[Seq[BoundStatement]] =
-    elasticRepository
-      .updateSpaceDescription(event)
-      .map(_ => Seq.empty)
-
-  def updateSpaceCategory(event: SpaceEntity.SpaceCategoryUpdated): Future[Seq[BoundStatement]] =
-    elasticRepository
-      .updateSpaceCategory(event)
-      .map(_ => Seq.empty)
-
-  def assignSpaceTargetPrincipal(event: SpaceEntity.SpaceTargetPrincipalAssigned): Future[Seq[BoundStatement]] =
-    elasticRepository
-      .assignSpaceTargetPrincipal(event)
-      .map(_ => Seq.empty)
-
-  def unassignSpaceTargetPrincipal(event: SpaceEntity.SpaceTargetPrincipalUnassigned): Future[Seq[BoundStatement]] =
-    elasticRepository
-      .unassignSpaceTargetPrincipal(event)
-      .map(_ => Seq.empty)
-
-  def activateSpace(event: SpaceEntity.SpaceActivated): Future[Seq[BoundStatement]] =
-    elasticRepository
-      .activateSpace(event)
-      .map(_ => Seq.empty)
-
-  def deactivateSpace(event: SpaceEntity.SpaceDeactivated): Future[Seq[BoundStatement]] =
-    elasticRepository
-      .deactivateSpace(event)
-      .map(_ => Seq.empty)
-
-  def deleteSpace(event: SpaceEntity.SpaceDeleted): Future[Seq[BoundStatement]] =
-    elasticRepository
-      .deleteSpace(event)
-      .map(_ => Seq.empty)
 
 }

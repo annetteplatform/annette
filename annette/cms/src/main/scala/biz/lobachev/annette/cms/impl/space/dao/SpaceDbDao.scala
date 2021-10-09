@@ -19,378 +19,238 @@ package biz.lobachev.annette.cms.impl.space.dao
 import akka.Done
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
+import biz.lobachev.annette.cms.api.space.SpaceType.SpaceType
 import biz.lobachev.annette.cms.api.space._
 import biz.lobachev.annette.cms.impl.space.SpaceEntity
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.microservice_core.db.CassandraDao
-import com.datastax.driver.core.{PreparedStatement, Row}
+import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
-import org.slf4j.LoggerFactory
+import io.scalaland.chimney.dsl._
 
-import java.time.OffsetDateTime
 import scala.collection.immutable.{Seq, _}
 import scala.concurrent.{ExecutionContext, Future}
-import scala.jdk.CollectionConverters._
 
 private[impl] class SpaceDbDao(
   override val session: CassandraSession
 )(implicit
-  override val ec: ExecutionContext,
-  override val materializer: Materializer
-) extends CassandraDao {
+  val ec: ExecutionContext,
+  val materializer: Materializer
+) extends CassandraQuillDao {
 
-  val log = LoggerFactory.getLogger(this.getClass)
+  import ctx._
 
-  private var createSpaceStatement: PreparedStatement                  = _
-  private var updateSpaceNameStatement: PreparedStatement              = _
-  private var updateSpaceDescriptionStatement: PreparedStatement       = _
-  private var updateSpaceCategoryStatement: PreparedStatement          = _
-  private var updateSpaceTimestampStatement: PreparedStatement         = _
-  private var assignSpaceTargetPrincipalStatement: PreparedStatement   = _
-  private var unassignSpaceTargetPrincipalStatement: PreparedStatement = _
-  private var activateSpaceStatement: PreparedStatement                = _
-  private var deactivateSpaceStatement: PreparedStatement              = _
-  private var deleteSpaceStatement: PreparedStatement                  = _
-  private var deleteSpaceTargetsStatement: PreparedStatement           = _
+  private implicit val spaceTypeEncoder = genericStringEncoder[SpaceType]
+  private implicit val spaceTypeDecoder = genericStringDecoder[SpaceType](SpaceType.withName)
 
-  def createTables(): Future[Done] =
+  private val spaceSchema       = quote(querySchema[SpaceRecord]("spaces"))
+  private val spaceTargetSchema = quote(querySchema[SpaceTargetRecord]("space_targets"))
+
+  private implicit val insertSpaceMeta       = insertMeta[SpaceRecord]()
+  private implicit val updateSpaceMeta       = updateMeta[SpaceRecord](_.id)
+  private implicit val insertSpaceTargetMeta = insertMeta[SpaceTargetRecord]()
+  println(spaceTypeEncoder.toString)
+  println(spaceTypeDecoder.toString)
+  println(insertSpaceMeta.toString)
+  println(updateSpaceMeta.toString)
+  println(insertSpaceTargetMeta.toString)
+
+  def createTables(): Future[Done] = {
+    import CassandraTableBuilder.types._
     for {
-      _ <- session.executeCreateTable("""
-                                        |CREATE TABLE IF NOT EXISTS spaces (
-                                        |          id text PRIMARY KEY,
-                                        |          name text,
-                                        |          description text,
-                                        |          space_type text,
-                                        |          category_id text,
-                                        |          active boolean,
-                                        |          updated_at text,
-                                        |          updated_by_type text,
-                                        |          updated_by_id text,
-                                        |)
-                                        |""".stripMargin)
-      _ <- session.executeCreateTable("""
-                                        |CREATE TABLE IF NOT EXISTS space_targets (
-                                        |          space_id text,
-                                        |          principal text,
-                                        |          principal_type text,
-                                        |          principal_id text,
-                                        |          PRIMARY KEY (space_id, principal)
-                                        |)
-                                        |""".stripMargin)
+      _ <- session.executeCreateTable(
+             CassandraTableBuilder("spaces")
+               .column("id", Text, true)
+               .column("name", Text)
+               .column("description", Text)
+               .column("space_type", Text)
+               .column("category_id", Text)
+               .column("active", Boolean)
+               .column("updated_at", Timestamp)
+               .column("updated_by", Text)
+               .build
+           )
+      _ <- session.executeCreateTable(
+             CassandraTableBuilder("space_targets")
+               .column("space_id", Text)
+               .column("principal", Text)
+               .withPrimaryKey("space_id", "principal")
+               .build
+           )
     } yield Done
-
-  def prepareStatements(): Future[Done] =
-    for {
-      createSpaceStmt                  <- session.prepare(
-                                            """
-                             | INSERT INTO spaces (id, name, description, space_type, category_id, active,
-                             |     updated_at, updated_by_type, updated_by_id
-                             |     )
-                             |   VALUES (:id, :name, :description, :space_type, :category_id, :active,
-                             |     :updated_at, :updated_by_type, :updated_by_id
-                             |     )
-                             |""".stripMargin
-                                          )
-      updateSpaceNameStmt              <- session.prepare(
-                                            """
-                                 | UPDATE spaces SET
-                                 |   name = :name,
-                                 |   updated_at = :updated_at,
-                                 |   updated_by_type = :updated_by_type,
-                                 |   updated_by_id = :updated_by_id
-                                 |  WHERE id = :id
-                                 |""".stripMargin
-                                          )
-      updateSpaceDescriptionStmt       <- session.prepare(
-                                            """
-                                        | UPDATE spaces SET
-                                        |   description = :description,
-                                        |   updated_at = :updated_at,
-                                        |   updated_by_type = :updated_by_type,
-                                        |   updated_by_id = :updated_by_id
-                                        |  WHERE id = :id
-                                        |""".stripMargin
-                                          )
-      updateSpaceCategoryStmt          <- session.prepare(
-                                            """
-                                     | UPDATE spaces SET
-                                     |   category_id = :category_id,
-                                     |   updated_at = :updated_at,
-                                     |   updated_by_type = :updated_by_type,
-                                     |   updated_by_id = :updated_by_id
-                                     |  WHERE id = :id
-                                     |""".stripMargin
-                                          )
-      updateSpaceTimestampStmt         <- session.prepare(
-                                            """
-                                      | UPDATE spaces SET
-                                      |   updated_at = :updated_at,
-                                      |   updated_by_type = :updated_by_type,
-                                      |   updated_by_id = :updated_by_id
-                                      |  WHERE id = :id
-                                      |""".stripMargin
-                                          )
-      assignSpaceTargetPrincipalStmt   <-
-        session.prepare(
-          """
-            | INSERT INTO space_targets (space_id, principal, principal_type, principal_id )
-            |   VALUES (:space_id, :principal, :principal_type, :principal_id)
-            |""".stripMargin
-        )
-      unassignSpaceTargetPrincipalStmt <- session.prepare(
-                                            """
-                                              | DELETE FROM space_targets
-                                              |   WHERE
-                                              |     space_id = :space_id AND
-                                              |     principal = :principal
-                                              |""".stripMargin
-                                          )
-      activateSpaceStmt                <- session.prepare(
-                                            """
-                               | UPDATE spaces SET
-                               |   active = true,
-                               |   updated_at = :updated_at,
-                               |   updated_by_type = :updated_by_type,
-                               |   updated_by_id = :updated_by_id
-                               |  WHERE id = :id
-                               |""".stripMargin
-                                          )
-      deactivateSpaceStmt              <- session.prepare(
-                                            """
-                                 | UPDATE spaces SET
-                                 |   active = false,
-                                 |   updated_at = :updated_at,
-                                 |   updated_by_type = :updated_by_type,
-                                 |   updated_by_id = :updated_by_id
-                                 |  WHERE id = :id
-                                 |""".stripMargin
-                                          )
-      deleteSpaceStmt                  <- session.prepare(
-                                            """
-                             | DELETE FROM spaces
-                             |  WHERE id = :id
-                             |""".stripMargin
-                                          )
-      deleteSpaceTargetsStmt           <- session.prepare(
-                                            """
-                                    | DELETE FROM space_targets
-                                    |  WHERE space_id = :space_id
-                                    |""".stripMargin
-                                          )
-    } yield {
-      createSpaceStatement = createSpaceStmt
-      updateSpaceNameStatement = updateSpaceNameStmt
-      updateSpaceDescriptionStatement = updateSpaceDescriptionStmt
-      updateSpaceCategoryStatement = updateSpaceCategoryStmt
-      updateSpaceTimestampStatement = updateSpaceTimestampStmt
-      assignSpaceTargetPrincipalStatement = assignSpaceTargetPrincipalStmt
-      unassignSpaceTargetPrincipalStatement = unassignSpaceTargetPrincipalStmt
-      activateSpaceStatement = activateSpaceStmt
-      deactivateSpaceStatement = deactivateSpaceStmt
-      deleteSpaceStatement = deleteSpaceStmt
-      deleteSpaceTargetsStatement = deleteSpaceTargetsStmt
-      Done
-    }
+  }
 
   def createSpace(event: SpaceEntity.SpaceCreated) = {
-    val targets    = event.targets
-      .map(target =>
-        assignSpaceTargetPrincipalStatement
-          .bind()
-          .setString("space_id", event.id)
-          .setString("principal", target.code)
-          .setString("principal_type", target.principalType)
-          .setString("principal_id", target.principalId)
-      )
-      .toSeq
-    val statements =
-      createSpaceStatement
-        .bind()
-        .setString("id", event.id)
-        .setString("name", event.name)
-        .setString("description", event.description)
-        .setString("space_type", event.spaceType.toString)
-        .setString("category_id", event.categoryId)
-        .setBool("active", true)
-        .setString("updated_at", event.createdAt.toString)
-        .setString("updated_by_type", event.createdBy.principalType)
-        .setString("updated_by_id", event.createdBy.principalId) +: targets
-    execute(statements: _*)
+    val spaceRecord = event
+      .into[SpaceRecord]
+      .withFieldConst(_.active, true)
+      .withFieldComputed(_.updatedAt, _.createdAt)
+      .withFieldComputed(_.updatedBy, _.createdBy)
+      .transform
+    for {
+      _ <- ctx.run(spaceSchema.insert(lift(spaceRecord)))
+      _ <- Source(event.targets)
+             .mapAsync(1) { target =>
+               val spaceTargetRecord = SpaceTargetRecord(
+                 spaceId = event.id,
+                 principal = target
+               )
+               ctx.run(spaceTargetSchema.insert(lift(spaceTargetRecord)))
+             }
+             .runWith(Sink.ignore)
+    } yield Done
   }
 
   def updateSpaceName(event: SpaceEntity.SpaceNameUpdated) =
-    execute(
-      updateSpaceNameStatement
-        .bind()
-        .setString("id", event.id)
-        .setString("name", event.name)
-        .setString("updated_at", event.updatedAt.toString)
-        .setString("updated_by_type", event.updatedBy.principalType)
-        .setString("updated_by_id", event.updatedBy.principalId)
+    ctx.run(
+      spaceSchema
+        .filter(_.id == lift(event.id))
+        .update(
+          _.name      -> lift(event.name),
+          _.updatedAt -> lift(event.updatedAt),
+          _.updatedBy -> lift(event.updatedBy)
+        )
     )
 
   def updateSpaceDescription(event: SpaceEntity.SpaceDescriptionUpdated) =
-    execute(
-      updateSpaceDescriptionStatement
-        .bind()
-        .setString("id", event.id)
-        .setString("description", event.description)
-        .setString("updated_at", event.updatedAt.toString)
-        .setString("updated_by_type", event.updatedBy.principalType)
-        .setString("updated_by_id", event.updatedBy.principalId)
+    ctx.run(
+      spaceSchema
+        .filter(_.id == lift(event.id))
+        .update(
+          _.description -> lift(event.description),
+          _.updatedAt   -> lift(event.updatedAt),
+          _.updatedBy   -> lift(event.updatedBy)
+        )
     )
 
   def updateSpaceCategory(event: SpaceEntity.SpaceCategoryUpdated) =
-    execute(
-      updateSpaceCategoryStatement
-        .bind()
-        .setString("id", event.id)
-        .setString("category_id", event.categoryId)
-        .setString("updated_at", event.updatedAt.toString)
-        .setString("updated_by_type", event.updatedBy.principalType)
-        .setString("updated_by_id", event.updatedBy.principalId)
+    ctx.run(
+      spaceSchema
+        .filter(_.id == lift(event.id))
+        .update(
+          _.categoryId -> lift(event.categoryId),
+          _.updatedAt  -> lift(event.updatedAt),
+          _.updatedBy  -> lift(event.updatedBy)
+        )
     )
 
   def assignSpaceTargetPrincipal(event: SpaceEntity.SpaceTargetPrincipalAssigned) =
-    execute(
-      assignSpaceTargetPrincipalStatement
-        .bind()
-        .setString("space_id", event.id)
-        .setString("principal", event.principal.code)
-        .setString("principal_type", event.principal.principalType)
-        .setString("principal_id", event.principal.principalId),
-      updateSpaceTimestampStatement
-        .bind()
-        .setString("id", event.id)
-        .setString("updated_at", event.updatedAt.toString)
-        .setString("updated_by_type", event.updatedBy.principalType)
-        .setString("updated_by_id", event.updatedBy.principalId)
-    )
+    for {
+      _ <- ctx.run(
+             spaceTargetSchema.insert(
+               lift(
+                 SpaceTargetRecord(
+                   event.id,
+                   event.principal
+                 )
+               )
+             )
+           )
+      _ <- ctx.run(
+             spaceSchema
+               .filter(_.id == lift(event.id))
+               .update(
+                 _.updatedAt -> lift(event.updatedAt),
+                 _.updatedBy -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
   def unassignSpaceTargetPrincipal(event: SpaceEntity.SpaceTargetPrincipalUnassigned) =
-    execute(
-      unassignSpaceTargetPrincipalStatement
-        .bind()
-        .setString("space_id", event.id)
-        .setString("principal", event.principal.code),
-      updateSpaceTimestampStatement
-        .bind()
-        .setString("id", event.id)
-        .setString("updated_at", event.updatedAt.toString)
-        .setString("updated_by_type", event.updatedBy.principalType)
-        .setString("updated_by_id", event.updatedBy.principalId)
-    )
+    for {
+      _ <- ctx.run(
+             spaceTargetSchema
+               .filter(r =>
+                 r.spaceId == lift(event.id) &&
+                   r.principal == lift(event.principal)
+               )
+               .delete
+           )
+      _ <- ctx.run(
+             spaceSchema
+               .filter(_.id == lift(event.id))
+               .update(
+                 _.updatedAt -> lift(event.updatedAt),
+                 _.updatedBy -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
   def activateSpace(event: SpaceEntity.SpaceActivated) =
-    execute(
-      activateSpaceStatement
-        .bind()
-        .setString("id", event.id)
-        .setString("updated_at", event.updatedAt.toString)
-        .setString("updated_by_type", event.updatedBy.principalType)
-        .setString("updated_by_id", event.updatedBy.principalId)
+    ctx.run(
+      spaceSchema
+        .filter(_.id == lift(event.id))
+        .update(
+          _.active    -> lift(true),
+          _.updatedAt -> lift(event.updatedAt),
+          _.updatedBy -> lift(event.updatedBy)
+        )
     )
 
   def deactivateSpace(event: SpaceEntity.SpaceDeactivated) =
-    execute(
-      deactivateSpaceStatement
-        .bind()
-        .setString("id", event.id)
-        .setString("updated_at", event.updatedAt.toString)
-        .setString("updated_by_type", event.updatedBy.principalType)
-        .setString("updated_by_id", event.updatedBy.principalId)
+    ctx.run(
+      spaceSchema
+        .filter(_.id == lift(event.id))
+        .update(
+          _.active    -> lift(false),
+          _.updatedAt -> lift(event.updatedAt),
+          _.updatedBy -> lift(event.updatedBy)
+        )
     )
 
   def deleteSpace(event: SpaceEntity.SpaceDeleted) =
-    execute(
-      deleteSpaceStatement
-        .bind()
-        .setString("id", event.id),
-      deleteSpaceTargetsStatement
-        .bind()
-        .setString("space_id", event.id)
-    )
+    for {
+      _ <- ctx.run(spaceSchema.filter(_.id == lift(event.id)).delete)
+      _ <- ctx.run(spaceTargetSchema.filter(_.spaceId == lift(event.id)).delete)
+    } yield Done
 
   def getSpaceById(id: SpaceId): Future[Option[Space]] =
     for {
-      stmt        <- session.prepare("SELECT * FROM spaces WHERE id = :id")
-      maybeEntity <- session.selectOne(stmt.bind().setString("id", id)).map(_.map(convertSpace))
-      targetStmt  <- session.prepare("SELECT principal_type, principal_id FROM space_targets WHERE space_id = :space_id")
-      targets     <- session.selectAll(targetStmt.bind().setString("space_id", id)).map(_.map(convertTarget))
-    } yield maybeEntity.map(_.copy(targets = targets.toSet))
+      maybeSpaceRecord <- ctx
+                            .run(spaceSchema.filter(_.id == lift(id)))
+                            .map(_.headOption)
+      principals       <- ctx
+                            .run(spaceTargetSchema.filter(_.spaceId == lift(id)).map(_.principal))
+    } yield maybeSpaceRecord.map(_.toSpace.copy(targets = principals.toSet))
 
   def getSpacesById(ids: Set[SpaceId]): Future[Seq[Space]] =
-    Source(ids)
-      .mapAsync(1)(getSpaceById)
-      .runWith(Sink.seq)
-      .map(_.flatten.toSeq)
+    for {
+      spaces     <- ctx
+                      .run(spaceSchema.filter(b => liftQuery(ids).contains(b.id)))
+                      .map(_.map(_.toSpace))
+      principals <- ctx
+                      .run(spaceTargetSchema.filter(b => liftQuery(ids).contains(b.spaceId)))
+                      .map(_.groupMap(_.spaceId)(_.principal))
+    } yield spaces
+      .map(space => space.copy(targets = principals.get(space.id).map(_.toSet).getOrElse(Set.empty)))
 
   def getSpaceViews(ids: Set[SpaceId], principals: Set[AnnettePrincipal]): Future[Seq[SpaceView]] =
     for {
-      stmt     <- session.prepare(
-                    "SELECT space_id FROM space_targets WHERE space_id IN :ids AND principal IN :principals"
-                  )
-      spaceIds <- session
-                    .selectAll(
-                      stmt
-                        .bind()
-                        .setList("ids", ids.toList.asJava)
-                        .setList("principals", principals.map(_.code).toList.asJava)
-                    )
-                    .map(_.map(_.getString("space_id")).toSet)
-      stmt     <- session.prepare(
-                    "SELECT * FROM spaces WHERE id IN ?"
-                  )
-      result   <- session.selectAll(stmt.bind(spaceIds.toList.asJava)).map(_.map(convertSpaceView))
-    } yield result
+      spaceIds   <- ctx
+                      .run(
+                        spaceTargetSchema
+                          .filter(b =>
+                            liftQuery(ids).contains(b.spaceId) &&
+                              liftQuery(principals).contains(b.principal)
+                          )
+                          .map(_.spaceId)
+                      )
+                      .map(_.toSet)
+      spaceViews <- ctx
+                      .run(spaceSchema.filter(b => liftQuery(spaceIds).contains(b.id)))
+                      .map(_.map(_.toSpaceView))
+    } yield spaceViews
 
   def canAccessToSpace(id: SpaceId, principals: Set[AnnettePrincipal]): Future[Boolean] =
     for {
-      stmt  <- session.prepare("SELECT count(*) FROM space_targets WHERE space_id=:id AND principal IN :principals")
-      count <- session
-                 .selectOne(
-                   stmt
-                     .bind()
-                     .setString("id", id)
-                     .setList("principals", principals.map(_.code).toList.asJava)
-                 )
-                 .map(_.map(_.getLong("count").toInt).getOrElse(0))
-    } yield count > 0
-
-  private def convertSpace(row: Row): Space =
-    Space(
-      id = row.getString("id"),
-      name = row.getString("name"),
-      description = row.getString("description"),
-      spaceType = SpaceType.from(row.getString("space_type")),
-      categoryId = row.getString("category_id"),
-      active = row.getBool("active"),
-      updatedAt = OffsetDateTime.parse(row.getString("updated_at")),
-      updatedBy = AnnettePrincipal(
-        principalType = row.getString("updated_by_type"),
-        principalId = row.getString("updated_by_id")
-      )
-    )
-
-  private def convertTarget(row: Row): AnnettePrincipal =
-    AnnettePrincipal(
-      principalType = row.getString("principal_type"),
-      principalId = row.getString("principal_id")
-    )
-
-  private def convertSpaceView(row: Row): SpaceView =
-    SpaceView(
-      id = row.getString("id"),
-      name = row.getString("name"),
-      description = row.getString("description"),
-      spaceType = SpaceType.from(row.getString("space_type")),
-      categoryId = row.getString("category_id"),
-      active = row.getBool("active"),
-      updatedAt = OffsetDateTime.parse(row.getString("updated_at")),
-      updatedBy = AnnettePrincipal(
-        principalType = row.getString("updated_by_type"),
-        principalId = row.getString("updated_by_id")
-      )
-    )
+      maybeCount <- ctx
+                      .run(
+                        spaceTargetSchema
+                          .filter(b =>
+                            b.spaceId == lift(id) &&
+                              liftQuery(principals).contains(b.principal)
+                          )
+                          .size
+                      )
+    } yield maybeCount.map(_ > 0).getOrElse(false)
 
 }
