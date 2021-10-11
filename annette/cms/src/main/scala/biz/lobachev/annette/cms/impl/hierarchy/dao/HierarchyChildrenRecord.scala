@@ -14,15 +14,10 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.authorization.impl.role.dao
+package biz.lobachev.annette.cms.impl.hierarchy.dao
 
-import biz.lobachev.annette.authorization.api.role.AuthRoleId
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-
-case class RolePrincipalRecord(
-  roleId: AuthRoleId,
-  principalType: String,
-  principalId: String
-) {
-  def toPrincipal = AnnettePrincipal(principalType, principalId)
-}
+case class HierarchyChildrenRecord(
+  spaceId: String,
+  postId: String,
+  childPosts: List[String]
+)

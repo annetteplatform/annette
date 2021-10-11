@@ -32,7 +32,7 @@ private[impl] class SpaceDbEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[SpaceEntity.Event] =
     readSide
-      .builder[SpaceEntity.Event]("cms-space-cas")
+      .builder[SpaceEntity.Event]("space-cas")
       .setGlobalPrepare(dbDao.createTables)
       .setEventHandler[SpaceEntity.SpaceCreated](handle(dbDao.createSpace))
       .setEventHandler[SpaceEntity.SpaceNameUpdated](handle(dbDao.updateSpaceName))

@@ -29,7 +29,7 @@ import biz.lobachev.annette.cms.api.space.{
   SpaceNotFound,
   WikiHierarchy
 }
-import biz.lobachev.annette.cms.impl.hierarchy.dao.HierarchyCassandraDbDao
+import biz.lobachev.annette.cms.impl.hierarchy.dao.HierarchyDbDao
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import org.slf4j.LoggerFactory
 import io.scalaland.chimney.dsl._
@@ -39,7 +39,7 @@ import scala.concurrent.duration._
 
 class HierarchyEntityService(
   clusterSharding: ClusterSharding,
-  dbDao: HierarchyCassandraDbDao
+  dbDao: HierarchyDbDao
 )(implicit
   ec: ExecutionContext
 ) {

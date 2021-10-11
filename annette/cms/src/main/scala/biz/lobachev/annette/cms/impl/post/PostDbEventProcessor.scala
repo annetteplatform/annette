@@ -32,7 +32,7 @@ private[impl] class PostDbEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[PostEntity.Event] =
     readSide
-      .builder[PostEntity.Event]("cms-post-cas")
+      .builder[PostEntity.Event]("post-cas")
       .setGlobalPrepare(dbDao.createTables)
       .setEventHandler[PostEntity.PostCreated](handle(dbDao.createPost))
       .setEventHandler[PostEntity.PostFeaturedUpdated](handle(dbDao.updatePostFeatured))

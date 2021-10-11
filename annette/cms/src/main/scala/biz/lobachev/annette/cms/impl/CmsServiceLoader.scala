@@ -20,7 +20,7 @@ import akka.cluster.sharding.typed.scaladsl.Entity
 import akka.stream.Materializer
 import biz.lobachev.annette.cms.api._
 import biz.lobachev.annette.cms.impl.category.{CategoryEntity, CategoryProvider}
-import biz.lobachev.annette.cms.impl.hierarchy.dao.HierarchyCassandraDbDao
+import biz.lobachev.annette.cms.impl.hierarchy.dao.HierarchyDbDao
 import biz.lobachev.annette.cms.impl.hierarchy.model.HierarchySerializerRegistry
 import biz.lobachev.annette.cms.impl.hierarchy.{HierarchyDbEventProcessor, HierarchyEntity, HierarchyEntityService}
 import biz.lobachev.annette.cms.impl.post._
@@ -107,7 +107,7 @@ trait CmsComponents
     }
   )
 
-  lazy val wiredHierarchyCasRepository = wire[HierarchyCassandraDbDao]
+  lazy val wiredHierarchyCasRepository = wire[HierarchyDbDao]
   readSide.register(wire[HierarchyDbEventProcessor])
   lazy val wiredHierarchyEntityService = wire[HierarchyEntityService]
   clusterSharding.init(

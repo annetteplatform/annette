@@ -14,15 +14,24 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.authorization.impl.role.dao
+package biz.lobachev.annette.cms.impl.hierarchy.dao
 
-import biz.lobachev.annette.authorization.api.role.AuthRoleId
+import biz.lobachev.annette.cms.api.space.WikiHierarchy
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 
-case class RolePrincipalRecord(
-  roleId: AuthRoleId,
-  principalType: String,
-  principalId: String
+import java.time.OffsetDateTime
+
+case class HierarchyRecord(
+  spaceId: String,
+  rootPostId: Option[String] = None,
+  updatedBy: AnnettePrincipal,
+  updatedAt: OffsetDateTime
 ) {
-  def toPrincipal = AnnettePrincipal(principalType, principalId)
+  def toWikiHierarchy: WikiHierarchy =
+    WikiHierarchy(
+      spaceId = spaceId,
+      rootPostId = rootPostId,
+      updatedBy = updatedBy,
+      updatedAt = updatedAt
+    )
 }

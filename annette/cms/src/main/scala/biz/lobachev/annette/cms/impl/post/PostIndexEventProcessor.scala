@@ -32,7 +32,7 @@ private[impl] class PostIndexEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[PostEntity.Event] =
     readSide
-      .builder[PostEntity.Event]("cms-post-index")
+      .builder[PostEntity.Event]("post-index")
       .setGlobalPrepare(indexDao.createEntityIndex)
       .setEventHandler[PostEntity.PostCreated](handle(indexDao.createPost))
       .setEventHandler[PostEntity.PostFeaturedUpdated](handle(indexDao.updatePostFeatured))

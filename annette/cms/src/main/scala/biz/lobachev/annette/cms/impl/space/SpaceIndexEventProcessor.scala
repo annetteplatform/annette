@@ -32,7 +32,7 @@ private[impl] class SpaceIndexEventProcessor(
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[SpaceEntity.Event] =
     readSide
-      .builder[SpaceEntity.Event]("cms-space-index")
+      .builder[SpaceEntity.Event]("space-index")
       .setGlobalPrepare(indexDao.createEntityIndex)
       .setEventHandler[SpaceEntity.SpaceCreated](handle(indexDao.createSpace))
       .setEventHandler[SpaceEntity.SpaceNameUpdated](handle(indexDao.updateSpaceName))

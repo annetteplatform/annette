@@ -16,30 +16,31 @@
 
 package biz.lobachev.annette.cms.impl.hierarchy
 
-import biz.lobachev.annette.cms.impl.hierarchy.dao.HierarchyCassandraDbDao
+import biz.lobachev.annette.cms.impl.hierarchy.dao.HierarchyDbDao
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
-import org.slf4j.LoggerFactory
+
+import scala.concurrent.ExecutionContext
 
 private[impl] class HierarchyDbEventProcessor(
   readSide: CassandraReadSide,
-  casDao: HierarchyCassandraDbDao
-) extends ReadSideProcessor[HierarchyEntity.Event] {
-
-  val log = LoggerFactory.getLogger(this.getClass)
+  dbDao: HierarchyDbDao
+)(implicit ec: ExecutionContext)
+    extends ReadSideProcessor[HierarchyEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[HierarchyEntity.Event] =
     readSide
-      .builder[HierarchyEntity.Event]("cms-hierarchy-cas")
-      .setGlobalPrepare(() => casDao.createTables())
-      .setPrepare(_ => casDao.prepareStatements())
-      .setEventHandler[HierarchyEntity.SpaceCreated](e => casDao.createSpace(e.event))
-      .setEventHandler[HierarchyEntity.RootPostAdded](e => casDao.addRootPost(e.event))
-      .setEventHandler[HierarchyEntity.PostAdded](e => casDao.addPost(e.event))
-      .setEventHandler[HierarchyEntity.PostMoved](e => casDao.movePost(e.event))
-      .setEventHandler[HierarchyEntity.RootPostRemoved](e => casDao.removeRootPost(e.event))
-      .setEventHandler[HierarchyEntity.PostRemoved](e => casDao.removePost(e.event))
-      .setEventHandler[HierarchyEntity.SpaceDeleted](e => casDao.deleteSpace(e.event))
+      .builder[HierarchyEntity.Event]("hierarchy-cas")
+      .setGlobalPrepare(dbDao.createTables)
+      .setEventHandler[HierarchyEntity.SpaceCreated](handle(dbDao.createSpace))
+      .setEventHandler[HierarchyEntity.RootPostAdded](handle(dbDao.addRootPost))
+      .setEventHandler[HierarchyEntity.PostAdded](handle(dbDao.addPost))
+      .setEventHandler[HierarchyEntity.PostMoved](handle(dbDao.movePost))
+      .setEventHandler[HierarchyEntity.RootPostRemoved](handle(dbDao.removeRootPost))
+      .setEventHandler[HierarchyEntity.PostRemoved](handle(dbDao.removePost))
+      .setEventHandler[HierarchyEntity.SpaceDeleted](handle(dbDao.deleteSpace))
       .build()
 
   def aggregateTags: Set[AggregateEventTag[HierarchyEntity.Event]] = HierarchyEntity.Event.Tag.allTags
