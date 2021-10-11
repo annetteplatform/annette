@@ -16,40 +16,41 @@
 
 package biz.lobachev.annette.cms.impl.post
 
-import biz.lobachev.annette.cms.impl.post.dao.PostCassandraDbDao
+import biz.lobachev.annette.cms.impl.post.dao.PostDbDao
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
-import org.slf4j.LoggerFactory
+
+import scala.concurrent.ExecutionContext
 
 private[impl] class PostDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: PostCassandraDbDao
-) extends ReadSideProcessor[PostEntity.Event] {
-
-  val log = LoggerFactory.getLogger(this.getClass)
+  dbDao: PostDbDao
+)(implicit ec: ExecutionContext)
+    extends ReadSideProcessor[PostEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[PostEntity.Event] =
     readSide
       .builder[PostEntity.Event]("cms-post-cas")
       .setGlobalPrepare(dbDao.createTables)
-      .setPrepare(_ => dbDao.prepareStatements())
-      .setEventHandler[PostEntity.PostCreated](e => dbDao.createPost(e.event))
-      .setEventHandler[PostEntity.PostFeaturedUpdated](e => dbDao.updatePostFeatured(e.event))
-      .setEventHandler[PostEntity.PostAuthorUpdated](e => dbDao.updatePostAuthor(e.event))
-      .setEventHandler[PostEntity.PostTitleUpdated](e => dbDao.updatePostTitle(e.event))
-      .setEventHandler[PostEntity.PostIntroUpdated](e => dbDao.updatePostIntro(e.event))
-      .setEventHandler[PostEntity.PostContentUpdated](e => dbDao.updatePostContent(e.event))
-      .setEventHandler[PostEntity.PostPublicationTimestampUpdated](e => dbDao.updatePostPublicationTimestamp(e.event))
-      .setEventHandler[PostEntity.PostPublished](e => dbDao.publishPost(e.event))
-      .setEventHandler[PostEntity.PostUnpublished](e => dbDao.unpublishPost(e.event))
-      .setEventHandler[PostEntity.PostTargetPrincipalAssigned](e => dbDao.assignPostTargetPrincipal(e.event))
-      .setEventHandler[PostEntity.PostTargetPrincipalUnassigned](e => dbDao.unassignPostTargetPrincipal(e.event))
-      .setEventHandler[PostEntity.PostDeleted](e => dbDao.deletePost(e.event))
-      .setEventHandler[PostEntity.PostMediaAdded](e => dbDao.addPostMedia(e.event))
-      .setEventHandler[PostEntity.PostMediaRemoved](e => dbDao.removePostMedia(e.event))
-      .setEventHandler[PostEntity.PostDocAdded](e => dbDao.addPostDoc(e.event))
-      .setEventHandler[PostEntity.PostDocNameUpdated](e => dbDao.updatePostDocName(e.event))
-      .setEventHandler[PostEntity.PostDocRemoved](e => dbDao.removePostDoc(e.event))
+      .setEventHandler[PostEntity.PostCreated](handle(dbDao.createPost))
+      .setEventHandler[PostEntity.PostFeaturedUpdated](handle(dbDao.updatePostFeatured))
+      .setEventHandler[PostEntity.PostAuthorUpdated](handle(dbDao.updatePostAuthor))
+      .setEventHandler[PostEntity.PostTitleUpdated](handle(dbDao.updatePostTitle))
+      .setEventHandler[PostEntity.PostIntroUpdated](handle(dbDao.updatePostIntro))
+      .setEventHandler[PostEntity.PostContentUpdated](handle(dbDao.updatePostContent))
+      .setEventHandler[PostEntity.PostPublicationTimestampUpdated](handle(dbDao.updatePostPublicationTimestamp))
+      .setEventHandler[PostEntity.PostPublished](handle(dbDao.publishPost))
+      .setEventHandler[PostEntity.PostUnpublished](handle(dbDao.unpublishPost))
+      .setEventHandler[PostEntity.PostTargetPrincipalAssigned](handle(dbDao.assignPostTargetPrincipal))
+      .setEventHandler[PostEntity.PostTargetPrincipalUnassigned](handle(dbDao.unassignPostTargetPrincipal))
+      .setEventHandler[PostEntity.PostDeleted](handle(dbDao.deletePost))
+      .setEventHandler[PostEntity.PostMediaAdded](handle(dbDao.addPostMedia))
+      .setEventHandler[PostEntity.PostMediaRemoved](handle(dbDao.removePostMedia))
+      .setEventHandler[PostEntity.PostDocAdded](handle(dbDao.addPostDoc))
+      .setEventHandler[PostEntity.PostDocNameUpdated](handle(dbDao.updatePostDocName))
+      .setEventHandler[PostEntity.PostDocRemoved](handle(dbDao.removePostDoc))
       .build()
 
   def aggregateTags: Set[AggregateEventTag[PostEntity.Event]] = PostEntity.Event.Tag.allTags

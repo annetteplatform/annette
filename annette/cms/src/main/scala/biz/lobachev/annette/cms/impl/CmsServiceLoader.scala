@@ -24,7 +24,7 @@ import biz.lobachev.annette.cms.impl.hierarchy.dao.HierarchyCassandraDbDao
 import biz.lobachev.annette.cms.impl.hierarchy.model.HierarchySerializerRegistry
 import biz.lobachev.annette.cms.impl.hierarchy.{HierarchyDbEventProcessor, HierarchyEntity, HierarchyEntityService}
 import biz.lobachev.annette.cms.impl.post._
-import biz.lobachev.annette.cms.impl.post.dao.{PostCassandraDbDao, PostIndexDao}
+import biz.lobachev.annette.cms.impl.post.dao.{PostDbDao, PostIndexDao}
 import biz.lobachev.annette.cms.impl.post.model.PostSerializerRegistry
 import biz.lobachev.annette.cms.impl.space._
 import biz.lobachev.annette.cms.impl.space.dao.{SpaceDbDao, SpaceIndexDao}
@@ -116,7 +116,7 @@ trait CmsComponents
     }
   )
 
-  lazy val wiredPostCasRepository     = wire[PostCassandraDbDao]
+  lazy val wiredPostCasRepository     = wire[PostDbDao]
   lazy val wiredPostElasticRepository = wire[PostIndexDao]
   readSide.register(wire[PostDbEventProcessor])
   readSide.register(wire[PostIndexEventProcessor])
