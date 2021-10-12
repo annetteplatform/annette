@@ -16,37 +16,29 @@
 
 package biz.lobachev.annette.org_structure.impl.category
 
-import biz.lobachev.annette.org_structure.impl.category.CategoryEntity._
-import biz.lobachev.annette.org_structure.impl.category.dao.CategoryCassandraDbDao
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
+import biz.lobachev.annette.org_structure.impl.category.dao.CategoryDbDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
 private[impl] class CategoryDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: CategoryCassandraDbDao
-) extends ReadSideProcessor[CategoryEntity.Event] {
+  dbDao: CategoryDbDao
+)(implicit ec: ExecutionContext)
+    extends ReadSideProcessor[CategoryEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler() =
     readSide
-      .builder[CategoryEntity.Event]("category-casssandra")
+      .builder[CategoryEntity.Event]("category-cassandra")
       .setGlobalPrepare(dbDao.createTables)
-      .setPrepare(_ => dbDao.prepareStatements())
-      .setEventHandler[CategoryEntity.CategoryCreated](e => createCategory(e.event))
-      .setEventHandler[CategoryEntity.CategoryUpdated](e => updateCategory(e.event))
-      .setEventHandler[CategoryEntity.CategoryDeleted](e => deleteCategory(e.event))
+      .setEventHandler[CategoryEntity.CategoryCreated](handle(dbDao.createCategory))
+      .setEventHandler[CategoryEntity.CategoryUpdated](handle(dbDao.updateCategory))
+      .setEventHandler[CategoryEntity.CategoryDeleted](handle(dbDao.deleteCategory))
       .build()
 
   def aggregateTags = CategoryEntity.Event.Tag.allTags
-
-  private def createCategory(event: CategoryCreated) =
-    Future.successful(dbDao.createCategory(event))
-
-  private def updateCategory(event: CategoryUpdated) =
-    Future.successful(dbDao.updateCategory(event))
-
-  private def deleteCategory(event: CategoryDeleted) =
-    Future.successful(dbDao.deleteCategory(event))
 
 }

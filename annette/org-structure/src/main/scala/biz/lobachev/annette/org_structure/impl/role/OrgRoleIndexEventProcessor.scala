@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.org_structure.impl.role
 
-import biz.lobachev.annette.org_structure.impl.role.OrgRoleEntity._
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import biz.lobachev.annette.org_structure.impl.role.dao.OrgRoleIndexDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
@@ -28,32 +28,18 @@ private[impl] class OrgRoleIndexEventProcessor(
   indexDao: OrgRoleIndexDao
 )(implicit
   ec: ExecutionContext
-) extends ReadSideProcessor[OrgRoleEntity.Event] {
+) extends ReadSideProcessor[OrgRoleEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler() =
     readSide
       .builder[OrgRoleEntity.Event]("role-indexing")
       .setGlobalPrepare(indexDao.createEntityIndex)
-      .setEventHandler[OrgRoleEntity.OrgRoleCreated](e => createOrgRole(e.event))
-      .setEventHandler[OrgRoleEntity.OrgRoleUpdated](e => updateOrgRole(e.event))
-      .setEventHandler[OrgRoleEntity.OrgRoleDeleted](e => deleteOrgRole(e.event))
+      .setEventHandler[OrgRoleEntity.OrgRoleCreated](handle(indexDao.createOrgRole))
+      .setEventHandler[OrgRoleEntity.OrgRoleUpdated](handle(indexDao.updateOrgRole))
+      .setEventHandler[OrgRoleEntity.OrgRoleDeleted](handle(indexDao.deleteOrgRole))
       .build()
 
   def aggregateTags = OrgRoleEntity.Event.Tag.allTags
-
-  private def createOrgRole(event: OrgRoleCreated) =
-    for {
-      _ <- indexDao.createOrgRole(event)
-    } yield List.empty
-
-  private def updateOrgRole(event: OrgRoleUpdated) =
-    for {
-      _ <- indexDao.updateOrgRole(event)
-    } yield List.empty
-
-  private def deleteOrgRole(event: OrgRoleDeleted) =
-    for {
-      _ <- indexDao.deleteOrgRole(event)
-    } yield List.empty
 
 }
