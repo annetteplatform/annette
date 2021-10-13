@@ -21,7 +21,6 @@ import biz.lobachev.annette.core.model._
 import biz.lobachev.annette.core.model.auth._
 import biz.lobachev.annette.org_structure.api.hierarchy
 import biz.lobachev.annette.org_structure.api.hierarchy._
-import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import biz.lobachev.annette.org_structure.impl.hierarchy.entity.HierarchyEntity
 import com.datastax.driver.core.{BoundStatement, PreparedStatement, Row}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
@@ -45,6 +44,7 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
   private var assignChiefUnitStatement: PreparedStatement         = _
   private var unassignChiefUnitStatement: PreparedStatement       = _
   private var updateChildrenStatement: PreparedStatement          = _
+  private var updateParentIdStatement: PreparedStatement          = _
   private var changePositionLimitStatement: PreparedStatement     = _
   private var updatePersonsStatement: PreparedStatement           = _
   private var updateRolesStatement: PreparedStatement             = _
@@ -175,6 +175,17 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
                                 |""".stripMargin
                                      )
 
+      updateParentIdStmt          <- session.prepare(
+                                       """
+                                | UPDATE org_items SET
+                                |   parent_id = :parent_id,
+                                |   updated_at = :updated_at,
+                                |   updated_by_type = :updated_by_type,
+                                |   updated_by_id = :updated_by_id
+                                | WHERE id = :id
+                                |""".stripMargin
+                                     )
+
       changePositionLimitStmt     <- session.prepare(
                                        """
                                      | UPDATE org_items SET
@@ -281,6 +292,7 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       assignChiefUnitStatement = assignChiefUnitStmt
       unassignChiefUnitStatement = unassignChiefUnitStmt
       updateChildrenStatement = updateChildrenStmt
+      updateParentIdStatement = updateParentIdStmt
       changePositionLimitStatement = changePositionLimitStmt
       updateNameStatement = updateNameStmt
       updateSourceStatement = updateSourceStmt
@@ -321,45 +333,49 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .bind()
       .setString("id", event.orgId)
 
-  def createUnit(event: HierarchyEntity.UnitCreated): BoundStatement =
-    insertStatement
-      .bind()
-      .setString("id", event.unitId)
-      .setString("org_id", OrgItemKey.extractOrgId(event.unitId))
-      .setString("parent_id", event.parentId)
-      .setList[String]("root_path", event.rootPath.asJava)
-      .setString("name", event.name)
-      .setString("type", ItemTypes.Unit.toString)
-      .setString("category_id", event.categoryId)
-      .setList[String]("children", Seq.empty.asJava)
-      .setString("chief", null)
-      .setInt("lim", 0)
-      .setList[String]("persons", Seq.empty.asJava)
-      .setList[String]("org_roles", Seq.empty.asJava)
-      .setString("source", event.source.orNull)
-      .setString("external_id", event.externalId.orNull)
-      .setString("updated_at", event.createdAt.toString)
-      .setString("updated_by_type", event.createdBy.principalType)
-      .setString("updated_by_id", event.createdBy.principalId)
+  def createUnit(event: HierarchyEntity.UnitCreated) =
+    Seq(
+      insertStatement
+        .bind()
+        .setString("id", event.unitId)
+        .setString("org_id", OrgItemKey.extractOrgId(event.unitId))
+        .setString("parent_id", event.parentId)
+        .setList[String]("root_path", event.rootPath.asJava)
+        .setString("name", event.name)
+        .setString("type", ItemTypes.Unit.toString)
+        .setString("category_id", event.categoryId)
+        .setList[String]("children", Seq.empty.asJava)
+        .setString("chief", null)
+        .setInt("lim", 0)
+        .setList[String]("persons", Seq.empty.asJava)
+        .setList[String]("org_roles", Seq.empty.asJava)
+        .setString("source", event.source.orNull)
+        .setString("external_id", event.externalId.orNull)
+        .setString("updated_at", event.createdAt.toString)
+        .setString("updated_by_type", event.createdBy.principalType)
+        .setString("updated_by_id", event.createdBy.principalId),
+      updateChildrenStatement
+        .bind()
+        .setString("id", event.parentId)
+        .setList[String]("children", event.parentChildren.asJava)
+        .setString("updated_at", event.createdAt.toString)
+        .setString("updated_by_type", event.createdBy.principalType)
+        .setString("updated_by_id", event.createdBy.principalId)
+    )
 
-  def deleteUnit(event: HierarchyEntity.UnitDeleted): BoundStatement =
-    deleteStatement
-      .bind()
-      .setString("id", event.unitId)
-
-  def updateChildren(
-    unitId: CompositeOrgItemId,
-    children: Seq[CompositeOrgItemId],
-    updatedBy: AnnettePrincipal,
-    updatedAt: OffsetDateTime
-  ): BoundStatement =
-    updateChildrenStatement
-      .bind()
-      .setString("id", unitId)
-      .setList[String]("children", children.asJava)
-      .setString("updated_at", updatedAt.toString)
-      .setString("updated_by_type", updatedBy.principalType)
-      .setString("updated_by_id", updatedBy.principalId)
+  def deleteUnit(event: HierarchyEntity.UnitDeleted) =
+    Seq(
+      deleteStatement
+        .bind()
+        .setString("id", event.unitId),
+      updateChildrenStatement
+        .bind()
+        .setString("id", event.parentId)
+        .setList[String]("children", event.parentChildren.asJava)
+        .setString("updated_at", event.deletedAt.toString)
+        .setString("updated_by_type", event.deletedBy.principalType)
+        .setString("updated_by_id", event.deletedBy.principalId)
+    )
 
   def assignCategory(event: HierarchyEntity.CategoryAssigned): List[BoundStatement] =
     List(
@@ -403,31 +419,49 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
         .setString("unit_id", event.unitId)
     )
 
-  def createPosition(event: HierarchyEntity.PositionCreated): BoundStatement =
-    insertStatement
-      .bind()
-      .setString("id", event.positionId)
-      .setString("org_id", OrgItemKey.extractOrgId(event.positionId))
-      .setString("parent_id", event.parentId)
-      .setList[String]("root_path", event.rootPath.asJava)
-      .setString("name", event.name)
-      .setString("type", ItemTypes.Position.toString)
-      .setString("category_id", event.categoryId)
-      .setList[String]("children", null)
-      .setString("chief", null)
-      .setInt("lim", event.limit)
-      .setList[String]("persons", Seq.empty.asJava)
-      .setList[String]("org_roles", Seq.empty.asJava)
-      .setString("source", event.source.orNull)
-      .setString("external_id", event.externalId.orNull)
-      .setString("updated_at", event.createdAt.toString)
-      .setString("updated_by_type", event.createdBy.principalType)
-      .setString("updated_by_id", event.createdBy.principalId)
+  def createPosition(event: HierarchyEntity.PositionCreated) =
+    Seq(
+      insertStatement
+        .bind()
+        .setString("id", event.positionId)
+        .setString("org_id", OrgItemKey.extractOrgId(event.positionId))
+        .setString("parent_id", event.parentId)
+        .setList[String]("root_path", event.rootPath.asJava)
+        .setString("name", event.name)
+        .setString("type", ItemTypes.Position.toString)
+        .setString("category_id", event.categoryId)
+        .setList[String]("children", null)
+        .setString("chief", null)
+        .setInt("lim", event.limit)
+        .setList[String]("persons", Seq.empty.asJava)
+        .setList[String]("org_roles", Seq.empty.asJava)
+        .setString("source", event.source.orNull)
+        .setString("external_id", event.externalId.orNull)
+        .setString("updated_at", event.createdAt.toString)
+        .setString("updated_by_type", event.createdBy.principalType)
+        .setString("updated_by_id", event.createdBy.principalId),
+      updateChildrenStatement
+        .bind()
+        .setString("id", event.parentId)
+        .setList[String]("children", event.parentChildren.asJava)
+        .setString("updated_at", event.createdAt.toString)
+        .setString("updated_by_type", event.createdBy.principalType)
+        .setString("updated_by_id", event.createdBy.principalId)
+    )
 
-  def deletePosition(event: HierarchyEntity.PositionDeleted): BoundStatement =
-    deleteStatement
-      .bind()
-      .setString("id", event.positionId)
+  def deletePosition(event: HierarchyEntity.PositionDeleted) =
+    Seq(
+      deleteStatement
+        .bind()
+        .setString("id", event.positionId),
+      updateChildrenStatement
+        .bind()
+        .setString("id", event.parentId)
+        .setList[String]("children", event.parentChildren.asJava)
+        .setString("updated_at", event.deletedAt.toString)
+        .setString("updated_by_type", event.deletedBy.principalType)
+        .setString("updated_by_id", event.deletedBy.principalId)
+    )
 
   def updateName(event: HierarchyEntity.NameUpdated): BoundStatement =
     updateNameStatement
@@ -477,9 +511,9 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .setString("updated_by_type", event.updatedBy.principalType)
       .setString("updated_by_id", event.updatedBy.principalId)
 
-  def assignPerson(event: HierarchyEntity.PersonAssigned, persons: Set[CompositeOrgItemId]): List[BoundStatement] =
+  def assignPerson(event: HierarchyEntity.PersonAssigned): List[BoundStatement] =
     List(
-      updatePersons(event.positionId, persons, event.updatedBy, event.updatedAt),
+      updatePersons(event.positionId, event.persons, event.updatedBy, event.updatedAt),
       assignPersonStatement
         .bind()
         .setString("person_id", event.personId)
@@ -487,9 +521,9 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
         .setString("org_id", OrgItemKey.extractOrgId(event.positionId))
     )
 
-  def unassignPerson(event: HierarchyEntity.PersonUnassigned, persons: Set[CompositeOrgItemId]): List[BoundStatement] =
+  def unassignPerson(event: HierarchyEntity.PersonUnassigned): List[BoundStatement] =
     List(
-      updatePersons(event.positionId, persons, event.updatedBy, event.updatedAt),
+      updatePersons(event.positionId, event.persons, event.updatedBy, event.updatedAt),
       unassignPersonStatement
         .bind()
         .setString("person_id", event.personId)
@@ -510,35 +544,61 @@ private[impl] class HierarchyCassandraDbDao(session: CassandraSession)(implicit 
       .setString("updated_by_type", updatedBy.principalType)
       .setString("updated_by_id", updatedBy.principalId)
 
-  def updateRoles(
-    positionId: CompositeOrgItemId,
-    roles: Set[OrgRoleId],
+  def assignOrgRole(event: HierarchyEntity.OrgRoleAssigned): BoundStatement =
+    updateRolesStatement
+      .bind()
+      .setString("id", event.positionId)
+      .setList[String]("org_roles", event.orgRoles.toSeq.asJava)
+      .setString("updated_at", event.updatedAt.toString)
+      .setString("updated_by_type", event.updatedBy.principalType)
+      .setString("updated_by_id", event.updatedBy.principalId)
+
+  def unassignOrgRole(event: HierarchyEntity.OrgRoleUnassigned): BoundStatement =
+    updateRolesStatement
+      .bind()
+      .setString("id", event.positionId)
+      .setList[String]("org_roles", event.orgRoles.toSeq.asJava)
+      .setString("updated_at", event.updatedAt.toString)
+      .setString("updated_by_type", event.updatedBy.principalType)
+      .setString("updated_by_id", event.updatedBy.principalId)
+
+  private def updateChildren(
+    unitId: CompositeOrgItemId,
+    children: Seq[CompositeOrgItemId],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime
   ): BoundStatement =
-    updateRolesStatement
+    updateChildrenStatement
       .bind()
-      .setString("id", positionId)
-      .setList[String]("org_roles", roles.toSeq.asJava)
+      .setString("id", unitId)
+      .setList[String]("children", children.asJava)
       .setString("updated_at", updatedAt.toString)
       .setString("updated_by_type", updatedBy.principalType)
       .setString("updated_by_id", updatedBy.principalId)
 
-  def updateRootPaths(
-    rootPaths: Map[CompositeOrgItemId, Seq[CompositeOrgItemId]],
-    updatedBy: AnnettePrincipal,
-    updatedAt: OffsetDateTime
-  ): Seq[BoundStatement] =
-    rootPaths.map {
-      case (itemId, rootPath) =>
-        updateRootPathStatement
-          .bind()
-          .setString("id", itemId)
-          .setList[String]("root_path", rootPath.asJava)
-          .setString("updated_at", updatedAt.toString)
-          .setString("updated_by_type", updatedBy.principalType)
-          .setString("updated_by_id", updatedBy.principalId)
-    }.toList
+  def moveItem(event: HierarchyEntity.ItemMoved): Seq[BoundStatement] =
+    Seq(
+      updateParentIdStatement
+        .bind()
+        .setString("id", event.itemId)
+        .setString("parent_id", event.newParentId)
+        .setString("updated_at", event.updatedAt.toString)
+        .setString("updated_by_type", event.updatedBy.principalType)
+        .setString("updated_by_id", event.updatedBy.principalId),
+      updateChildren(event.oldParentId, event.oldParentChildren, event.updatedBy, event.updatedAt),
+      updateChildren(event.newParentId, event.newParentChildren, event.updatedBy, event.updatedAt)
+    )
+
+  def changeItemOrder(event: HierarchyEntity.ItemOrderChanged): Seq[BoundStatement] =
+    Seq(
+      updateChildren(event.parentId, event.parentChildren, event.updatedBy, event.updatedAt)
+    )
+
+  def updateRootPath(event: HierarchyEntity.RootPathUpdated): BoundStatement =
+    updateRootPathStatement
+      .bind()
+      .setString("id", event.orgItemId)
+      .setList[String]("root_path", event.rootPath.asJava)
 
   def getOrgItemById(id: CompositeOrgItemId): Future[Option[OrgItem]] =
     for {

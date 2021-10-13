@@ -107,9 +107,9 @@ final case class ActiveHierarchy(
   orgId: CompositeOrgItemId,
   units: Map[CompositeOrgItemId, HierarchyUnit],
   positions: Map[CompositeOrgItemId, HierarchyPosition],
-  chiefAssignments: Map[CompositeOrgItemId, Set[CompositeOrgItemId]],
-  personAssignments: Map[PersonId, Set[CompositeOrgItemId]],
-  orgRoleAssignments: Map[OrgRoleId, Set[CompositeOrgItemId]],
+  chiefAssignments: Map[CompositeOrgItemId, Set[CompositeOrgItemId]], // PositionId -> UnitId[]
+  personAssignments: Map[PersonId, Set[CompositeOrgItemId]],          // PersonId -> PositionId[]
+  orgRoleAssignments: Map[OrgRoleId, Set[CompositeOrgItemId]],        // OrgRoleId -> PositionId[]
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) extends HierarchyState {
@@ -150,9 +150,17 @@ final case class ActiveHierarchy(
     if (hasItem(cmd.unitId)) Effect.reply(cmd.replyTo)(AlreadyExist)
     else if (!hasUnit(cmd.parentId)) Effect.reply(cmd.replyTo)(ParentNotFound)
     else {
-      val event = cmd
+      val parent                                  = units(cmd.parentId)
+      val children                                = parent.children
+      val parentChildren: Seq[CompositeOrgItemId] = cmd.order match {
+        case Some(pos) if pos >= 0 && pos < children.size =>
+          (children.take(pos) :+ cmd.unitId) ++ children.drop(pos)
+        case _                                            => children :+ cmd.unitId
+      }
+      val event                                   = cmd
         .into[UnitCreated]
         .withFieldConst(_.rootPath, getRootPath(cmd.parentId) :+ cmd.unitId)
+        .withFieldConst(_.parentChildren, parentChildren)
         .transform
       Effect
         .persist(event)
@@ -163,9 +171,17 @@ final case class ActiveHierarchy(
     if (hasItem(cmd.positionId)) Effect.reply(cmd.replyTo)(AlreadyExist)
     else if (!hasUnit(cmd.parentId)) Effect.reply(cmd.replyTo)(ParentNotFound)
     else {
-      val event = cmd
+      val parent                                  = units(cmd.parentId)
+      val children                                = parent.children
+      val parentChildren: Seq[CompositeOrgItemId] = cmd.order match {
+        case Some(pos) if pos >= 0 && pos < children.size =>
+          (children.take(pos) :+ cmd.positionId) ++ children.drop(pos)
+        case _                                            => children :+ cmd.positionId
+      }
+      val event                                   = cmd
         .into[PositionCreated]
         .withFieldConst(_.rootPath, getRootPath(cmd.parentId) :+ cmd.positionId)
+        .withFieldConst(_.parentChildren, parentChildren)
         .transform
       Effect
         .persist(event)
@@ -248,22 +264,65 @@ final case class ActiveHierarchy(
         .get(cmd.itemId)
         .map(_.parentId)
         .getOrElse(positions.get(cmd.itemId).map(_.parentId).get)
-      val rootPath    = getRootPath(cmd.newParentId)
-      if (rootPath.contains(cmd.itemId) || cmd.itemId == cmd.newParentId)
-        Effect.reply(cmd.replyTo)(IncorrectMoveItemArguments)
+      if (oldParentId == cmd.newParentId) changeItemOrder(cmd)
       else {
-        val affectedItemIds =
-          getDescendants(cmd.itemId) + cmd.itemId + cmd.newParentId + oldParentId
-        val event           = cmd
-          .into[ItemMoved]
-          .withFieldConst(_.affectedItemIds, affectedItemIds)
-          .withFieldConst(_.oldParentId, oldParentId)
-          .transform
-        Effect
-          .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+        val rootPath = getRootPath(cmd.newParentId)
+        if (rootPath.contains(cmd.itemId) || cmd.itemId == cmd.newParentId)
+          Effect.reply(cmd.replyTo)(IncorrectMoveItemArguments)
+        else {
+          val oldParent                = units(oldParentId)
+          val oldParentChildren        = oldParent.children.filter(_ != cmd.itemId)
+          val newParent                = units(cmd.newParentId)
+          val newParentChildren        = newParent.children.filter(_ != cmd.itemId)
+          val updatedNewParentChildren = cmd.order match {
+            case Some(pos) if pos >= 0 && pos < newParentChildren.size =>
+              (newParentChildren.take(pos) :+ cmd.itemId) ++ newParentChildren.drop(pos)
+            case _                                                     => newParentChildren :+ cmd.itemId
+          }
+          val oldRootPath              = getRootPath(oldParentId)
+          val dropNum                  = oldRootPath.length
+          val newRootPath              = getRootPath(cmd.newParentId)
+          val updateRootPathEvents     = (cmd.itemId +: getDescendants(cmd.itemId)).map { itemId =>
+            val rootPath = getRootPath(itemId)
+            RootPathUpdated(
+              itemId,
+              newRootPath ++ rootPath.drop(dropNum)
+            )
+          }
+          val event                    = cmd
+            .into[ItemMoved]
+            .withFieldConst(_.oldParentId, oldParentId)
+            .withFieldConst(_.oldParentChildren, oldParentChildren)
+            .withFieldConst(_.newParentChildren, updatedNewParentChildren)
+            .transform
+          Effect
+            .persist(event +: updateRootPathEvents)
+            .thenReply(cmd.replyTo)(_ => Success)
+        }
       }
     } else Effect.reply(cmd.replyTo)(ItemNotFound)
+
+  def changeItemOrder(cmd: MoveItem): ReplyEffect[Event, HierarchyState] =
+    if (cmd.order.isEmpty) Effect.reply(cmd.replyTo)(IncorrectMoveItemArguments)
+    else {
+      val parent         = units(cmd.newParentId)
+      val children       = parent.children.filter(_ != cmd.itemId)
+      val parentChildren = cmd.order.get match {
+        case pos if pos >= 0 && pos < children.size =>
+          (children.take(pos) :+ cmd.itemId) ++ children.drop(pos)
+        case _                                      => children :+ cmd.itemId
+      }
+      val event          = ItemOrderChanged(
+        cmd.itemId,
+        cmd.newParentId,
+        cmd.order.get,
+        parentChildren,
+        cmd.updatedBy
+      )
+      Effect
+        .persist(event)
+        .thenReply(cmd.replyTo)(_ => Success)
+    }
 
   def assignChief(cmd: AssignChief): ReplyEffect[Event, HierarchyState] =
     if (!hasUnit(cmd.unitId)) Effect.reply(cmd.replyTo)(ItemNotFound)
@@ -318,6 +377,7 @@ final case class ActiveHierarchy(
     else {
       val event = cmd
         .into[PersonAssigned]
+        .withFieldComputed(_.persons, positions(cmd.positionId).persons + _.personId)
         .transform
       Effect
         .persist(event)
@@ -329,6 +389,7 @@ final case class ActiveHierarchy(
     else if (positions(cmd.positionId).persons.contains(cmd.personId)) {
       val event = cmd
         .into[PersonUnassigned]
+        .withFieldComputed(_.persons, positions(cmd.positionId).persons - _.personId)
         .transform
       Effect
         .persist(event)
@@ -341,6 +402,7 @@ final case class ActiveHierarchy(
     else {
       val event = cmd
         .into[OrgRoleAssigned]
+        .withFieldComputed(_.orgRoles, positions(cmd.positionId).orgRoles + _.orgRoleId)
         .transform
       Effect
         .persist(event)
@@ -352,6 +414,7 @@ final case class ActiveHierarchy(
     else if (positions(cmd.positionId).orgRoles.contains(cmd.orgRoleId)) {
       val event = cmd
         .into[OrgRoleUnassigned]
+        .withFieldComputed(_.orgRoles, positions(cmd.positionId).orgRoles - _.orgRoleId)
         .transform
       Effect
         .persist(event)
@@ -376,10 +439,13 @@ final case class ActiveHierarchy(
       if (unit.children.nonEmpty) Effect.reply(cmd.replyTo)(UnitNotEmpty)
       else if (unit.chief.nonEmpty) Effect.reply(cmd.replyTo)(ChiefAlreadyAssigned)
       else {
-        val event = cmd
+        val parent         = units(unit.parentId)
+        val parentChildren = parent.children.filter(_ != cmd.itemId)
+        val event          = cmd
           .into[UnitDeleted]
           .withFieldConst(_.unitId, cmd.itemId)
           .withFieldConst(_.parentId, unit.parentId)
+          .withFieldConst(_.parentChildren, parentChildren)
           .transform
         Effect
           .persist(event)
@@ -390,10 +456,13 @@ final case class ActiveHierarchy(
       if (chiefAssignments.isDefinedAt(cmd.itemId))
         Effect.reply(cmd.replyTo)(ChiefAlreadyAssigned)
       else if (position.persons.isEmpty) {
-        val event = cmd
+        val parent         = units(position.parentId)
+        val parentChildren = parent.children.filter(_ != cmd.itemId)
+        val event          = cmd
           .into[PositionDeleted]
           .withFieldConst(_.positionId, cmd.itemId)
           .withFieldConst(_.parentId, position.parentId)
+          .withFieldConst(_.parentChildren, parentChildren)
           .transform
         Effect
           .persist(event)
@@ -476,6 +545,8 @@ final case class ActiveHierarchy(
       case event: SourceUpdated        => onSourceUpdated(event)
       case event: ExternalIdUpdated    => onExternalIdUpdated(event)
       case event: ItemMoved            => onItemMoved(event)
+      case event: ItemOrderChanged     => onItemOrderChanged(event)
+      case _: RootPathUpdated          => this
       case event: ChiefAssigned        => onChiefAssigned(event)
       case event: ChiefUnassigned      => onChiefUnassigned(event)
       case event: PositionLimitChanged => onPositionLimitChanged(event)
@@ -489,7 +560,7 @@ final case class ActiveHierarchy(
     }
 
   def onUnitCreated(event: UnitCreated): HierarchyState = {
-    val newUnit                                  = HierarchyUnit(
+    val newUnit       = HierarchyUnit(
       id = event.unitId,
       parentId = event.parentId,
       name = event.name,
@@ -497,15 +568,9 @@ final case class ActiveHierarchy(
       updatedAt = event.createdAt,
       updatedBy = event.createdBy
     )
-    val parent                                   = units(event.parentId)
-    val children                                 = parent.children
-    val updatedChildren: Seq[CompositeOrgItemId] = event.order match {
-      case Some(pos) if pos >= 0 && pos < children.size =>
-        (children.take(pos) :+ event.unitId) ++ children.drop(pos)
-      case _                                            => children :+ event.unitId
-    }
-    val updatedParent                            = parent.copy(
-      children = updatedChildren,
+    val parent        = units(event.parentId)
+    val updatedParent = parent.copy(
+      children = event.parentChildren,
       updatedAt = event.createdAt,
       updatedBy = event.createdBy
     )
@@ -518,11 +583,10 @@ final case class ActiveHierarchy(
   }
 
   def onUnitDeleted(event: UnitDeleted): HierarchyState = {
-    val parentId        = units(event.unitId).parentId
-    val parent          = units(parentId)
-    val updatedChildren = parent.children.filter(_ != event.unitId)
-    val updatedParent   = parent.copy(
-      children = updatedChildren,
+    val parentId      = units(event.unitId).parentId
+    val parent        = units(parentId)
+    val updatedParent = parent.copy(
+      children = event.parentChildren,
       updatedAt = event.deletedAt,
       updatedBy = event.deletedBy
     )
@@ -600,7 +664,7 @@ final case class ActiveHierarchy(
   }
 
   def onPositionCreated(event: PositionCreated): HierarchyState = {
-    val newPosition                              = HierarchyPosition(
+    val newPosition   = HierarchyPosition(
       id = event.positionId,
       parentId = event.parentId,
       name = event.name,
@@ -609,15 +673,9 @@ final case class ActiveHierarchy(
       updatedAt = event.createdAt,
       updatedBy = event.createdBy
     )
-    val parent                                   = units(event.parentId)
-    val children                                 = parent.children
-    val updatedChildren: Seq[CompositeOrgItemId] = event.order match {
-      case Some(pos) if pos >= 0 && pos < children.size =>
-        (children.take(pos) :+ event.positionId) ++ children.drop(pos)
-      case _                                            => children :+ event.positionId
-    }
-    val updatedParent                            = parent.copy(
-      children = updatedChildren,
+    val parent        = units(event.parentId)
+    val updatedParent = parent.copy(
+      children = event.parentChildren,
       updatedAt = event.createdAt,
       updatedBy = event.createdBy
     )
@@ -631,11 +689,10 @@ final case class ActiveHierarchy(
   }
 
   def onPositionDeleted(event: PositionDeleted): HierarchyState = {
-    val parentId        = positions(event.positionId).parentId
-    val parent          = units(parentId)
-    val updatedChildren = parent.children.filter(_ != event.positionId)
-    val updatedParent   = parent.copy(
-      children = updatedChildren,
+    val parentId      = positions(event.positionId).parentId
+    val parent        = units(parentId)
+    val updatedParent = parent.copy(
+      children = event.parentChildren,
       updatedAt = event.deletedAt,
       updatedBy = event.deletedBy
     )
@@ -763,7 +820,7 @@ final case class ActiveHierarchy(
   def onPersonAssigned(event: PersonAssigned): HierarchyState = {
     val position            = positions(event.positionId)
     val updatedPosition     = position.copy(
-      persons = position.persons + event.personId,
+      persons = event.persons,
       updatedAt = event.updatedAt,
       updatedBy = event.updatedBy
     )
@@ -780,7 +837,7 @@ final case class ActiveHierarchy(
     val position                 = positions(event.positionId)
     val personId                 = event.personId
     val updatedPosition          = position.copy(
-      persons = position.persons - personId,
+      persons = event.persons,
       updatedAt = event.updatedAt,
       updatedBy = event.updatedBy
     )
@@ -802,7 +859,7 @@ final case class ActiveHierarchy(
   def onOrgRolesAssigned(event: OrgRoleAssigned): HierarchyState = {
     val position             = positions(event.positionId)
     val updatedPosition      = position.copy(
-      orgRoles = position.orgRoles + event.orgRoleId,
+      orgRoles = event.orgRoles,
       updatedAt = event.updatedAt,
       updatedBy = event.updatedBy
     )
@@ -819,7 +876,7 @@ final case class ActiveHierarchy(
     val position                  = positions(event.positionId)
     val orgRoleId                 = event.orgRoleId
     val updatedPosition           = position.copy(
-      orgRoles = position.orgRoles - orgRoleId,
+      orgRoles = event.orgRoles,
       updatedAt = event.updatedAt,
       updatedBy = event.updatedBy
     )
@@ -838,22 +895,16 @@ final case class ActiveHierarchy(
   }
 
   def onItemMoved(event: ItemMoved): HierarchyState = {
-    val oldParent                = units(event.oldParentId)
-    val updatedOldChildren       = oldParent.children.filter(_ != event.itemId)
-    val updatedOldParent         = oldParent.copy(
-      children = updatedOldChildren,
+    val oldParent        = units(event.oldParentId)
+    val updatedOldParent = oldParent.copy(
+      children = event.oldParentChildren,
       updatedAt = event.updatedAt,
       updatedBy = event.updatedBy
     )
-    val newParent                = units(event.newParentId)
-    val newParentChildren        = newParent.children.filter(_ != event.itemId)
-    val updatedNewChildren       = event.order match {
-      case Some(pos) if pos >= 0 && pos < newParentChildren.size =>
-        (newParentChildren.take(pos) :+ event.itemId) ++ newParentChildren.drop(pos)
-      case _                                                     => newParentChildren :+ event.itemId
-    }
+    val newParent        = units(event.newParentId)
+
     val updatedNewParent         = newParent.copy(
-      children = updatedNewChildren,
+      children = event.newParentChildren,
       updatedAt = event.updatedAt,
       updatedBy = event.updatedBy
     )
@@ -887,6 +938,20 @@ final case class ActiveHierarchy(
     copy(
       units = newUnits,
       positions = newPositions,
+      updatedAt = event.updatedAt,
+      updatedBy = event.updatedBy
+    )
+  }
+
+  def onItemOrderChanged(event: ItemOrderChanged): HierarchyState = {
+    val parent        = units(event.parentId)
+    val updatedParent = parent.copy(
+      children = event.parentChildren,
+      updatedAt = event.updatedAt,
+      updatedBy = event.updatedBy
+    )
+    copy(
+      units = units + (updatedParent.id -> updatedParent),
       updatedAt = event.updatedAt,
       updatedBy = event.updatedBy
     )
@@ -926,8 +991,8 @@ final case class ActiveHierarchy(
     }
   }
 
-  private def getDescendants(itemId: CompositeOrgItemId): Set[CompositeOrgItemId] = {
-    val children    = units.get(itemId).map(u => u.children.toSet).getOrElse(Set.empty)
+  private def getDescendants(itemId: CompositeOrgItemId): Seq[CompositeOrgItemId] = {
+    val children    = units.get(itemId).map(u => u.children).getOrElse(Seq.empty)
     val descendants = for {
       childId <- children
       descId  <- getDescendants(childId)

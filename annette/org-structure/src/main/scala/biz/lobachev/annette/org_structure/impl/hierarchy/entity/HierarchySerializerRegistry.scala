@@ -73,6 +73,8 @@ object HierarchySerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[HierarchyEntity.PersonUnassigned],
       JsonSerializer[HierarchyEntity.OrgRoleAssigned],
       JsonSerializer[HierarchyEntity.OrgRoleUnassigned],
-      JsonSerializer[HierarchyEntity.ItemMoved]
+      JsonSerializer[HierarchyEntity.ItemMoved],
+      JsonSerializer[HierarchyEntity.ItemOrderChanged],
+      JsonSerializer[HierarchyEntity.RootPathUpdated]
     )
 }

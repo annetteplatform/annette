@@ -16,24 +16,20 @@
 
 package biz.lobachev.annette.org_structure.impl.hierarchy
 
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.org_structure.api.hierarchy.{CompositeOrgItemId, OrgItemKey}
 import biz.lobachev.annette.org_structure.impl.hierarchy.dao.HierarchyCassandraDbDao
 import biz.lobachev.annette.org_structure.impl.hierarchy.entity.HierarchyEntity
 import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
 
-import java.time.OffsetDateTime
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.Future
 
 private[impl] class HierarchyDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: HierarchyCassandraDbDao,
-  hierarchyEntityService: HierarchyEntityService
-)(implicit
-  ec: ExecutionContext
-) extends ReadSideProcessor[HierarchyEntity.Event] {
+  dbDao: HierarchyCassandraDbDao
+)
+//(implicit ec: ExecutionContext)
+    extends ReadSideProcessor[HierarchyEntity.Event] {
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[HierarchyEntity.Event] =
     readSide
@@ -48,18 +44,15 @@ private[impl] class HierarchyDbEventProcessor(
       .setEventHandler[HierarchyEntity.SourceUpdated](e => updateSource(e.event))
       .setEventHandler[HierarchyEntity.ExternalIdUpdated](e => updateExternalId(e.event))
       .setEventHandler[HierarchyEntity.ItemMoved](e => moveItem(e.event))
+      .setEventHandler[HierarchyEntity.ItemOrderChanged](e => changeItemOrder(e.event))
+      .setEventHandler[HierarchyEntity.RootPathUpdated](e => updateRootPath(e.event))
       .setEventHandler[HierarchyEntity.ChiefAssigned](e => assignChief(e.event))
       .setEventHandler[HierarchyEntity.ChiefUnassigned](e => unassignChief(e.event))
       .setEventHandler[HierarchyEntity.PositionLimitChanged](e => changePositionLimit(e.event))
       .setEventHandler[HierarchyEntity.PersonAssigned](e => assignPerson(e.event))
       .setEventHandler[HierarchyEntity.PersonUnassigned](e => unassignPerson(e.event))
-      .setEventHandler[HierarchyEntity.OrgRoleAssigned](e =>
-        updateOrgRoles(e.event.positionId, e.event.updatedBy, e.event.updatedAt)
-      )
-      .setEventHandler[HierarchyEntity.OrgRoleUnassigned](e =>
-        updateOrgRoles(e.event.positionId, e.event.updatedBy, e.event.updatedAt)
-      )
-//      .setEventHandler[HierarchyEntity.ItemOrderChanged](e => changeItemOrder(e.event))
+      .setEventHandler[HierarchyEntity.OrgRoleAssigned](e => assignOrgRole(e.event))
+      .setEventHandler[HierarchyEntity.OrgRoleUnassigned](e => unassignOrgRole(e.event))
       .setEventHandler[HierarchyEntity.OrganizationDeleted](e => deleteOrganization(e.event))
       .setEventHandler[HierarchyEntity.UnitDeleted](e => deleteUnit(e.event))
       .setEventHandler[HierarchyEntity.PositionDeleted](e => deletePosition(e.event))
@@ -82,18 +75,12 @@ private[impl] class HierarchyDbEventProcessor(
     )
 
   def createUnit(event: HierarchyEntity.UnitCreated): Future[Seq[BoundStatement]] =
-    for {
-      children <- hierarchyEntityService.getChildren(event.parentId)
-    } yield List(
-      dbDao.updateChildren(event.parentId, children, event.createdBy, event.createdAt),
+    Future.successful(
       dbDao.createUnit(event)
     )
 
   def deleteUnit(event: HierarchyEntity.UnitDeleted): Future[Seq[BoundStatement]] =
-    for {
-      children <- hierarchyEntityService.getChildren(event.parentId)
-    } yield List(
-      dbDao.updateChildren(event.parentId, children, event.deletedBy, event.deletedAt),
+    Future.successful(
       dbDao.deleteUnit(event)
     )
 
@@ -113,18 +100,12 @@ private[impl] class HierarchyDbEventProcessor(
     )
 
   def createPosition(event: HierarchyEntity.PositionCreated): Future[Seq[BoundStatement]] =
-    for {
-      children <- hierarchyEntityService.getChildren(event.parentId)
-    } yield List(
-      dbDao.updateChildren(event.parentId, children, event.createdBy, event.createdAt),
+    Future.successful(
       dbDao.createPosition(event)
     )
 
   def deletePosition(event: HierarchyEntity.PositionDeleted): Future[Seq[BoundStatement]] =
-    for {
-      children <- hierarchyEntityService.getChildren(event.parentId)
-    } yield List(
-      dbDao.updateChildren(event.parentId, children, event.deletedBy, event.deletedAt),
+    Future.successful(
       dbDao.deletePosition(event)
     )
 
@@ -155,44 +136,28 @@ private[impl] class HierarchyDbEventProcessor(
     )
 
   def assignPerson(event: HierarchyEntity.PersonAssigned): Future[Seq[BoundStatement]] =
-    for {
-      persons <- hierarchyEntityService.getPersons(event.positionId)
-    } yield dbDao.assignPerson(event, persons)
+    Future.successful(dbDao.assignPerson(event))
 
   def unassignPerson(event: HierarchyEntity.PersonUnassigned): Future[Seq[BoundStatement]] =
-    for {
-      persons <- hierarchyEntityService.getPersons(event.positionId)
-    } yield dbDao.unassignPerson(event, persons)
+    Future.successful(dbDao.unassignPerson(event))
 
-  def updateOrgRoles(
-    positionId: CompositeOrgItemId,
-    updatedBy: AnnettePrincipal,
-    updatedAt: OffsetDateTime
-  ): Future[Seq[BoundStatement]] =
-    for {
-      roles <- hierarchyEntityService.getRoles(positionId)
-    } yield List(
-      dbDao.updateRoles(positionId, roles, updatedBy, updatedAt)
-    )
+  def assignOrgRole(event: HierarchyEntity.OrgRoleAssigned): Future[Seq[BoundStatement]] =
+    Future.successful(Seq(dbDao.assignOrgRole(event)))
 
-//  def changeItemOrder(event: HierarchyEntity.ItemOrderChanged): Future[Seq[BoundStatement]] =
-//    for {
-//      children <- hierarchyEntityService.getChildren(event.parentId)
-//    } yield List(
-//      dbDao.updateChildren(event.parentId, children, event.updatedBy, event.updatedAt)
-//    )
+  def unassignOrgRole(event: HierarchyEntity.OrgRoleUnassigned): Future[Seq[BoundStatement]] =
+    Future.successful(Seq(dbDao.unassignOrgRole(event)))
 
   def moveItem(event: HierarchyEntity.ItemMoved): Future[Seq[BoundStatement]] =
-    for {
-      maybeChildrenFrom <- if (event.oldParentId != event.newParentId)
-                             hierarchyEntityService.getChildren(event.oldParentId).map(Some(_))
-                           else Future.successful(None)
-      childrenTo        <- hierarchyEntityService.getChildren(event.newParentId)
-      rootPaths         <- hierarchyEntityService.getRootPaths(OrgItemKey.extractOrgId(event.itemId), event.affectedItemIds)
-    } yield maybeChildrenFrom
-      .map(childrenFrom => dbDao.updateChildren(event.oldParentId, childrenFrom, event.updatedBy, event.updatedAt))
-      .toSeq ++
-      Seq(dbDao.updateChildren(event.newParentId, childrenTo, event.updatedBy, event.updatedAt)) ++
-      dbDao.updateRootPaths(rootPaths, event.updatedBy, event.updatedAt)
+    Future.successful(dbDao.moveItem(event))
+
+  def changeItemOrder(event: HierarchyEntity.ItemOrderChanged): Future[Seq[BoundStatement]] =
+    Future.successful(dbDao.changeItemOrder(event))
+
+  def updateRootPath(event: HierarchyEntity.RootPathUpdated): Future[Seq[BoundStatement]] =
+    Future.successful(
+      Seq(
+        dbDao.updateRootPath(event)
+      )
+    )
 
 }

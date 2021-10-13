@@ -16,156 +16,48 @@
 
 package biz.lobachev.annette.org_structure.impl.hierarchy
 
-import java.time.OffsetDateTime
-import biz.lobachev.annette.org_structure.api.hierarchy.{CompositeOrgItemId, OrgItemKey}
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import biz.lobachev.annette.org_structure.impl.hierarchy.dao.HierarchyIndexDao
 import biz.lobachev.annette.org_structure.impl.hierarchy.entity.HierarchyEntity
-import com.datastax.driver.core.BoundStatement
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 private[impl] class HierarchyIndexEventProcessor(
   readSide: CassandraReadSide,
-  indexDao: HierarchyIndexDao,
-  hierarchyEntityService: HierarchyEntityService
+  indexDao: HierarchyIndexDao
 )(implicit
   ec: ExecutionContext
-) extends ReadSideProcessor[HierarchyEntity.Event] {
+) extends ReadSideProcessor[HierarchyEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[HierarchyEntity.Event] =
     readSide
       .builder[HierarchyEntity.Event]("hierarchy-indexing")
       .setGlobalPrepare(indexDao.createEntityIndex)
-      .setEventHandler[HierarchyEntity.OrganizationCreated](e => createOrganization(e.event))
-      .setEventHandler[HierarchyEntity.UnitCreated](e => createUnit(e.event))
-      .setEventHandler[HierarchyEntity.PositionCreated](e => createPosition(e.event))
-      .setEventHandler[HierarchyEntity.NameUpdated](e => updateName(e.event))
-      .setEventHandler[HierarchyEntity.CategoryAssigned](e => assignCategory(e.event))
-      .setEventHandler[HierarchyEntity.SourceUpdated](e => updateSource(e.event))
-      .setEventHandler[HierarchyEntity.ExternalIdUpdated](e => updateExternalId(e.event))
-      .setEventHandler[HierarchyEntity.ItemMoved](e => moveItem(e.event))
-      .setEventHandler[HierarchyEntity.ChiefAssigned](e => assignChief(e.event))
-      .setEventHandler[HierarchyEntity.ChiefUnassigned](e => unassignChief(e.event))
-      .setEventHandler[HierarchyEntity.PositionLimitChanged](e => changePositionLimit(e.event))
-      .setEventHandler[HierarchyEntity.PersonAssigned](e => assignPerson(e.event))
-      .setEventHandler[HierarchyEntity.PersonUnassigned](e => unassignPerson(e.event))
-      .setEventHandler[HierarchyEntity.OrgRoleAssigned](e => updateOrgRoles(e.event.positionId, e.event.updatedAt))
-      .setEventHandler[HierarchyEntity.OrgRoleUnassigned](e => updateOrgRoles(e.event.positionId, e.event.updatedAt))
-//      .setEventHandler[HierarchyEntity.ItemOrderChanged](e => changeItemOrder(e.event))
-      .setEventHandler[HierarchyEntity.OrganizationDeleted](e => deleteOrganization(e.event))
-      .setEventHandler[HierarchyEntity.UnitDeleted](e => deleteUnit(e.event))
-      .setEventHandler[HierarchyEntity.PositionDeleted](e => deletePosition(e.event))
+      .setEventHandler[HierarchyEntity.OrganizationCreated](handle(indexDao.createOrganization))
+      .setEventHandler[HierarchyEntity.UnitCreated](handle(indexDao.createUnit))
+      .setEventHandler[HierarchyEntity.PositionCreated](handle(indexDao.createPosition))
+      .setEventHandler[HierarchyEntity.NameUpdated](handle(indexDao.updateName))
+      .setEventHandler[HierarchyEntity.CategoryAssigned](handle(indexDao.assignCategory))
+      .setEventHandler[HierarchyEntity.SourceUpdated](handle(indexDao.updateSource))
+      .setEventHandler[HierarchyEntity.ExternalIdUpdated](handle(indexDao.updateExternalId))
+      .setEventHandler[HierarchyEntity.ItemMoved](handle(indexDao.moveItem))
+      .setEventHandler[HierarchyEntity.ChiefAssigned](handle(indexDao.assignChief))
+      .setEventHandler[HierarchyEntity.ChiefUnassigned](handle(indexDao.unassignChief))
+      .setEventHandler[HierarchyEntity.PositionLimitChanged](handle(indexDao.changePositionLimit))
+      .setEventHandler[HierarchyEntity.PersonAssigned](handle(indexDao.assignPerson))
+      .setEventHandler[HierarchyEntity.PersonUnassigned](handle(indexDao.unassignPerson))
+      .setEventHandler[HierarchyEntity.OrgRoleAssigned](handle(indexDao.assignOrgRole))
+      .setEventHandler[HierarchyEntity.OrgRoleUnassigned](handle(indexDao.unassignOrgRole))
+      .setEventHandler[HierarchyEntity.ItemOrderChanged](handle(indexDao.changeItemOrder))
+      .setEventHandler[HierarchyEntity.RootPathUpdated](handle(indexDao.updateRootPath))
+      .setEventHandler[HierarchyEntity.OrganizationDeleted](handle(indexDao.deleteOrganization))
+      .setEventHandler[HierarchyEntity.UnitDeleted](handle(indexDao.deleteUnit))
+      .setEventHandler[HierarchyEntity.PositionDeleted](handle(indexDao.deletePosition))
       .build()
 
   def aggregateTags: Set[AggregateEventTag[HierarchyEntity.Event]] = HierarchyEntity.Event.Tag.allTags
-
-  def createOrganization(event: HierarchyEntity.OrganizationCreated): Future[Seq[BoundStatement]] =
-    for {
-      _ <- indexDao.createOrganization(event)
-    } yield List.empty
-
-  def deleteOrganization(event: HierarchyEntity.OrganizationDeleted): Future[Seq[BoundStatement]] =
-    for {
-      _ <- indexDao.deleteOrganization(event)
-    } yield List.empty
-
-  def createUnit(event: HierarchyEntity.UnitCreated): Future[Seq[BoundStatement]] =
-    for {
-      children <- hierarchyEntityService.getChildren(event.parentId)
-      _        <- indexDao.updateChildren(event.parentId, children, event.createdAt)
-      _        <- indexDao.createUnit(event)
-    } yield List.empty
-
-  def deleteUnit(event: HierarchyEntity.UnitDeleted): Future[Seq[BoundStatement]] =
-    for {
-      children <- hierarchyEntityService.getChildren(event.parentId)
-      _        <- indexDao.updateChildren(event.parentId, children, event.deletedAt)
-      _        <- indexDao.deleteUnit(event)
-    } yield List.empty
-
-  def assignCategory(event: HierarchyEntity.CategoryAssigned): Future[Seq[BoundStatement]] =
-    for {
-      _ <- indexDao.assignCategory(event)
-    } yield List.empty
-
-  def assignChief(event: HierarchyEntity.ChiefAssigned): Future[Seq[BoundStatement]] =
-    for {
-      _ <- indexDao.assignChief(event)
-    } yield List.empty
-
-  def unassignChief(event: HierarchyEntity.ChiefUnassigned): Future[Seq[BoundStatement]] =
-    for {
-      _ <- indexDao.unassignChief(event)
-    } yield List.empty
-
-  def createPosition(event: HierarchyEntity.PositionCreated): Future[Seq[BoundStatement]] =
-    for {
-      children <- hierarchyEntityService.getChildren(event.parentId)
-      _        <- indexDao.updateChildren(event.parentId, children, event.createdAt)
-      _        <- indexDao.createPosition(event)
-    } yield List.empty
-
-  def deletePosition(event: HierarchyEntity.PositionDeleted): Future[Seq[BoundStatement]] =
-    for {
-      children <- hierarchyEntityService.getChildren(event.parentId)
-      _        <- indexDao.updateChildren(event.parentId, children, event.deletedAt)
-      _        <- indexDao.deletePosition(event)
-    } yield List.empty
-
-  def updateName(event: HierarchyEntity.NameUpdated): Future[Seq[BoundStatement]] =
-    for {
-      _ <- indexDao.updateName(event)
-    } yield List.empty
-
-  def updateSource(event: HierarchyEntity.SourceUpdated): Future[Seq[BoundStatement]] =
-    for {
-      _ <- indexDao.updateSource(event)
-    } yield List.empty
-
-  def updateExternalId(event: HierarchyEntity.ExternalIdUpdated): Future[Seq[BoundStatement]] =
-    for {
-      _ <- indexDao.updateExternalId(event)
-    } yield List.empty
-
-  def changePositionLimit(event: HierarchyEntity.PositionLimitChanged): Future[Seq[BoundStatement]] =
-    for {
-      _ <- indexDao.changePositionLimit(event)
-    } yield List.empty
-
-  def assignPerson(event: HierarchyEntity.PersonAssigned): Future[Seq[BoundStatement]] =
-    for {
-      persons <- hierarchyEntityService.getPersons(event.positionId)
-      _       <- indexDao.updatePersons(event.positionId, persons, event.updatedAt)
-    } yield List.empty
-
-  def unassignPerson(event: HierarchyEntity.PersonUnassigned): Future[Seq[BoundStatement]] =
-    for {
-      persons <- hierarchyEntityService.getPersons(event.positionId)
-      _       <- indexDao.updatePersons(event.positionId, persons, event.updatedAt)
-    } yield List.empty
-
-  def updateOrgRoles(positionId: CompositeOrgItemId, updatedAt: OffsetDateTime): Future[Seq[BoundStatement]] =
-    for {
-      roles <- hierarchyEntityService.getRoles(positionId)
-      _     <- indexDao.updateRoles(positionId, roles, updatedAt)
-    } yield List.empty
-
-//  def changeItemOrder(event: HierarchyEntity.ItemOrderChanged): Future[Seq[BoundStatement]] =
-//    for {
-//      children <- hierarchyEntityService.getChildren(event.orgId, event.parentId)
-//      _        <- indexDao.updateChildren(event.parentId, children, event.updatedAt)
-//    } yield List.empty
-
-  def moveItem(event: HierarchyEntity.ItemMoved): Future[Seq[BoundStatement]] =
-    for {
-      childrenFrom <- hierarchyEntityService.getChildren(event.oldParentId)
-      childrenTo   <- hierarchyEntityService.getChildren(event.newParentId)
-      rootPaths    <- hierarchyEntityService.getRootPaths(OrgItemKey.extractOrgId(event.itemId), event.affectedItemIds)
-      _            <- indexDao.updateChildren(event.oldParentId, childrenFrom, event.updatedAt)
-      _            <- indexDao.updateChildren(event.newParentId, childrenTo, event.updatedAt)
-      _            <- indexDao.updateRootPaths(rootPaths, event.updatedAt)
-    } yield List.empty
 
 }
