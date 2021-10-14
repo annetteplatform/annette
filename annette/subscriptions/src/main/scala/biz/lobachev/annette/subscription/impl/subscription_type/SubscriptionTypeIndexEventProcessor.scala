@@ -16,7 +16,8 @@
 
 package biz.lobachev.annette.subscription.impl.subscription_type
 
-import biz.lobachev.annette.subscription.impl.subscription_type.dao.{SubscriptionTypeIndexDao}
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
+import biz.lobachev.annette.subscription.impl.subscription_type.dao.SubscriptionTypeIndexDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
@@ -27,32 +28,17 @@ private[impl] class SubscriptionTypeIndexEventProcessor(
   indexDao: SubscriptionTypeIndexDao
 )(implicit
   ec: ExecutionContext
-) extends ReadSideProcessor[SubscriptionTypeEntity.Event] {
+) extends ReadSideProcessor[SubscriptionTypeEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler() =
     readSide
       .builder[SubscriptionTypeEntity.Event]("subscriptionType-indexing")
       .setGlobalPrepare(indexDao.createEntityIndex)
-      .setEventHandler[SubscriptionTypeEntity.SubscriptionTypeCreated](e => createSubscriptionType(e.event))
-      .setEventHandler[SubscriptionTypeEntity.SubscriptionTypeUpdated](e => updateSubscriptionType(e.event))
-      .setEventHandler[SubscriptionTypeEntity.SubscriptionTypeDeleted](e => deleteSubscriptionType(e.event))
+      .setEventHandler[SubscriptionTypeEntity.SubscriptionTypeCreated](handle(indexDao.createSubscriptionType))
+      .setEventHandler[SubscriptionTypeEntity.SubscriptionTypeUpdated](handle(indexDao.updateSubscriptionType))
+      .setEventHandler[SubscriptionTypeEntity.SubscriptionTypeDeleted](handle(indexDao.deleteSubscriptionType))
       .build()
 
   def aggregateTags = SubscriptionTypeEntity.Event.Tag.allTags
-
-  private def createSubscriptionType(event: SubscriptionTypeEntity.SubscriptionTypeCreated) =
-    for {
-      _ <- indexDao.createSubscriptionType(event)
-    } yield List.empty
-
-  private def updateSubscriptionType(event: SubscriptionTypeEntity.SubscriptionTypeUpdated) =
-    for {
-      _ <- indexDao.updateSubscriptionType(event)
-    } yield List.empty
-
-  private def deleteSubscriptionType(event: SubscriptionTypeEntity.SubscriptionTypeDeleted) =
-    for {
-      _ <- indexDao.deleteSubscriptionType(event)
-    } yield List.empty
-
 }

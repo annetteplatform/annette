@@ -54,9 +54,6 @@ trait SubscriptionService {
   def updateSubscriptionType(payload: UpdateSubscriptionTypePayload): Future[Done]
   def deleteSubscriptionType(payload: DeleteSubscriptionTypePayload): Future[Done]
   def getSubscriptionTypeById(id: SubscriptionTypeId, fromReadSide: Boolean): Future[SubscriptionType]
-  def getSubscriptionTypesById(
-    ids: Set[SubscriptionTypeId],
-    fromReadSide: Boolean
-  ): Future[Map[SubscriptionTypeId, SubscriptionType]]
+  def getSubscriptionTypesById(ids: Set[SubscriptionTypeId], fromReadSide: Boolean): Future[Seq[SubscriptionType]]
   def findSubscriptionTypes(query: SubscriptionTypeFindQuery): Future[FindResult]
 }

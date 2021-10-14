@@ -23,10 +23,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.subscription.api.subscription_type._
-import biz.lobachev.annette.subscription.impl.subscription_type.dao.{
-  SubscriptionTypeCassandraDbDao,
-  SubscriptionTypeIndexDao
-}
+import biz.lobachev.annette.subscription.impl.subscription_type.dao.{SubscriptionTypeDbDao, SubscriptionTypeIndexDao}
 import com.typesafe.config.Config
 
 import java.util.concurrent.TimeUnit
@@ -36,7 +33,7 @@ import scala.util.Try
 
 class SubscriptionTypeEntityService(
   clusterSharding: ClusterSharding,
-  dbDao: SubscriptionTypeCassandraDbDao,
+  dbDao: SubscriptionTypeDbDao,
   indexDao: SubscriptionTypeIndexDao,
   config: Config
 )(implicit
@@ -98,7 +95,7 @@ class SubscriptionTypeEntityService(
   def getSubscriptionTypesById(
     ids: Set[SubscriptionTypeId],
     fromReadSide: Boolean
-  ): Future[Map[SubscriptionTypeId, SubscriptionType]]                            =
+  ): Future[Seq[SubscriptionType]] =
     if (fromReadSide) dbDao.getSubscriptionTypesById(ids)
     else
       Source(ids)
@@ -111,7 +108,7 @@ class SubscriptionTypeEntityService(
             }
         }
         .runWith(Sink.seq)
-        .map(seq => seq.flatten.map(subscriptionType => subscriptionType.id -> subscriptionType).toMap)
+        .map(seq => seq.flatten)
 
   def findSubscriptionTypes(query: SubscriptionTypeFindQuery): Future[FindResult] =
     indexDao.findSubscriptionTypes(query)

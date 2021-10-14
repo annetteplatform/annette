@@ -105,7 +105,7 @@ class SubscriptionServiceApiImpl(
 
   override def getSubscriptionTypesById(
     fromReadSide: Boolean
-  ): ServiceCall[Set[SubscriptionTypeId], Map[SubscriptionTypeId, SubscriptionType]] =
+  ): ServiceCall[Set[SubscriptionTypeId], Seq[SubscriptionType]] =
     ServiceCall { ids =>
       subscriptionTypeEntityService.getSubscriptionTypesById(ids, fromReadSide)
     }
