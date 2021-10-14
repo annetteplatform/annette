@@ -29,7 +29,7 @@ import biz.lobachev.annette.org_structure.impl.category.{
 import biz.lobachev.annette.org_structure.impl.category.dao.{CategoryDbDao, CategoryIndexDao}
 import biz.lobachev.annette.org_structure.impl.category.model.CategorySerializerRegistry
 import biz.lobachev.annette.org_structure.impl.hierarchy._
-import biz.lobachev.annette.org_structure.impl.hierarchy.dao.{HierarchyCassandraDbDao, HierarchyIndexDao}
+import biz.lobachev.annette.org_structure.impl.hierarchy.dao.{HierarchyDbDao, HierarchyIndexDao}
 import biz.lobachev.annette.org_structure.impl.hierarchy.entity.{HierarchyEntity, HierarchySerializerRegistry}
 import biz.lobachev.annette.org_structure.impl.role._
 import biz.lobachev.annette.org_structure.impl.role.dao.{OrgRoleDbDao, OrgRoleIndexDao}
@@ -76,7 +76,7 @@ abstract class OrgStructureServiceApplication(context: LagomApplicationContext)
   override lazy val lagomServer = serverFor[OrgStructureServiceApi](wire[OrgStructureServiceApiImpl])
 
   lazy val hierarchyElastic       = wire[HierarchyIndexDao]
-  lazy val hierarchyRepository    = wire[HierarchyCassandraDbDao]
+  lazy val hierarchyRepository    = wire[HierarchyDbDao]
   readSide.register(wire[HierarchyDbEventProcessor])
   readSide.register(wire[HierarchyIndexEventProcessor])
   lazy val hierarchyEntityService = wire[HierarchyEntityService]

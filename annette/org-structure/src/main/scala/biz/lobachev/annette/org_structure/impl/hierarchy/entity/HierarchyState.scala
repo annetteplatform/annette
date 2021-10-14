@@ -88,6 +88,8 @@ object EmptyHierarchy extends HierarchyState {
             parentId = ROOT,
             name = event.name,
             categoryId = event.categoryId,
+            source = event.source,
+            externalId = event.externalId,
             updatedAt = event.createdAt,
             updatedBy = event.createdBy
           )
@@ -565,6 +567,8 @@ final case class ActiveHierarchy(
       parentId = event.parentId,
       name = event.name,
       categoryId = event.categoryId,
+      source = event.source,
+      externalId = event.externalId,
       updatedAt = event.createdAt,
       updatedBy = event.createdBy
     )
@@ -670,6 +674,8 @@ final case class ActiveHierarchy(
       name = event.name,
       limit = event.limit,
       categoryId = event.categoryId,
+      source = event.source,
+      externalId = event.externalId,
       updatedAt = event.createdAt,
       updatedBy = event.createdBy
     )
