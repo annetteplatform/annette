@@ -16,36 +16,29 @@
 
 package biz.lobachev.annette.persons.impl.category
 
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
 class CategoryDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: dao.CategoryCassandraDbDao,
+  dbDao: dao.CategoryDbDao,
   readSideId: String
-) extends ReadSideProcessor[CategoryEntity.Event] {
+)(implicit ec: ExecutionContext)
+    extends ReadSideProcessor[CategoryEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler() =
     readSide
       .builder[CategoryEntity.Event](readSideId)
       .setGlobalPrepare(dbDao.createTables)
-      .setPrepare(_ => dbDao.prepareStatements())
-      .setEventHandler[CategoryEntity.CategoryCreated](e => createCategory(e.event))
-      .setEventHandler[CategoryEntity.CategoryUpdated](e => updateCategory(e.event))
-      .setEventHandler[CategoryEntity.CategoryDeleted](e => deleteCategory(e.event))
+      .setEventHandler[CategoryEntity.CategoryCreated](handle(dbDao.createCategory))
+      .setEventHandler[CategoryEntity.CategoryUpdated](handle(dbDao.updateCategory))
+      .setEventHandler[CategoryEntity.CategoryDeleted](handle(dbDao.deleteCategory))
       .build()
 
   def aggregateTags = CategoryEntity.Event.Tag.allTags
-
-  private def createCategory(event: CategoryEntity.CategoryCreated) =
-    Future.successful(dbDao.createCategory(event))
-
-  private def updateCategory(event: CategoryEntity.CategoryUpdated) =
-    Future.successful(dbDao.updateCategory(event))
-
-  private def deleteCategory(event: CategoryEntity.CategoryDeleted) =
-    Future.successful(dbDao.deleteCategory(event))
 
 }

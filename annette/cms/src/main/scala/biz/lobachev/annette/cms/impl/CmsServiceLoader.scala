@@ -20,14 +20,14 @@ import akka.cluster.sharding.typed.scaladsl.Entity
 import akka.stream.Materializer
 import biz.lobachev.annette.cms.api._
 import biz.lobachev.annette.cms.impl.category.{CategoryEntity, CategoryProvider}
-import biz.lobachev.annette.cms.impl.hierarchy.dao.HierarchyCassandraDbDao
+import biz.lobachev.annette.cms.impl.hierarchy.dao.HierarchyDbDao
 import biz.lobachev.annette.cms.impl.hierarchy.model.HierarchySerializerRegistry
 import biz.lobachev.annette.cms.impl.hierarchy.{HierarchyDbEventProcessor, HierarchyEntity, HierarchyEntityService}
 import biz.lobachev.annette.cms.impl.post._
-import biz.lobachev.annette.cms.impl.post.dao.{PostCassandraDbDao, PostIndexDao}
+import biz.lobachev.annette.cms.impl.post.dao.{PostDbDao, PostIndexDao}
 import biz.lobachev.annette.cms.impl.post.model.PostSerializerRegistry
 import biz.lobachev.annette.cms.impl.space._
-import biz.lobachev.annette.cms.impl.space.dao.{SpaceCassandraDbDao, SpaceIndexDao}
+import biz.lobachev.annette.cms.impl.space.dao.{SpaceDbDao, SpaceIndexDao}
 import biz.lobachev.annette.cms.impl.space.model.SpaceSerializerRegistry
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.cms.impl.category.model.CategorySerializerRegistry
@@ -80,7 +80,6 @@ trait CmsComponents
 
   val categoryProvider = new CategoryProvider(
     typeKeyName = "Category",
-    tableName = "categories",
     dbReadSideId = "category-cassandra",
     configPath = "indexing.category-index",
     indexReadSideId = "category-indexing"
@@ -97,7 +96,7 @@ trait CmsComponents
     }
   )
 
-  lazy val wiredSpaceCasRepository     = wire[SpaceCassandraDbDao]
+  lazy val wiredSpaceCasRepository     = wire[SpaceDbDao]
   lazy val wiredSpaceElasticRepository = wire[SpaceIndexDao]
   readSide.register(wire[SpaceDbEventProcessor])
   readSide.register(wire[SpaceIndexEventProcessor])
@@ -108,7 +107,7 @@ trait CmsComponents
     }
   )
 
-  lazy val wiredHierarchyCasRepository = wire[HierarchyCassandraDbDao]
+  lazy val wiredHierarchyCasRepository = wire[HierarchyDbDao]
   readSide.register(wire[HierarchyDbEventProcessor])
   lazy val wiredHierarchyEntityService = wire[HierarchyEntityService]
   clusterSharding.init(
@@ -117,7 +116,7 @@ trait CmsComponents
     }
   )
 
-  lazy val wiredPostCasRepository     = wire[PostCassandraDbDao]
+  lazy val wiredPostCasRepository     = wire[PostDbDao]
   lazy val wiredPostElasticRepository = wire[PostIndexDao]
   readSide.register(wire[PostDbEventProcessor])
   readSide.register(wire[PostIndexEventProcessor])

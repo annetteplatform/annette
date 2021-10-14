@@ -16,31 +16,33 @@
 
 package biz.lobachev.annette.authorization.impl.role
 
+import akka.Done
 import biz.lobachev.annette.authorization.api.assignment.{AssignPermissionPayload, UnassignPermissionPayload}
 import biz.lobachev.annette.authorization.impl.assignment.AssignmentEntityService
-import com.datastax.driver.core.BoundStatement
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 private[impl] class RoleEntityAssigmentEventProcessor(
   readSide: CassandraReadSide,
   assignmentEntityService: AssignmentEntityService
 )(implicit
   ec: ExecutionContext
-) extends ReadSideProcessor[RoleEntity.Event] {
+) extends ReadSideProcessor[RoleEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[RoleEntity.Event] =
     readSide
       .builder[RoleEntity.Event]("role-assignment")
-      .setEventHandler[RoleEntity.AssignmentCreated](e => createAssignment(e.event))
-      .setEventHandler[RoleEntity.AssignmentDeleted](e => deleteAssignment(e.event))
+      .setEventHandler[RoleEntity.AssignmentCreated](handle(createAssignment))
+      .setEventHandler[RoleEntity.AssignmentDeleted](handle(deleteAssignment))
       .build()
 
   def aggregateTags: Set[AggregateEventTag[RoleEntity.Event]] = RoleEntity.Event.Tag.allTags
 
-  def createAssignment(event: RoleEntity.AssignmentCreated): Future[Seq[BoundStatement]] =
+  def createAssignment(event: RoleEntity.AssignmentCreated) =
     for {
       _ <- assignmentEntityService.assignPermission(
              AssignPermissionPayload(
@@ -51,9 +53,9 @@ private[impl] class RoleEntityAssigmentEventProcessor(
                updatedAt = Some(event.updatedAt)
              )
            )
-    } yield List()
+    } yield Done
 
-  def deleteAssignment(event: RoleEntity.AssignmentDeleted): Future[Seq[BoundStatement]] =
+  def deleteAssignment(event: RoleEntity.AssignmentDeleted) =
     for {
       _ <- assignmentEntityService.unassignPermission(
              UnassignPermissionPayload(
@@ -64,6 +66,6 @@ private[impl] class RoleEntityAssigmentEventProcessor(
                updatedAt = Some(event.updatedAt)
              )
            )
-    } yield List()
+    } yield Done
 
 }

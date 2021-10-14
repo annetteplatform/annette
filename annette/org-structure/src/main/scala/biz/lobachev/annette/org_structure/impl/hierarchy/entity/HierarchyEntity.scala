@@ -259,6 +259,7 @@ object HierarchyEntity {
     order: Option[Int],
     rootPath: Seq[CompositeOrgItemId],
     categoryId: OrgCategoryId,
+    parentChildren: Seq[CompositeOrgItemId],
     source: Option[String],
     externalId: Option[String],
     createdBy: AnnettePrincipal,
@@ -273,6 +274,7 @@ object HierarchyEntity {
     rootPath: Seq[CompositeOrgItemId],
     limit: Int,
     categoryId: OrgCategoryId,
+    parentChildren: Seq[CompositeOrgItemId],
     source: Option[String],
     externalId: Option[String],
     createdBy: AnnettePrincipal,
@@ -311,11 +313,26 @@ object HierarchyEntity {
   final case class ItemMoved(
     itemId: CompositeOrgItemId,
     oldParentId: CompositeOrgItemId,
+    oldParentChildren: Seq[CompositeOrgItemId],
     newParentId: CompositeOrgItemId,
+    newParentChildren: Seq[CompositeOrgItemId],
     order: Option[Int] = None,
-    affectedItemIds: Set[CompositeOrgItemId],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+
+  final case class ItemOrderChanged(
+    orgItemId: CompositeOrgItemId,
+    parentId: CompositeOrgItemId,
+    order: Int,
+    parentChildren: Seq[CompositeOrgItemId],
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+
+  final case class RootPathUpdated(
+    orgItemId: CompositeOrgItemId,
+    rootPath: Seq[CompositeOrgItemId]
   ) extends Event
 
   final case class ChiefAssigned(
@@ -342,6 +359,7 @@ object HierarchyEntity {
   final case class PersonAssigned(
     positionId: CompositeOrgItemId,
     personId: CompositeOrgItemId,
+    persons: Set[PersonId],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -349,6 +367,7 @@ object HierarchyEntity {
   final case class PersonUnassigned(
     positionId: CompositeOrgItemId,
     personId: PersonId,
+    persons: Set[PersonId],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -356,6 +375,7 @@ object HierarchyEntity {
   final case class OrgRoleAssigned(
     positionId: CompositeOrgItemId,
     orgRoleId: OrgRoleId,
+    orgRoles: Set[OrgRoleId],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -363,6 +383,7 @@ object HierarchyEntity {
   final case class OrgRoleUnassigned(
     positionId: CompositeOrgItemId,
     orgRoleId: OrgRoleId,
+    orgRoles: Set[OrgRoleId],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -376,6 +397,7 @@ object HierarchyEntity {
   final case class UnitDeleted(
     parentId: CompositeOrgItemId,
     unitId: CompositeOrgItemId,
+    parentChildren: Seq[CompositeOrgItemId],
     deletedBy: AnnettePrincipal,
     deletedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -383,6 +405,7 @@ object HierarchyEntity {
   final case class PositionDeleted(
     parentId: CompositeOrgItemId,
     positionId: CompositeOrgItemId,
+    parentChildren: Seq[CompositeOrgItemId],
     deletedBy: AnnettePrincipal,
     deletedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -405,7 +428,8 @@ object HierarchyEntity {
   implicit val orgRoleAssignedFormat: Format[OrgRoleAssigned]           = Json.format
   implicit val orgRoleUnassignedFormat: Format[OrgRoleUnassigned]       = Json.format
   implicit val itemMovedFormat: Format[ItemMoved]                       = Json.format
-//  implicit val itemOrderChangedFormat: Format[ItemOrderChanged]         = Json.format
+  implicit val itemOrderChangedFormat: Format[ItemOrderChanged]         = Json.format
+  implicit val rootPathUpdatedFormat: Format[RootPathUpdated]           = Json.format
 
   val empty = EmptyHierarchy
 

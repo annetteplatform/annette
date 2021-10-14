@@ -61,7 +61,7 @@ trait SubscriptionServiceApi extends Service {
   def getSubscriptionTypeById(id: SubscriptionTypeId, fromReadSide: Boolean): ServiceCall[NotUsed, SubscriptionType]
   def getSubscriptionTypesById(
     fromReadSide: Boolean
-  ): ServiceCall[Set[SubscriptionTypeId], Map[SubscriptionTypeId, SubscriptionType]]
+  ): ServiceCall[Set[SubscriptionTypeId], Seq[SubscriptionType]]
   def findSubscriptionTypes: ServiceCall[SubscriptionTypeFindQuery, FindResult]
 
   final override def descriptor = {

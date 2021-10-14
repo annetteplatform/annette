@@ -23,7 +23,7 @@ import biz.lobachev.annette.persons.api.PersonServiceApi
 import biz.lobachev.annette.persons.impl.category.model.CategorySerializerRegistry
 import biz.lobachev.annette.persons.impl.category.{CategoryEntity, CategoryProvider}
 import biz.lobachev.annette.persons.impl.person._
-import biz.lobachev.annette.persons.impl.person.dao.{PersonCassandraDbDao, PersonIndexDao}
+import biz.lobachev.annette.persons.impl.person.dao.{PersonDbDao, PersonIndexDao}
 import biz.lobachev.annette.persons.impl.person.model.PersonSerializerRegistry
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaClientComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
@@ -67,7 +67,7 @@ abstract class PersonServiceApplication(context: LagomApplicationContext)
   override lazy val lagomServer = serverFor[PersonServiceApi](wire[PersonServiceApiImpl])
   lazy val personElastic        = wire[PersonIndexDao]
   lazy val personService        = wire[PersonEntityService]
-  lazy val personRepository     = wire[PersonCassandraDbDao]
+  lazy val personRepository     = wire[PersonDbDao]
   readSide.register(wire[PersonDbEventProcessor])
   readSide.register(wire[PersonIndexEventProcessor])
   clusterSharding.init(
@@ -78,7 +78,6 @@ abstract class PersonServiceApplication(context: LagomApplicationContext)
 
   val categoryProvider = new CategoryProvider(
     typeKeyName = "Category",
-    tableName = "categories",
     dbReadSideId = "category-cassandra",
     configPath = "indexing.category-index",
     indexReadSideId = "category-indexing"

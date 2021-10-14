@@ -88,10 +88,7 @@ class SubscriptionServiceImpl(api: SubscriptionServiceApi, implicit val ec: Exec
   def getSubscriptionTypeById(id: SubscriptionTypeId, fromReadSide: Boolean): Future[SubscriptionType] =
     api.getSubscriptionTypeById(id, fromReadSide).invoke()
 
-  def getSubscriptionTypesById(
-    ids: Set[SubscriptionTypeId],
-    fromReadSide: Boolean
-  ): Future[Map[SubscriptionTypeId, SubscriptionType]] =
+  def getSubscriptionTypesById(ids: Set[SubscriptionTypeId], fromReadSide: Boolean): Future[Seq[SubscriptionType]] =
     api.getSubscriptionTypesById(fromReadSide).invoke(ids)
 
   def findSubscriptionTypes(query: SubscriptionTypeFindQuery): Future[FindResult] =

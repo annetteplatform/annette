@@ -16,66 +16,32 @@
 
 package biz.lobachev.annette.application.impl.application
 
-import biz.lobachev.annette.application.impl.application.dao.ApplicationCassandraDbDao
-import com.datastax.driver.core.BoundStatement
+import biz.lobachev.annette.application.impl.application.dao.ApplicationDbDao
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
-import org.slf4j.LoggerFactory
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
 private[impl] class ApplicationDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: ApplicationCassandraDbDao
-) extends ReadSideProcessor[ApplicationEntity.Event] {
-
-  val log = LoggerFactory.getLogger(this.getClass)
+  dbDao: ApplicationDbDao
+)(implicit ec: ExecutionContext)
+    extends ReadSideProcessor[ApplicationEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[ApplicationEntity.Event] =
     readSide
       .builder[ApplicationEntity.Event]("application-cassandra")
       .setGlobalPrepare(dbDao.createTables)
-      .setPrepare(_ => dbDao.prepareStatements())
-      .setEventHandler[ApplicationEntity.ApplicationCreated](e => createApplication(e.event))
-      .setEventHandler[ApplicationEntity.ApplicationNameUpdated](e => updateApplicationName(e.event))
-      .setEventHandler[ApplicationEntity.ApplicationCaptionUpdated](e => updateApplicationCaption(e.event))
-      .setEventHandler[ApplicationEntity.ApplicationTranslationsUpdated](e => updateApplicationTranslations(e.event))
-      .setEventHandler[ApplicationEntity.ApplicationServerUrlUpdated](e => updateApplicationServerUrl(e.event))
-      .setEventHandler[ApplicationEntity.ApplicationDeleted](e => deleteApplication(e.event))
+      .setEventHandler[ApplicationEntity.ApplicationCreated](handle(dbDao.createApplication))
+      .setEventHandler[ApplicationEntity.ApplicationNameUpdated](handle(dbDao.updateApplicationName))
+      .setEventHandler[ApplicationEntity.ApplicationCaptionUpdated](handle(dbDao.updateApplicationCaption))
+      .setEventHandler[ApplicationEntity.ApplicationTranslationsUpdated](handle(dbDao.updateApplicationTranslations))
+      .setEventHandler[ApplicationEntity.ApplicationServerUrlUpdated](handle(dbDao.updateApplicationServerUrl))
+      .setEventHandler[ApplicationEntity.ApplicationDeleted](handle(dbDao.deleteApplication))
       .build()
 
   def aggregateTags: Set[AggregateEventTag[ApplicationEntity.Event]] = ApplicationEntity.Event.Tag.allTags
-
-  def createApplication(event: ApplicationEntity.ApplicationCreated): Future[Seq[BoundStatement]] =
-    Future.successful(
-      dbDao.createApplication(event)
-    )
-
-  def updateApplicationName(event: ApplicationEntity.ApplicationNameUpdated): Future[Seq[BoundStatement]] =
-    Future.successful(
-      dbDao.updateApplicationName(event)
-    )
-
-  def updateApplicationCaption(event: ApplicationEntity.ApplicationCaptionUpdated): Future[Seq[BoundStatement]] =
-    Future.successful(
-      dbDao.updateApplicationCaption(event)
-    )
-
-  def updateApplicationTranslations(
-    event: ApplicationEntity.ApplicationTranslationsUpdated
-  ): Future[Seq[BoundStatement]] =
-    Future.successful(
-      dbDao.updateApplicationTranslations(event)
-    )
-
-  def updateApplicationServerUrl(event: ApplicationEntity.ApplicationServerUrlUpdated): Future[Seq[BoundStatement]] =
-    Future.successful(
-      dbDao.updateApplicationServerUrl(event)
-    )
-
-  def deleteApplication(event: ApplicationEntity.ApplicationDeleted): Future[Seq[BoundStatement]] =
-    Future.successful(
-      dbDao.deleteApplication(event)
-    )
 
 }

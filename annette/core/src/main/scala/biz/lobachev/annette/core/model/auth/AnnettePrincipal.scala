@@ -28,12 +28,12 @@ case class AnnettePrincipal(principalType: String, principalId: String) extends 
 object AnnettePrincipal {
   implicit val format = Json.format[AnnettePrincipal]
 
-  def fromCode(code: String): Option[AnnettePrincipal] = {
+  def fromCode(code: String): AnnettePrincipal = {
     val arr = code.split("~")
     if (arr.length == 2)
-      Some(AnnettePrincipal(arr(0), arr(1)))
+      AnnettePrincipal(arr(0), arr(1))
     else
-      None
+      AnnettePrincipal(code, "")
   }
 }
 

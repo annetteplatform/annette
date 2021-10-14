@@ -16,37 +16,29 @@
 
 package biz.lobachev.annette.org_structure.impl.role
 
-import biz.lobachev.annette.org_structure.impl.role.OrgRoleEntity._
-import biz.lobachev.annette.org_structure.impl.role.dao.OrgRoleCassandraDbDao
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
+import biz.lobachev.annette.org_structure.impl.role.dao.OrgRoleDbDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
 private[impl] class OrgRoleDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: OrgRoleCassandraDbDao
-) extends ReadSideProcessor[OrgRoleEntity.Event] {
+  dbDao: OrgRoleDbDao
+)(implicit ec: ExecutionContext)
+    extends ReadSideProcessor[OrgRoleEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler() =
     readSide
       .builder[OrgRoleEntity.Event]("role-cassandra")
       .setGlobalPrepare(dbDao.createTables)
-      .setPrepare(_ => dbDao.prepareStatements())
-      .setEventHandler[OrgRoleEntity.OrgRoleCreated](e => createOrgRole(e.event))
-      .setEventHandler[OrgRoleEntity.OrgRoleUpdated](e => updateOrgRole(e.event))
-      .setEventHandler[OrgRoleEntity.OrgRoleDeleted](e => deleteOrgRole(e.event))
+      .setEventHandler[OrgRoleEntity.OrgRoleCreated](handle(dbDao.createOrgRole))
+      .setEventHandler[OrgRoleEntity.OrgRoleUpdated](handle(dbDao.updateOrgRole))
+      .setEventHandler[OrgRoleEntity.OrgRoleDeleted](handle(dbDao.deleteOrgRole))
       .build()
 
   def aggregateTags = OrgRoleEntity.Event.Tag.allTags
-
-  private def createOrgRole(event: OrgRoleCreated) =
-    Future.successful(dbDao.createOrgRole(event))
-
-  private def updateOrgRole(event: OrgRoleUpdated) =
-    Future.successful(dbDao.updateOrgRole(event))
-
-  private def deleteOrgRole(event: OrgRoleDeleted) =
-    Future.successful(dbDao.deleteOrgRole(event))
 
 }

@@ -16,22 +16,26 @@
 
 package biz.lobachev.annette.subscription.impl.subscription
 
-import biz.lobachev.annette.subscription.impl.subscription.dao.SubscriptionCassandraDbDao
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
+import biz.lobachev.annette.subscription.impl.subscription.dao.SubscriptionDbDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
+import scala.concurrent.ExecutionContext
+
 private[impl] class SubscriptionDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: SubscriptionCassandraDbDao
-) extends ReadSideProcessor[SubscriptionEntity.Event] {
+  dbDao: SubscriptionDbDao
+)(implicit ec: ExecutionContext)
+    extends ReadSideProcessor[SubscriptionEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler() =
     readSide
       .builder[SubscriptionEntity.Event]("subscription-cassandra")
       .setGlobalPrepare(dbDao.createTables)
-      .setPrepare(_ => dbDao.prepareStatements())
-      .setEventHandler[SubscriptionEntity.SubscriptionCreated](e => dbDao.createSubscription(e.event))
-      .setEventHandler[SubscriptionEntity.SubscriptionDeleted](e => dbDao.deleteSubscription(e.event))
+      .setEventHandler[SubscriptionEntity.SubscriptionCreated](handle(dbDao.createSubscription))
+      .setEventHandler[SubscriptionEntity.SubscriptionDeleted](handle(dbDao.deleteSubscription))
       .build()
 
   def aggregateTags = SubscriptionEntity.Event.Tag.allTags

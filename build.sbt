@@ -139,6 +139,7 @@ lazy val `microservice-core` = (project in file("annette/microservice-core"))
     ) ++ Dependencies.tests
       ++ Dependencies.elastic
       ++ Dependencies.lagomAkkaDiscovery
+      ++ Dependencies.quill
   )
   .settings(annetteSettings: _*)
   .dependsOn(
@@ -430,7 +431,7 @@ def personsProject(pr: Project) =
         lagomScaladslTestKit,
         Dependencies.macwire,
         Dependencies.chimney
-      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
+      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery ++ Dependencies.quill
     )
     .settings(lagomForkedTestSettings: _*)
     .settings(confDirSettings: _*)

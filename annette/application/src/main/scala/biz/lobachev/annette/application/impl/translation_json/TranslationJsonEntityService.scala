@@ -22,7 +22,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.application.api.translation._
-import biz.lobachev.annette.application.impl.translation_json.dao.TranslationJsonCassandraDbDao
+import biz.lobachev.annette.application.impl.translation_json.dao.TranslationJsonDbDao
 import biz.lobachev.annette.core.model.LanguageId
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
@@ -35,7 +35,7 @@ import scala.util.Try
 
 class TranslationJsonEntityService(
   clusterSharding: ClusterSharding,
-  dbDao: TranslationJsonCassandraDbDao,
+  dbDao: TranslationJsonDbDao,
   config: Config
 )(implicit
   ec: ExecutionContext,

@@ -16,32 +16,33 @@
 
 package biz.lobachev.annette.cms.impl.space
 
-import biz.lobachev.annette.cms.impl.space.dao.SpaceCassandraDbDao
+import biz.lobachev.annette.cms.impl.space.dao.SpaceDbDao
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
-import org.slf4j.LoggerFactory
+
+import scala.concurrent.ExecutionContext
 
 private[impl] class SpaceDbEventProcessor(
   readSide: CassandraReadSide,
-  casDao: SpaceCassandraDbDao
-) extends ReadSideProcessor[SpaceEntity.Event] {
-
-  val log = LoggerFactory.getLogger(this.getClass)
+  dbDao: SpaceDbDao
+)(implicit ec: ExecutionContext)
+    extends ReadSideProcessor[SpaceEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[SpaceEntity.Event] =
     readSide
-      .builder[SpaceEntity.Event]("cms-space-cas")
-      .setGlobalPrepare(() => casDao.createTables())
-      .setPrepare(_ => casDao.prepareStatements())
-      .setEventHandler[SpaceEntity.SpaceCreated](e => casDao.createSpace(e.event))
-      .setEventHandler[SpaceEntity.SpaceNameUpdated](e => casDao.updateSpaceName(e.event))
-      .setEventHandler[SpaceEntity.SpaceDescriptionUpdated](e => casDao.updateSpaceDescription(e.event))
-      .setEventHandler[SpaceEntity.SpaceCategoryUpdated](e => casDao.updateSpaceCategory(e.event))
-      .setEventHandler[SpaceEntity.SpaceTargetPrincipalAssigned](e => casDao.assignSpaceTargetPrincipal(e.event))
-      .setEventHandler[SpaceEntity.SpaceTargetPrincipalUnassigned](e => casDao.unassignSpaceTargetPrincipal(e.event))
-      .setEventHandler[SpaceEntity.SpaceActivated](e => casDao.activateSpace(e.event))
-      .setEventHandler[SpaceEntity.SpaceDeactivated](e => casDao.deactivateSpace(e.event))
-      .setEventHandler[SpaceEntity.SpaceDeleted](e => casDao.deleteSpace(e.event))
+      .builder[SpaceEntity.Event]("space-cas")
+      .setGlobalPrepare(dbDao.createTables)
+      .setEventHandler[SpaceEntity.SpaceCreated](handle(dbDao.createSpace))
+      .setEventHandler[SpaceEntity.SpaceNameUpdated](handle(dbDao.updateSpaceName))
+      .setEventHandler[SpaceEntity.SpaceDescriptionUpdated](handle(dbDao.updateSpaceDescription))
+      .setEventHandler[SpaceEntity.SpaceCategoryUpdated](handle(dbDao.updateSpaceCategory))
+      .setEventHandler[SpaceEntity.SpaceTargetPrincipalAssigned](handle(dbDao.assignSpaceTargetPrincipal))
+      .setEventHandler[SpaceEntity.SpaceTargetPrincipalUnassigned](handle(dbDao.unassignSpaceTargetPrincipal))
+      .setEventHandler[SpaceEntity.SpaceActivated](handle(dbDao.activateSpace))
+      .setEventHandler[SpaceEntity.SpaceDeactivated](handle(dbDao.deactivateSpace))
+      .setEventHandler[SpaceEntity.SpaceDeleted](handle(dbDao.deleteSpace))
       .build()
 
   def aggregateTags: Set[AggregateEventTag[SpaceEntity.Event]] = SpaceEntity.Event.Tag.allTags

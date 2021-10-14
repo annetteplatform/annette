@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.cms.impl.category
 
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
@@ -27,32 +28,17 @@ class CategoryIndexEventProcessor(
   readSideId: String
 )(implicit
   ec: ExecutionContext
-) extends ReadSideProcessor[CategoryEntity.Event] {
+) extends ReadSideProcessor[CategoryEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler() =
     readSide
       .builder[CategoryEntity.Event](readSideId)
       .setGlobalPrepare(indexDao.createEntityIndex)
-      .setEventHandler[CategoryEntity.CategoryCreated](e => createCategory(e.event))
-      .setEventHandler[CategoryEntity.CategoryUpdated](e => updateCategory(e.event))
-      .setEventHandler[CategoryEntity.CategoryDeleted](e => deleteCategory(e.event))
+      .setEventHandler[CategoryEntity.CategoryCreated](handle(indexDao.createCategory))
+      .setEventHandler[CategoryEntity.CategoryUpdated](handle(indexDao.updateCategory))
+      .setEventHandler[CategoryEntity.CategoryDeleted](handle(indexDao.deleteCategory))
       .build()
 
   def aggregateTags = CategoryEntity.Event.Tag.allTags
-
-  private def createCategory(event: CategoryEntity.CategoryCreated) =
-    for {
-      _ <- indexDao.createCategory(event)
-    } yield List.empty
-
-  private def updateCategory(event: CategoryEntity.CategoryUpdated) =
-    for {
-      _ <- indexDao.updateCategory(event)
-    } yield List.empty
-
-  private def deleteCategory(event: CategoryEntity.CategoryDeleted) =
-    for {
-      _ <- indexDao.deleteCategory(event)
-    } yield List.empty
-
 }

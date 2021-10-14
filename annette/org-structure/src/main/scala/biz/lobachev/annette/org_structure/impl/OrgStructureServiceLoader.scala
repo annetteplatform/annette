@@ -26,13 +26,13 @@ import biz.lobachev.annette.org_structure.impl.category.{
   CategoryEntityService,
   CategoryIndexEventProcessor
 }
-import biz.lobachev.annette.org_structure.impl.category.dao.{CategoryCassandraDbDao, CategoryIndexDao}
+import biz.lobachev.annette.org_structure.impl.category.dao.{CategoryDbDao, CategoryIndexDao}
 import biz.lobachev.annette.org_structure.impl.category.model.CategorySerializerRegistry
 import biz.lobachev.annette.org_structure.impl.hierarchy._
-import biz.lobachev.annette.org_structure.impl.hierarchy.dao.{HierarchyCassandraDbDao, HierarchyIndexDao}
+import biz.lobachev.annette.org_structure.impl.hierarchy.dao.{HierarchyDbDao, HierarchyIndexDao}
 import biz.lobachev.annette.org_structure.impl.hierarchy.entity.{HierarchyEntity, HierarchySerializerRegistry}
 import biz.lobachev.annette.org_structure.impl.role._
-import biz.lobachev.annette.org_structure.impl.role.dao.{OrgRoleCassandraDbDao, OrgRoleIndexDao}
+import biz.lobachev.annette.org_structure.impl.role.dao.{OrgRoleDbDao, OrgRoleIndexDao}
 import biz.lobachev.annette.org_structure.impl.role.model.OrgRoleSerializerRegistry
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
@@ -76,7 +76,7 @@ abstract class OrgStructureServiceApplication(context: LagomApplicationContext)
   override lazy val lagomServer = serverFor[OrgStructureServiceApi](wire[OrgStructureServiceApiImpl])
 
   lazy val hierarchyElastic       = wire[HierarchyIndexDao]
-  lazy val hierarchyRepository    = wire[HierarchyCassandraDbDao]
+  lazy val hierarchyRepository    = wire[HierarchyDbDao]
   readSide.register(wire[HierarchyDbEventProcessor])
   readSide.register(wire[HierarchyIndexEventProcessor])
   lazy val hierarchyEntityService = wire[HierarchyEntityService]
@@ -88,7 +88,7 @@ abstract class OrgStructureServiceApplication(context: LagomApplicationContext)
 
   lazy val orgRoleElastic       = wire[OrgRoleIndexDao]
   lazy val orgRoleEntityService = wire[OrgRoleEntityService]
-  lazy val orgRoleRepository    = wire[OrgRoleCassandraDbDao]
+  lazy val orgRoleRepository    = wire[OrgRoleDbDao]
   readSide.register(wire[OrgRoleDbEventProcessor])
   readSide.register(wire[OrgRoleIndexEventProcessor])
   clusterSharding.init(
@@ -99,7 +99,7 @@ abstract class OrgStructureServiceApplication(context: LagomApplicationContext)
 
   lazy val categoryElastic       = wire[CategoryIndexDao]
   lazy val categoryEntityService = wire[CategoryEntityService]
-  lazy val categoryRepository    = wire[CategoryCassandraDbDao]
+  lazy val categoryRepository    = wire[CategoryDbDao]
   readSide.register(wire[CategoryDbEventProcessor])
   readSide.register(wire[CategoryIndexEventProcessor])
   clusterSharding.init(

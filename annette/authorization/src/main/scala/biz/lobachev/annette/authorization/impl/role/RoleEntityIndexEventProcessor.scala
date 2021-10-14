@@ -17,43 +17,28 @@
 package biz.lobachev.annette.authorization.impl.role
 
 import biz.lobachev.annette.authorization.impl.role.dao.RoleIndexDao
-import com.datastax.driver.core.BoundStatement
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 private[impl] class RoleEntityIndexEventProcessor(
   readSide: CassandraReadSide,
   indexDao: RoleIndexDao
 )(implicit
   ec: ExecutionContext
-) extends ReadSideProcessor[RoleEntity.Event] {
+) extends ReadSideProcessor[RoleEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler(): ReadSideProcessor.ReadSideHandler[RoleEntity.Event] =
     readSide
       .builder[RoleEntity.Event]("role-indexing")
       .setGlobalPrepare(indexDao.createEntityIndex)
-      .setEventHandler[RoleEntity.RoleCreated](e => createRole(e.event))
-      .setEventHandler[RoleEntity.RoleUpdated](e => updateRole(e.event))
-      .setEventHandler[RoleEntity.RoleDeleted](e => deleteRole(e.event))
+      .setEventHandler[RoleEntity.RoleCreated](handle(indexDao.createRole))
+      .setEventHandler[RoleEntity.RoleUpdated](handle(indexDao.updateRole))
+      .setEventHandler[RoleEntity.RoleDeleted](handle(indexDao.deleteRole))
       .build()
 
   def aggregateTags: Set[AggregateEventTag[RoleEntity.Event]] = RoleEntity.Event.Tag.allTags
-
-  def createRole(event: RoleEntity.RoleCreated): Future[Seq[BoundStatement]] =
-    for {
-      _ <- indexDao.createRole(event)
-    } yield List.empty
-
-  def updateRole(event: RoleEntity.RoleUpdated): Future[Seq[BoundStatement]] =
-    for {
-      _ <- indexDao.updateRole(event)
-    } yield List.empty
-
-  def deleteRole(event: RoleEntity.RoleDeleted): Future[Seq[BoundStatement]] =
-    for {
-      _ <- indexDao.deleteRole(event)
-    } yield List.empty
-
 }

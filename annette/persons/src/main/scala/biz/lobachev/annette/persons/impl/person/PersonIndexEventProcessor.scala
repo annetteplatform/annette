@@ -16,48 +16,30 @@
 
 package biz.lobachev.annette.persons.impl.person
 
-import akka.Done
-import biz.lobachev.annette.persons.impl.person.PersonEntity._
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import biz.lobachev.annette.persons.impl.person.dao.PersonIndexDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 private[impl] class PersonIndexEventProcessor(
   readSide: CassandraReadSide,
   indexDao: PersonIndexDao
 )(implicit
   ec: ExecutionContext
-) extends ReadSideProcessor[PersonEntity.Event] {
+) extends ReadSideProcessor[PersonEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler() =
     readSide
       .builder[PersonEntity.Event]("person-indexing")
-      .setGlobalPrepare(globalPrepare)
-      .setEventHandler[PersonEntity.PersonCreated](e => createPerson(e.event))
-      .setEventHandler[PersonEntity.PersonUpdated](e => updatePerson(e.event))
-      .setEventHandler[PersonEntity.PersonDeleted](e => deletePerson(e.event))
+      .setGlobalPrepare(indexDao.createEntityIndex)
+      .setEventHandler[PersonEntity.PersonCreated](handle(indexDao.createPerson))
+      .setEventHandler[PersonEntity.PersonUpdated](handle(indexDao.updatePerson))
+      .setEventHandler[PersonEntity.PersonDeleted](handle(indexDao.deletePerson))
       .build()
 
   def aggregateTags = PersonEntity.Event.Tag.allTags
-
-  def globalPrepare(): Future[Done] =
-    indexDao.createEntityIndex()
-
-  private def createPerson(event: PersonCreated) =
-    for {
-      _ <- indexDao.createPerson(event)
-    } yield Nil
-
-  private def updatePerson(event: PersonUpdated) =
-    for {
-      _ <- indexDao.updatePerson(event)
-    } yield Nil
-
-  private def deletePerson(event: PersonDeleted) =
-    for {
-      _ <- indexDao.deletePerson(event)
-    } yield Nil
 
 }

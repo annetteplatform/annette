@@ -26,7 +26,7 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.subscription.api.subscription._
 import biz.lobachev.annette.subscription.api.subscription_type.SubscriptionTypeId
 import biz.lobachev.annette.subscription.impl.subscription.SubscriptionEntity._
-import biz.lobachev.annette.subscription.impl.subscription.dao.{SubscriptionCassandraDbDao, SubscriptionIndexDao}
+import biz.lobachev.annette.subscription.impl.subscription.dao.{SubscriptionDbDao, SubscriptionIndexDao}
 import com.typesafe.config.Config
 import io.scalaland.chimney.dsl._
 
@@ -36,7 +36,7 @@ import scala.util.Try
 
 class SubscriptionEntityService(
   clusterSharding: ClusterSharding,
-  dbDao: SubscriptionCassandraDbDao,
+  dbDao: SubscriptionDbDao,
   indexDao: SubscriptionIndexDao,
   config: Config
 )(implicit

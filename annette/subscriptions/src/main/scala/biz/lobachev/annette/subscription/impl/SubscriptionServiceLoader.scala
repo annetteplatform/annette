@@ -26,13 +26,10 @@ import biz.lobachev.annette.subscription.impl.subscription_type.{
   SubscriptionTypeEntityService,
   SubscriptionTypeIndexEventProcessor
 }
-import biz.lobachev.annette.subscription.impl.subscription_type.dao.{
-  SubscriptionTypeCassandraDbDao,
-  SubscriptionTypeIndexDao
-}
+import biz.lobachev.annette.subscription.impl.subscription_type.dao.{SubscriptionTypeDbDao, SubscriptionTypeIndexDao}
 import biz.lobachev.annette.subscription.impl.subscription_type.model.SubscriptionTypeSerializerRegistry
 import biz.lobachev.annette.subscription.impl.subscription._
-import biz.lobachev.annette.subscription.impl.subscription.dao.{SubscriptionCassandraDbDao, SubscriptionIndexDao}
+import biz.lobachev.annette.subscription.impl.subscription.dao.{SubscriptionDbDao, SubscriptionIndexDao}
 import biz.lobachev.annette.subscription.impl.subscription.model.SubscriptionSerializerRegistry
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaClientComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
@@ -76,7 +73,7 @@ abstract class SubscriptionServiceApplication(context: LagomApplicationContext)
   override lazy val lagomServer   = serverFor[SubscriptionServiceApi](wire[SubscriptionServiceApiImpl])
   lazy val subscriptionIndexDao   = wire[SubscriptionIndexDao]
   lazy val subscriptionService    = wire[SubscriptionEntityService]
-  lazy val subscriptionRepository = wire[SubscriptionCassandraDbDao]
+  lazy val subscriptionRepository = wire[SubscriptionDbDao]
   readSide.register(wire[SubscriptionDbEventProcessor])
   readSide.register(wire[SubscriptionIndexEventProcessor])
   clusterSharding.init(
@@ -87,7 +84,7 @@ abstract class SubscriptionServiceApplication(context: LagomApplicationContext)
 
   lazy val subscriptionTypeEntityService = wire[SubscriptionTypeEntityService]
   lazy val subscriptionTypeIndexDao      = wire[SubscriptionTypeIndexDao]
-  lazy val subscriptionTypeRepository    = wire[SubscriptionTypeCassandraDbDao]
+  lazy val subscriptionTypeRepository    = wire[SubscriptionTypeDbDao]
   readSide.register(wire[SubscriptionTypeDbEventProcessor])
   readSide.register(wire[SubscriptionTypeIndexEventProcessor])
   clusterSharding.init(

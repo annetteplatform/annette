@@ -16,36 +16,28 @@
 
 package biz.lobachev.annette.subscription.impl.subscription_type
 
-import biz.lobachev.annette.subscription.impl.subscription_type.dao.SubscriptionTypeCassandraDbDao
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
+import biz.lobachev.annette.subscription.impl.subscription_type.dao.SubscriptionTypeDbDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
 private[impl] class SubscriptionTypeDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: SubscriptionTypeCassandraDbDao
-) extends ReadSideProcessor[SubscriptionTypeEntity.Event] {
+  dbDao: SubscriptionTypeDbDao
+)(implicit ec: ExecutionContext)
+    extends ReadSideProcessor[SubscriptionTypeEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler() =
     readSide
       .builder[SubscriptionTypeEntity.Event]("subscriptionType-cassandra")
       .setGlobalPrepare(dbDao.createTables)
-      .setPrepare(_ => dbDao.prepareStatements())
-      .setEventHandler[SubscriptionTypeEntity.SubscriptionTypeCreated](e => createSubscriptionType(e.event))
-      .setEventHandler[SubscriptionTypeEntity.SubscriptionTypeUpdated](e => updateSubscriptionType(e.event))
-      .setEventHandler[SubscriptionTypeEntity.SubscriptionTypeDeleted](e => deleteSubscriptionType(e.event))
+      .setEventHandler[SubscriptionTypeEntity.SubscriptionTypeCreated](handle(dbDao.createSubscriptionType))
+      .setEventHandler[SubscriptionTypeEntity.SubscriptionTypeUpdated](handle(dbDao.updateSubscriptionType))
+      .setEventHandler[SubscriptionTypeEntity.SubscriptionTypeDeleted](handle(dbDao.deleteSubscriptionType))
       .build()
 
   def aggregateTags = SubscriptionTypeEntity.Event.Tag.allTags
-
-  private def createSubscriptionType(event: SubscriptionTypeEntity.SubscriptionTypeCreated) =
-    Future.successful(dbDao.createSubscriptionType(event))
-
-  private def updateSubscriptionType(event: SubscriptionTypeEntity.SubscriptionTypeUpdated) =
-    Future.successful(dbDao.updateSubscriptionType(event))
-
-  private def deleteSubscriptionType(event: SubscriptionTypeEntity.SubscriptionTypeDeleted) =
-    Future.successful(dbDao.deleteSubscriptionType(event))
-
 }

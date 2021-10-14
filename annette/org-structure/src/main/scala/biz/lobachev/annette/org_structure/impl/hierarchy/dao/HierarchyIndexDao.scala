@@ -16,13 +16,14 @@
 
 package biz.lobachev.annette.org_structure.impl.hierarchy.dao
 
+import akka.Done
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
 import biz.lobachev.annette.org_structure.api.hierarchy
 import biz.lobachev.annette.org_structure.api.hierarchy.{CompositeOrgItemId, ItemTypes, OrgItemFindQuery, OrgItemKey}
-import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import biz.lobachev.annette.org_structure.impl.hierarchy.entity.HierarchyEntity
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
@@ -63,24 +64,41 @@ class HierarchyIndexDao(client: ElasticClient)(implicit
     deleteIndexDoc(event.orgId)
 
   def createUnit(event: HierarchyEntity.UnitCreated) =
-    createIndexDoc(
-      event.unitId,
-      "id"         -> event.unitId,
-      "orgId"      -> OrgItemKey.extractOrgId(event.unitId),
-      "parentId"   -> event.parentId,
-      "rootPath"   -> event.rootPath,
-      "name"       -> event.name,
-      "type"       -> ItemTypes.Unit.toString,
-      "children"   -> Seq.empty,
-      "categoryId" -> event.categoryId,
-      "level"      -> (event.rootPath.length - 1),
-      "source"     -> event.source,
-      "externalId" -> event.externalId,
-      "updatedAt"  -> event.createdAt
-    )
+    for {
+      _ <- createIndexDoc(
+             event.unitId,
+             "id"         -> event.unitId,
+             "orgId"      -> OrgItemKey.extractOrgId(event.unitId),
+             "parentId"   -> event.parentId,
+             "rootPath"   -> event.rootPath,
+             "name"       -> event.name,
+             "type"       -> ItemTypes.Unit.toString,
+             "children"   -> Seq.empty,
+             "categoryId" -> event.categoryId,
+             "level"      -> (event.rootPath.length - 1),
+             "source"     -> event.source,
+             "externalId" -> event.externalId,
+             "updatedAt"  -> event.createdAt,
+             "updatedBy"  -> event.createdBy
+           )
+      _ <- updateIndexDoc(
+             event.parentId,
+             "children"  -> event.parentChildren,
+             "updatedAt" -> event.createdAt,
+             "updatedBy" -> event.createdBy
+           )
+    } yield Done
 
   def deleteUnit(event: HierarchyEntity.UnitDeleted) =
-    deleteIndexDoc(event.unitId)
+    for {
+      _ <- deleteIndexDoc(event.unitId)
+      _ <- updateIndexDoc(
+             event.parentId,
+             "children"  -> event.parentChildren,
+             "updatedAt" -> event.deletedAt,
+             "updatedBy" -> event.deletedBy
+           )
+    } yield Done
 
   def assignCategory(event: HierarchyEntity.CategoryAssigned) =
     updateIndexDoc(
@@ -101,97 +119,153 @@ class HierarchyIndexDao(client: ElasticClient)(implicit
     )
 
   def createPosition(event: HierarchyEntity.PositionCreated) =
-    createIndexDoc(
-      event.positionId,
-      "id"         -> event.positionId,
-      "orgId"      -> OrgItemKey.extractOrgId(event.positionId),
-      "parentId"   -> event.parentId,
-      "rootPath"   -> event.rootPath,
-      "name"       -> event.name,
-      "type"       -> ItemTypes.Position.toString,
-      "categoryId" -> event.categoryId,
-      "limit"      -> event.limit,
-      "level"      -> (event.rootPath.length - 1),
-      "source"     -> event.source,
-      "externalId" -> event.externalId,
-      "updatedAt"  -> event.createdAt
-    )
+    for {
+      _ <- createIndexDoc(
+             event.positionId,
+             "id"         -> event.positionId,
+             "orgId"      -> OrgItemKey.extractOrgId(event.positionId),
+             "parentId"   -> event.parentId,
+             "rootPath"   -> event.rootPath,
+             "name"       -> event.name,
+             "type"       -> ItemTypes.Position.toString,
+             "categoryId" -> event.categoryId,
+             "persons"    -> Seq.empty,
+             "orgRoles"   -> Seq.empty,
+             "limit"      -> event.limit,
+             "level"      -> (event.rootPath.length - 1),
+             "source"     -> event.source,
+             "externalId" -> event.externalId,
+             "updatedAt"  -> event.createdAt,
+             "updatedBy"  -> event.createdBy.code
+           )
+      _ <- updateIndexDoc(
+             event.parentId,
+             "children"  -> event.parentChildren,
+             "updatedAt" -> event.createdAt,
+             "updatedBy" -> event.createdBy
+           )
+    } yield Done
 
   def deletePosition(event: HierarchyEntity.PositionDeleted) =
-    deleteIndexDoc(event.positionId)
+    for {
+      _ <- deleteIndexDoc(event.positionId)
+      _ <- updateIndexDoc(
+             event.parentId,
+             "children"  -> event.parentChildren,
+             "updatedAt" -> event.deletedAt,
+             "updatedBy" -> event.deletedBy
+           )
+    } yield Done
 
   def updateName(event: HierarchyEntity.NameUpdated) =
     updateIndexDoc(
       event.itemId,
       "name"      -> event.name,
-      "updatedAt" -> event.updatedAt
+      "updatedAt" -> event.updatedAt,
+      "updatedBy" -> event.updatedBy
     )
 
   def updateSource(event: HierarchyEntity.SourceUpdated) =
     updateIndexDoc(
       event.itemId,
       "source"    -> event.source,
-      "updatedAt" -> event.updatedAt
+      "updatedAt" -> event.updatedAt,
+      "updatedBy" -> event.updatedBy
     )
 
   def updateExternalId(event: HierarchyEntity.ExternalIdUpdated) =
     updateIndexDoc(
       event.itemId,
       "externalId" -> event.externalId,
-      "updatedAt"  -> event.updatedAt
+      "updatedAt"  -> event.updatedAt,
+      "updatedBy"  -> event.updatedBy
     )
 
   def changePositionLimit(event: HierarchyEntity.PositionLimitChanged) =
     updateIndexDoc(
       event.positionId,
       "limit"     -> event.limit,
-      "updatedAt" -> event.updatedAt
+      "updatedAt" -> event.updatedAt,
+      "updatedBy" -> event.updatedBy
     )
 
-  def updatePersons(
-    positionId: CompositeOrgItemId,
-    persons: Set[CompositeOrgItemId],
-    updatedAt: OffsetDateTime
-  ) =
+  def assignPerson(event: HierarchyEntity.PersonAssigned) =
     updateIndexDoc(
-      positionId,
-      "persons"   -> persons,
-      "updatedAt" -> updatedAt
+      event.positionId,
+      "persons"   -> event.persons,
+      "updatedAt" -> event.updatedAt,
+      "updatedBy" -> event.updatedBy.code
     )
 
-  def updateRoles(
-    positionId: CompositeOrgItemId,
-    roles: Set[OrgRoleId],
-    updatedAt: OffsetDateTime
-  ) =
+  def unassignPerson(event: HierarchyEntity.PersonUnassigned) =
     updateIndexDoc(
-      positionId,
-      "orgRoles"  -> roles,
-      "updatedAt" -> updatedAt
+      event.positionId,
+      "persons"   -> event.persons,
+      "updatedAt" -> event.updatedAt,
+      "updatedBy" -> event.updatedBy.code
+    )
+
+  def assignOrgRole(event: HierarchyEntity.OrgRoleAssigned) =
+    updateIndexDoc(
+      event.positionId,
+      "orgRoles"  -> event.orgRoles,
+      "updatedAt" -> event.updatedAt,
+      "updatedBy" -> event.updatedBy.code
+    )
+
+  def unassignOrgRole(event: HierarchyEntity.OrgRoleUnassigned) =
+    updateIndexDoc(
+      event.positionId,
+      "orgRoles"  -> event.orgRoles,
+      "updatedAt" -> event.updatedAt,
+      "updatedBy" -> event.updatedBy.code
+    )
+
+  def moveItem(event: HierarchyEntity.ItemMoved) =
+    for {
+      _ <- updateIndexDoc(
+             event.itemId,
+             "parentId"  -> event.newParentId,
+             "updatedAt" -> event.updatedAt,
+             "updatedBy" -> event.updatedBy.code
+           )
+      _ <- updateChildren(event.oldParentId, event.oldParentChildren, event.updatedBy, event.updatedAt)
+      _ <- updateChildren(event.newParentId, event.newParentChildren, event.updatedBy, event.updatedAt)
+    } yield Done
+
+  def changeItemOrder(event: HierarchyEntity.ItemOrderChanged) =
+    for {
+      _ <- updateChildren(event.parentId, event.parentChildren, event.updatedBy, event.updatedAt)
+    } yield Done
+
+  def updateRootPath(event: HierarchyEntity.RootPathUpdated) =
+    updateIndexDoc(
+      event.orgItemId,
+      "rootPath" -> event.rootPath
     )
 
   def updateChildren(
     itemId: CompositeOrgItemId,
     children: Seq[CompositeOrgItemId],
+    updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime
   ) =
     updateIndexDoc(
       itemId,
       "children"  -> children,
-      "updatedAt" -> updatedAt
+      "updatedAt" -> updatedAt,
+      "updatedBy" -> updatedBy
     )
 
   def updateRootPaths(
-    rootPaths: Map[CompositeOrgItemId, Seq[CompositeOrgItemId]],
-    updatedAt: OffsetDateTime
+    rootPaths: Map[CompositeOrgItemId, Seq[CompositeOrgItemId]]
   ) =
     Source(rootPaths.toSeq)
       .mapAsync(1) {
         case (itemId, rootPath) =>
           updateIndexDoc(
             itemId,
-            "rootPath"  -> rootPath,
-            "updatedAt" -> updatedAt
+            "rootPath" -> rootPath
           )
       }
       .runWith(Sink.ignore)

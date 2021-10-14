@@ -16,7 +16,8 @@
 
 package biz.lobachev.annette.subscription.impl.subscription
 
-import biz.lobachev.annette.subscription.impl.subscription.dao.{SubscriptionIndexDao}
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
+import biz.lobachev.annette.subscription.impl.subscription.dao.SubscriptionIndexDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
@@ -27,22 +28,15 @@ private[impl] class SubscriptionIndexEventProcessor(
   indexDao: SubscriptionIndexDao
 )(implicit
   ec: ExecutionContext
-) extends ReadSideProcessor[SubscriptionEntity.Event] {
+) extends ReadSideProcessor[SubscriptionEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler() =
     readSide
       .builder[SubscriptionEntity.Event]("subscription-indexing")
       .setGlobalPrepare(() => indexDao.createEntityIndex())
-      .setEventHandler[SubscriptionEntity.SubscriptionCreated](e =>
-        indexDao
-          .createSubscription(e.event)
-          .map(_ => Nil)
-      )
-      .setEventHandler[SubscriptionEntity.SubscriptionDeleted](e =>
-        indexDao
-          .deleteSubscription(e.event)
-          .map(_ => Nil)
-      )
+      .setEventHandler[SubscriptionEntity.SubscriptionCreated](handle(indexDao.createSubscription))
+      .setEventHandler[SubscriptionEntity.SubscriptionDeleted](handle(indexDao.deleteSubscription))
       .build()
 
   def aggregateTags = SubscriptionEntity.Event.Tag.allTags

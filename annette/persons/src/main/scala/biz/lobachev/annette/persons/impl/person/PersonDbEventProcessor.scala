@@ -16,49 +16,29 @@
 
 package biz.lobachev.annette.persons.impl.person
 
-import biz.lobachev.annette.persons.impl.person.PersonEntity._
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import biz.lobachev.annette.persons.impl.person.dao.PersonDbDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
-import scala.concurrent.Future
+import scala.concurrent.ExecutionContext
 
 private[impl] class PersonDbEventProcessor(
   readSide: CassandraReadSide,
   dbDao: PersonDbDao
-) extends ReadSideProcessor[PersonEntity.Event] {
+)(implicit ec: ExecutionContext)
+    extends ReadSideProcessor[PersonEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler() =
     readSide
       .builder[PersonEntity.Event]("person-cassandra")
       .setGlobalPrepare(dbDao.createTables)
-      .setPrepare(_ => dbDao.prepareStatements())
-      .setEventHandler[PersonEntity.PersonCreated](e => createPerson(e.event))
-      .setEventHandler[PersonEntity.PersonUpdated](e => updatePerson(e.event))
-      .setEventHandler[PersonEntity.PersonDeleted](e => deletePerson(e.event))
+      .setEventHandler[PersonEntity.PersonCreated](handle(dbDao.createPerson))
+      .setEventHandler[PersonEntity.PersonUpdated](handle(dbDao.updatePerson))
+      .setEventHandler[PersonEntity.PersonDeleted](handle(dbDao.deletePerson))
       .build()
 
   def aggregateTags = PersonEntity.Event.Tag.allTags
-
-  private def createPerson(event: PersonCreated) =
-    Future.successful(
-      List(
-        dbDao.createPerson(event)
-      )
-    )
-
-  private def updatePerson(event: PersonUpdated) =
-    Future.successful(
-      List(
-        dbDao.updatePerson(event)
-      )
-    )
-
-  private def deletePerson(event: PersonDeleted) =
-    Future.successful(
-      List(
-        dbDao.deletePerson(event)
-      )
-    )
 
 }
