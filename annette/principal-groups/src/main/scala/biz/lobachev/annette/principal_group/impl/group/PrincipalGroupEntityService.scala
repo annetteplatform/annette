@@ -26,7 +26,7 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.principal_group.api.group._
 import biz.lobachev.annette.principal_group.impl.group.PrincipalGroupEntity._
-import biz.lobachev.annette.principal_group.impl.group.dao.{PrincipalGroupCassandraDbDao, PrincipalGroupIndexDao}
+import biz.lobachev.annette.principal_group.impl.group.dao.{PrincipalGroupDbDao, PrincipalGroupIndexDao}
 import com.typesafe.config.Config
 import io.scalaland.chimney.dsl._
 
@@ -36,7 +36,7 @@ import scala.util.Try
 
 class PrincipalGroupEntityService(
   clusterSharding: ClusterSharding,
-  dbDao: PrincipalGroupCassandraDbDao,
+  dbDao: PrincipalGroupDbDao,
   indexDao: PrincipalGroupIndexDao,
   config: Config
 )(implicit

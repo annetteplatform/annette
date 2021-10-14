@@ -16,31 +16,33 @@
 
 package biz.lobachev.annette.principal_group.impl.group
 
-import biz.lobachev.annette.principal_group.impl.group.dao.PrincipalGroupCassandraDbDao
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
+import biz.lobachev.annette.principal_group.impl.group.dao.PrincipalGroupDbDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
+import scala.concurrent.ExecutionContext
+
 private[impl] class PrincipalGroupDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: PrincipalGroupCassandraDbDao
-) extends ReadSideProcessor[PrincipalGroupEntity.Event] {
+  dbDao: PrincipalGroupDbDao
+)(implicit ec: ExecutionContext)
+    extends ReadSideProcessor[PrincipalGroupEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler() =
     readSide
       .builder[PrincipalGroupEntity.Event]("principalGroup-cassandra")
       .setGlobalPrepare(dbDao.createTables)
-      .setPrepare(_ => dbDao.prepareStatements())
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupCreated](e => dbDao.createPrincipalGroup(e.event))
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupNameUpdated](e => dbDao.updatePrincipalGroupName(e.event))
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupDescriptionUpdated](e =>
-        dbDao.updatePrincipalGroupDescription(e.event)
+      .setEventHandler[PrincipalGroupEntity.PrincipalGroupCreated](handle(dbDao.createPrincipalGroup))
+      .setEventHandler[PrincipalGroupEntity.PrincipalGroupNameUpdated](handle(dbDao.updatePrincipalGroupName))
+      .setEventHandler[PrincipalGroupEntity.PrincipalGroupDescriptionUpdated](
+        handle(dbDao.updatePrincipalGroupDescription)
       )
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupCategoryUpdated](e =>
-        dbDao.updatePrincipalGroupCategory(e.event)
-      )
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupDeleted](e => dbDao.deletePrincipalGroup(e.event))
-      .setEventHandler[PrincipalGroupEntity.PrincipalAssigned](e => dbDao.assignPrincipal(e.event))
-      .setEventHandler[PrincipalGroupEntity.PrincipalUnassigned](e => dbDao.unassignPrincipal(e.event))
+      .setEventHandler[PrincipalGroupEntity.PrincipalGroupCategoryUpdated](handle(dbDao.updatePrincipalGroupCategory))
+      .setEventHandler[PrincipalGroupEntity.PrincipalGroupDeleted](handle(dbDao.deletePrincipalGroup))
+      .setEventHandler[PrincipalGroupEntity.PrincipalAssigned](handle(dbDao.assignPrincipal))
+      .setEventHandler[PrincipalGroupEntity.PrincipalUnassigned](handle(dbDao.unassignPrincipal))
       .build()
 
   def aggregateTags = PrincipalGroupEntity.Event.Tag.allTags

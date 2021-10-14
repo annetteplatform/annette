@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.principal_group.impl.group
 
+import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import biz.lobachev.annette.principal_group.impl.group.dao.PrincipalGroupIndexDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
@@ -27,37 +28,22 @@ private[impl] class PrincipalGroupIndexEventProcessor(
   indexDao: PrincipalGroupIndexDao
 )(implicit
   ec: ExecutionContext
-) extends ReadSideProcessor[PrincipalGroupEntity.Event] {
+) extends ReadSideProcessor[PrincipalGroupEntity.Event]
+    with SimpleEventHandling {
 
   def buildHandler() =
     readSide
       .builder[PrincipalGroupEntity.Event]("principalGroup-indexing")
       .setGlobalPrepare(() => indexDao.createEntityIndex())
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupCreated](e =>
-        indexDao
-          .createPrincipalGroup(e.event)
-          .map(_ => Nil)
+      .setEventHandler[PrincipalGroupEntity.PrincipalGroupCreated](handle(indexDao.createPrincipalGroup))
+      .setEventHandler[PrincipalGroupEntity.PrincipalGroupNameUpdated](handle(indexDao.updatePrincipalGroupName))
+      .setEventHandler[PrincipalGroupEntity.PrincipalGroupDescriptionUpdated](
+        handle(indexDao.updatePrincipalGroupDescription)
       )
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupNameUpdated](e =>
-        indexDao
-          .updatePrincipalGroupName(e.event)
-          .map(_ => Nil)
+      .setEventHandler[PrincipalGroupEntity.PrincipalGroupCategoryUpdated](
+        handle(indexDao.updatePrincipalGroupCategory)
       )
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupDescriptionUpdated](e =>
-        indexDao
-          .updatePrincipalGroupDescription(e.event)
-          .map(_ => Nil)
-      )
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupCategoryUpdated](e =>
-        indexDao
-          .updatePrincipalGroupCategory(e.event)
-          .map(_ => Nil)
-      )
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupDeleted](e =>
-        indexDao
-          .deletePrincipalGroup(e.event)
-          .map(_ => Nil)
-      )
+      .setEventHandler[PrincipalGroupEntity.PrincipalGroupDeleted](handle(indexDao.deletePrincipalGroup))
       .build()
 
   def aggregateTags = PrincipalGroupEntity.Event.Tag.allTags
