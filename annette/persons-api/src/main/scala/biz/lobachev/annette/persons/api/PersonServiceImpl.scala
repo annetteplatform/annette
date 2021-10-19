@@ -17,6 +17,7 @@
 package biz.lobachev.annette.persons.api
 
 import akka.Done
+import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues}
 import io.scalaland.chimney.dsl._
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.indexing.FindResult
@@ -51,13 +52,40 @@ class PersonServiceImpl(api: PersonServiceApi, implicit val ec: ExecutionContext
 
   override def deletePerson(payload: DeletePersonPayload): Future[Done] = api.deletePerson.invoke(payload)
 
-  override def getPersonById(id: PersonId, fromReadSide: Boolean): Future[Person] =
-    api.getPersonById(id, fromReadSide).invoke()
+  override def getPersonById(
+    id: PersonId,
+    fromReadSide: Boolean,
+    withAttributes: Option[String] = None
+  ): Future[Person] =
+    api.getPersonById(id, fromReadSide, withAttributes).invoke()
 
-  override def getPersonsById(ids: Set[PersonId], fromReadSide: Boolean): Future[Seq[Person]] =
-    api.getPersonsById(fromReadSide).invoke(ids)
+  override def getPersonsById(
+    ids: Set[PersonId],
+    fromReadSide: Boolean,
+    withAttributes: Option[String] = None
+  ): Future[Seq[Person]] =
+    api.getPersonsById(fromReadSide, withAttributes).invoke(ids)
 
   override def findPersons(query: PersonFindQuery): Future[FindResult] = api.findPersons.invoke(query)
+
+  override def getPersonMetadata: Future[Map[String, AttributeMetadata]] = api.getPersonMetadata.invoke()
+
+  override def updatePersonAttributes(payload: UpdatePersonAttributesPayload): Future[Done] =
+    api.updatePersonAttributes.invoke(payload)
+
+  override def getPersonAttributes(
+    id: PersonId,
+    fromReadSide: Boolean,
+    attributes: Option[String]
+  ): Future[AttributeValues] =
+    api.getPersonAttributes(id, fromReadSide, attributes).invoke()
+
+  override def getPersonsAttributes(
+    ids: Set[PersonId],
+    fromReadSide: Boolean,
+    attributes: Option[String]
+  ): Future[Map[String, AttributeValues]] =
+    api.getPersonsAttributes(fromReadSide, attributes).invoke(ids)
 
   // org category methods
 

@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.principal_group.impl.group.dao
+package biz.lobachev.annette.persons.impl.person
 
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.principal_group.api.group.PrincipalGroupId
+import biz.lobachev.annette.microservice_core.attribute.AttributeMetadataValidator
 
-case class AssignmentRecord(
-  groupId: PrincipalGroupId,
-  principal: AnnettePrincipal
-)
+object PersonMetadata extends AttributeMetadataValidator {
+  override def entity: String     = "person"
+  override def configPath: String = "attributes.person-schema"
+
+}

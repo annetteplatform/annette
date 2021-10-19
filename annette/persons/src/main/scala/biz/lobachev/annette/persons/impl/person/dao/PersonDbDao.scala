@@ -32,10 +32,10 @@ private[impl] class PersonDbDao(override val session: CassandraSession)(implicit
 
   import ctx._
 
-  private val personSchema = quote(querySchema[Person]("persons"))
+  private val personSchema = quote(querySchema[PersonRecord]("persons"))
 
-  private implicit val insertPersonMeta = insertMeta[Person]()
-  private implicit val updatePersonMeta = updateMeta[Person](_.id)
+  private implicit val insertPersonMeta = insertMeta[PersonRecord]()
+  private implicit val updatePersonMeta = updateMeta[PersonRecord](_.id)
   println(insertPersonMeta.toString)
   println(updatePersonMeta.toString)
 
@@ -63,7 +63,7 @@ private[impl] class PersonDbDao(override val session: CassandraSession)(implicit
 
   def createPerson(event: PersonCreated): Future[Done] = {
     val person = event
-      .into[Person]
+      .into[PersonRecord]
       .withFieldComputed(_.updatedAt, _.createdAt)
       .withFieldComputed(_.updatedBy, _.createdBy)
       .transform
@@ -71,7 +71,7 @@ private[impl] class PersonDbDao(override val session: CassandraSession)(implicit
   }
 
   def updatePerson(event: PersonUpdated): Future[Done] = {
-    val person = event.transformInto[Person]
+    val person = event.transformInto[PersonRecord]
     ctx.run(personSchema.filter(_.id == lift(person.id)).update(lift(person)))
   }
 
@@ -81,9 +81,9 @@ private[impl] class PersonDbDao(override val session: CassandraSession)(implicit
   def getPersonById(id: PersonId): Future[Option[Person]] =
     ctx
       .run(personSchema.filter(_.id == lift(id)))
-      .map(_.headOption)
+      .map(_.headOption.map(_.toPerson))
 
   def getPersonsById(ids: Set[PersonId]): Future[Seq[Person]] =
-    ctx.run(personSchema.filter(b => liftQuery(ids).contains(b.id)))
+    ctx.run(personSchema.filter(b => liftQuery(ids).contains(b.id))).map(_.map(_.toPerson))
 
 }

@@ -16,6 +16,8 @@
 
 package biz.lobachev.annette.persons.impl.person.model
 
+import biz.lobachev.annette.core.attribute.AttributeValues
+
 import java.time.OffsetDateTime
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
@@ -34,12 +36,20 @@ case class PersonState(
   email: Option[String] = None,      // email
   source: Option[String] = None,
   externalId: Option[String] = None,
+  attributes: AttributeValues = Map.empty,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) {
 
-  def toPerson: Person =
-    this.into[Person].transform
+  def toPerson(withAttributes: Seq[String]): Person = {
+    val selectedAttributes =
+      if (withAttributes.isEmpty) None
+      else Some(withAttributes.map(name => attributes.get(name).map(value => name -> value)).flatten.toMap)
+    this
+      .into[Person]
+      .withFieldConst(_.attributes, selectedAttributes)
+      .transform
+  }
 
 }
 

@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.persons.api.person
 
+import biz.lobachev.annette.core.attribute.AttributeValues
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.CategoryId
@@ -31,6 +32,7 @@ case class UpdatePersonPayload(
   email: Option[String],      // email
   source: Option[String] = None,
   externalId: Option[String] = None,
+  attributes: Option[AttributeValues] = None,
   updatedBy: AnnettePrincipal
 )
 

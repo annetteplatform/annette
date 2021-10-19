@@ -22,6 +22,7 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
+import biz.lobachev.annette.core.attribute.AttributeMetadata
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.persons.api.person._
@@ -68,41 +69,54 @@ class PersonEntityService(
     }
 
   def createPerson(payload: CreatePersonPayload): Future[Done] =
-    refFor(payload.id)
-      .ask[Confirmation](CreatePerson(payload, _))
-      .map(res => convertSuccess(payload.id, res))
+    for {
+      _      <- Future.successful(payload.attributes.map(attributes => PersonMetadata.validateAttributes(attributes)))
+      result <- refFor(payload.id)
+                  .ask[Confirmation](CreatePerson(payload, _))
+                  .map(res => convertSuccess(payload.id, res))
+    } yield result
 
   def updatePerson(payload: UpdatePersonPayload): Future[Done] =
-    refFor(payload.id)
-      .ask[Confirmation](UpdatePerson(payload, _))
-      .map(res => convertSuccess(payload.id, res))
+    for {
+      _      <- Future.successful(payload.attributes.map(attributes => PersonMetadata.validateAttributes(attributes)))
+      result <- refFor(payload.id)
+                  .ask[Confirmation](UpdatePerson(payload, _))
+                  .map(res => convertSuccess(payload.id, res))
+    } yield result
 
   def deletePerson(payload: DeletePersonPayload): Future[Done] =
     refFor(payload.id)
       .ask[Confirmation](DeletePerson(payload, _))
       .map(res => convertSuccess(payload.id, res))
 
-  def getPerson(id: PersonId): Future[Person] =
+  def getPerson(id: PersonId, withAttributes: Seq[String]): Future[Person] =
     refFor(id)
-      .ask[Confirmation](GetPerson(id, _))
+      .ask[Confirmation](GetPerson(id, withAttributes, _))
       .map(res => convertSuccessPerson(id, res))
 
-  def getPersonById(id: PersonId, fromReadSide: Boolean): Future[Person] =
+  def getPersonById(id: PersonId, fromReadSide: Boolean, withAttributes: Option[String] = None): Future[Person] = {
+    val attributes = extractAttributes(withAttributes)
     if (fromReadSide)
       dbDao
         .getPersonById(id)
         .map(_.getOrElse(throw PersonNotFound(id)))
     else
-      getPerson(id)
+      getPerson(id, attributes)
+  }
 
-  def getPersonsById(ids: Set[PersonId], fromReadSide: Boolean): Future[Seq[Person]] =
+  def getPersonsById(
+    ids: Set[PersonId],
+    fromReadSide: Boolean,
+    withAttributes: Option[String] = None
+  ): Future[Seq[Person]] = {
+    val attributes = extractAttributes(withAttributes)
     if (fromReadSide)
       dbDao.getPersonsById(ids)
     else
       Source(ids)
         .mapAsync(1) { id =>
           refFor(id)
-            .ask[Confirmation](GetPerson(id, _))
+            .ask[Confirmation](GetPerson(id, attributes, _))
             .map {
               case PersonEntity.SuccessPerson(person) => Some(person)
               case _                                  => None
@@ -110,8 +124,28 @@ class PersonEntityService(
         }
         .runWith(Sink.seq)
         .map(_.flatten)
+  }
+
+  private def extractAttributes(withAttributes: Option[String]) =
+    withAttributes match {
+      case Some("all") => PersonMetadata.metadata.keys.toSeq
+      case Some("")    => Seq.empty
+      case Some(list)  => list.split(",").toSeq
+      case None        => Seq.empty
+    }
 
   def findPersons(query: PersonFindQuery): Future[FindResult] =
     indexDao.findPerson(query)
+
+  def getPersonMetadata: Future[Map[String, AttributeMetadata]] =
+    Future.successful(PersonMetadata.metadata)
+
+  def updatePersonAttributes(payload: UpdatePersonAttributesPayload): Future[Done] =
+    for {
+      _      <- Future.successful(PersonMetadata.validateAttributes(payload.attributes))
+      result <- refFor(payload.id)
+                  .ask[Confirmation](UpdatePersonAttributes(payload, _))
+                  .map(res => convertSuccess(payload.id, res))
+    } yield result
 
 }

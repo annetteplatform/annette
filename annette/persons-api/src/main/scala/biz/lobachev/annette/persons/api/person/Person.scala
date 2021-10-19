@@ -16,6 +16,8 @@
 
 package biz.lobachev.annette.persons.api.person
 
+import biz.lobachev.annette.core.attribute.AttributeValues
+
 import java.time.OffsetDateTime
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
@@ -32,6 +34,7 @@ case class Person(
   email: Option[String] = None,      // email
   source: Option[String] = None,
   externalId: Option[String] = None,
+  attributes: Option[AttributeValues] = None,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 )

@@ -14,12 +14,8 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.principal_group.impl.group.dao
+package biz.lobachev.annette.core
 
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.principal_group.api.group.PrincipalGroupId
-
-case class AssignmentRecord(
-  groupId: PrincipalGroupId,
-  principal: AnnettePrincipal
-)
+package object attribute {
+  type AttributeValues = Map[String, String]
+}

@@ -19,23 +19,14 @@ package biz.lobachev.annette.persons.api.person
 import biz.lobachev.annette.core.attribute.AttributeValues
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.Json
 
-case class CreatePersonPayload(
-  id: PersonId,               // person id
-  lastname: String,           // last name of the person
-  firstname: String,          // first name
-  middlename: Option[String], // middle name
-  categoryId: CategoryId,
-  phone: Option[String],      // phone
-  email: Option[String],      // email
-  source: Option[String] = None,
-  externalId: Option[String] = None,
-  attributes: Option[AttributeValues] = None,
-  createdBy: AnnettePrincipal
+case class UpdatePersonAttributesPayload(
+  id: PersonId,
+  attributes: AttributeValues,
+  updatedBy: AnnettePrincipal
 )
 
-object CreatePersonPayload {
-  implicit val format = Json.format[CreatePersonPayload]
+object UpdatePersonAttributesPayload {
+  implicit val format = Json.format[UpdatePersonAttributesPayload]
 }

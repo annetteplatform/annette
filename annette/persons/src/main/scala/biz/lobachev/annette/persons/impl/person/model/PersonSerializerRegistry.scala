@@ -21,6 +21,7 @@ import biz.lobachev.annette.persons.impl.person.PersonEntity.{
   AlreadyExist,
   Confirmation,
   NotFound,
+  PersonAttributesUpdated,
   PersonCreated,
   PersonDeleted,
   PersonUpdated,
@@ -48,6 +49,7 @@ object PersonSerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[PersonCreated],
       JsonSerializer[PersonUpdated],
       JsonSerializer[PersonDeleted],
+      JsonSerializer[PersonAttributesUpdated],
       JsonSerializer[PersonFindQuery],
       JsonSerializer[FindResult]
     )
