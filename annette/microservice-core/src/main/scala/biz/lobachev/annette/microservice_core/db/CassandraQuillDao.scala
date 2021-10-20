@@ -23,6 +23,6 @@ trait CassandraQuillDao extends QuillEncoders {
 
   val session: CassandraSession
 
-  lazy val ctx = new CassandraLagomAsyncContext(SnakeCase, session)
+  lazy val ctx: CassandraLagomAsyncContext[SnakeCase.type] = new CassandraLagomAsyncContext(SnakeCase, session)
 
 }

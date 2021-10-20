@@ -128,8 +128,8 @@ trait PersonServiceApi extends Service {
         pathCall("/api/persons/v1/findPersons",                      findPersons),
         pathCall("/api/persons/v1/getPersonMetadata",                getPersonMetadata),
         pathCall("/api/persons/v1/updatePersonAttributes",           updatePersonAttributes),
-        pathCall("/api/persons/v1/getPersonAttributes/:id/:fromReadSide?withAttributes", getPersonAttributes _),
-        pathCall("/api/persons/v1/getPersonsAttributes/:fromReadSide?withAttributes",    getPersonsAttributes _),
+        pathCall("/api/persons/v1/getPersonAttributes/:id/:fromReadSide?attributes", getPersonAttributes _),
+        pathCall("/api/persons/v1/getPersonsAttributes/:fromReadSide?attributes",    getPersonsAttributes _),
 
         pathCall("/api/persons/v1/createCategory",                 createCategory),
         pathCall("/api/persons/v1/updateCategory",                 updateCategory),

@@ -43,13 +43,17 @@ case class PersonState(
 
   def toPerson(withAttributes: Seq[String]): Person = {
     val selectedAttributes =
-      if (withAttributes.isEmpty) None
-      else Some(withAttributes.map(name => attributes.get(name).map(value => name -> value)).flatten.toMap)
+      if (withAttributes.isEmpty) Map.empty[String, String]
+      else withAttributes.map(name => attributes.get(name).map(value => name -> value)).flatten.toMap
     this
       .into[Person]
       .withFieldConst(_.attributes, selectedAttributes)
       .transform
   }
+
+  def toAttributes(withAttributes: Seq[String]): AttributeValues =
+    if (withAttributes.isEmpty) Map.empty
+    else withAttributes.map(name => attributes.get(name).map(value => name -> value)).flatten.toMap
 
 }
 

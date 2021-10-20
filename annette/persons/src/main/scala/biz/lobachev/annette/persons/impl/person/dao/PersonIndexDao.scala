@@ -17,9 +17,10 @@
 package biz.lobachev.annette.persons.impl.person.dao
 
 import biz.lobachev.annette.core.model.indexing.FindResult
+import biz.lobachev.annette.microservice_core.attribute.dao.AttributeIndexing
 import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
 import biz.lobachev.annette.persons.api.person._
-import biz.lobachev.annette.persons.impl.person.PersonEntity
+import biz.lobachev.annette.persons.impl.person.{PersonEntity, PersonMetadata}
 import biz.lobachev.annette.persons.impl.person.PersonEntity.PersonDeleted
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
@@ -30,15 +31,15 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class PersonIndexDao(client: ElasticClient)(implicit
   override val ec: ExecutionContext
-) extends AbstractIndexDao(client) {
+) extends AbstractIndexDao(client)
+    with AttributeIndexing {
 
   override val log = LoggerFactory.getLogger(this.getClass)
 
   override def indexConfigPath = "indexing.person-index"
 
-  def createPerson(event: PersonEntity.PersonCreated) =
-    createIndexDoc(
-      event.id,
+  def createPerson(event: PersonEntity.PersonCreated) = {
+    val doc        = List(
       "id"         -> event.id,
       "lastname"   -> event.lastname,
       "firstname"  -> event.firstname,
@@ -50,10 +51,15 @@ class PersonIndexDao(client: ElasticClient)(implicit
       "externalId" -> event.externalId,
       "updatedAt"  -> event.createdAt
     )
-
-  def updatePerson(event: PersonEntity.PersonUpdated) =
-    updateIndexDoc(
+    val attributes = event.attributes.map(attrs => convertAttributes(attrs, PersonMetadata.metadata)).getOrElse(Nil)
+    createIndexDoc(
       event.id,
+      doc ++ attributes
+    )
+  }
+
+  def updatePerson(event: PersonEntity.PersonUpdated) = {
+    val doc        = List(
       "id"         -> event.id,
       "lastname"   -> event.lastname,
       "firstname"  -> event.firstname,
@@ -65,6 +71,24 @@ class PersonIndexDao(client: ElasticClient)(implicit
       "externalId" -> event.externalId,
       "updatedAt"  -> event.updatedAt
     )
+    val attributes = event.attributes.map(attrs => convertAttributes(attrs, PersonMetadata.metadata)).getOrElse(Nil)
+    updateIndexDoc(
+      event.id,
+      doc ++ attributes
+    )
+  }
+
+  def updatePersonAttributes(event: PersonEntity.PersonAttributesUpdated) = {
+    val doc        = List(
+      "id"        -> event.id,
+      "updatedAt" -> event.updatedAt
+    )
+    val attributes = convertAttributes(event.attributes, PersonMetadata.metadata)
+    updateIndexDoc(
+      event.id,
+      doc ++ attributes
+    )
+  }
 
   def deletePerson(event: PersonDeleted) =
     deleteIndexDoc(event.id)

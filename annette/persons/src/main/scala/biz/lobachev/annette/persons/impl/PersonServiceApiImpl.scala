@@ -89,12 +89,18 @@ class PersonServiceApiImpl(
     id: PersonId,
     fromReadSide: Boolean,
     attributes: Option[String]
-  ): ServiceCall[NotUsed, AttributeValues] = ???
+  ): ServiceCall[NotUsed, AttributeValues] =
+    ServiceCall { _ =>
+      personEntityService.getPersonAttributes(id, fromReadSide, attributes)
+    }
 
   override def getPersonsAttributes(
     fromReadSide: Boolean,
     attributes: Option[String]
-  ): ServiceCall[Set[PersonId], Map[String, AttributeValues]] = ???
+  ): ServiceCall[Set[PersonId], Map[String, AttributeValues]] =
+    ServiceCall { ids =>
+      personEntityService.getPersonsAttributes(ids, fromReadSide, attributes)
+    }
 
   // ****************************** Category methods ******************************
 

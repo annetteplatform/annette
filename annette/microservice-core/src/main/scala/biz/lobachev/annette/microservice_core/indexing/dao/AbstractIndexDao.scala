@@ -183,6 +183,8 @@ abstract class AbstractIndexDao(client: ElasticClient)(implicit
         alias2FieldName(alias) -> value
     }
 
+  def createIndexDoc(id: String, doc: List[(String, Any)]): Future[Done] = createIndexDoc(id, doc: _*)
+
   def createIndexDoc(id: String, doc: (String, Any)*): Future[Done] =
     client.execute {
       indexInto(indexName)
@@ -193,6 +195,8 @@ abstract class AbstractIndexDao(client: ElasticClient)(implicit
       processResponse(res)
       Done
     }
+
+  def updateIndexDoc(id: String, doc: List[(String, Any)]): Future[Done] = updateIndexDoc(id, doc: _*)
 
   def updateIndexDoc(id: String, doc: (String, Any)*): Future[Done] =
     client.execute {

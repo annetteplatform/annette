@@ -34,7 +34,7 @@ case class Person(
   email: Option[String] = None,      // email
   source: Option[String] = None,
   externalId: Option[String] = None,
-  attributes: Option[AttributeValues] = None,
+  attributes: AttributeValues = Map.empty,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 )

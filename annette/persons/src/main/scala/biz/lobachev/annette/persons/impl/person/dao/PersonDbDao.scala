@@ -17,22 +17,36 @@
 package biz.lobachev.annette.persons.impl.person.dao
 
 import akka.Done
+import akka.stream.Materializer
+import biz.lobachev.annette.core.attribute.AttributeValues
 import biz.lobachev.annette.core.model.PersonId
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
+import biz.lobachev.annette.microservice_core.attribute.dao.{AttributesRecord, CassandraQuillDaoWithAttributes}
+import biz.lobachev.annette.microservice_core.db.CassandraTableBuilder
 import biz.lobachev.annette.persons.api.person.Person
-import biz.lobachev.annette.persons.impl.person.PersonEntity.{PersonCreated, PersonDeleted, PersonUpdated}
+import biz.lobachev.annette.persons.impl.person.PersonEntity.{
+  PersonAttributesUpdated,
+  PersonCreated,
+  PersonDeleted,
+  PersonUpdated
+}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import io.getquill.EntityQuery
 import io.scalaland.chimney.dsl._
 
 import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
 
-private[impl] class PersonDbDao(override val session: CassandraSession)(implicit ec: ExecutionContext)
-    extends CassandraQuillDao {
+private[impl] class PersonDbDao(override val session: CassandraSession)(implicit
+  override val ec: ExecutionContext,
+  override val materializer: Materializer
+) extends CassandraQuillDaoWithAttributes {
 
   import ctx._
 
-  private val personSchema = quote(querySchema[PersonRecord]("persons"))
+  private val personSchema                                                 = quote(querySchema[PersonRecord]("persons"))
+  override val attributesSchema: ctx.Quoted[EntityQuery[AttributesRecord]] = quote(
+    querySchema[AttributesRecord]("attributes")
+  )
 
   private implicit val insertPersonMeta = insertMeta[PersonRecord]()
   private implicit val updatePersonMeta = updateMeta[PersonRecord](_.id)
@@ -58,6 +72,8 @@ private[impl] class PersonDbDao(override val session: CassandraSession)(implicit
                .column("updated_by", Text)
                .build
            )
+
+      _ <- createAttributeTable("attributes")
     } yield Done
   }
 
@@ -67,23 +83,85 @@ private[impl] class PersonDbDao(override val session: CassandraSession)(implicit
       .withFieldComputed(_.updatedAt, _.createdAt)
       .withFieldComputed(_.updatedBy, _.createdBy)
       .transform
-    ctx.run(personSchema.insert(lift(person)))
+    for {
+      _ <- ctx.run(personSchema.insert(lift(person)))
+      _ <- event.attributes
+             .map(attributes => updateAttributes(event.id, attributes, event.createdAt, event.createdBy))
+             .getOrElse(Future.successful(Done))
+    } yield Done
   }
 
   def updatePerson(event: PersonUpdated): Future[Done] = {
     val person = event.transformInto[PersonRecord]
-    ctx.run(personSchema.filter(_.id == lift(person.id)).update(lift(person)))
+    for {
+      _ <- ctx.run(personSchema.filter(_.id == lift(person.id)).update(lift(person)))
+      _ <- event.attributes
+             .map(attributes => updateAttributes(event.id, attributes, event.updatedAt, event.updatedBy))
+             .getOrElse(Future.successful(Done))
+    } yield Done
   }
 
+  def updatePersonAttributes(event: PersonAttributesUpdated): Future[Done] =
+    for {
+      _ <- updateAttributes(event.id, event.attributes, event.updatedAt, event.updatedBy)
+      _ <- ctx.run(
+             personSchema
+               .filter(_.id == lift(event.id))
+               .update(
+                 _.updatedAt -> lift(event.updatedAt),
+                 _.updatedBy -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
+
   def deletePerson(event: PersonDeleted): Future[Done] =
-    ctx.run(personSchema.filter(_.id == lift(event.id)).delete)
+    for {
+      _ <- ctx.run(personSchema.filter(_.id == lift(event.id)).delete)
+      _ <- deleteAttributes(event.id)
+    } yield Done
 
-  def getPersonById(id: PersonId): Future[Option[Person]] =
-    ctx
-      .run(personSchema.filter(_.id == lift(id)))
-      .map(_.headOption.map(_.toPerson))
+  def getPersonById(id: PersonId, attributes: Seq[String]): Future[Option[Person]] =
+    for {
+      maybePerson      <- ctx
+                            .run(personSchema.filter(_.id == lift(id)))
+                            .map(_.headOption.map(_.toPerson))
+      personAttributes <- if (maybePerson.isDefined && attributes.nonEmpty) getAttributesById(id, attributes)
+                          else Future.successful(Map.empty[String, String])
+    } yield maybePerson.map(_.copy(attributes = personAttributes))
 
-  def getPersonsById(ids: Set[PersonId]): Future[Seq[Person]] =
-    ctx.run(personSchema.filter(b => liftQuery(ids).contains(b.id))).map(_.map(_.toPerson))
+  def getPersonsById(ids: Set[PersonId], attributes: Seq[String]): Future[Seq[Person]] =
+    for {
+      persons       <- ctx.run(personSchema.filter(b => liftQuery(ids).contains(b.id))).map(_.map(_.toPerson))
+      attributesMap <- getAttributesById(ids, attributes)
+    } yield
+      if (attributes.isEmpty) persons
+      else
+        persons.map(person =>
+          person.copy(attributes = attributesMap.get(person.id).getOrElse(Map.empty[String, String]))
+        )
+
+  def getPersonAttributes(id: PersonId, attributes: Seq[String]): Future[Option[Map[String, String]]] = {
+    println("attributes " + attributes)
+    for {
+      maybePerson      <- ctx
+                            .run(personSchema.filter(_.id == lift(id)).map(_.id))
+                            .map(_.headOption)
+      _                 = println("maybePerson " + maybePerson.toString)
+      personAttributes <- if (maybePerson.isDefined)
+                            getAttributesById(id, attributes)
+                          else Future.successful(Map.empty[String, String])
+      _                 = println("personAttributes " + personAttributes.toString())
+    } yield maybePerson.map(_ => personAttributes)
+  }
+
+  def getPersonsAttributes(ids: Set[PersonId], attributes: Seq[PersonId]): Future[Map[String, AttributeValues]] =
+    if (attributes.isEmpty) Future.successful(Map.empty[String, AttributeValues])
+    else
+      for {
+        foundPersons  <- ctx.run(personSchema.filter(b => liftQuery(ids).contains(b.id)).map(_.id))
+        attributesMap <- getAttributesById(ids, attributes)
+      } yield foundPersons
+        .map(personId => personId -> attributesMap.get(personId).getOrElse(Map.empty[String, String]))
+        .toMap
 
 }

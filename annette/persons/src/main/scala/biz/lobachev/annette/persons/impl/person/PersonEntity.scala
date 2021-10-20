@@ -43,18 +43,22 @@ object PersonEntity {
       extends Command
   final case class DeletePerson(payload: DeletePersonPayload, replyTo: ActorRef[Confirmation])           extends Command
   final case class GetPerson(id: PersonId, withAttributes: Seq[String], replyTo: ActorRef[Confirmation]) extends Command
+  final case class GetPersonAttributes(id: PersonId, withAttributes: Seq[String], replyTo: ActorRef[Confirmation])
+      extends Command
 
   sealed trait Confirmation
-  final case object Success                      extends Confirmation
-  final case class SuccessPerson(entity: Person) extends Confirmation
-  final case object NotFound                     extends Confirmation
-  final case object AlreadyExist                 extends Confirmation
+  final case object Success                                   extends Confirmation
+  final case class SuccessPerson(entity: Person)              extends Confirmation
+  final case class SuccessAttributes(values: AttributeValues) extends Confirmation
+  final case object NotFound                                  extends Confirmation
+  final case object AlreadyExist                              extends Confirmation
 
-  implicit val confirmationSuccessFormat: Format[Success.type]           = Json.format
-  implicit val confirmationSuccessPersonFormat: Format[SuccessPerson]    = Json.format
-  implicit val confirmationNotFoundFormat: Format[NotFound.type]         = Json.format
-  implicit val confirmationAlreadyExistFormat: Format[AlreadyExist.type] = Json.format
-  implicit val confirmationFormat: Format[Confirmation]                  = Json.format[Confirmation]
+  implicit val confirmationSuccessFormat: Format[Success.type]                = Json.format
+  implicit val confirmationSuccessPersonFormat: Format[SuccessPerson]         = Json.format
+  implicit val confirmationSuccessAttributesFormat: Format[SuccessAttributes] = Json.format
+  implicit val confirmationNotFoundFormat: Format[NotFound.type]              = Json.format
+  implicit val confirmationAlreadyExistFormat: Format[AlreadyExist.type]      = Json.format
+  implicit val confirmationFormat: Format[Confirmation]                       = Json.format[Confirmation]
 
   sealed trait Event extends AggregateEvent[Event] {
     override def aggregateTag: AggregateEventTagger[Event] = Event.Tag
@@ -135,11 +139,12 @@ final case class PersonEntity(maybeState: Option[PersonState]) {
 
   def applyCommand(cmd: Command): ReplyEffect[Event, PersonEntity] =
     cmd match {
-      case CreatePerson(payload, replyTo)           => createPerson(payload, replyTo)
-      case UpdatePerson(payload, replyTo)           => updatePerson(payload, replyTo)
-      case DeletePerson(payload, replyTo)           => deletePerson(payload, replyTo)
-      case UpdatePersonAttributes(payload, replyTo) => updateAttributes(payload, replyTo)
-      case GetPerson(_, withAttributes, replyTo)    => getPerson(withAttributes, replyTo)
+      case CreatePerson(payload, replyTo)                  => createPerson(payload, replyTo)
+      case UpdatePerson(payload, replyTo)                  => updatePerson(payload, replyTo)
+      case DeletePerson(payload, replyTo)                  => deletePerson(payload, replyTo)
+      case UpdatePersonAttributes(payload, replyTo)        => updateAttributes(payload, replyTo)
+      case GetPerson(_, withAttributes, replyTo)           => getPerson(withAttributes, replyTo)
+      case GetPersonAttributes(_, withAttributes, replyTo) => getPersonAttributes(withAttributes, replyTo)
     }
 
   def createPerson(payload: CreatePersonPayload, replyTo: ActorRef[Confirmation]): ReplyEffect[Event, PersonEntity] =
@@ -194,6 +199,29 @@ final case class PersonEntity(maybeState: Option[PersonState]) {
       case None        => Effect.reply(replyTo)(NotFound)
     }
 
+  def getPersonAttributes(
+    withAttributes: Seq[String],
+    replyTo: ActorRef[Confirmation]
+  ): ReplyEffect[Event, PersonEntity] =
+    maybeState match {
+      case Some(state) => Effect.reply(replyTo)(SuccessAttributes(state.toAttributes(withAttributes)))
+      case None        => Effect.reply(replyTo)(NotFound)
+    }
+
+  def updatedAttributes(attributes: Option[AttributeValues]): AttributeValues = {
+    val stateAttributes   = maybeState.map(_.attributes).getOrElse(Map.empty)
+    val removedAttributes =
+      attributes.map(_.filter { case _ -> value => value.isEmpty }.keys.toSet).getOrElse(Set.empty)
+    val updatedAttributes = attributes
+      .map(_.filter {
+        case attribute -> value =>
+          value.nonEmpty &&
+            PersonMetadata.metadata.get(attribute).map(!_.readSidePersistence).getOrElse(false)
+      })
+      .getOrElse(Map.empty)
+    stateAttributes -- removedAttributes ++ updatedAttributes
+  }
+
   def onPersonCreated(event: PersonCreated): PersonEntity =
     PersonEntity(
       Some(
@@ -201,42 +229,35 @@ final case class PersonEntity(maybeState: Option[PersonState]) {
           .into[PersonState]
           .withFieldConst(_.updatedAt, event.createdAt)
           .withFieldConst(_.updatedBy, event.createdBy)
-          .withFieldComputed(_.attributes, _.attributes.getOrElse(Map.empty))
+          .withFieldConst(_.attributes, updatedAttributes(event.attributes))
           .transform
       )
     )
 
-  def onPersonUpdated(event: PersonUpdated): PersonEntity = {
-    val stateAttributes   = maybeState.map(_.attributes).getOrElse(Map.empty)
-    val removedAttributes = event.attributes.map(_.filter(_._2.length == 0).keys.toSet).getOrElse(Set.empty)
-    val updatedAttributes = event.attributes.map(_.filter(_._2.length != 0)).getOrElse(Map.empty)
+  def onPersonUpdated(event: PersonUpdated): PersonEntity =
     PersonEntity(
       Some(
         event
           .into[PersonState]
           .withFieldConst(_.updatedAt, event.updatedAt)
-          .withFieldConst(_.attributes, stateAttributes -- removedAttributes ++ updatedAttributes)
+          .withFieldConst(_.attributes, updatedAttributes(event.attributes))
           .transform
       )
     )
-  }
 
   def onPersonDeleted(): PersonEntity =
     PersonEntity(None)
 
-  def onPersonAttributesUpdated(event: PersonAttributesUpdated): PersonEntity = {
-    val removedAttributes = event.attributes.filter(_._2.length == 0).keys.toSet
-    val updatedAttributes = event.attributes.filter(_._2.length != 0)
+  def onPersonAttributesUpdated(event: PersonAttributesUpdated): PersonEntity =
     PersonEntity(
       maybeState.map { state =>
         state.copy(
-          attributes = state.attributes -- removedAttributes ++ updatedAttributes,
+          attributes = updatedAttributes(Some(event.attributes)),
           updatedBy = event.updatedBy,
           updatedAt = event.updatedAt
         )
       }
     )
-  }
 
   def applyEvent(event: Event): PersonEntity =
     event match {
