@@ -115,8 +115,10 @@ class PersonIndexDao(client: ElasticClient)(implicit
     val externalIdQuery        =
       query.externalIds.map(externalIds => termsSetQuery(alias2FieldName("externalId"), externalIds, script("1"))).toSeq
 
+    val advancedQueries = buildAdvancedQueries(query.query)
+
     val searchRequest = search(indexName)
-      .bool(must(filterQuery ++ fieldQuery ++ categoryQuery ++ sourceQuery ++ externalIdQuery))
+      .bool(must(filterQuery ++ fieldQuery ++ categoryQuery ++ sourceQuery ++ externalIdQuery ++ advancedQueries))
       .from(query.offset)
       .size(query.size)
       .sortBy(sortBy)
