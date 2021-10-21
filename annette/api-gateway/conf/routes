@@ -92,14 +92,14 @@ POST    /api/annette/v1/orgStructure/findCategories                      biz.lob
 # Person
 POST    /api/annette/v1/person/createPerson            biz.lobachev.annette.person.gateway.PersonController.createPerson
 POST    /api/annette/v1/person/updatePerson            biz.lobachev.annette.person.gateway.PersonController.updatePerson
-POST    /api/annette/v1/person/updatePersonAttributes  biz.lobachev.annette.person.gateway.PersonController.updatePerson
+POST    /api/annette/v1/person/updatePersonAttributes  biz.lobachev.annette.person.gateway.PersonController.updatePersonAttributes
 POST    /api/annette/v1/person/deletePerson            biz.lobachev.annette.person.gateway.PersonController.deletePerson
 POST    /api/annette/v1/person/findPersons             biz.lobachev.annette.person.gateway.PersonController.findPersons
 GET     /api/annette/v1/person/getPersonById/:id/:fromReadSide    biz.lobachev.annette.person.gateway.PersonController.getPersonById(id: String, fromReadSide: Boolean, withAttributes: Option[String])
 POST    /api/annette/v1/person/getPersonsById/:fromReadSide       biz.lobachev.annette.person.gateway.PersonController.getPersonsById(fromReadSide: Boolean, withAttributes: Option[String])
 GET     /api/annette/v1/person/getPersonMetadata       biz.lobachev.annette.person.gateway.PersonController.getPersonMetadata
-GET     /api/annette/v1/person/getPersonAttributes/:id/:fromReadSide?attributes  biz.lobachev.annette.person.gateway.PersonController.getPersonAttributes(id: String, fromReadSide: Boolean, attributes: Option[String])
-POST    /api/annette/v1/person/getPersonsAttributes/:fromReadSide?attributes     biz.lobachev.annette.person.gateway.PersonController.getPersonsAttributes(fromReadSide: Boolean, attributes: Option[String])
+GET     /api/annette/v1/person/getPersonAttributes/:id/:fromReadSide  biz.lobachev.annette.person.gateway.PersonController.getPersonAttributes(id: String, fromReadSide: Boolean, attributes: Option[String])
+POST    /api/annette/v1/person/getPersonsAttributes/:fromReadSide     biz.lobachev.annette.person.gateway.PersonController.getPersonsAttributes(fromReadSide: Boolean, attributes: Option[String])
 
 # Person Category
 POST    /api/annette/v1/person/createCategory                      biz.lobachev.annette.person.gateway.PersonController.createCategory

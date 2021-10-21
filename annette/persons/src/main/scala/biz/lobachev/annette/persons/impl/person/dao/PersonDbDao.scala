@@ -140,19 +140,15 @@ private[impl] class PersonDbDao(override val session: CassandraSession)(implicit
           person.copy(attributes = attributesMap.get(person.id).getOrElse(Map.empty[String, String]))
         )
 
-  def getPersonAttributes(id: PersonId, attributes: Seq[String]): Future[Option[Map[String, String]]] = {
-    println("attributes " + attributes)
+  def getPersonAttributes(id: PersonId, attributes: Seq[String]): Future[Option[Map[String, String]]] =
     for {
       maybePerson      <- ctx
                             .run(personSchema.filter(_.id == lift(id)).map(_.id))
                             .map(_.headOption)
-      _                 = println("maybePerson " + maybePerson.toString)
       personAttributes <- if (maybePerson.isDefined)
                             getAttributesById(id, attributes)
                           else Future.successful(Map.empty[String, String])
-      _                 = println("personAttributes " + personAttributes.toString())
     } yield maybePerson.map(_ => personAttributes)
-  }
 
   def getPersonsAttributes(ids: Set[PersonId], attributes: Seq[PersonId]): Future[Map[String, AttributeValues]] =
     if (attributes.isEmpty) Future.successful(Map.empty[String, AttributeValues])

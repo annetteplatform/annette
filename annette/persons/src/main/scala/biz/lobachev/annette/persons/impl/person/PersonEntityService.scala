@@ -190,8 +190,6 @@ class PersonEntityService(
     withAttributes: Option[String]
   ): Future[AttributeValues] = {
     val attributes = extractAttributes(withAttributes)
-    println("withAttributes " + withAttributes)
-    println("attributes " + attributes)
     if (fromReadSide)
       dbDao
         .getPersonAttributes(id, attributes)
