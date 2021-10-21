@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.api.person
+package biz.lobachev.annette.core.attribute
 
-import biz.lobachev.annette.core.attribute.AttributeValues
-import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
-case class UpdatePersonAttributesPayload(
-  id: PersonId,
+case class UpdateAttributesPayload(
+  id: String,
   attributes: AttributeValues,
   updatedBy: AnnettePrincipal
 )
 
-object UpdatePersonAttributesPayload {
-  implicit val format = Json.format[UpdatePersonAttributesPayload]
+object UpdateAttributesPayload {
+  implicit val format = Json.format[UpdateAttributesPayload]
 }

@@ -17,7 +17,7 @@
 package biz.lobachev.annette.persons.impl
 
 import akka.{Done, NotUsed}
-import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues}
+import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues, UpdateAttributesPayload}
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.category.{
   Category,
@@ -80,7 +80,7 @@ class PersonServiceApiImpl(
       personEntityService.getPersonMetadata
     }
 
-  override def updatePersonAttributes: ServiceCall[UpdatePersonAttributesPayload, Done] =
+  override def updatePersonAttributes: ServiceCall[UpdateAttributesPayload, Done] =
     ServiceCall { payload =>
       personEntityService.updatePersonAttributes(payload)
     }

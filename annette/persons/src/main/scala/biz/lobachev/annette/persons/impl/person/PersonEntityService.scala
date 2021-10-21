@@ -22,7 +22,7 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
-import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues}
+import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues, UpdateAttributesPayload}
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.persons.api.person._
@@ -176,7 +176,7 @@ class PersonEntityService(
   def getPersonMetadata: Future[Map[String, AttributeMetadata]] =
     Future.successful(PersonMetadata.metadata)
 
-  def updatePersonAttributes(payload: UpdatePersonAttributesPayload): Future[Done] =
+  def updatePersonAttributes(payload: UpdateAttributesPayload): Future[Done] =
     for {
       _      <- Future.successful(PersonMetadata.validateAttributes(payload.attributes))
       result <- refFor(payload.id)

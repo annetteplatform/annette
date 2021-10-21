@@ -30,4 +30,20 @@ object Permissions {
   final val VIEW_ALL_PERSON_CATEGORIES     = Permission("annette.person.category.view.all")
   final val MAINTAIN_ALL_PERSON_CATEGORIES = Permission("annette.person.category.maintain.all")
 
+  // allow get metadata for all attributes
+  final val VIEW_ALL_PERSON_ATTRIBUTE_META                = Permission("annette.person.attributeMeta.view.all")
+  // allow get metadata for attribute
+  final val VIEW_PERSON_ATTRIBUTE_META_ID                 = "annette.person.attributeMeta.view"
+  final def VIEW_PERSON_ATTRIBUTE_META(attribute: String) = Permission(VIEW_PERSON_ATTRIBUTE_META_ID, attribute)
+  // allow view all person attributes
+  final val VIEW_ALL_PERSON_ATTRIBUTES                    = Permission("annette.person.attribute.view.all")
+  // allow view person attribute
+  final val VIEW_PERSON_ATTRIBUTE_ID                      = "annette.person.attribute.view"
+  final def VIEW_PERSON_ATTRIBUTE(attribute: String)      = Permission(VIEW_PERSON_ATTRIBUTE_ID, attribute)
+  // allow view & change all person attributes
+  final val CHANGE_ALL_PERSON_ATTRIBUTES                  = Permission("annette.person.attribute.change.all")
+  // allow view & change person attribute
+  final val CHANGE_PERSON_ATTRIBUTE_ID                    = "annette.person.attribute.change"
+  final def CHANGE_PERSON_ATTRIBUTE(attribute: String)    = Permission(CHANGE_PERSON_ATTRIBUTE_ID, attribute)
+
 }

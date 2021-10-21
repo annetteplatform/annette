@@ -17,6 +17,7 @@
 package biz.lobachev.annette.core.attribute
 
 import biz.lobachev.annette.core.model.translation.Caption
+import biz.lobachev.annette.core.utils.Encase
 import play.api.libs.json.{Json, JsonConfiguration, JsonNaming}
 
 import java.time.{LocalDate, LocalTime, OffsetDateTime}
@@ -96,7 +97,7 @@ case class LocalTimeAttributeMetadata(
   override def validate(value: String): Boolean = value.length == 0 || Try(LocalTime.parse(value)).isSuccess
 }
 
-case class OffsetDateTimeAttributeMetadata(
+case class OffsetDatetimeAttributeMetadata(
   name: String,
   caption: Caption,
   index: Option[String] = None,
@@ -143,8 +144,8 @@ object LocalTimeAttributeMetadata {
   implicit val format = Json.format[LocalTimeAttributeMetadata]
 }
 
-object OffsetDateTimeAttributeMetadata {
-  implicit val format = Json.format[OffsetDateTimeAttributeMetadata]
+object OffsetDatetimeAttributeMetadata {
+  implicit val format = Json.format[OffsetDatetimeAttributeMetadata]
 }
 
 object JsonAttributeMetadata {
@@ -155,7 +156,7 @@ object AttributeMetadata {
   implicit val config = JsonConfiguration(
     discriminator = "type",
     typeNaming = JsonNaming { fullName =>
-      fullName.split("\\.").toSeq.last.dropRight("AttributeMetadata".length).toLowerCase
+      Encase.toLowerCamel(fullName.split("\\.").toSeq.last.dropRight("AttributeMetadata".length))
     }
   )
   implicit val format = Json.format[AttributeMetadata]

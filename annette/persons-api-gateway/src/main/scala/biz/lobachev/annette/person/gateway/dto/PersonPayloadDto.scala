@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.person.gateway.dto
 
+import biz.lobachev.annette.core.attribute.AttributeValues
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.Json
@@ -29,7 +30,8 @@ case class PersonPayloadDto(
   phone: Option[String],      // phone
   email: Option[String],      // email
   source: Option[String] = None,
-  externalId: Option[String] = None
+  externalId: Option[String] = None,
+  attributes: Option[AttributeValues] = None
 )
 
 object PersonPayloadDto {

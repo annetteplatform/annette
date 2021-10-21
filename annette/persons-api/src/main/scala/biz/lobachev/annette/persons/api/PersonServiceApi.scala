@@ -17,7 +17,7 @@
 package biz.lobachev.annette.persons.api
 
 import akka.{Done, NotUsed}
-import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues}
+import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues, UpdateAttributesPayload}
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.category.{
@@ -91,7 +91,7 @@ trait PersonServiceApi extends Service {
 
   def getPersonMetadata: ServiceCall[NotUsed, Map[String, AttributeMetadata]]
 
-  def updatePersonAttributes: ServiceCall[UpdatePersonAttributesPayload, Done]
+  def updatePersonAttributes: ServiceCall[UpdateAttributesPayload, Done]
 
   def getPersonAttributes(
     id: PersonId,

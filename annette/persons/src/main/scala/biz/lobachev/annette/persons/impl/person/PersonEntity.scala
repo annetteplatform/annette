@@ -21,7 +21,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl._
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
-import biz.lobachev.annette.core.attribute.AttributeValues
+import biz.lobachev.annette.core.attribute.{AttributeValues, UpdateAttributesPayload}
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.CategoryId
@@ -39,7 +39,7 @@ object PersonEntity {
 
   final case class CreatePerson(payload: CreatePersonPayload, replyTo: ActorRef[Confirmation])           extends Command
   final case class UpdatePerson(payload: UpdatePersonPayload, replyTo: ActorRef[Confirmation])           extends Command
-  final case class UpdatePersonAttributes(payload: UpdatePersonAttributesPayload, replyTo: ActorRef[Confirmation])
+  final case class UpdatePersonAttributes(payload: UpdateAttributesPayload, replyTo: ActorRef[Confirmation])
       extends Command
   final case class DeletePerson(payload: DeletePersonPayload, replyTo: ActorRef[Confirmation])           extends Command
   final case class GetPerson(id: PersonId, withAttributes: Seq[String], replyTo: ActorRef[Confirmation]) extends Command
@@ -168,7 +168,7 @@ final case class PersonEntity(maybeState: Option[PersonState]) {
     }
 
   def updateAttributes(
-    payload: UpdatePersonAttributesPayload,
+    payload: UpdateAttributesPayload,
     replyTo: ActorRef[Confirmation]
   ): ReplyEffect[Event, PersonEntity] =
     maybeState match {

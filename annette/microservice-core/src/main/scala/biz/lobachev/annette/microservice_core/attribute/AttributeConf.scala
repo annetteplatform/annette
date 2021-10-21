@@ -25,7 +25,7 @@ import biz.lobachev.annette.core.attribute.{
   JsonAttributeMetadata,
   LocalDateAttributeMetadata,
   LocalTimeAttributeMetadata,
-  OffsetDateTimeAttributeMetadata,
+  OffsetDatetimeAttributeMetadata,
   StringAttributeMetadata
 }
 import biz.lobachev.annette.core.model.translation.{Caption, TextCaption, TranslationCaption}
@@ -151,14 +151,14 @@ case class LocalTimeAttributeConf(
     )
 }
 
-case class OffsetDateTimeAttributeConf(
+case class OffsetDatetimeAttributeConf(
   captionText: Option[String] = None,
   captionCode: Option[String] = None,
   index: Option[String] = None,
   readSidePersistence: Boolean = false
 ) extends AttributeConf {
   override def toMetadata(name: String): AttributeMetadata =
-    OffsetDateTimeAttributeMetadata(
+    OffsetDatetimeAttributeMetadata(
       name = name,
       caption = caption(name),
       index = index,

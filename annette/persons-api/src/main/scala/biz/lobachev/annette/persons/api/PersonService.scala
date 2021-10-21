@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.persons.api
 import akka.Done
-import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues}
+import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues, UpdateAttributesPayload}
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.core.model.category.{
@@ -45,7 +45,7 @@ trait PersonService {
   ): Future[Seq[Person]]
   def findPersons(query: PersonFindQuery): Future[FindResult]
   def getPersonMetadata: Future[Map[String, AttributeMetadata]]
-  def updatePersonAttributes(payload: UpdatePersonAttributesPayload): Future[Done]
+  def updatePersonAttributes(payload: UpdateAttributesPayload): Future[Done]
   def getPersonAttributes(
     id: PersonId,
     fromReadSide: Boolean = true,

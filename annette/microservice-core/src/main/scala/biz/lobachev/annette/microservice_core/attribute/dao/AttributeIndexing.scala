@@ -10,7 +10,7 @@ import biz.lobachev.annette.core.attribute.{
   JsonAttributeMetadata,
   LocalDateAttributeMetadata,
   LocalTimeAttributeMetadata,
-  OffsetDateTimeAttributeMetadata,
+  OffsetDatetimeAttributeMetadata,
   StringAttributeMetadata
 }
 
@@ -27,7 +27,7 @@ trait AttributeIndexing {
       case _: DecimalAttributeMetadata        => BigDecimal(value)
       case _: LocalDateAttributeMetadata      => value
       case _: LocalTimeAttributeMetadata      => value
-      case _: OffsetDateTimeAttributeMetadata => OffsetDateTime.parse(value)
+      case _: OffsetDatetimeAttributeMetadata => OffsetDateTime.parse(value)
       case _: JsonAttributeMetadata           => value
     }
 

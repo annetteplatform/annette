@@ -17,7 +17,7 @@
 package biz.lobachev.annette.persons.api
 
 import akka.Done
-import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues}
+import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues, UpdateAttributesPayload}
 import io.scalaland.chimney.dsl._
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.indexing.FindResult
@@ -70,7 +70,7 @@ class PersonServiceImpl(api: PersonServiceApi, implicit val ec: ExecutionContext
 
   override def getPersonMetadata: Future[Map[String, AttributeMetadata]] = api.getPersonMetadata.invoke()
 
-  override def updatePersonAttributes(payload: UpdatePersonAttributesPayload): Future[Done] =
+  override def updatePersonAttributes(payload: UpdateAttributesPayload): Future[Done] =
     api.updatePersonAttributes.invoke(payload)
 
   override def getPersonAttributes(

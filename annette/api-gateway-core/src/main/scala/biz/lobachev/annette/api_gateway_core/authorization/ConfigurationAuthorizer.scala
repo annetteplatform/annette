@@ -66,9 +66,9 @@ class ConfigurationAuthorizer(implicit
     Future.successful {
       val permissionIdSet = permissionIds.toSet
       val principals      = request.subject.principals.toSet
-      assignments.filter(assignment =>
+      assignments.filter { assignment =>
         permissionIdSet.contains(assignment.permission.id) && principals.contains(assignment.principal)
-      )
+      }
     }
 
   def checkAll[A](permissions: Permission*)(implicit request: AuthenticatedRequest[A]): Future[Boolean] =
