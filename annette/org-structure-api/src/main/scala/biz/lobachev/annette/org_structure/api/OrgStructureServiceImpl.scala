@@ -17,6 +17,7 @@
 package biz.lobachev.annette.org_structure.api
 
 import akka.Done
+import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues, UpdateAttributesPayload}
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
@@ -95,11 +96,19 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
   def getOrganizationTree(itemId: CompositeOrgItemId): Future[OrganizationTree] =
     api.getOrganizationTree(itemId).invoke()
 
-  def getOrgItemById(itemId: CompositeOrgItemId, fromReadSide: Boolean): Future[OrgItem] =
-    api.getOrgItemById(itemId, fromReadSide).invoke()
+  def getOrgItemById(
+    itemId: CompositeOrgItemId,
+    fromReadSide: Boolean,
+    withAttributes: Option[String]
+  ): Future[OrgItem] =
+    api.getOrgItemById(itemId, fromReadSide, withAttributes).invoke()
 
-  def getOrgItemsById(ids: Set[CompositeOrgItemId], fromReadSide: Boolean): Future[Seq[OrgItem]] =
-    api.getOrgItemsById(fromReadSide).invoke(ids)
+  def getOrgItemsById(
+    ids: Set[CompositeOrgItemId],
+    fromReadSide: Boolean,
+    withAttributes: Option[String]
+  ): Future[Seq[OrgItem]] =
+    api.getOrgItemsById(fromReadSide, withAttributes).invoke(ids)
 
   def getItemIdsByExternalId(externalIds: Set[String]): Future[Map[String, CompositeOrgItemId]] =
     api.getItemIdsByExternalId.invoke(externalIds)
@@ -112,6 +121,27 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
 
   def findOrgItems(query: OrgItemFindQuery): Future[FindResult] =
     api.findOrgItems.invoke(query)
+
+  // OrgItem attribute methods
+  override def getOrgItemMetadata: Future[Map[String, AttributeMetadata]] =
+    api.getOrgItemMetadata.invoke()
+
+  override def updateOrgItemAttributes(payload: UpdateAttributesPayload): Future[Done] =
+    api.updateOrgItemAttributes.invoke(payload)
+
+  override def getOrgItemAttributes(
+    id: CompositeOrgItemId,
+    fromReadSide: Boolean,
+    attributes: Option[String]
+  ): Future[AttributeValues] =
+    api.getOrgItemAttributes(id, fromReadSide, attributes).invoke()
+
+  override def getOrgItemsAttributes(
+    ids: Set[CompositeOrgItemId],
+    fromReadSide: Boolean,
+    attributes: Option[String]
+  ): Future[Map[String, AttributeValues]] =
+    api.getOrgItemsAttributes(fromReadSide, attributes).invoke(ids)
 
   // org role methods
 

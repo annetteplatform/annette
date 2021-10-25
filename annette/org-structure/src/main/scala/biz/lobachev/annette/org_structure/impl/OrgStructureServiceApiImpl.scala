@@ -18,6 +18,7 @@ package biz.lobachev.annette.org_structure.impl
 
 import akka.util.Timeout
 import akka.{Done, NotUsed}
+import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues, UpdateAttributesPayload}
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
@@ -155,14 +156,21 @@ class OrgStructureServiceApiImpl(
     hierarchyEntityService.getOrganizationTree(itemId)
   }
 
-  override def getOrgItemById(itemId: CompositeOrgItemId, fromReadSide: Boolean): ServiceCall[NotUsed, OrgItem] =
+  override def getOrgItemById(
+    itemId: CompositeOrgItemId,
+    fromReadSide: Boolean,
+    withAttributes: Option[String] = None
+  ): ServiceCall[NotUsed, OrgItem] =
     ServiceCall { _ =>
-      hierarchyEntityService.getOrgItemById(itemId, fromReadSide)
+      hierarchyEntityService.getOrgItemById(itemId, fromReadSide, withAttributes)
     }
 
-  override def getOrgItemsById(fromReadSide: Boolean): ServiceCall[Set[CompositeOrgItemId], Seq[OrgItem]] =
+  override def getOrgItemsById(
+    fromReadSide: Boolean,
+    withAttributes: Option[String] = None
+  ): ServiceCall[Set[CompositeOrgItemId], Seq[OrgItem]] =
     ServiceCall { ids =>
-      hierarchyEntityService.getOrgItemsById(ids, fromReadSide)
+      hierarchyEntityService.getOrgItemsById(ids, fromReadSide, withAttributes)
     }
 
   override def getItemIdsByExternalId: ServiceCall[Set[String], Map[String, CompositeOrgItemId]] =
@@ -183,6 +191,35 @@ class OrgStructureServiceApiImpl(
   override def findOrgItems: ServiceCall[OrgItemFindQuery, FindResult] =
     ServiceCall { payload =>
       hierarchyEntityService.findOrgItems(payload)
+    }
+
+  // ****************************** OrgItem attribute methods ******************************
+
+  def getOrgItemMetadata: ServiceCall[NotUsed, Map[String, AttributeMetadata]] =
+    ServiceCall { _ =>
+      hierarchyEntityService.getEntityMetadata
+    }
+
+  def updateOrgItemAttributes: ServiceCall[UpdateAttributesPayload, Done] =
+    ServiceCall { payload =>
+      hierarchyEntityService.updateOrgItemAttributes(payload)
+    }
+
+  def getOrgItemAttributes(
+    id: CompositeOrgItemId,
+    fromReadSide: Boolean = true,
+    attributes: Option[String] = None
+  ): ServiceCall[NotUsed, AttributeValues] =
+    ServiceCall { _ =>
+      hierarchyEntityService.getOrgItemAttributes(id, fromReadSide, attributes)
+    }
+
+  def getOrgItemsAttributes(
+    fromReadSide: Boolean = true,
+    attributes: Option[String] = None
+  ): ServiceCall[Set[CompositeOrgItemId], Map[String, AttributeValues]] =
+    ServiceCall { ids =>
+      hierarchyEntityService.getOrgItemsAttributes(ids, fromReadSide, attributes)
     }
 
   // ****************************** OrgRoles methods ******************************

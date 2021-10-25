@@ -21,6 +21,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl._
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
+import biz.lobachev.annette.core.attribute.{AttributeValues, UpdateAttributesPayload}
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.CategoryId
@@ -36,22 +37,28 @@ object PersonEntity {
 
   sealed trait Command extends CommandSerializable
 
-  final case class CreatePerson(payload: CreatePersonPayload, replyTo: ActorRef[Confirmation]) extends Command
-  final case class UpdatePerson(payload: UpdatePersonPayload, replyTo: ActorRef[Confirmation]) extends Command
-  final case class DeletePerson(payload: DeletePersonPayload, replyTo: ActorRef[Confirmation]) extends Command
-  final case class GetPerson(id: PersonId, replyTo: ActorRef[Confirmation])                    extends Command
+  final case class CreatePerson(payload: CreatePersonPayload, replyTo: ActorRef[Confirmation])           extends Command
+  final case class UpdatePerson(payload: UpdatePersonPayload, replyTo: ActorRef[Confirmation])           extends Command
+  final case class UpdatePersonAttributes(payload: UpdateAttributesPayload, replyTo: ActorRef[Confirmation])
+      extends Command
+  final case class DeletePerson(payload: DeletePersonPayload, replyTo: ActorRef[Confirmation])           extends Command
+  final case class GetPerson(id: PersonId, withAttributes: Seq[String], replyTo: ActorRef[Confirmation]) extends Command
+  final case class GetPersonAttributes(id: PersonId, withAttributes: Seq[String], replyTo: ActorRef[Confirmation])
+      extends Command
 
   sealed trait Confirmation
-  final case object Success                      extends Confirmation
-  final case class SuccessPerson(entity: Person) extends Confirmation
-  final case object NotFound                     extends Confirmation
-  final case object AlreadyExist                 extends Confirmation
+  final case object Success                                   extends Confirmation
+  final case class SuccessPerson(entity: Person)              extends Confirmation
+  final case class SuccessAttributes(values: AttributeValues) extends Confirmation
+  final case object NotFound                                  extends Confirmation
+  final case object AlreadyExist                              extends Confirmation
 
-  implicit val confirmationSuccessFormat: Format[Success.type]           = Json.format
-  implicit val confirmationSuccessPersonFormat: Format[SuccessPerson]    = Json.format
-  implicit val confirmationNotFoundFormat: Format[NotFound.type]         = Json.format
-  implicit val confirmationAlreadyExistFormat: Format[AlreadyExist.type] = Json.format
-  implicit val confirmationFormat: Format[Confirmation]                  = Json.format[Confirmation]
+  implicit val confirmationSuccessFormat: Format[Success.type]                = Json.format
+  implicit val confirmationSuccessPersonFormat: Format[SuccessPerson]         = Json.format
+  implicit val confirmationSuccessAttributesFormat: Format[SuccessAttributes] = Json.format
+  implicit val confirmationNotFoundFormat: Format[NotFound.type]              = Json.format
+  implicit val confirmationAlreadyExistFormat: Format[AlreadyExist.type]      = Json.format
+  implicit val confirmationFormat: Format[Confirmation]                       = Json.format[Confirmation]
 
   sealed trait Event extends AggregateEvent[Event] {
     override def aggregateTag: AggregateEventTagger[Event] = Event.Tag
@@ -71,6 +78,7 @@ object PersonEntity {
     email: Option[String],
     source: Option[String] = None,
     externalId: Option[String] = None,
+    attributes: Option[AttributeValues] = None,
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -84,6 +92,13 @@ object PersonEntity {
     email: Option[String],
     source: Option[String] = None,
     externalId: Option[String] = None,
+    attributes: Option[AttributeValues] = None,
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+  final case class PersonAttributesUpdated(
+    id: PersonId,
+    attributes: AttributeValues,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -93,9 +108,10 @@ object PersonEntity {
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
 
-  implicit val personCreatedFormat: Format[PersonCreated]     = Json.format
-  implicit val personUpdatedFormat: Format[PersonUpdated]     = Json.format
-  implicit val personDeactivatedFormat: Format[PersonDeleted] = Json.format
+  implicit val personCreatedFormat: Format[PersonCreated]                     = Json.format
+  implicit val personUpdatedFormat: Format[PersonUpdated]                     = Json.format
+  implicit val personDeletedFormat: Format[PersonDeleted]                     = Json.format
+  implicit val personAttributesUpdatedFormat: Format[PersonAttributesUpdated] = Json.format
 
   val empty                           = PersonEntity(None)
   val typeKey: EntityTypeKey[Command] = EntityTypeKey[Command]("Person")
@@ -123,10 +139,12 @@ final case class PersonEntity(maybeState: Option[PersonState]) {
 
   def applyCommand(cmd: Command): ReplyEffect[Event, PersonEntity] =
     cmd match {
-      case CreatePerson(payload, replyTo) => createPerson(payload, replyTo)
-      case UpdatePerson(payload, replyTo) => updatePerson(payload, replyTo)
-      case DeletePerson(payload, replyTo) => deletePerson(payload, replyTo)
-      case GetPerson(_, replyTo)          => getPerson(replyTo)
+      case CreatePerson(payload, replyTo)                  => createPerson(payload, replyTo)
+      case UpdatePerson(payload, replyTo)                  => updatePerson(payload, replyTo)
+      case DeletePerson(payload, replyTo)                  => deletePerson(payload, replyTo)
+      case UpdatePersonAttributes(payload, replyTo)        => updateAttributes(payload, replyTo)
+      case GetPerson(_, withAttributes, replyTo)           => getPerson(withAttributes, replyTo)
+      case GetPersonAttributes(_, withAttributes, replyTo) => getPersonAttributes(withAttributes, replyTo)
     }
 
   def createPerson(payload: CreatePersonPayload, replyTo: ActorRef[Confirmation]): ReplyEffect[Event, PersonEntity] =
@@ -149,6 +167,19 @@ final case class PersonEntity(maybeState: Option[PersonState]) {
           .thenReply(replyTo)(_ => Success)
     }
 
+  def updateAttributes(
+    payload: UpdateAttributesPayload,
+    replyTo: ActorRef[Confirmation]
+  ): ReplyEffect[Event, PersonEntity] =
+    maybeState match {
+      case None    => Effect.reply(replyTo)(NotFound)
+      case Some(_) =>
+        val event = payload.transformInto[PersonAttributesUpdated]
+        Effect
+          .persist(event)
+          .thenReply(replyTo)(_ => Success)
+    }
+
   def deletePerson(
     payload: DeletePersonPayload,
     replyTo: ActorRef[Confirmation]
@@ -162,11 +193,34 @@ final case class PersonEntity(maybeState: Option[PersonState]) {
           .thenReply(replyTo)(_ => Success)
     }
 
-  def getPerson(replyTo: ActorRef[Confirmation]): ReplyEffect[Event, PersonEntity] =
+  def getPerson(withAttributes: Seq[String], replyTo: ActorRef[Confirmation]): ReplyEffect[Event, PersonEntity] =
     maybeState match {
-      case Some(state) => Effect.reply(replyTo)(SuccessPerson(state.toPerson))
+      case Some(state) => Effect.reply(replyTo)(SuccessPerson(state.toPerson(withAttributes)))
       case None        => Effect.reply(replyTo)(NotFound)
     }
+
+  def getPersonAttributes(
+    withAttributes: Seq[String],
+    replyTo: ActorRef[Confirmation]
+  ): ReplyEffect[Event, PersonEntity] =
+    maybeState match {
+      case Some(state) => Effect.reply(replyTo)(SuccessAttributes(state.toAttributes(withAttributes)))
+      case None        => Effect.reply(replyTo)(NotFound)
+    }
+
+  def updatedAttributes(attributes: Option[AttributeValues]): AttributeValues = {
+    val stateAttributes   = maybeState.map(_.attributes).getOrElse(Map.empty)
+    val removedAttributes =
+      attributes.map(_.filter { case _ -> value => value.isEmpty }.keys.toSet).getOrElse(Set.empty)
+    val updatedAttributes = attributes
+      .map(_.filter {
+        case attribute -> value =>
+          value.nonEmpty &&
+            PersonMetadata.metadata.get(attribute).map(!_.readSidePersistence).getOrElse(false)
+      })
+      .getOrElse(Map.empty)
+    stateAttributes -- removedAttributes ++ updatedAttributes
+  }
 
   def onPersonCreated(event: PersonCreated): PersonEntity =
     PersonEntity(
@@ -175,6 +229,7 @@ final case class PersonEntity(maybeState: Option[PersonState]) {
           .into[PersonState]
           .withFieldConst(_.updatedAt, event.createdAt)
           .withFieldConst(_.updatedBy, event.createdBy)
+          .withFieldConst(_.attributes, updatedAttributes(event.attributes))
           .transform
       )
     )
@@ -185,6 +240,7 @@ final case class PersonEntity(maybeState: Option[PersonState]) {
         event
           .into[PersonState]
           .withFieldConst(_.updatedAt, event.updatedAt)
+          .withFieldConst(_.attributes, updatedAttributes(event.attributes))
           .transform
       )
     )
@@ -192,11 +248,23 @@ final case class PersonEntity(maybeState: Option[PersonState]) {
   def onPersonDeleted(): PersonEntity =
     PersonEntity(None)
 
+  def onPersonAttributesUpdated(event: PersonAttributesUpdated): PersonEntity =
+    PersonEntity(
+      maybeState.map { state =>
+        state.copy(
+          attributes = updatedAttributes(Some(event.attributes)),
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      }
+    )
+
   def applyEvent(event: Event): PersonEntity =
     event match {
-      case event: PersonCreated => onPersonCreated(event)
-      case event: PersonUpdated => onPersonUpdated(event)
-      case _: PersonDeleted     => onPersonDeleted()
+      case event: PersonCreated           => onPersonCreated(event)
+      case event: PersonUpdated           => onPersonUpdated(event)
+      case event: PersonAttributesUpdated => onPersonAttributesUpdated(event)
+      case _: PersonDeleted               => onPersonDeleted()
     }
 
 }

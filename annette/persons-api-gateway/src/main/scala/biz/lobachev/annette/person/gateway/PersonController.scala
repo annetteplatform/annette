@@ -18,6 +18,7 @@ package biz.lobachev.annette.person.gateway
 
 import biz.lobachev.annette.api_gateway_core.authentication.{AuthenticatedAction, AuthenticatedRequest}
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
+import biz.lobachev.annette.core.attribute.{UpdateAttributesPayload, UpdateAttributesPayloadDto}
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.{DescendantUnitPrincipal, DirectUnitPrincipal, UnitChiefPrincipal}
 import biz.lobachev.annette.core.model.category._
@@ -58,8 +59,11 @@ class PersonController @Inject() (
         .transform
       authorizer.performCheck(canMaintainPerson(payload.id)) {
         for {
-          _      <- personService.createPerson(payload)
-          person <- personService.getPersonById(payload.id, false)
+          _             <- personService.createPerson(payload)
+          attributes     = payload.attributes.map(_.keys.toSeq).getOrElse(Seq.empty)
+          withAttributes = if (attributes.nonEmpty) Some(attributes.mkString(","))
+                           else None
+          person        <- personService.getPersonById(payload.id, false, withAttributes)
         } yield Ok(Json.toJson(person))
       }
     }
@@ -72,8 +76,28 @@ class PersonController @Inject() (
         .transform
       authorizer.performCheck(canMaintainPerson(payload.id)) {
         for {
-          _      <- personService.updatePerson(payload)
-          person <- personService.getPersonById(payload.id, false)
+          _             <- personService.updatePerson(payload)
+          attributes     = payload.attributes.map(_.keys.toSeq).getOrElse(Seq.empty)
+          withAttributes = if (attributes.nonEmpty) Some(attributes.mkString(","))
+                           else None
+          person        <- personService.getPersonById(payload.id, false, withAttributes)
+        } yield Ok(Json.toJson(person))
+      }
+    }
+
+  def updatePersonAttributes =
+    authenticated.async(parse.json[UpdateAttributesPayloadDto]) { implicit request =>
+      val payload    = request.body
+        .into[UpdateAttributesPayload]
+        .withFieldConst(_.updatedBy, request.subject.principals.head)
+        .transform
+      val attributes = payload.attributes.keys.toSeq
+      authorizer.performCheck(canMaintainPerson(payload.id)) {
+        for {
+          _             <- personService.updatePersonAttributes(payload)
+          withAttributes = if (attributes.nonEmpty) Some(attributes.mkString(","))
+                           else None
+          person        <- personService.getPersonById(payload.id, false, withAttributes)
         } yield Ok(Json.toJson(person))
       }
     }
@@ -91,22 +115,26 @@ class PersonController @Inject() (
       }
     }
 
-  def getPersonById(id: PersonId, fromReadSide: Boolean) =
+  def getPersonById(id: PersonId, fromReadSide: Boolean, withAttributes: Option[String] = None) =
     authenticated.async { implicit request =>
-      authorizer.performCheck(canViewOrMaintainPerson(id)) {
+      def action =
         for {
-          person <- personService.getPersonById(id, fromReadSide)
+          person <- personService.getPersonById(id, fromReadSide, withAttributes)
         } yield Ok(Json.toJson(person))
-      }
+
+      if (fromReadSide) authorizer.performCheck(canViewOrMaintainPerson(id))(action)
+      else authorizer.performCheck(canMaintainPerson(id))(action)
+
     }
 
-  def getPersonsById(fromReadSide: Boolean) =
+  def getPersonsById(fromReadSide: Boolean, withAttributes: Option[String] = None) =
     authenticated.async(parse.json[Set[PersonId]]) { implicit request =>
-      authorizer.performCheckAny(VIEW_ALL_PERSON, MAINTAIN_ALL_PERSON) {
+      def action =
         for {
-          persons <- personService.getPersonsById(request.body, fromReadSide)
+          persons <- personService.getPersonsById(request.body, fromReadSide, withAttributes)
         } yield Ok(Json.toJson(persons))
-      }
+      if (fromReadSide) authorizer.performCheckAny(VIEW_ALL_PERSON, MAINTAIN_ALL_PERSON)(action)
+      else authorizer.performCheckAny(MAINTAIN_ALL_PERSON)(action)
     }
 
   def findPersons =
@@ -125,6 +153,33 @@ class PersonController @Inject() (
       for {
         person <- personService.getPersonById(id, true)
       } yield Ok(Json.toJson(person))
+    }
+
+  def getPersonMetadata =
+    authenticated.async { implicit request =>
+      authorizer.performCheckAny(VIEW_ALL_PERSON, MAINTAIN_ALL_PERSON) {
+        for {
+          meta <- personService.getPersonMetadata
+        } yield Ok(Json.toJson(meta))
+      }
+    }
+
+  def getPersonAttributes(id: PersonId, fromReadSide: Boolean, attributes: Option[String] = None) =
+    authenticated.async { implicit request =>
+      authorizer.performCheck(canViewOrMaintainPerson(id)) {
+        for {
+          attributes <- personService.getPersonAttributes(id, fromReadSide, attributes)
+        } yield Ok(Json.toJson(attributes))
+      }
+    }
+
+  def getPersonsAttributes(fromReadSide: Boolean, attributes: Option[String] = None) =
+    authenticated.async(parse.json[Set[PersonId]]) { implicit request =>
+      authorizer.performCheckAny(VIEW_ALL_PERSON, MAINTAIN_ALL_PERSON) {
+        for {
+          attributes <- personService.getPersonsAttributes(request.body, fromReadSide, attributes)
+        } yield Ok(Json.toJson(attributes))
+      }
     }
 
   // category methods
@@ -205,7 +260,9 @@ class PersonController @Inject() (
       }
     }
 
-  private def canMaintainPerson[A](personId: PersonId)(implicit request: AuthenticatedRequest[A]): Future[Boolean] =
+  private def canMaintainPerson[A](personId: PersonId)(implicit
+    request: AuthenticatedRequest[A]
+  ): Future[Boolean] =
     for {
       allowAll <- authorizer.checkAny(MAINTAIN_ALL_PERSON)
       result   <- if (!allowAll) canMaintainPersonForOrgUnits(personId)

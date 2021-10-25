@@ -20,6 +20,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{EventSourcedBehavior, RetentionCriteria}
+import biz.lobachev.annette.core.attribute.AttributeValues
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.category.{OrgCategory, OrgCategoryId}
@@ -42,6 +43,7 @@ object HierarchyEntity {
     categoryId: OrgCategoryId,
     source: Option[String] = None,
     externalId: Option[String] = None,
+    attributes: Option[AttributeValues],
     createdBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
@@ -54,6 +56,7 @@ object HierarchyEntity {
     order: Option[Int] = None,
     source: Option[String] = None,
     externalId: Option[String] = None,
+    attributes: Option[AttributeValues],
     createdBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
@@ -67,6 +70,7 @@ object HierarchyEntity {
     order: Option[Int] = None,
     source: Option[String] = None,
     externalId: Option[String] = None,
+    attributes: Option[AttributeValues],
     createdBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
@@ -161,6 +165,12 @@ object HierarchyEntity {
     deletedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
+  final case class UpdateOrgItemAttributes(
+    itemId: CompositeOrgItemId,
+    attributes: AttributeValues,
+    updatedBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  ) extends Command
 
   final case class GetOrganization(orgId: CompositeOrgItemId, replyTo: ActorRef[Confirmation]) extends Command
 
@@ -169,20 +179,23 @@ object HierarchyEntity {
     replyTo: ActorRef[Confirmation]
   ) extends Command
 
-  final case class GetOrgItem(id: CompositeOrgItemId, replyTo: ActorRef[Confirmation]) extends Command
-
-  final case class GetChildren(unitId: CompositeOrgItemId, replyTo: ActorRef[Confirmation]) extends Command
-
-  final case class GetPersons(positionId: CompositeOrgItemId, replyTo: ActorRef[Confirmation]) extends Command
-
-  final case class GetRoles(positionId: CompositeOrgItemId, replyTo: ActorRef[Confirmation]) extends Command
-
+  final case class GetOrgItem(id: CompositeOrgItemId, withAttributes: Seq[String], replyTo: ActorRef[Confirmation])
+      extends Command
+  final case class GetOrgItemAttributes(
+    id: CompositeOrgItemId,
+    withAttributes: Seq[String],
+    replyTo: ActorRef[Confirmation]
+  )                                                                                                extends Command
+  final case class GetChildren(unitId: CompositeOrgItemId, replyTo: ActorRef[Confirmation])        extends Command
+  final case class GetPersons(positionId: CompositeOrgItemId, replyTo: ActorRef[Confirmation])     extends Command
+  final case class GetRoles(positionId: CompositeOrgItemId, replyTo: ActorRef[Confirmation])       extends Command
   final case class GetRootPaths(itemIds: Set[CompositeOrgItemId], replyTo: ActorRef[Confirmation]) extends Command
 
   sealed trait Confirmation
   final case class SuccessOrganization(organization: Organization)                               extends Confirmation
   final case class SuccessOrganizationTree(tree: OrganizationTree)                               extends Confirmation
   final case class SuccessOrgItem(orgItem: OrgItem)                                              extends Confirmation
+  final case class SuccessAttributes(values: AttributeValues)                                    extends Confirmation
   final case class SuccessChildren(children: Seq[CompositeOrgItemId])                            extends Confirmation
   final case class SuccessPersons(persons: Set[CompositeOrgItemId])                              extends Confirmation
   final case class SuccessRoles(roles: Set[OrgRoleId])                                           extends Confirmation
@@ -209,6 +222,7 @@ object HierarchyEntity {
   implicit val confirmationSuccessOrganizationFormat: Format[SuccessOrganization]                    = Json.format
   implicit val confirmationSuccessOrganizationTreeFormat: Format[SuccessOrganizationTree]            = Json.format
   implicit val confirmationSuccessOrgItemFormat: Format[SuccessOrgItem]                              = Json.format
+  implicit val confirmationSuccessAttributesFormat: Format[SuccessAttributes]                        = Json.format
   implicit val confirmationSuccessChildrenFormat: Format[SuccessChildren]                            = Json.format
   implicit val confirmationSuccessPersonsFormat: Format[SuccessPersons]                              = Json.format
   implicit val confirmationSuccessRolesFormat: Format[SuccessRoles]                                  = Json.format
@@ -248,6 +262,7 @@ object HierarchyEntity {
     source: Option[String],
     externalId: Option[String],
     categoryId: OrgCategoryId,
+    attributes: Option[AttributeValues],
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -262,6 +277,7 @@ object HierarchyEntity {
     parentChildren: Seq[CompositeOrgItemId],
     source: Option[String],
     externalId: Option[String],
+    attributes: Option[AttributeValues],
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -277,6 +293,7 @@ object HierarchyEntity {
     parentChildren: Seq[CompositeOrgItemId],
     source: Option[String],
     externalId: Option[String],
+    attributes: Option[AttributeValues],
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -410,26 +427,34 @@ object HierarchyEntity {
     deletedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
 
-  implicit val organizationCreatedFormat: Format[OrganizationCreated]   = Json.format
-  implicit val organizationDeletedFormat: Format[OrganizationDeleted]   = Json.format
-  implicit val unitCreatedFormat: Format[UnitCreated]                   = Json.format
-  implicit val unitDeletedFormat: Format[UnitDeleted]                   = Json.format
-  implicit val categoryAssignedFormat: Format[CategoryAssigned]         = Json.format
-  implicit val chiefAssignedFormat: Format[ChiefAssigned]               = Json.format
-  implicit val chiefUnassignedFormat: Format[ChiefUnassigned]           = Json.format
-  implicit val positionCreatedFormat: Format[PositionCreated]           = Json.format
-  implicit val positionDeletedFormat: Format[PositionDeleted]           = Json.format
-  implicit val nameUpdatedFormat: Format[NameUpdated]                   = Json.format
-  implicit val sourceUpdatedFormat: Format[SourceUpdated]               = Json.format
-  implicit val externalIdUpdatedFormat: Format[ExternalIdUpdated]       = Json.format
-  implicit val positionLimitChangedFormat: Format[PositionLimitChanged] = Json.format
-  implicit val personAssignedFormat: Format[PersonAssigned]             = Json.format
-  implicit val personUnassignedFormat: Format[PersonUnassigned]         = Json.format
-  implicit val orgRoleAssignedFormat: Format[OrgRoleAssigned]           = Json.format
-  implicit val orgRoleUnassignedFormat: Format[OrgRoleUnassigned]       = Json.format
-  implicit val itemMovedFormat: Format[ItemMoved]                       = Json.format
-  implicit val itemOrderChangedFormat: Format[ItemOrderChanged]         = Json.format
-  implicit val rootPathUpdatedFormat: Format[RootPathUpdated]           = Json.format
+  final case class OrgItemAttributesUpdated(
+    itemId: CompositeOrgItemId,
+    attributes: AttributeValues,
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+
+  implicit val organizationCreatedFormat: Format[OrganizationCreated]           = Json.format
+  implicit val organizationDeletedFormat: Format[OrganizationDeleted]           = Json.format
+  implicit val unitCreatedFormat: Format[UnitCreated]                           = Json.format
+  implicit val unitDeletedFormat: Format[UnitDeleted]                           = Json.format
+  implicit val categoryAssignedFormat: Format[CategoryAssigned]                 = Json.format
+  implicit val chiefAssignedFormat: Format[ChiefAssigned]                       = Json.format
+  implicit val chiefUnassignedFormat: Format[ChiefUnassigned]                   = Json.format
+  implicit val positionCreatedFormat: Format[PositionCreated]                   = Json.format
+  implicit val positionDeletedFormat: Format[PositionDeleted]                   = Json.format
+  implicit val nameUpdatedFormat: Format[NameUpdated]                           = Json.format
+  implicit val sourceUpdatedFormat: Format[SourceUpdated]                       = Json.format
+  implicit val externalIdUpdatedFormat: Format[ExternalIdUpdated]               = Json.format
+  implicit val positionLimitChangedFormat: Format[PositionLimitChanged]         = Json.format
+  implicit val personAssignedFormat: Format[PersonAssigned]                     = Json.format
+  implicit val personUnassignedFormat: Format[PersonUnassigned]                 = Json.format
+  implicit val orgRoleAssignedFormat: Format[OrgRoleAssigned]                   = Json.format
+  implicit val orgRoleUnassignedFormat: Format[OrgRoleUnassigned]               = Json.format
+  implicit val itemMovedFormat: Format[ItemMoved]                               = Json.format
+  implicit val itemOrderChangedFormat: Format[ItemOrderChanged]                 = Json.format
+  implicit val rootPathUpdatedFormat: Format[RootPathUpdated]                   = Json.format
+  implicit val orgItemAttributesUpdatedFormat: Format[OrgItemAttributesUpdated] = Json.format
 
   val empty = EmptyHierarchy
 
@@ -448,4 +473,5 @@ object HierarchyEntity {
     apply(PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId))
       .withTagger(AkkaTaggerAdapter.fromLagom(entityContext, Event.Tag))
       .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2))
+
 }

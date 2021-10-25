@@ -56,6 +56,7 @@ private[impl] class HierarchyIndexEventProcessor(
       .setEventHandler[HierarchyEntity.OrganizationDeleted](handle(indexDao.deleteOrganization))
       .setEventHandler[HierarchyEntity.UnitDeleted](handle(indexDao.deleteUnit))
       .setEventHandler[HierarchyEntity.PositionDeleted](handle(indexDao.deletePosition))
+      .setEventHandler[HierarchyEntity.OrgItemAttributesUpdated](handle(indexDao.updateOrgItemAttributes))
       .build()
 
   def aggregateTags: Set[AggregateEventTag[HierarchyEntity.Event]] = HierarchyEntity.Event.Tag.allTags

@@ -37,6 +37,7 @@ private[impl] class PersonDbEventProcessor(
       .setEventHandler[PersonEntity.PersonCreated](handle(dbDao.createPerson))
       .setEventHandler[PersonEntity.PersonUpdated](handle(dbDao.updatePerson))
       .setEventHandler[PersonEntity.PersonDeleted](handle(dbDao.deletePerson))
+      .setEventHandler[PersonEntity.PersonAttributesUpdated](handle(dbDao.updatePersonAttributes))
       .build()
 
   def aggregateTags = PersonEntity.Event.Tag.allTags

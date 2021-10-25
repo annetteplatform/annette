@@ -17,7 +17,7 @@
 package biz.lobachev.annette.microservice_core.indexing.dao
 
 import akka.Done
-import biz.lobachev.annette.core.model.indexing.{FindResult, HitResult, SortBy}
+import biz.lobachev.annette.core.model.indexing._
 import biz.lobachev.annette.microservice_core.indexing.config.TextFieldConf
 import biz.lobachev.annette.microservice_core.indexing.{
   IndexingProvider,
@@ -32,6 +32,7 @@ import com.sksamuel.elastic4s.requests.common.RefreshPolicy
 import com.sksamuel.elastic4s.requests.indexes.admin.IndexExistsResponse
 import com.sksamuel.elastic4s.requests.indexes.{CreateIndexResponse, GetIndexResponse, PutMappingResponse}
 import com.sksamuel.elastic4s.requests.searches.SearchRequest
+import com.sksamuel.elastic4s.requests.searches.queries.{Query, RangeQuery}
 import com.sksamuel.elastic4s.requests.searches.queries.matches.{
   FieldWithOptionalBoost,
   MultiMatchQuery,
@@ -183,6 +184,8 @@ abstract class AbstractIndexDao(client: ElasticClient)(implicit
         alias2FieldName(alias) -> value
     }
 
+  def createIndexDoc(id: String, doc: List[(String, Any)]): Future[Done] = createIndexDoc(id, doc: _*)
+
   def createIndexDoc(id: String, doc: (String, Any)*): Future[Done] =
     client.execute {
       indexInto(indexName)
@@ -193,6 +196,8 @@ abstract class AbstractIndexDao(client: ElasticClient)(implicit
       processResponse(res)
       Done
     }
+
+  def updateIndexDoc(id: String, doc: List[(String, Any)]): Future[Done] = updateIndexDoc(id, doc: _*)
 
   def updateIndexDoc(id: String, doc: (String, Any)*): Future[Done] =
     client.execute {
@@ -240,6 +245,27 @@ abstract class AbstractIndexDao(client: ElasticClient)(implicit
         )
       }
       .toSeq
+
+  protected def buildAdvancedQueries(maybeQuery: Option[Seq[AdvancedQuery]]): Seq[Query] =
+    maybeQuery.map { query =>
+      query.map(buildAdvancedQuery)
+    }.getOrElse(Seq.empty)
+
+  protected def buildAdvancedQuery(query: AdvancedQuery): Query =
+    query match {
+      case Exist(alias)                   => existsQuery(alias2FieldName(alias))
+      case NotExist(alias)                => not(existsQuery(alias2FieldName(alias)))
+      case Equal(alias, value)            => termQuery(alias2FieldName(alias), value)
+      case NotEqual(alias, value)         => not(termQuery(alias2FieldName(alias), value))
+      case AnyOf(alias, values)           => termsQuery(alias2FieldName(alias), values)
+      case Range(alias, gt, gte, lt, lte) =>
+        val query: RangeQuery = rangeQuery(alias2FieldName(alias))
+        val query1            = gt.map(t => query.gt(t)).getOrElse(query)
+        val query2            = gte.map(t => query.gte(t)).getOrElse(query1)
+        val query3            = lt.map(t => query.lt(t)).getOrElse(query2)
+        val query4            = lte.map(t => query.lte(t)).getOrElse(query3)
+        query4
+    }
 
   protected def buildSortBySeq(sortBySeq: Option[Seq[SortBy]]): Seq[FieldSort] =
     sortBySeq

@@ -16,6 +16,8 @@
 
 package biz.lobachev.annette.org_structure.api.hierarchy
 
+import biz.lobachev.annette.core.attribute.AttributeValues
+
 import java.time.OffsetDateTime
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
@@ -33,8 +35,11 @@ sealed trait OrgItem {
   val categoryId: OrgCategoryId
   val source: Option[String]
   val externalId: Option[String]
+  val attributes: AttributeValues
   val updatedAt: OffsetDateTime
   val updatedBy: AnnettePrincipal
+
+  def withAttributes(attrs: AttributeValues): OrgItem
 }
 
 case class OrgUnit(
@@ -49,9 +54,12 @@ case class OrgUnit(
   categoryId: OrgCategoryId,
   source: Option[String] = None,
   externalId: Option[String] = None,
+  attributes: AttributeValues = Map.empty,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
-) extends OrgItem
+) extends OrgItem {
+  override def withAttributes(attrs: AttributeValues): OrgItem = copy(attributes = attrs)
+}
 
 object OrgUnit {
   implicit val format = Json.format[OrgUnit]
@@ -70,9 +78,12 @@ case class OrgPosition(
   categoryId: OrgCategoryId,
   source: Option[String] = None,
   externalId: Option[String] = None,
+  attributes: AttributeValues = Map.empty,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
-) extends OrgItem
+) extends OrgItem {
+  override def withAttributes(attrs: AttributeValues): OrgItem = copy(attributes = attrs)
+}
 
 object OrgPosition {
   implicit val format = Json.format[OrgPosition]

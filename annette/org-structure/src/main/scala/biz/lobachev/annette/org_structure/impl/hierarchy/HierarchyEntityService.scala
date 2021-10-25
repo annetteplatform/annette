@@ -21,9 +21,11 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
+import biz.lobachev.annette.core.attribute.{AttributeValues, UpdateAttributesPayload}
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
+import biz.lobachev.annette.microservice_core.attribute.AttributeComponents
 import biz.lobachev.annette.org_structure.api.category.OrgCategory
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
@@ -45,8 +47,9 @@ class HierarchyEntityService(
   config: Config
 )(implicit
   ec: ExecutionContext,
-  materializer: Materializer
-) {
+  val materializer: Materializer
+) extends AttributeComponents {
+  override val entityMetadata = HierarchyMetadata
 
   implicit val timeout =
     Try(config.getDuration("annette.timeout"))
@@ -56,7 +59,7 @@ class HierarchyEntityService(
   private def refFor(itemId: CompositeOrgItemId): EntityRef[HierarchyEntity.Command] =
     clusterSharding.entityRefFor(HierarchyEntity.typeKey, OrgItemKey.extractOrgId(itemId))
 
-  private def successToResult(confirmation: HierarchyEntity.Confirmation): Done =
+  private def convertSuccess(confirmation: HierarchyEntity.Confirmation): Done =
     confirmation match {
       case HierarchyEntity.Success                    => Done
       case HierarchyEntity.OrganizationAlreadyExist   => throw OrganizationAlreadyExist()
@@ -79,37 +82,54 @@ class HierarchyEntityService(
       case _                                          => throw new RuntimeException("Match fail")
     }
 
+  private def convertSuccessEntityAttributes(confirmation: HierarchyEntity.Confirmation): AttributeValues =
+    confirmation match {
+      case HierarchyEntity.SuccessAttributes(values) => values
+      case HierarchyEntity.OrganizationNotFound      => throw OrganizationNotFound()
+      case HierarchyEntity.ItemNotFound              => throw ItemNotFound()
+      case _                                         => throw new RuntimeException("Match fail")
+    }
+
   def createOrganization(payload: CreateOrganizationPayload): Future[Done] =
     if (OrgItemKey.isOrg(payload.orgId))
-      refFor(payload.orgId)
-        .ask[HierarchyEntity.Confirmation](replyTo =>
-          payload
-            .into[HierarchyEntity.CreateOrganization]
-            .withFieldConst(_.replyTo, replyTo)
-            .transform
-        )
-        .map(successToResult)
+      for {
+        _      <- Future.successful(payload.attributes.map(attributes => entityMetadata.validateAttributes(attributes)))
+        result <- refFor(payload.orgId)
+                    .ask[HierarchyEntity.Confirmation](replyTo =>
+                      payload
+                        .into[HierarchyEntity.CreateOrganization]
+                        .withFieldConst(_.replyTo, replyTo)
+                        .transform
+                    )
+                    .map(convertSuccess)
+      } yield result
     else throw InvalidCompositeId(payload.orgId)
 
   def createUnit(payload: CreateUnitPayload): Future[Done] =
-    refFor(payload.unitId)
-      .ask[HierarchyEntity.Confirmation](replyTo =>
-        payload
-          .into[HierarchyEntity.CreateUnit]
-          .withFieldConst(_.replyTo, replyTo)
-          .transform
-      )
-      .map(successToResult)
+    for {
+      _      <- Future.successful(payload.attributes.map(attributes => entityMetadata.validateAttributes(attributes)))
+      result <- refFor(payload.unitId)
+                  .ask[HierarchyEntity.Confirmation](replyTo =>
+                    payload
+                      .into[HierarchyEntity.CreateUnit]
+                      .withFieldConst(_.replyTo, replyTo)
+                      .transform
+                  )
+                  .map(convertSuccess)
+    } yield result
 
   def createPosition(payload: CreatePositionPayload): Future[Done] =
-    refFor(payload.positionId)
-      .ask[HierarchyEntity.Confirmation](replyTo =>
-        payload
-          .into[HierarchyEntity.CreatePosition]
-          .withFieldConst(_.replyTo, replyTo)
-          .transform
-      )
-      .map(successToResult)
+    for {
+      _      <- Future.successful(payload.attributes.map(attributes => entityMetadata.validateAttributes(attributes)))
+      result <- refFor(payload.positionId)
+                  .ask[HierarchyEntity.Confirmation](replyTo =>
+                    payload
+                      .into[HierarchyEntity.CreatePosition]
+                      .withFieldConst(_.replyTo, replyTo)
+                      .transform
+                  )
+                  .map(convertSuccess)
+    } yield result
 
   def updateName(payload: UpdateNamePayload): Future[Done] =
     refFor(payload.itemId)
@@ -119,7 +139,7 @@ class HierarchyEntityService(
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(successToResult)
+      .map(convertSuccess)
 
   def assignCategory(payload: AssignCategoryPayload, category: OrgCategory): Future[Done] =
     refFor(payload.itemId)
@@ -130,7 +150,7 @@ class HierarchyEntityService(
           .withFieldConst(_.category, category)
           .transform
       )
-      .map(successToResult)
+      .map(convertSuccess)
 
   def updateSource(payload: UpdateSourcePayload): Future[Done] =
     refFor(payload.itemId)
@@ -140,7 +160,7 @@ class HierarchyEntityService(
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(successToResult)
+      .map(convertSuccess)
 
   def updateExternalId(payload: UpdateExternalIdPayload): Future[Done] =
     refFor(payload.itemId)
@@ -150,7 +170,7 @@ class HierarchyEntityService(
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(successToResult)
+      .map(convertSuccess)
 
   def moveItem(payload: MoveItemPayload): Future[Done] =
     refFor(payload.itemId)
@@ -160,7 +180,7 @@ class HierarchyEntityService(
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(successToResult)
+      .map(convertSuccess)
 
   def assignChief(payload: AssignChiefPayload): Future[Done] =
     refFor(payload.unitId)
@@ -170,7 +190,7 @@ class HierarchyEntityService(
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(successToResult)
+      .map(convertSuccess)
 
   def unassignChief(payload: UnassignChiefPayload): Future[Done] =
     refFor(payload.unitId)
@@ -180,7 +200,7 @@ class HierarchyEntityService(
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(successToResult)
+      .map(convertSuccess)
 
   def changePositionLimit(payload: ChangePositionLimitPayload): Future[Done] =
     refFor(payload.positionId)
@@ -190,7 +210,7 @@ class HierarchyEntityService(
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(successToResult)
+      .map(convertSuccess)
 
   def assignPerson(payload: AssignPersonPayload): Future[Done] =
     refFor(payload.positionId)
@@ -200,7 +220,7 @@ class HierarchyEntityService(
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(successToResult)
+      .map(convertSuccess)
 
   def unassignPerson(payload: UnassignPersonPayload): Future[Done] =
     refFor(payload.positionId)
@@ -210,7 +230,7 @@ class HierarchyEntityService(
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(successToResult)
+      .map(convertSuccess)
 
   def assignOrgRole(payload: AssignOrgRolePayload): Future[Done] =
     refFor(payload.positionId)
@@ -220,7 +240,7 @@ class HierarchyEntityService(
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(successToResult)
+      .map(convertSuccess)
 
   def unassignOrgRole(payload: UnassignOrgRolePayload): Future[Done] =
     refFor(payload.positionId)
@@ -230,7 +250,7 @@ class HierarchyEntityService(
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(successToResult)
+      .map(convertSuccess)
 
   def deleteOrgItem(payload: DeleteOrgItemPayload): Future[Done] =
     refFor(payload.itemId)
@@ -240,7 +260,7 @@ class HierarchyEntityService(
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(successToResult)
+      .map(convertSuccess)
 
   def getOrganizationById(orgId: CompositeOrgItemId): Future[Organization] =
     refFor(orgId)
@@ -261,39 +281,74 @@ class HierarchyEntityService(
         case _                                                         => throw new RuntimeException("Match fail")
       }
 
-  def getOrgItemById(id: CompositeOrgItemId, fromReadSide: Boolean): Future[OrgItem] =
+  def getOrgItem(id: CompositeOrgItemId, withAttributes: Seq[String]): Future[OrgItem] =
+    refFor(id)
+      .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrgItem(id, withAttributes, _))
+      .map {
+        case HierarchyEntity.SuccessOrgItem(orgItem) => orgItem
+        case HierarchyEntity.OrganizationNotFound    => throw OrganizationNotFound()
+        case HierarchyEntity.ItemNotFound            => throw ItemNotFound()
+        case _                                       => throw new RuntimeException("Match fail")
+      }
+
+  def getOrgItemById(
+    id: CompositeOrgItemId,
+    fromReadSide: Boolean,
+    withAttributes: Option[String] = None
+  ): Future[OrgItem] = {
+    val attributes = extractAttributes(withAttributes)
     if (fromReadSide)
       dbDao
-        .getOrgItemById(id)
+        .getOrgItemById(id, attributes)
         .map(_.getOrElse(throw ItemNotFound()))
-    else
-      refFor(id)
-        .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrgItem(id, _))
-        .map {
-          case HierarchyEntity.SuccessOrgItem(orgItem) => orgItem
-          case HierarchyEntity.OrganizationNotFound    => throw OrganizationNotFound()
-          case HierarchyEntity.ItemNotFound            => throw ItemNotFound()
-          case _                                       => throw new RuntimeException("Match fail")
-        }
+    else {
+      val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attributes)
+      val entityAttributesFuture                    =
+        if (readSideAttributes.nonEmpty) dbDao.getOrgItemAttributes(id, readSideAttributes)
+        else Future.successful(None)
+      for {
+        entity           <- getOrgItem(id, writeSideAttributes)
+        entityAttributes <- entityAttributesFuture
+      } yield entity.withAttributes(
+        entity.attributes ++ entityAttributes.getOrElse(Map.empty[String, String])
+      )
+    }
+  }
 
-  def getOrgItemsById(ids: Set[CompositeOrgItemId], fromReadSide: Boolean): Future[Seq[OrgItem]] =
+  def getOrgItemsById(
+    ids: Set[CompositeOrgItemId],
+    fromReadSide: Boolean,
+    withAttributes: Option[String] = None
+  ): Future[Seq[OrgItem]] = {
+    val attributes = extractAttributes(withAttributes)
     if (fromReadSide)
-      dbDao.getOrgItemsById(ids)
-    else
-      // TODO: group by orgId and create message HierarchyEntity.GetOrgItems
-      Source(ids)
-        .mapAsync(1) { id =>
-          refFor(id)
-            .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrgItem(id, _))
-            .map {
-              case HierarchyEntity.SuccessOrgItem(orgItem) => Some(orgItem)
-              case HierarchyEntity.OrganizationNotFound    => None
-              case HierarchyEntity.ItemNotFound            => None
-              case _                                       => None
-            }
-        }
-        .runWith(Sink.seq)
-        .map(_.flatten)
+      dbDao.getOrgItemsById(ids, attributes)
+    else {
+      val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attributes)
+      val attributeMapFuture                        =
+        if (readSideAttributes.nonEmpty) dbDao.getOrgItemsAttributes(ids, readSideAttributes)
+        else Future.successful(Map.empty[String, AttributeValues])
+      for {
+        // TODO: group by orgId and create message HierarchyEntity.GetOrgItems
+        entities     <- Source(ids)
+                          .mapAsync(1) { id =>
+                            refFor(id)
+                              .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrgItem(id, writeSideAttributes, _))
+                              .map {
+                                case HierarchyEntity.SuccessOrgItem(orgItem) => Some(orgItem)
+                                case _                                       => None
+                              }
+                          }
+                          .runWith(Sink.seq)
+                          .map(_.flatten)
+        attributeMap <- attributeMapFuture
+      } yield entities.map(entity =>
+        entity.withAttributes(
+          entity.attributes ++ attributeMap.get(entity.id).getOrElse(Map.empty[String, String])
+        )
+      )
+    }
+  }
 
   def getItemIdsByExternalId(externalIds: Set[String]): Future[Map[String, CompositeOrgItemId]] =
     dbDao.getItemIdsByExternalId(externalIds)
@@ -306,6 +361,79 @@ class HierarchyEntityService(
 
   def findOrgItems(payload: OrgItemFindQuery): Future[FindResult] =
     indexDao.findOrgItem(payload)
+
+  def updateOrgItemAttributes(payload: UpdateAttributesPayload): Future[Done] =
+    for {
+      _      <- Future.successful(entityMetadata.validateAttributes(payload.attributes))
+      result <- refFor(payload.id)
+                  .ask[HierarchyEntity.Confirmation](replyTo =>
+                    payload
+                      .into[HierarchyEntity.UpdateOrgItemAttributes]
+                      .withFieldComputed(_.itemId, _.id)
+                      .withFieldConst(_.replyTo, replyTo)
+                      .transform
+                  )
+                  .map(res => convertSuccess(res))
+    } yield result
+
+  def getOrgItemAttributes(
+    id: CompositeOrgItemId,
+    fromReadSide: Boolean,
+    withAttributes: Option[String]
+  ): Future[AttributeValues] = {
+    val attributes = extractAttributes(withAttributes)
+    if (fromReadSide)
+      dbDao
+        .getOrgItemAttributes(id, attributes)
+        .map(_.getOrElse(throw ItemNotFound()))
+    else {
+      val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attributes)
+      val readSideAttributesFuture                  =
+        if (readSideAttributes.nonEmpty) dbDao.getOrgItemAttributes(id, readSideAttributes)
+        else Future.successful(None)
+      for {
+        writeSideAttributeValues <-
+          refFor(id)
+            .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrgItemAttributes(id, writeSideAttributes, _))
+            .map(res => convertSuccessEntityAttributes(res))
+        readSideAttributeValues  <- readSideAttributesFuture
+      } yield writeSideAttributeValues ++ readSideAttributeValues.getOrElse(Map.empty[String, String])
+    }
+
+  }
+
+  def getOrgItemsAttributes(
+    ids: Set[CompositeOrgItemId],
+    fromReadSide: Boolean,
+    withAttributes: Option[String]
+  ): Future[Map[String, AttributeValues]] = {
+    val attributes = extractAttributes(withAttributes)
+    if (fromReadSide)
+      dbDao
+        .getOrgItemsAttributes(ids, attributes)
+    else {
+      val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attributes)
+      val readSideAttributesFuture                  =
+        if (readSideAttributes.nonEmpty) dbDao.getOrgItemsAttributes(ids, readSideAttributes)
+        else Future.successful(Map.empty[String, AttributeValues])
+      for {
+        writeSideAttributeValueMap <- Source(ids)
+                                        .mapAsync(1) { id =>
+                                          refFor(id)
+                                            .ask[HierarchyEntity.Confirmation](
+                                              HierarchyEntity.GetOrgItemAttributes(id, writeSideAttributes, _)
+                                            )
+                                            .map(res => id -> convertSuccessEntityAttributes(res))
+                                        }
+                                        .runWith(Sink.seq)
+                                        .map(_.toMap)
+        readSideAttributesMap      <- readSideAttributesFuture
+      } yield writeSideAttributeValueMap.map {
+        case id -> attributeValues =>
+          id -> (attributeValues ++ readSideAttributesMap.get(id).getOrElse(Map.empty[String, String]))
+      }
+    }
+  }
 
   def getChildren(unitId: CompositeOrgItemId): Future[Seq[CompositeOrgItemId]] =
     refFor(unitId)

@@ -17,6 +17,7 @@
 package biz.lobachev.annette.persons.api
 
 import akka.{Done, NotUsed}
+import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues, UpdateAttributesPayload}
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.category.{
@@ -65,14 +66,21 @@ trait PersonServiceApi extends Service {
    * @param id
    * @return
    */
-  def getPersonById(id: PersonId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Person]
+  def getPersonById(
+    id: PersonId,
+    fromReadSide: Boolean = true,
+    withAttributes: Option[String] = None
+  ): ServiceCall[NotUsed, Person]
 
   /**
    * Returns persons by person ids.
    *
    * @return
    */
-  def getPersonsById(fromReadSide: Boolean = true): ServiceCall[Set[PersonId], Seq[Person]]
+  def getPersonsById(
+    fromReadSide: Boolean = true,
+    withAttributes: Option[String] = None
+  ): ServiceCall[Set[PersonId], Seq[Person]]
 
   /**
    * Search person using particular query.
@@ -80,6 +88,21 @@ trait PersonServiceApi extends Service {
    * @return
    */
   def findPersons: ServiceCall[PersonFindQuery, FindResult]
+
+  def getPersonMetadata: ServiceCall[NotUsed, Map[String, AttributeMetadata]]
+
+  def updatePersonAttributes: ServiceCall[UpdateAttributesPayload, Done]
+
+  def getPersonAttributes(
+    id: PersonId,
+    fromReadSide: Boolean = true,
+    attributes: Option[String] = None
+  ): ServiceCall[NotUsed, AttributeValues]
+
+  def getPersonsAttributes(
+    fromReadSide: Boolean = true,
+    attributes: Option[String] = None
+  ): ServiceCall[Set[PersonId], Map[String, AttributeValues]]
 
   // org item category
 
@@ -100,9 +123,13 @@ trait PersonServiceApi extends Service {
         pathCall("/api/persons/v1/createPerson",                     createPerson),
         pathCall("/api/persons/v1/updatePerson",                     updatePerson),
         pathCall("/api/persons/v1/deletePerson",                     deletePerson),
-        pathCall("/api/persons/v1/getPersonById/:id/:fromReadSide",  getPersonById _),
-        pathCall("/api/persons/v1/getPersonsById/:fromReadSide",     getPersonsById _),
+        pathCall("/api/persons/v1/getPersonById/:id/:fromReadSide?withAttributes",  getPersonById _),
+        pathCall("/api/persons/v1/getPersonsById/:fromReadSide?withAttributes",     getPersonsById _),
         pathCall("/api/persons/v1/findPersons",                      findPersons),
+        pathCall("/api/persons/v1/getPersonMetadata",                getPersonMetadata),
+        pathCall("/api/persons/v1/updatePersonAttributes",           updatePersonAttributes),
+        pathCall("/api/persons/v1/getPersonAttributes/:id/:fromReadSide?attributes", getPersonAttributes _),
+        pathCall("/api/persons/v1/getPersonsAttributes/:fromReadSide?attributes",    getPersonsAttributes _),
 
         pathCall("/api/persons/v1/createCategory",                 createCategory),
         pathCall("/api/persons/v1/updateCategory",                 updateCategory),

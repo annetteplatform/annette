@@ -29,5 +29,4 @@ object Permissions {
 
   final val VIEW_ALL_PERSON_CATEGORIES     = Permission("annette.person.category.view.all")
   final val MAINTAIN_ALL_PERSON_CATEGORIES = Permission("annette.person.category.maintain.all")
-
 }

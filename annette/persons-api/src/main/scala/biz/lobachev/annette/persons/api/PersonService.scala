@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.persons.api
 import akka.Done
+import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues, UpdateAttributesPayload}
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.core.model.category.{
@@ -36,9 +37,25 @@ trait PersonService {
   def updatePerson(payload: UpdatePersonPayload): Future[Done]
   def createOrUpdatePerson(payload: CreatePersonPayload): Future[Done]
   def deletePerson(payload: DeletePersonPayload): Future[Done]
-  def getPersonById(id: PersonId, fromReadSide: Boolean): Future[Person]
-  def getPersonsById(ids: Set[PersonId], fromReadSide: Boolean): Future[Seq[Person]]
+  def getPersonById(id: PersonId, fromReadSide: Boolean, withAttributes: Option[String] = None): Future[Person]
+  def getPersonsById(
+    ids: Set[PersonId],
+    fromReadSide: Boolean,
+    withAttributes: Option[String] = None
+  ): Future[Seq[Person]]
   def findPersons(query: PersonFindQuery): Future[FindResult]
+  def getPersonMetadata: Future[Map[String, AttributeMetadata]]
+  def updatePersonAttributes(payload: UpdateAttributesPayload): Future[Done]
+  def getPersonAttributes(
+    id: PersonId,
+    fromReadSide: Boolean = true,
+    attributes: Option[String] = None
+  ): Future[AttributeValues]
+  def getPersonsAttributes(
+    ids: Set[PersonId],
+    fromReadSide: Boolean = true,
+    attributes: Option[String] = None
+  ): Future[Map[String, AttributeValues]]
 
   // category methods
 

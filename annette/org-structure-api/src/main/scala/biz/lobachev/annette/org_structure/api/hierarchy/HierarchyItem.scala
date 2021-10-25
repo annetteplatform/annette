@@ -16,6 +16,8 @@
 
 package biz.lobachev.annette.org_structure.api.hierarchy
 
+import biz.lobachev.annette.core.attribute.AttributeValues
+
 import java.time.OffsetDateTime
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
@@ -30,6 +32,7 @@ sealed trait HierarchyItem {
   val categoryId: OrgCategoryId
   val source: Option[String]
   val externalId: Option[String]
+  val attributes: AttributeValues
   val updatedAt: OffsetDateTime
   val updatedBy: AnnettePrincipal
 }
@@ -44,6 +47,7 @@ case class HierarchyPosition(
   categoryId: OrgCategoryId,
   source: Option[String] = None,
   externalId: Option[String] = None,
+  attributes: AttributeValues = Map.empty,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) extends HierarchyItem
@@ -61,6 +65,7 @@ case class HierarchyUnit(
   categoryId: OrgCategoryId,
   source: Option[String] = None,
   externalId: Option[String] = None,
+  attributes: AttributeValues = Map.empty,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) extends HierarchyItem

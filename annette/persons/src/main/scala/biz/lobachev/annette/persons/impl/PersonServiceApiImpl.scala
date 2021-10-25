@@ -17,6 +17,7 @@
 package biz.lobachev.annette.persons.impl
 
 import akka.{Done, NotUsed}
+import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues, UpdateAttributesPayload}
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.category.{
   Category,
@@ -53,19 +54,52 @@ class PersonServiceApiImpl(
       personEntityService.deletePerson(payload)
     }
 
-  override def getPersonById(id: PersonId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Person] =
+  override def getPersonById(
+    id: PersonId,
+    fromReadSide: Boolean = true,
+    withAttributes: Option[String] = None
+  ): ServiceCall[NotUsed, Person] =
     ServiceCall { _ =>
-      personEntityService.getPersonById(id, fromReadSide)
+      personEntityService.getPersonById(id, fromReadSide, withAttributes)
     }
 
-  override def getPersonsById(fromReadSide: Boolean): ServiceCall[Set[PersonId], Seq[Person]] =
+  override def getPersonsById(
+    fromReadSide: Boolean,
+    withAttributes: Option[String] = None
+  ): ServiceCall[Set[PersonId], Seq[Person]] =
     ServiceCall { ids =>
-      personEntityService.getPersonsById(ids, fromReadSide)
+      personEntityService.getPersonsById(ids, fromReadSide, withAttributes)
     }
 
-  override def findPersons: ServiceCall[PersonFindQuery, FindResult] =
+  override def findPersons: ServiceCall[PersonFindQuery, FindResult]                   =
     ServiceCall { query =>
       personEntityService.findPersons(query)
+    }
+  override def getPersonMetadata: ServiceCall[NotUsed, Map[String, AttributeMetadata]] =
+    ServiceCall { _ =>
+      personEntityService.getEntityMetadata
+    }
+
+  override def updatePersonAttributes: ServiceCall[UpdateAttributesPayload, Done] =
+    ServiceCall { payload =>
+      personEntityService.updatePersonAttributes(payload)
+    }
+
+  override def getPersonAttributes(
+    id: PersonId,
+    fromReadSide: Boolean,
+    attributes: Option[String]
+  ): ServiceCall[NotUsed, AttributeValues] =
+    ServiceCall { _ =>
+      personEntityService.getPersonAttributes(id, fromReadSide, attributes)
+    }
+
+  override def getPersonsAttributes(
+    fromReadSide: Boolean,
+    attributes: Option[String]
+  ): ServiceCall[Set[PersonId], Map[String, AttributeValues]] =
+    ServiceCall { ids =>
+      personEntityService.getPersonsAttributes(ids, fromReadSide, attributes)
     }
 
   // ****************************** Category methods ******************************

@@ -17,19 +17,13 @@
 package biz.lobachev.annette.org_structure.api
 
 import akka.Done
-import biz.lobachev.annette.core.model.indexing.FindResult
+import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues, UpdateAttributesPayload}
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.org_structure.api.category.{
-  CreateCategoryPayload,
-  DeleteCategoryPayload,
-  OrgCategory,
-  OrgCategoryFindQuery,
-  OrgCategoryId,
-  UpdateCategoryPayload
-}
+import biz.lobachev.annette.core.model.indexing.FindResult
+import biz.lobachev.annette.org_structure.api.category._
 import biz.lobachev.annette.org_structure.api.hierarchy._
-import biz.lobachev.annette.org_structure.api.role.{OrgRoleId, _}
+import biz.lobachev.annette.org_structure.api.role._
 
 import scala.collection.immutable.Map
 import scala.concurrent.Future
@@ -62,8 +56,16 @@ trait OrgStructureService {
   def getOrganizationById(orgId: CompositeOrgItemId): Future[Organization]
   def getOrganizationTree(itemId: CompositeOrgItemId): Future[OrganizationTree]
 
-  def getOrgItemById(itemId: CompositeOrgItemId, fromReadSide: Boolean = true): Future[OrgItem]
-  def getOrgItemsById(ids: Set[CompositeOrgItemId], fromReadSide: Boolean = true): Future[Seq[OrgItem]]
+  def getOrgItemById(
+    itemId: CompositeOrgItemId,
+    fromReadSide: Boolean = true,
+    withAttributes: Option[String] = None
+  ): Future[OrgItem]
+  def getOrgItemsById(
+    ids: Set[CompositeOrgItemId],
+    fromReadSide: Boolean = true,
+    withAttributes: Option[String] = None
+  ): Future[Seq[OrgItem]]
 
   def getItemIdsByExternalId(externalIds: Set[String]): Future[Map[String, CompositeOrgItemId]]
 
@@ -71,6 +73,20 @@ trait OrgStructureService {
   def getPersonPositions(personId: PersonId): Future[Set[PersonPosition]]
 
   def findOrgItems(query: OrgItemFindQuery): Future[FindResult]
+
+  // OrgItem attribute methods
+  def getOrgItemMetadata: Future[Map[String, AttributeMetadata]]
+  def updateOrgItemAttributes(payload: UpdateAttributesPayload): Future[Done]
+  def getOrgItemAttributes(
+    id: CompositeOrgItemId,
+    fromReadSide: Boolean = true,
+    attributes: Option[String] = None
+  ): Future[AttributeValues]
+  def getOrgItemsAttributes(
+    ids: Set[CompositeOrgItemId],
+    fromReadSide: Boolean = true,
+    attributes: Option[String] = None
+  ): Future[Map[String, AttributeValues]]
 
   // org role methods
 

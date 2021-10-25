@@ -33,6 +33,7 @@ object HierarchySerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[HierarchyEntity.SuccessOrganization],
       JsonSerializer[HierarchyEntity.SuccessOrganizationTree],
       JsonSerializer[HierarchyEntity.SuccessOrgItem],
+      JsonSerializer[HierarchyEntity.SuccessAttributes],
       JsonSerializer[HierarchyEntity.SuccessChildren],
       JsonSerializer[HierarchyEntity.SuccessPersons],
       JsonSerializer[HierarchyEntity.SuccessRoles],
@@ -75,6 +76,7 @@ object HierarchySerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[HierarchyEntity.OrgRoleUnassigned],
       JsonSerializer[HierarchyEntity.ItemMoved],
       JsonSerializer[HierarchyEntity.ItemOrderChanged],
-      JsonSerializer[HierarchyEntity.RootPathUpdated]
+      JsonSerializer[HierarchyEntity.RootPathUpdated],
+      JsonSerializer[HierarchyEntity.OrgItemAttributesUpdated]
     )
 }

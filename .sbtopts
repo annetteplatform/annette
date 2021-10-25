@@ -2,3 +2,4 @@
 -J-Xmx8G
 -J-Xss32M
 -J-XX:MaxMetaspaceSize=2G
+-Dquill.macro.log=false

@@ -21,9 +21,11 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
+import biz.lobachev.annette.microservice_core.attribute.dao.AttributeIndexing
 import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
 import biz.lobachev.annette.org_structure.api.hierarchy
 import biz.lobachev.annette.org_structure.api.hierarchy.{CompositeOrgItemId, ItemTypes, OrgItemFindQuery, OrgItemKey}
+import biz.lobachev.annette.org_structure.impl.hierarchy.HierarchyMetadata
 import biz.lobachev.annette.org_structure.impl.hierarchy.entity.HierarchyEntity
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
@@ -37,15 +39,14 @@ import scala.concurrent.{ExecutionContext, Future}
 class HierarchyIndexDao(client: ElasticClient)(implicit
   override val ec: ExecutionContext,
   materializer: Materializer
-) extends AbstractIndexDao(client) {
-
+) extends AbstractIndexDao(client)
+    with AttributeIndexing {
   override val log = LoggerFactory.getLogger(this.getClass)
 
   override def indexConfigPath = "indexing.items-index"
 
-  def createOrganization(event: HierarchyEntity.OrganizationCreated) =
-    createIndexDoc(
-      event.orgId,
+  def createOrganization(event: HierarchyEntity.OrganizationCreated) = {
+    val doc        = List(
       "id"         -> event.orgId,
       "orgId"      -> event.orgId,
       "parentId"   -> hierarchy.ROOT,
@@ -59,27 +60,38 @@ class HierarchyIndexDao(client: ElasticClient)(implicit
       "externalId" -> event.externalId,
       "updatedAt"  -> event.createdAt
     )
+    val attributes = event.attributes.map(attrs => convertAttributes(attrs, HierarchyMetadata.metadata)).getOrElse(Nil)
+    createIndexDoc(
+      event.orgId,
+      doc ++ attributes
+    )
+  }
 
   def deleteOrganization(event: HierarchyEntity.OrganizationDeleted) =
     deleteIndexDoc(event.orgId)
 
-  def createUnit(event: HierarchyEntity.UnitCreated) =
+  def createUnit(event: HierarchyEntity.UnitCreated) = {
+    val doc        = List(
+      "id"         -> event.unitId,
+      "orgId"      -> OrgItemKey.extractOrgId(event.unitId),
+      "parentId"   -> event.parentId,
+      "rootPath"   -> event.rootPath,
+      "name"       -> event.name,
+      "type"       -> ItemTypes.Unit.toString,
+      "children"   -> Seq.empty,
+      "categoryId" -> event.categoryId,
+      "level"      -> (event.rootPath.length - 1),
+      "source"     -> event.source,
+      "externalId" -> event.externalId,
+      "updatedAt"  -> event.createdAt,
+      "updatedBy"  -> event.createdBy
+    )
+    val attributes = event.attributes.map(attrs => convertAttributes(attrs, HierarchyMetadata.metadata)).getOrElse(Nil)
+
     for {
       _ <- createIndexDoc(
              event.unitId,
-             "id"         -> event.unitId,
-             "orgId"      -> OrgItemKey.extractOrgId(event.unitId),
-             "parentId"   -> event.parentId,
-             "rootPath"   -> event.rootPath,
-             "name"       -> event.name,
-             "type"       -> ItemTypes.Unit.toString,
-             "children"   -> Seq.empty,
-             "categoryId" -> event.categoryId,
-             "level"      -> (event.rootPath.length - 1),
-             "source"     -> event.source,
-             "externalId" -> event.externalId,
-             "updatedAt"  -> event.createdAt,
-             "updatedBy"  -> event.createdBy
+             doc ++ attributes
            )
       _ <- updateIndexDoc(
              event.parentId,
@@ -88,6 +100,7 @@ class HierarchyIndexDao(client: ElasticClient)(implicit
              "updatedBy" -> event.createdBy
            )
     } yield Done
+  }
 
   def deleteUnit(event: HierarchyEntity.UnitDeleted) =
     for {
@@ -118,25 +131,29 @@ class HierarchyIndexDao(client: ElasticClient)(implicit
       "chief" -> null
     )
 
-  def createPosition(event: HierarchyEntity.PositionCreated) =
+  def createPosition(event: HierarchyEntity.PositionCreated) = {
+    val doc        = List(
+      "id"         -> event.positionId,
+      "orgId"      -> OrgItemKey.extractOrgId(event.positionId),
+      "parentId"   -> event.parentId,
+      "rootPath"   -> event.rootPath,
+      "name"       -> event.name,
+      "type"       -> ItemTypes.Position.toString,
+      "categoryId" -> event.categoryId,
+      "persons"    -> Seq.empty,
+      "orgRoles"   -> Seq.empty,
+      "limit"      -> event.limit,
+      "level"      -> (event.rootPath.length - 1),
+      "source"     -> event.source,
+      "externalId" -> event.externalId,
+      "updatedAt"  -> event.createdAt,
+      "updatedBy"  -> event.createdBy.code
+    )
+    val attributes = event.attributes.map(attrs => convertAttributes(attrs, HierarchyMetadata.metadata)).getOrElse(Nil)
     for {
       _ <- createIndexDoc(
              event.positionId,
-             "id"         -> event.positionId,
-             "orgId"      -> OrgItemKey.extractOrgId(event.positionId),
-             "parentId"   -> event.parentId,
-             "rootPath"   -> event.rootPath,
-             "name"       -> event.name,
-             "type"       -> ItemTypes.Position.toString,
-             "categoryId" -> event.categoryId,
-             "persons"    -> Seq.empty,
-             "orgRoles"   -> Seq.empty,
-             "limit"      -> event.limit,
-             "level"      -> (event.rootPath.length - 1),
-             "source"     -> event.source,
-             "externalId" -> event.externalId,
-             "updatedAt"  -> event.createdAt,
-             "updatedBy"  -> event.createdBy.code
+             doc ++ attributes
            )
       _ <- updateIndexDoc(
              event.parentId,
@@ -145,6 +162,7 @@ class HierarchyIndexDao(client: ElasticClient)(implicit
              "updatedBy" -> event.createdBy
            )
     } yield Done
+  }
 
   def deletePosition(event: HierarchyEntity.PositionDeleted) =
     for {
@@ -238,6 +256,18 @@ class HierarchyIndexDao(client: ElasticClient)(implicit
       _ <- updateChildren(event.parentId, event.parentChildren, event.updatedBy, event.updatedAt)
     } yield Done
 
+  def updateOrgItemAttributes(event: HierarchyEntity.OrgItemAttributesUpdated) = {
+    val doc        = List(
+      "id"        -> event.itemId,
+      "updatedAt" -> event.updatedAt
+    )
+    val attributes = convertAttributes(event.attributes, HierarchyMetadata.metadata)
+    updateIndexDoc(
+      event.itemId,
+      doc ++ attributes
+    )
+  }
+
   def updateRootPath(event: HierarchyEntity.RootPathUpdated) =
     updateIndexDoc(
       event.orgItemId,
@@ -299,6 +329,7 @@ class HierarchyIndexDao(client: ElasticClient)(implicit
     val sourceQuery        = query.sources.map(sources => termsSetQuery(alias2FieldName("source"), sources, script("1"))).toSeq
     val externalIdQuery    =
       query.externalIds.map(externalIds => termsSetQuery(alias2FieldName("externalId"), externalIds, script("1"))).toSeq
+    val advancedQueries    = buildAdvancedQueries(query.query)
 
     val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
 
@@ -308,7 +339,7 @@ class HierarchyIndexDao(client: ElasticClient)(implicit
           filterQuery ++ fieldQuery ++ fieldQuery ++ orgUnitsQuery ++
             personsQuery ++ orgRolesQuery ++ fromLevelQuery ++ toLevelQuery ++
             itemTypesQuery ++ organizationsQuery ++ parentsQuery ++ chiefsQuery ++ categoryQuery ++
-            sourceQuery ++ externalIdQuery
+            sourceQuery ++ externalIdQuery ++ advancedQueries
         )
       )
       .from(query.offset)

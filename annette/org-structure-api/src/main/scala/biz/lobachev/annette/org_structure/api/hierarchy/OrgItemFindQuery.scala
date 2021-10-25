@@ -17,7 +17,7 @@
 package biz.lobachev.annette.org_structure.api.hierarchy
 
 import biz.lobachev.annette.core.model.PersonId
-import biz.lobachev.annette.core.model.indexing.SortBy
+import biz.lobachev.annette.core.model.indexing.{AdvancedQuery, SortBy}
 import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import play.api.libs.json.{Format, Json}
@@ -39,6 +39,7 @@ case class OrgItemFindQuery(
   categories: Option[Set[OrgCategoryId]] = None,
   sources: Option[Set[String]] = None,
   externalIds: Option[Set[String]] = None,
+  query: Option[Seq[AdvancedQuery]] = None,
   sortBy: Option[Seq[SortBy]] = None                     //sort results by field provided
 )
 
