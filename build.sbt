@@ -90,7 +90,6 @@ lazy val root = (project in file("."))
     `principal-groups-api-gateway`,
     // microservices API
     `application-api`,
-//    `attributes-api`,
     `authorization-api`,
     `org-structure-api`,
     `persons-api`,
@@ -99,7 +98,6 @@ lazy val root = (project in file("."))
     `cms-api`,
     // microservices
     `application`,
-//    `attributes`,
     `authorization`,
     `org-structure`,
     `persons`,
@@ -286,35 +284,6 @@ lazy val `application-api-gateway` = (project in file("annette/application-api-g
     `api-gateway-core`,
     `application-api`
   )
-
-//lazy val `attributes-api` = (project in file("annette/attributes-api"))
-//  .settings(
-//    libraryDependencies ++= Seq(
-//      lagomScaladslApi,
-//      lagomScaladslTestKit,
-//      Dependencies.chimney
-//    ) ++ Dependencies.tests
-//  )
-//  .settings(annetteSettings: _*)
-//  .dependsOn(`microservice-core`)
-
-//def attributesProject(pr: Project) =
-//  pr
-//    .enablePlugins(LagomScala)
-//    .settings(
-//      libraryDependencies ++= Seq(
-//        lagomScaladslPersistenceCassandra,
-//        lagomScaladslKafkaBroker,
-//        lagomScaladslTestKit,
-//        Dependencies.macwire,
-//        Dependencies.chimney
-//      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
-//    )
-//    .settings(lagomForkedTestSettings: _*)
-//    .settings(confDirSettings: _*)
-//    .settings(annetteSettings: _*)
-//    .settings(dockerSettings: _*)
-//    .dependsOn(`attributes-api`)
 
 lazy val `authorization-api` = (project in file("annette/authorization-api"))
   .settings(
@@ -586,7 +555,6 @@ lazy val `cms-api-gateway` = (project in file("annette/cms-api-gateway"))
 
 //lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/demo"))
 lazy val `application`      = applicationProject(project in file("annette/application"))
-//lazy val `attributes`       = attributesProject(project in file("annette/attributes"))
 lazy val `authorization`    = authorizationProject(project in file("annette/authorization"))
 lazy val `org-structure`    = orgStructureProject(project in file("annette/org-structure"))
 lazy val `persons`          = personsProject(project in file("annette/persons"))
