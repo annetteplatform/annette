@@ -160,7 +160,6 @@ class PersonController @Inject() (
       authorizer.performCheckAny(VIEW_ALL_PERSON, MAINTAIN_ALL_PERSON) {
         for {
           meta <- personService.getPersonMetadata
-
         } yield Ok(Json.toJson(meta))
       }
     }
@@ -169,8 +168,8 @@ class PersonController @Inject() (
     authenticated.async { implicit request =>
       authorizer.performCheck(canViewOrMaintainPerson(id)) {
         for {
-          person <- personService.getPersonAttributes(id, fromReadSide, attributes)
-        } yield Ok(Json.toJson(person))
+          attributes <- personService.getPersonAttributes(id, fromReadSide, attributes)
+        } yield Ok(Json.toJson(attributes))
       }
     }
 
@@ -178,8 +177,8 @@ class PersonController @Inject() (
     authenticated.async(parse.json[Set[PersonId]]) { implicit request =>
       authorizer.performCheckAny(VIEW_ALL_PERSON, MAINTAIN_ALL_PERSON) {
         for {
-          persons <- personService.getPersonsAttributes(request.body, fromReadSide, attributes)
-        } yield Ok(Json.toJson(persons))
+          attributes <- personService.getPersonsAttributes(request.body, fromReadSide, attributes)
+        } yield Ok(Json.toJson(attributes))
       }
     }
 
