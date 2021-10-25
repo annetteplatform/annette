@@ -348,8 +348,8 @@ class OrgStructureController @Inject() (
     authenticated.async { implicit request =>
       authorizer.performCheck(canViewOrMaintainOrg(OrgItemKey.extractOrgId(id))) {
         for {
-          person <- orgStructureService.getOrgItemAttributes(id, fromReadSide, attributes)
-        } yield Ok(Json.toJson(person))
+          attributes <- orgStructureService.getOrgItemAttributes(id, fromReadSide, attributes)
+        } yield Ok(Json.toJson(attributes))
       }
     }
 
@@ -358,8 +358,8 @@ class OrgStructureController @Inject() (
       val ids = request.body
       authorizer.performCheck(canViewOrMaintainOrg(OrgItemKey.extractOrgId(ids.head))) {
         for {
-          persons <- orgStructureService.getOrgItemsAttributes(ids, fromReadSide, attributes)
-        } yield Ok(Json.toJson(persons))
+          attributes <- orgStructureService.getOrgItemsAttributes(ids, fromReadSide, attributes)
+        } yield Ok(Json.toJson(attributes))
       }
     }
 
