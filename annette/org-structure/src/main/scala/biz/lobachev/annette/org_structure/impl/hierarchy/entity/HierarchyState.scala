@@ -20,7 +20,7 @@ import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
-
+import biz.lobachev.annette.org_structure.impl.hierarchy.HierarchyMetadata
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 
@@ -38,29 +38,31 @@ object EmptyHierarchy extends HierarchyState {
 
   override def applyCommand(cmd: Command): ReplyEffect[Event, HierarchyState] =
     cmd match {
-      case cmd: CreateOrganization  => createOrganization(cmd)
-      case cmd: CreateUnit          => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: CreatePosition      => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: UpdateName          => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: AssignCategory      => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: UpdateSource        => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: UpdateExternalId    => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: MoveItem            => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: AssignChief         => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: UnassignChief       => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: ChangePositionLimit => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: AssignPerson        => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: UnassignPerson      => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: AssignOrgRole       => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: UnassignOrgRole     => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: DeleteOrgItem       => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: GetOrgItem          => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: GetOrganization     => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: GetOrganizationTree => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: GetChildren         => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: GetPersons          => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: GetRoles            => Effect.reply(cmd.replyTo)(OrganizationNotFound)
-      case cmd: GetRootPaths        => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: CreateOrganization      => createOrganization(cmd)
+      case cmd: CreateUnit              => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: CreatePosition          => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: UpdateName              => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: AssignCategory          => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: UpdateSource            => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: UpdateExternalId        => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: MoveItem                => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: AssignChief             => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: UnassignChief           => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: ChangePositionLimit     => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: AssignPerson            => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: UnassignPerson          => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: AssignOrgRole           => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: UnassignOrgRole         => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: DeleteOrgItem           => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: GetOrgItem              => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: GetOrganization         => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: GetOrganizationTree     => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: GetChildren             => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: GetPersons              => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: GetRoles                => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: GetRootPaths            => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: GetOrgItemAttributes    => Effect.reply(cmd.replyTo)(OrganizationNotFound)
+      case cmd: UpdateOrgItemAttributes => Effect.reply(cmd.replyTo)(OrganizationNotFound)
     }
 
   def createOrganization(cmd: CreateOrganization): ReplyEffect[Event, HierarchyState] = {
@@ -120,26 +122,28 @@ final case class ActiveHierarchy(
 
   override def applyCommand(cmd: Command): ReplyEffect[Event, HierarchyState] =
     cmd match {
-      case cmd: CreateOrganization  => Effect.reply(cmd.replyTo)(OrganizationAlreadyExist)
-      case cmd: CreateUnit          => createUnit(cmd)
-      case cmd: CreatePosition      => createPosition(cmd)
-      case cmd: UpdateName          => updateName(cmd)
-      case cmd: AssignCategory      => assignCategory(cmd)
-      case cmd: UpdateSource        => updateSource(cmd)
-      case cmd: UpdateExternalId    => updateExternalId(cmd)
-      case cmd: MoveItem            => moveItem(cmd)
-      case cmd: AssignChief         => assignChief(cmd)
-      case cmd: UnassignChief       => unassignChief(cmd)
-      case cmd: ChangePositionLimit => changePositionLimit(cmd)
-      case cmd: AssignPerson        => assignPerson(cmd)
-      case cmd: UnassignPerson      => unassignPerson(cmd)
-      case cmd: AssignOrgRole       => assignOrgRole(cmd)
-      case cmd: UnassignOrgRole     => unassignOrgRole(cmd)
-      case cmd: DeleteOrgItem       => deleteOrgItem(cmd)
+      case cmd: CreateOrganization      => Effect.reply(cmd.replyTo)(OrganizationAlreadyExist)
+      case cmd: CreateUnit              => createUnit(cmd)
+      case cmd: CreatePosition          => createPosition(cmd)
+      case cmd: UpdateName              => updateName(cmd)
+      case cmd: AssignCategory          => assignCategory(cmd)
+      case cmd: UpdateSource            => updateSource(cmd)
+      case cmd: UpdateExternalId        => updateExternalId(cmd)
+      case cmd: MoveItem                => moveItem(cmd)
+      case cmd: UpdateOrgItemAttributes => updateOrgItemAttributes(cmd)
+      case cmd: AssignChief             => assignChief(cmd)
+      case cmd: UnassignChief           => unassignChief(cmd)
+      case cmd: ChangePositionLimit     => changePositionLimit(cmd)
+      case cmd: AssignPerson            => assignPerson(cmd)
+      case cmd: UnassignPerson          => unassignPerson(cmd)
+      case cmd: AssignOrgRole           => assignOrgRole(cmd)
+      case cmd: UnassignOrgRole         => unassignOrgRole(cmd)
+      case cmd: DeleteOrgItem           => deleteOrgItem(cmd)
 
-      case cmd: GetOrgItem          => getOrgItem(cmd)
-      case cmd: GetOrganization     => getOrganization(cmd)
-      case cmd: GetOrganizationTree => getOrganizationTree(cmd)
+      case cmd: GetOrgItem           => getOrgItem(cmd)
+      case cmd: GetOrgItemAttributes => getOrgItemAttributes(cmd)
+      case cmd: GetOrganization      => getOrganization(cmd)
+      case cmd: GetOrganizationTree  => getOrganizationTree(cmd)
 
       case cmd: GetChildren  => getChildren(cmd)
       case cmd: GetPersons   => getPersons(cmd)
@@ -302,6 +306,16 @@ final case class ActiveHierarchy(
             .thenReply(cmd.replyTo)(_ => Success)
         }
       }
+    } else Effect.reply(cmd.replyTo)(ItemNotFound)
+
+  def updateOrgItemAttributes(cmd: UpdateOrgItemAttributes): ReplyEffect[Event, HierarchyState] =
+    if (hasItem(cmd.itemId)) {
+      val event = cmd
+        .into[OrgItemAttributesUpdated]
+        .transform
+      Effect
+        .persist(event)
+        .thenReply(cmd.replyTo)(_ => Success)
     } else Effect.reply(cmd.replyTo)(ItemNotFound)
 
   def changeItemOrder(cmd: MoveItem): ReplyEffect[Event, HierarchyState] =
@@ -490,25 +504,40 @@ final case class ActiveHierarchy(
 
   def getOrgItem(cmd: GetOrgItem): ReplyEffect[Event, HierarchyState] =
     if (hasPosition(cmd.id)) {
-      val position = positions(cmd.id)
-      val rootPath = getRootPath(cmd.id)
-      val orgItem  = position
+      val position   = positions(cmd.id)
+      val rootPath   = getRootPath(cmd.id)
+      val attributes = position.attributes.filter { case attribute -> _ => cmd.withAttributes.contains(attribute) }
+      val orgItem    = position
         .into[OrgPosition]
         .withFieldConst(_.orgId, orgId)
         .withFieldConst(_.rootPath, rootPath)
         .withFieldConst(_.level, rootPath.length - 1)
+        .withFieldConst(_.attributes, attributes)
         .transform
       Effect.reply(cmd.replyTo)(SuccessOrgItem(orgItem))
     } else if (hasUnit(cmd.id)) {
-      val unit     = units(cmd.id)
-      val rootPath = getRootPath(cmd.id)
-      val orgItem  = unit
+      val unit       = units(cmd.id)
+      val rootPath   = getRootPath(cmd.id)
+      val attributes = unit.attributes.filter { case attribute -> _ => cmd.withAttributes.contains(attribute) }
+      val orgItem    = unit
         .into[OrgUnit]
         .withFieldConst(_.orgId, orgId)
         .withFieldConst(_.rootPath, rootPath)
         .withFieldConst(_.level, rootPath.length - 1)
+        .withFieldConst(_.attributes, attributes)
         .transform
       Effect.reply(cmd.replyTo)(SuccessOrgItem(orgItem))
+    } else Effect.reply(cmd.replyTo)(ItemNotFound)
+
+  def getOrgItemAttributes(cmd: GetOrgItemAttributes): ReplyEffect[Event, HierarchyState] =
+    if (hasPosition(cmd.id)) {
+      val position   = positions(cmd.id)
+      val attributes = position.attributes.filter { case attribute -> _ => cmd.withAttributes.contains(attribute) }
+      Effect.reply(cmd.replyTo)(SuccessAttributes(attributes))
+    } else if (hasUnit(cmd.id)) {
+      val unit       = units(cmd.id)
+      val attributes = unit.attributes.filter { case attribute -> _ => cmd.withAttributes.contains(attribute) }
+      Effect.reply(cmd.replyTo)(SuccessAttributes(attributes))
     } else Effect.reply(cmd.replyTo)(ItemNotFound)
 
   def getChildren(cmd: GetChildren): ReplyEffect[Event, HierarchyState] =
@@ -539,26 +568,27 @@ final case class ActiveHierarchy(
 
   override def applyEvent(event: Event): HierarchyState =
     event match {
-      case _: OrganizationCreated      => this
-      case event: UnitCreated          => onUnitCreated(event)
-      case event: PositionCreated      => onPositionCreated(event)
-      case event: NameUpdated          => onNameUpdated(event)
-      case event: CategoryAssigned     => onCategoryAssigned(event)
-      case event: SourceUpdated        => onSourceUpdated(event)
-      case event: ExternalIdUpdated    => onExternalIdUpdated(event)
-      case event: ItemMoved            => onItemMoved(event)
-      case event: ItemOrderChanged     => onItemOrderChanged(event)
-      case _: RootPathUpdated          => this
-      case event: ChiefAssigned        => onChiefAssigned(event)
-      case event: ChiefUnassigned      => onChiefUnassigned(event)
-      case event: PositionLimitChanged => onPositionLimitChanged(event)
-      case event: PersonAssigned       => onPersonAssigned(event)
-      case event: PersonUnassigned     => onPersonUnassigned(event)
-      case event: OrgRoleAssigned      => onOrgRolesAssigned(event)
-      case event: OrgRoleUnassigned    => onOrgRolesUnassigned(event)
-      case _: OrganizationDeleted      => EmptyHierarchy
-      case event: UnitDeleted          => onUnitDeleted(event)
-      case event: PositionDeleted      => onPositionDeleted(event)
+      case _: OrganizationCreated          => this
+      case event: UnitCreated              => onUnitCreated(event)
+      case event: PositionCreated          => onPositionCreated(event)
+      case event: NameUpdated              => onNameUpdated(event)
+      case event: CategoryAssigned         => onCategoryAssigned(event)
+      case event: SourceUpdated            => onSourceUpdated(event)
+      case event: ExternalIdUpdated        => onExternalIdUpdated(event)
+      case event: ItemMoved                => onItemMoved(event)
+      case event: ItemOrderChanged         => onItemOrderChanged(event)
+      case event: OrgItemAttributesUpdated => onOrgItemAttributesUpdated(event)
+      case _: RootPathUpdated              => this
+      case event: ChiefAssigned            => onChiefAssigned(event)
+      case event: ChiefUnassigned          => onChiefUnassigned(event)
+      case event: PositionLimitChanged     => onPositionLimitChanged(event)
+      case event: PersonAssigned           => onPersonAssigned(event)
+      case event: PersonUnassigned         => onPersonUnassigned(event)
+      case event: OrgRoleAssigned          => onOrgRolesAssigned(event)
+      case event: OrgRoleUnassigned        => onOrgRolesUnassigned(event)
+      case _: OrganizationDeleted          => EmptyHierarchy
+      case event: UnitDeleted              => onUnitDeleted(event)
+      case event: PositionDeleted          => onPositionDeleted(event)
     }
 
   def onUnitCreated(event: UnitCreated): HierarchyState = {
@@ -569,6 +599,7 @@ final case class ActiveHierarchy(
       categoryId = event.categoryId,
       source = event.source,
       externalId = event.externalId,
+      attributes = event.attributes.getOrElse(Map.empty),
       updatedAt = event.createdAt,
       updatedBy = event.createdBy
     )
@@ -676,6 +707,7 @@ final case class ActiveHierarchy(
       categoryId = event.categoryId,
       source = event.source,
       externalId = event.externalId,
+      attributes = event.attributes.getOrElse(Map.empty),
       updatedAt = event.createdAt,
       updatedBy = event.createdBy
     )
@@ -961,6 +993,47 @@ final case class ActiveHierarchy(
       updatedAt = event.updatedAt,
       updatedBy = event.updatedBy
     )
+  }
+
+  def onOrgItemAttributesUpdated(event: OrgItemAttributesUpdated): HierarchyState = {
+    val removedAttributes =
+      event.attributes.filter { case _ -> value => value.isEmpty }.keys.toSet
+    val updatedAttributes = event.attributes.filter {
+      case attribute -> value =>
+        value.nonEmpty &&
+          HierarchyMetadata.metadata.get(attribute).map(!_.readSidePersistence).getOrElse(false)
+    }
+    positions
+      .get(event.itemId)
+      .map { position =>
+        val updatedPosition = position.copy(
+          attributes = position.attributes -- removedAttributes ++ updatedAttributes,
+          updatedAt = event.updatedAt,
+          updatedBy = event.updatedBy
+        )
+        copy(
+          positions = positions + (updatedPosition.id -> updatedPosition),
+          updatedAt = event.updatedAt,
+          updatedBy = event.updatedBy
+        )
+      }
+      .getOrElse {
+        units
+          .get(event.itemId)
+          .map { unit =>
+            val updatedUnit = unit.copy(
+              attributes = unit.attributes -- removedAttributes ++ updatedAttributes,
+              updatedAt = event.updatedAt,
+              updatedBy = event.updatedBy
+            )
+            copy(
+              units = units + (updatedUnit.id -> updatedUnit),
+              updatedAt = event.updatedAt,
+              updatedBy = event.updatedBy
+            )
+          }
+          .getOrElse(this)
+      }
   }
 
   // *****************************************************

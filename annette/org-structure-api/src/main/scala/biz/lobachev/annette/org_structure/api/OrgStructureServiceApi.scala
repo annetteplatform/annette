@@ -17,6 +17,7 @@
 package biz.lobachev.annette.org_structure.api
 
 import akka.{Done, NotUsed}
+import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues, UpdateAttributesPayload}
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.core.model.PersonId
@@ -62,8 +63,15 @@ trait OrgStructureServiceApi extends Service {
   def getOrganizationById(orgId: CompositeOrgItemId): ServiceCall[NotUsed, Organization]
   def getOrganizationTree(itemId: CompositeOrgItemId): ServiceCall[NotUsed, OrganizationTree]
 
-  def getOrgItemById(itemId: CompositeOrgItemId, fromReadSide: Boolean): ServiceCall[NotUsed, OrgItem]
-  def getOrgItemsById(fromReadSide: Boolean): ServiceCall[Set[CompositeOrgItemId], Seq[OrgItem]]
+  def getOrgItemById(
+    itemId: CompositeOrgItemId,
+    fromReadSide: Boolean,
+    withAttributes: Option[String] = None
+  ): ServiceCall[NotUsed, OrgItem]
+  def getOrgItemsById(
+    fromReadSide: Boolean,
+    withAttributes: Option[String] = None
+  ): ServiceCall[Set[CompositeOrgItemId], Seq[OrgItem]]
 
   def getItemIdsByExternalId: ServiceCall[Set[String], Map[String, CompositeOrgItemId]]
 
@@ -72,7 +80,21 @@ trait OrgStructureServiceApi extends Service {
 
   def findOrgItems: ServiceCall[OrgItemFindQuery, FindResult]
 
-  // org role methods
+  // OrgItem attribute methods
+
+  def getOrgItemMetadata: ServiceCall[NotUsed, Map[String, AttributeMetadata]]
+  def updateOrgItemAttributes: ServiceCall[UpdateAttributesPayload, Done]
+  def getOrgItemAttributes(
+    id: CompositeOrgItemId,
+    fromReadSide: Boolean = true,
+    attributes: Option[String] = None
+  ): ServiceCall[NotUsed, AttributeValues]
+  def getOrgItemsAttributes(
+    fromReadSide: Boolean = true,
+    attributes: Option[String] = None
+  ): ServiceCall[Set[CompositeOrgItemId], Map[String, AttributeValues]]
+
+  // OrgRole methods
 
   def createOrgRole: ServiceCall[CreateOrgRolePayload, Done]
   def updateOrgRole: ServiceCall[UpdateOrgRolePayload, Done]
@@ -81,7 +103,7 @@ trait OrgStructureServiceApi extends Service {
   def getOrgRolesById(fromReadSide: Boolean): ServiceCall[Set[OrgRoleId], Seq[OrgRole]]
   def findOrgRoles: ServiceCall[OrgRoleFindQuery, FindResult]
 
-  // org item category
+  // OrgItem Category methods
 
   def createCategory: ServiceCall[CreateCategoryPayload, Done]
   def updateCategory: ServiceCall[UpdateCategoryPayload, Done]
@@ -113,12 +135,16 @@ trait OrgStructureServiceApi extends Service {
         pathCall("/api/org-structure/v1/deleteOrgItem",        deleteOrgItem),
         pathCall("/api/org-structure/v1/getOrganizationById/:orgId",            getOrganizationById _),
         pathCall("/api/org-structure/v1/getOrganizationTree/:itemId",           getOrganizationTree _),
-        pathCall("/api/org-structure/v1/getOrgItemById/:itemId/:fromReadSide",  getOrgItemById _),
-        pathCall("/api/org-structure/v1/getOrgItemsById/:fromReadSide",         getOrgItemsById _ ),
+        pathCall("/api/org-structure/v1/getOrgItemById/:itemId/:fromReadSide?withAttributes",  getOrgItemById _),
+        pathCall("/api/org-structure/v1/getOrgItemsById/:fromReadSide?withAttributes",         getOrgItemsById _ ),
         pathCall("/api/org-structure/v1/getItemIdsByExternalId",         getItemIdsByExternalId  ),
         pathCall("/api/org-structure/v1/getPersonPrincipals/:personId",  getPersonPrincipals _),
         pathCall("/api/org-structure/v1/getPersonPositions/:personId",   getPersonPositions _),
         pathCall("/api/org-structure/v1/findOrgItems",                   findOrgItems ),
+        pathCall("/api/org-structure/v1/updateOrgItemAttributes",           updateOrgItemAttributes),
+        pathCall("/api/org-structure/v1/getOrgItemAttributes/:id/:fromReadSide?attributes", getOrgItemAttributes _),
+        pathCall("/api/org-structure/v1/getOrgItemsAttributes/:fromReadSide?attributes",    getOrgItemsAttributes _),
+
 
         pathCall("/api/org-structure/v1/createOrgRole",                createOrgRole),
         pathCall("/api/org-structure/v1/updateOrgRole",                updateOrgRole),

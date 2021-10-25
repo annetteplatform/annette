@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.org_structure.api.hierarchy
 
+import biz.lobachev.annette.core.attribute.AttributeValues
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
 import play.api.libs.json.Json
@@ -26,6 +27,7 @@ case class CreateOrganizationPayload(
   categoryId: OrgCategoryId,
   source: Option[String] = None,
   externalId: Option[String] = None,
+  attributes: Option[AttributeValues] = None,
   createdBy: AnnettePrincipal
 )
 

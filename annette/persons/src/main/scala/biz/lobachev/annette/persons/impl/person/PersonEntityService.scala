@@ -16,20 +16,21 @@
 
 package biz.lobachev.annette.persons.impl.person
 
-import java.util.concurrent.TimeUnit
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
-import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues, UpdateAttributesPayload}
+import biz.lobachev.annette.core.attribute.{AttributeValues, UpdateAttributesPayload}
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.indexing.FindResult
+import biz.lobachev.annette.microservice_core.attribute.AttributeComponents
 import biz.lobachev.annette.persons.api.person._
 import biz.lobachev.annette.persons.impl.person.PersonEntity._
 import biz.lobachev.annette.persons.impl.person.dao.{PersonDbDao, PersonIndexDao}
 import com.typesafe.config.Config
 
+import java.util.concurrent.TimeUnit
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -42,7 +43,8 @@ class PersonEntityService(
 )(implicit
   ec: ExecutionContext,
   val materializer: Materializer
-) {
+) extends AttributeComponents {
+  override val entityMetadata = PersonMetadata
 
   implicit val timeout =
     Try(config.getDuration("annette.timeout"))
@@ -68,7 +70,7 @@ class PersonEntityService(
       case _                     => throw new RuntimeException("Match fail")
     }
 
-  private def convertSuccessPersonAttributes(id: PersonId, confirmation: Confirmation): AttributeValues =
+  private def convertSuccessEntityAttributes(id: PersonId, confirmation: Confirmation): AttributeValues =
     confirmation match {
       case SuccessAttributes(values) => values
       case NotFound                  => throw PersonNotFound(id)
@@ -77,7 +79,7 @@ class PersonEntityService(
 
   def createPerson(payload: CreatePersonPayload): Future[Done] =
     for {
-      _      <- Future.successful(payload.attributes.map(attributes => PersonMetadata.validateAttributes(attributes)))
+      _      <- Future.successful(payload.attributes.map(attributes => entityMetadata.validateAttributes(attributes)))
       result <- refFor(payload.id)
                   .ask[Confirmation](CreatePerson(payload, _))
                   .map(res => convertSuccess(payload.id, res))
@@ -85,7 +87,7 @@ class PersonEntityService(
 
   def updatePerson(payload: UpdatePersonPayload): Future[Done] =
     for {
-      _      <- Future.successful(payload.attributes.map(attributes => PersonMetadata.validateAttributes(attributes)))
+      _      <- Future.successful(payload.attributes.map(attributes => entityMetadata.validateAttributes(attributes)))
       result <- refFor(payload.id)
                   .ask[Confirmation](UpdatePerson(payload, _))
                   .map(res => convertSuccess(payload.id, res))
@@ -155,30 +157,12 @@ class PersonEntityService(
     }
   }
 
-  private def extractAttributes(withAttributes: Option[String]) =
-    withAttributes match {
-      case Some("all") => PersonMetadata.metadata.keys.toSeq
-      case Some("")    => Seq.empty
-      case Some(list)  => list.split(",").toSeq
-      case None        => Seq.empty
-    }
-
-  private def splitAttributesByStorage(attributes: Seq[String]): (Seq[String], Seq[String]) = {
-    val readSideAttributes  = attributes
-      .filter(attr => PersonMetadata.metadata.get(attr).map(_.readSidePersistence).getOrElse(false))
-    val writeSideAttributes = (attributes.toSet -- readSideAttributes.toSet).toSeq
-    (readSideAttributes, writeSideAttributes)
-  }
-
   def findPersons(query: PersonFindQuery): Future[FindResult] =
     indexDao.findPerson(query)
 
-  def getPersonMetadata: Future[Map[String, AttributeMetadata]] =
-    Future.successful(PersonMetadata.metadata)
-
   def updatePersonAttributes(payload: UpdateAttributesPayload): Future[Done] =
     for {
-      _      <- Future.successful(PersonMetadata.validateAttributes(payload.attributes))
+      _      <- Future.successful(entityMetadata.validateAttributes(payload.attributes))
       result <- refFor(payload.id)
                   .ask[Confirmation](UpdatePersonAttributes(payload, _))
                   .map(res => convertSuccess(payload.id, res))
@@ -202,7 +186,7 @@ class PersonEntityService(
       for {
         writeSideAttributeValues <- refFor(id)
                                       .ask[Confirmation](GetPersonAttributes(id, writeSideAttributes, _))
-                                      .map(res => convertSuccessPersonAttributes(id, res))
+                                      .map(res => convertSuccessEntityAttributes(id, res))
         readSideAttributeValues  <- readSideAttributesFuture
       } yield writeSideAttributeValues ++ readSideAttributeValues.getOrElse(Map.empty[String, String])
     }
@@ -228,7 +212,7 @@ class PersonEntityService(
                                         .mapAsync(1) { id =>
                                           refFor(id)
                                             .ask[Confirmation](GetPersonAttributes(id, writeSideAttributes, _))
-                                            .map(res => id -> convertSuccessPersonAttributes(id, res))
+                                            .map(res => id -> convertSuccessEntityAttributes(id, res))
                                         }
                                         .runWith(Sink.seq)
                                         .map(_.toMap)

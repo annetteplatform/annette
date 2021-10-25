@@ -18,14 +18,17 @@ package biz.lobachev.annette.org_structure.impl.hierarchy.dao
 
 import akka.Done
 import akka.stream.Materializer
+import biz.lobachev.annette.core.attribute.AttributeValues
 import biz.lobachev.annette.core.model._
 import biz.lobachev.annette.core.model.auth._
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
+import biz.lobachev.annette.microservice_core.attribute.dao.{AttributesRecord, CassandraQuillDaoWithAttributes}
+import biz.lobachev.annette.microservice_core.db.CassandraTableBuilder
 import biz.lobachev.annette.org_structure.api.hierarchy
 import biz.lobachev.annette.org_structure.api.hierarchy.ItemTypes.ItemType
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.impl.hierarchy.entity.HierarchyEntity
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import io.getquill.EntityQuery
 
 import java.time.OffsetDateTime
 import scala.collection.immutable.{Seq, _}
@@ -34,9 +37,9 @@ import scala.concurrent.{ExecutionContext, Future}
 private[impl] class HierarchyDbDao(
   override val session: CassandraSession
 )(implicit
-  val ec: ExecutionContext,
-  val materializer: Materializer
-) extends CassandraQuillDao {
+  override val ec: ExecutionContext,
+  override val materializer: Materializer
+) extends CassandraQuillDaoWithAttributes {
 
   import ctx._
 
@@ -45,10 +48,13 @@ private[impl] class HierarchyDbDao(
   println(itemTypeEncoder.toString)
   println(itemTypeDecoder.toString)
 
-  private val itemSchema           = quote(querySchema[ItemRecord]("org_items"))
-  private val personPositionSchema = quote(querySchema[PersonPosition]("person_positions"))
-  private val chiefUnitSchema      = quote(querySchema[ChiefUnitRecord]("chief_units"))
-  private val externalIdSchema     = quote(querySchema[ExternalIdRecord]("external_ids"))
+  private val itemSchema                                                   = quote(querySchema[ItemRecord]("org_items"))
+  private val personPositionSchema                                         = quote(querySchema[PersonPosition]("person_positions"))
+  private val chiefUnitSchema                                              = quote(querySchema[ChiefUnitRecord]("chief_units"))
+  private val externalIdSchema                                             = quote(querySchema[ExternalIdRecord]("external_ids"))
+  override val attributesSchema: ctx.Quoted[EntityQuery[AttributesRecord]] = quote(
+    querySchema[AttributesRecord]("attributes")
+  )
 
   private implicit val insertItemMeta = insertMeta[ItemRecord]()
   private implicit val updateItemMeta = updateMeta[ItemRecord](_.id)
@@ -101,6 +107,8 @@ private[impl] class HierarchyDbDao(
                .column("item_id", Text)
                .build
            )
+
+      _ <- createAttributeTable("attributes")
     } yield Done
   }
 
@@ -119,11 +127,19 @@ private[impl] class HierarchyDbDao(
       updatedAt = event.createdAt,
       updatedBy = event.createdBy
     )
-    ctx.run(itemSchema.insert(lift(itemRecord)))
+    for {
+      _ <- ctx.run(itemSchema.insert(lift(itemRecord)))
+      _ <- event.attributes
+             .map(attributes => updateAttributes(event.orgId, attributes, event.createdAt, event.createdBy))
+             .getOrElse(Future.successful(Done))
+    } yield Done
   }
 
   def deleteOrganization(event: HierarchyEntity.OrganizationDeleted) =
-    ctx.run(itemSchema.filter(_.id == lift(event.orgId)).delete)
+    for {
+      _ <- ctx.run(itemSchema.filter(_.id == lift(event.orgId)).delete)
+      _ <- deleteAttributes(event.orgId)
+    } yield Done
 
   def createUnit(event: HierarchyEntity.UnitCreated) = {
     val itemRecord = ItemRecord(
@@ -151,6 +167,9 @@ private[impl] class HierarchyDbDao(
                  _.updatedBy -> lift(event.createdBy)
                )
            )
+      _ <- event.attributes
+             .map(attributes => updateAttributes(event.unitId, attributes, event.createdAt, event.createdBy))
+             .getOrElse(Future.successful(Done))
     } yield Done
   }
 
@@ -166,6 +185,7 @@ private[impl] class HierarchyDbDao(
                  _.updatedBy -> lift(event.deletedBy)
                )
            )
+      _ <- deleteAttributes(event.unitId)
     } yield Done
 
   def assignCategory(event: HierarchyEntity.CategoryAssigned) =
@@ -253,6 +273,9 @@ private[impl] class HierarchyDbDao(
                  _.updatedBy -> lift(event.createdBy)
                )
            )
+      _ <- event.attributes
+             .map(attributes => updateAttributes(event.positionId, attributes, event.createdAt, event.createdBy))
+             .getOrElse(Future.successful(Done))
     } yield Done
   }
 
@@ -268,6 +291,7 @@ private[impl] class HierarchyDbDao(
                  _.updatedBy -> lift(event.deletedBy)
                )
            )
+      _ <- deleteAttributes(event.positionId)
     } yield Done
 
   def updateName(event: HierarchyEntity.NameUpdated) =
@@ -445,15 +469,38 @@ private[impl] class HierarchyDbDao(
         )
     )
 
-  def getOrgItemById(id: CompositeOrgItemId): Future[Option[OrgItem]] =
-    ctx
-      .run(itemSchema.filter(_.id == lift(id)))
-      .map(_.headOption.map(_.toOrgItem))
+  def updateOrgItemAttributes(event: HierarchyEntity.OrgItemAttributesUpdated): Future[Done] =
+    for {
+      _ <- updateAttributes(event.itemId, event.attributes, event.updatedAt, event.updatedBy)
+      _ <- ctx.run(
+             itemSchema
+               .filter(_.id == lift(event.itemId))
+               .update(
+                 _.updatedAt -> lift(event.updatedAt),
+                 _.updatedBy -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
-  def getOrgItemsById(ids: Set[CompositeOrgItemId]): Future[Seq[OrgItem]] =
-    ctx
-      .run(itemSchema.filter(b => liftQuery(ids).contains(b.id)))
-      .map(_.map(_.toOrgItem))
+  def getOrgItemById(id: CompositeOrgItemId, attributes: Seq[String]): Future[Option[OrgItem]] =
+    for {
+      maybeEntity      <- ctx
+                            .run(itemSchema.filter(_.id == lift(id)))
+                            .map(_.headOption.map(_.toOrgItem))
+      entityAttributes <- if (maybeEntity.isDefined && attributes.nonEmpty) getAttributesById(id, attributes)
+                          else Future.successful(Map.empty[String, String])
+    } yield maybeEntity.map(_.withAttributes(entityAttributes))
+
+  def getOrgItemsById(ids: Set[CompositeOrgItemId], attributes: Seq[String]): Future[Seq[OrgItem]] =
+    for {
+      entities      <- ctx
+                         .run(itemSchema.filter(b => liftQuery(ids).contains(b.id)))
+                         .map(_.map(_.toOrgItem))
+      attributesMap <- getAttributesById(ids, attributes)
+    } yield
+      if (attributes.isEmpty) entities
+      else
+        entities.map(entity => entity.withAttributes(attributesMap.get(entity.id).getOrElse(Map.empty[String, String])))
 
   def getItemIdsByExternalId(externalIds: Set[String]): Future[Map[String, CompositeOrgItemId]] =
     ctx
@@ -485,4 +532,27 @@ private[impl] class HierarchyDbDao(
     val descendantUnitPrincipals = rootPath.map(unitId => DescendantUnitPrincipal(unitId))
     Seq(positionPrincipal, directUnitPrincipals) ++ orgRolePrincipals ++ descendantUnitPrincipals
   }
+
+  def getOrgItemAttributes(id: CompositeOrgItemId, attributes: Seq[String]): Future[Option[Map[String, String]]] =
+    for {
+      maybeOrgItem      <- ctx
+                             .run(itemSchema.filter(_.id == lift(id)).map(_.id))
+                             .map(_.headOption)
+      orgItemAttributes <- if (maybeOrgItem.isDefined)
+                             getAttributesById(id, attributes)
+                           else Future.successful(Map.empty[String, String])
+    } yield maybeOrgItem.map(_ => orgItemAttributes)
+
+  def getOrgItemsAttributes(
+    ids: Set[CompositeOrgItemId],
+    attributes: Seq[CompositeOrgItemId]
+  ): Future[Map[String, AttributeValues]] =
+    if (attributes.isEmpty) Future.successful(Map.empty[String, AttributeValues])
+    else
+      for {
+        foundOrgItems <- ctx.run(itemSchema.filter(b => liftQuery(ids).contains(b.id)).map(_.id))
+        attributesMap <- getAttributesById(ids, attributes)
+      } yield foundOrgItems
+        .map(orgItemId => orgItemId -> attributesMap.get(orgItemId).getOrElse(Map.empty[String, String]))
+        .toMap
 }

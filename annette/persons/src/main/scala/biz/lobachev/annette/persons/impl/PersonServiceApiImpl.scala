@@ -77,7 +77,7 @@ class PersonServiceApiImpl(
     }
   override def getPersonMetadata: ServiceCall[NotUsed, Map[String, AttributeMetadata]] =
     ServiceCall { _ =>
-      personEntityService.getPersonMetadata
+      personEntityService.getEntityMetadata
     }
 
   override def updatePersonAttributes: ServiceCall[UpdateAttributesPayload, Done] =
