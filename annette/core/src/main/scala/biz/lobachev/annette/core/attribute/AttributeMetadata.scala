@@ -156,7 +156,7 @@ object AttributeMetadata {
   implicit val config = JsonConfiguration(
     discriminator = "type",
     typeNaming = JsonNaming { fullName =>
-      Encase.toLowerCamel(fullName.split("\\.").toSeq.last.dropRight("AttributeMetadata".length))
+      Encase.toLowerKebab(fullName.split("\\.").toSeq.last.dropRight("AttributeMetadata".length))
     }
   )
   implicit val format = Json.format[AttributeMetadata]

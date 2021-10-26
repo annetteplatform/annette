@@ -17,6 +17,7 @@
 package biz.lobachev.annette.core.model.translation
 
 import biz.lobachev.annette.core.model.TranslationId
+import biz.lobachev.annette.core.utils.Encase
 import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 
 sealed trait Caption {}
@@ -41,7 +42,7 @@ object Caption {
   implicit val config                  = JsonConfiguration(
     discriminator = "type",
     typeNaming = JsonNaming { fullName =>
-      fullName.split("\\.").toSeq.last
+      Encase.toLowerKebab(fullName.split("\\.").toSeq.last.dropRight("Caption".length))
     }
   )
   implicit val format: Format[Caption] = Json.format
