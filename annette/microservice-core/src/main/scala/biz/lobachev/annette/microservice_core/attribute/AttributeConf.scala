@@ -29,6 +29,7 @@ import biz.lobachev.annette.core.attribute.{
   StringAttributeMetadata
 }
 import biz.lobachev.annette.core.model.translation.{Caption, TextCaption, TranslationCaption}
+import biz.lobachev.annette.core.utils.Encase
 import pureconfig.generic.FieldCoproductHint
 
 sealed trait AttributeConf {
@@ -185,6 +186,6 @@ case class JsonAttributeConf(
 
 object AttributeConf {
   implicit val confHint = new FieldCoproductHint[AttributeConf]("type") {
-    override def fieldValue(name: String) = name.dropRight("AttributeConf".length).toLowerCase
+    override def fieldValue(name: String) = Encase.toLowerKebab(name.dropRight("AttributeConf".length))
   }
 }
