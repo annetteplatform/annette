@@ -141,10 +141,11 @@ trait OrgStructureServiceApi extends Service {
         pathCall("/api/org-structure/v1/getPersonPrincipals/:personId",  getPersonPrincipals _),
         pathCall("/api/org-structure/v1/getPersonPositions/:personId",   getPersonPositions _),
         pathCall("/api/org-structure/v1/findOrgItems",                   findOrgItems ),
-        pathCall("/api/org-structure/v1/updateOrgItemAttributes",           updateOrgItemAttributes),
+
+        pathCall("/api/org-structure/v1/getOrgItemMetadata",             getOrgItemMetadata),
+        pathCall("/api/org-structure/v1/updateOrgItemAttributes",        updateOrgItemAttributes),
         pathCall("/api/org-structure/v1/getOrgItemAttributes/:id/:fromReadSide?attributes", getOrgItemAttributes _),
         pathCall("/api/org-structure/v1/getOrgItemsAttributes/:fromReadSide?attributes",    getOrgItemsAttributes _),
-
 
         pathCall("/api/org-structure/v1/createOrgRole",                createOrgRole),
         pathCall("/api/org-structure/v1/updateOrgRole",                updateOrgRole),
