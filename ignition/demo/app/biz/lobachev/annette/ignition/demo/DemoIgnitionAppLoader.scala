@@ -85,49 +85,6 @@ abstract class DemoIgnitionApp(context: Context)
   ignitionFuture.failed.foreach { _ =>
     this.application.stop()
   }
-
-//  log.info("Init tasks started")
-//  lazy val authRoleLoader: AuthRoleLoader             = wire[AuthRoleLoader]
-//  lazy val initAuthorization: InitAuthorization       = wire[InitAuthorization]
-//  lazy val orgStructureLoader: OrgStructureLoader     = wire[OrgStructureLoader]
-//  lazy val orgRoleLoader: OrgRoleLoader               = wire[OrgRoleLoader]
-//  lazy val orgCategoryLoader: OrgCategoryLoader       = wire[OrgCategoryLoader]
-//  lazy val initOrgStructure: InitOrgStructure         = wire[InitOrgStructure]
-//  lazy val personLoader: PersonLoader                 = wire[PersonLoader]
-//  lazy val personCategoryLoader: PersonCategoryLoader = wire[PersonCategoryLoader]
-//  lazy val initPersons: InitPersons                   = wire[InitPersons]
-//  lazy val schemaLoader: SchemaLoader                 = wire[SchemaLoader]
-//  lazy val attributeDataLoader: AttributeDataLoader   = wire[AttributeDataLoader]
-//  lazy val initAttributes: InitAttributes             = wire[InitAttributes]
-//
-//  val initFuture = {
-//    for {
-//      personResult        <- initPersons.run().map(_ => true).recover(_ => false)
-//      orgStructureResult  <- initOrgStructure.run().map(_ => true).recover(_ => false)
-//      authorizationResult <- initAuthorization.run().map(_ => true).recover(_ => false)
-//      attributesResult    <- initAttributes.run().map(_ => true).recover(_ => false)
-//    } yield {
-//      if (!personResult) log.error("Init person failed")
-//      if (!orgStructureResult) log.error("Init org structure failed")
-//      if (!authorizationResult) log.error("Init authorization failed")
-//      if (!attributesResult) log.error("Init attributes failed")
-//      if (personResult && orgStructureResult && authorizationResult && attributesResult)
-//        log.info("Init tasks completed")
-//      else log.error("Init tasks failed")
-//      this.application.stop()
-//    }
-//  }
-//
-//  initFuture.failed.foreach { th =>
-//    log.error("Init tasks failed", th)
-//    this.application.stop()
-//  }
-//
-//  application.coordinatedShutdown.addTask("actor-system-terminate", "shutdown") { () =>
-//    log.info("Init App shutdown")
-//    Future.successful(Done)
-//  }
-
 }
 
 class DemoIgnitionAppLoader extends ApplicationLoader {
