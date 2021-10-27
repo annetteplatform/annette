@@ -166,7 +166,7 @@ class OrgStructureController @Inject() (
           _             <- orgStructureService.updateOrgItemAttributes(payload)
           withAttributes = if (attributes.nonEmpty) Some(attributes.mkString(","))
                            else None
-          entity        <- orgStructureService.getOrgItemById(payload.id, false, withAttributes)
+          entity        <- orgStructureService.getOrgItemAttributes(payload.id, false, withAttributes)
         } yield Ok(Json.toJson(entity))
       }
     }
