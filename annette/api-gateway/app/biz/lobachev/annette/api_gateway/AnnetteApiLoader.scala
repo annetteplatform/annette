@@ -19,6 +19,7 @@ package biz.lobachev.annette.api_gateway
 import biz.lobachev.annette.api_gateway_core.api.keycloak.KeycloakController
 import biz.lobachev.annette.api_gateway_core.authentication.{
   AuthenticatedAction,
+  CookieAuthenticatedAction,
   DefaultAuthenticator,
   NoopSubjectTransformer,
   OrgStructureSubjectTransformer
@@ -100,18 +101,19 @@ abstract class ServiceGateway(context: Context)
   val authorizerConf     = config.getString("annette.authorization.authorizer")
   val enableOrgStructure = config.getBoolean("annette.authorization.enable-org-structure")
 
-  lazy val authorizer            =
+  lazy val authorizer                =
     if (authorizerConf == "config") wire[ConfigurationAuthorizer]
     else wire[AuthorizationServiceAuthorizer]
-  lazy val subjectTransformer    =
+  lazy val subjectTransformer        =
     if (enableOrgStructure) wire[OrgStructureSubjectTransformer]
     else wire[NoopSubjectTransformer]
-  lazy val authenticatedAction   = wire[AuthenticatedAction]
-  lazy val authenticator         = wire[DefaultAuthenticator]
-  lazy val keycloakConfig        = wireWith(KeycloakConfigProvider.get _)
-  lazy val keycloakAuthenticator = wire[KeycloakAuthenticator]
-  lazy val basicAuthConfig       = wireWith(BasicAuthConfigProvider.get _)
-  lazy val basicAuthenticator    = wire[ConfigurationBasicAuthenticator]
+  lazy val authenticatedAction       = wire[AuthenticatedAction]
+  lazy val cookieAuthenticatedAction = wire[CookieAuthenticatedAction]
+  lazy val authenticator             = wire[DefaultAuthenticator]
+  lazy val keycloakConfig            = wireWith(KeycloakConfigProvider.get _)
+  lazy val keycloakAuthenticator     = wire[KeycloakAuthenticator]
+  lazy val basicAuthConfig           = wireWith(BasicAuthConfigProvider.get _)
+  lazy val basicAuthenticator        = wire[ConfigurationBasicAuthenticator]
 
   lazy val keycloakController       = wire[KeycloakController]
   lazy val authorizationController  = wire[AuthorizationController]

@@ -38,7 +38,7 @@ trait BasicAuthSubjectBuilder {
       case _                                                 => throw new RuntimeException(s"Attribute configuration error")
 
     }.toMap
-    Subject(principals, attributes)
+    Subject(principals, attributes, None)
   }
 
   def getHeaderValue(headers: Headers, header: String, required: Boolean): Option[String] =

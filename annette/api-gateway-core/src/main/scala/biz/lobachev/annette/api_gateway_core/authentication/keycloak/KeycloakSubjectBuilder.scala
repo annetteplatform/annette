@@ -26,7 +26,7 @@ import scala.util.Try
 trait KeycloakSubjectBuilder {
 
   def buildSubject(json: JsObject, headers: Headers, keycloakConf: KeycloakConfig): Subject = {
-    val principals = keycloakConf.principals.flatMap {
+    val principals     = keycloakConf.principals.flatMap {
       case PrincipalItem.Const(principalType, principalId)       =>
         Some(AnnettePrincipal(principalType, principalId))
       case PrincipalItem.Token(principalType, required, field)   =>
@@ -36,7 +36,7 @@ trait KeycloakSubjectBuilder {
       case _                                                     => throw new RuntimeException(s"Principal configuration error")
 
     }
-    val attributes = keycloakConf.attributes.toList.flatMap {
+    val attributes     = keycloakConf.attributes.toList.flatMap {
       case AttributeItem.Const(attribute, value)             => Some(attribute -> value)
       case AttributeItem.Token(attribute, required, field)   =>
         getFieldValue(json, field, required).map(attribute -> _)
@@ -45,7 +45,11 @@ trait KeycloakSubjectBuilder {
       case _                                                 => throw new RuntimeException(s"Attribute configuration error")
 
     }.toMap
-    Subject(principals, attributes)
+    val expirationTime = (json \ "exp").toOption.flatMap {
+      case JsNumber(value) => Some(value.toLong)
+      case _               => None
+    }
+    Subject(principals, attributes, expirationTime)
   }
 
   def getFieldValue(json: JsObject, field: String, required: Boolean): Option[String] =
