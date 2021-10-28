@@ -106,7 +106,7 @@ lazy val root = (project in file("."))
     `cms`
   )
 
-lazy val `core` = (project in file("annette/core"))
+lazy val `core` = (project in file("core/core"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -122,7 +122,7 @@ lazy val `core` = (project in file("annette/core"))
   )
   .settings(annetteSettings: _*)
 
-lazy val `microservice-core` = (project in file("annette/microservice-core"))
+lazy val `microservice-core` = (project in file("core/microservice-core"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -144,7 +144,7 @@ lazy val `microservice-core` = (project in file("annette/microservice-core"))
     `core`
   )
 
-lazy val `api-gateway-core` = (project in file("annette/api-gateway-core"))
+lazy val `api-gateway-core` = (project in file("core/api-gateway-core"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslServer % Optional,
