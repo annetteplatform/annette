@@ -106,7 +106,7 @@ lazy val root = (project in file("."))
     `cms`
   )
 
-lazy val `core` = (project in file("annette/core"))
+lazy val `core` = (project in file("core/core"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -122,7 +122,7 @@ lazy val `core` = (project in file("annette/core"))
   )
   .settings(annetteSettings: _*)
 
-lazy val `microservice-core` = (project in file("annette/microservice-core"))
+lazy val `microservice-core` = (project in file("core/microservice-core"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -144,7 +144,7 @@ lazy val `microservice-core` = (project in file("annette/microservice-core"))
     `core`
   )
 
-lazy val `api-gateway-core` = (project in file("annette/api-gateway-core"))
+lazy val `api-gateway-core` = (project in file("core/api-gateway-core"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslServer % Optional,
@@ -165,7 +165,7 @@ lazy val `api-gateway-core` = (project in file("annette/api-gateway-core"))
     `persons-api`
   )
 
-lazy val `api-gateway` = (project in file("annette/api-gateway"))
+lazy val `api-gateway` = (project in file("api-gateway/api-gateway"))
   .enablePlugins(LagomPlay, LagomScala)
   .settings(
     // To disable Unused import error for routes
@@ -190,7 +190,7 @@ lazy val `api-gateway` = (project in file("annette/api-gateway"))
     `cms-api-gateway`
   )
 
-lazy val `ignition-core` = (project in file("ignition/core"))
+lazy val `ignition-core` = (project in file("core/ignition-core"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -238,7 +238,7 @@ def demoIgnitionProject(pr: Project) =
       `ignition-core`
     )
 
-lazy val `application-api` = (project in file("annette/application-api"))
+lazy val `application-api` = (project in file("application/application-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -266,7 +266,7 @@ def applicationProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`application-api`, `microservice-core`)
 
-lazy val `application-api-gateway` = (project in file("annette/application-api-gateway"))
+lazy val `application-api-gateway` = (project in file("api-gateway/application-api-gateway"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslServer % Optional,
@@ -285,7 +285,7 @@ lazy val `application-api-gateway` = (project in file("annette/application-api-g
     `application-api`
   )
 
-lazy val `authorization-api` = (project in file("annette/authorization-api"))
+lazy val `authorization-api` = (project in file("authorization/authorization-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -313,7 +313,7 @@ def authorizationProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`authorization-api`, `microservice-core`)
 
-lazy val `authorization-api-gateway` = (project in file("annette/authorization-api-gateway"))
+lazy val `authorization-api-gateway` = (project in file("api-gateway/authorization-api-gateway"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslServer % Optional,
@@ -332,7 +332,7 @@ lazy val `authorization-api-gateway` = (project in file("annette/authorization-a
     `authorization-api`
   )
 
-lazy val `org-structure-api` = (project in file("annette/org-structure-api"))
+lazy val `org-structure-api` = (project in file("principals/org-structure-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -361,7 +361,7 @@ def orgStructureProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`org-structure-api`, `microservice-core`)
 
-lazy val `org-structure-api-gateway` = (project in file("annette/org-structure-api-gateway"))
+lazy val `org-structure-api-gateway` = (project in file("api-gateway/org-structure-api-gateway"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslServer % Optional,
@@ -380,7 +380,7 @@ lazy val `org-structure-api-gateway` = (project in file("annette/org-structure-a
     `org-structure-api`
   )
 
-lazy val `persons-api` = (project in file("annette/persons-api"))
+lazy val `persons-api` = (project in file("principals/persons-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -408,7 +408,7 @@ def personsProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`persons-api`, `microservice-core`)
 
-lazy val `persons-api-gateway` = (project in file("annette/persons-api-gateway"))
+lazy val `persons-api-gateway` = (project in file("api-gateway/persons-api-gateway"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslServer % Optional,
@@ -427,7 +427,7 @@ lazy val `persons-api-gateway` = (project in file("annette/persons-api-gateway")
     `persons-api`
   )
 
-lazy val `principal-groups-api` = (project in file("annette/principal-groups-api"))
+lazy val `principal-groups-api` = (project in file("principals/principal-groups-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -456,7 +456,7 @@ def principalGroupsProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`principal-groups-api`, `microservice-core`)
 
-lazy val `principal-groups-api-gateway` = (project in file("annette/principal-groups-api-gateway"))
+lazy val `principal-groups-api-gateway` = (project in file("api-gateway/principal-groups-api-gateway"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslServer % Optional,
@@ -475,7 +475,7 @@ lazy val `principal-groups-api-gateway` = (project in file("annette/principal-gr
     `principal-groups-api`
   )
 
-lazy val `subscriptions-api` = (project in file("annette/subscriptions-api"))
+lazy val `subscriptions-api` = (project in file("cms/subscriptions-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -504,7 +504,7 @@ def subscriptionsProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`subscriptions-api`, `microservice-core`)
 
-lazy val `cms-api` = (project in file("annette/cms-api"))
+lazy val `cms-api` = (project in file("cms/cms-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -533,7 +533,7 @@ def cmsProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`cms-api`, `microservice-core`)
 
-lazy val `cms-api-gateway` = (project in file("annette/cms-api-gateway"))
+lazy val `cms-api-gateway` = (project in file("api-gateway/cms-api-gateway"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslServer % Optional,
@@ -553,11 +553,11 @@ lazy val `cms-api-gateway` = (project in file("annette/cms-api-gateway"))
     `subscriptions-api`
   )
 
-//lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/demo"))
-lazy val `application`      = applicationProject(project in file("annette/application"))
-lazy val `authorization`    = authorizationProject(project in file("annette/authorization"))
-lazy val `org-structure`    = orgStructureProject(project in file("annette/org-structure"))
-lazy val `persons`          = personsProject(project in file("annette/persons"))
-lazy val `principal-groups` = principalGroupsProject(project in file("annette/principal-groups"))
-lazy val `subscriptions`    = subscriptionsProject(project in file("annette/subscriptions"))
-lazy val `cms`              = cmsProject(project in file("annette/cms"))
+//lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/ignition-demo"))
+lazy val `application`      = applicationProject(project in file("application/application"))
+lazy val `authorization`    = authorizationProject(project in file("authorization/authorization"))
+lazy val `org-structure`    = orgStructureProject(project in file("principals/org-structure"))
+lazy val `persons`          = personsProject(project in file("principals/persons"))
+lazy val `principal-groups` = principalGroupsProject(project in file("principals/principal-groups"))
+lazy val `subscriptions`    = subscriptionsProject(project in file("cms/subscriptions"))
+lazy val `cms`              = cmsProject(project in file("cms/cms"))

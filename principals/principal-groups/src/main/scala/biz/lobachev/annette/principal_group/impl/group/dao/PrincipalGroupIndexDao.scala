@@ -67,9 +67,9 @@ class PrincipalGroupIndexDao(client: ElasticClient)(implicit
   def updatePrincipalGroupCategory(event: PrincipalGroupEntity.PrincipalGroupCategoryUpdated) =
     updateIndexDoc(
       event.id,
-      "id"        -> event.id,
-      "category"  -> event.categoryId,
-      "updatedAt" -> event.updatedAt
+      "id"         -> event.id,
+      "categoryId" -> event.categoryId,
+      "updatedAt"  -> event.updatedAt
     )
 
   def deletePrincipalGroup(event: PrincipalGroupDeleted) =
