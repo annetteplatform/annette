@@ -238,7 +238,7 @@ def demoIgnitionProject(pr: Project) =
       `ignition-core`
     )
 
-lazy val `application-api` = (project in file("annette/application-api"))
+lazy val `application-api` = (project in file("application/application-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -554,7 +554,7 @@ lazy val `cms-api-gateway` = (project in file("api-gateway/cms-api-gateway"))
   )
 
 //lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/demo"))
-lazy val `application`      = applicationProject(project in file("annette/application"))
+lazy val `application`      = applicationProject(project in file("application/application"))
 lazy val `authorization`    = authorizationProject(project in file("annette/authorization"))
 lazy val `org-structure`    = orgStructureProject(project in file("annette/org-structure"))
 lazy val `persons`          = personsProject(project in file("annette/persons"))
