@@ -475,7 +475,7 @@ lazy val `principal-groups-api-gateway` = (project in file("api-gateway/principa
     `principal-groups-api`
   )
 
-lazy val `subscriptions-api` = (project in file("annette/subscriptions-api"))
+lazy val `subscriptions-api` = (project in file("cms/subscriptions-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -504,7 +504,7 @@ def subscriptionsProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`subscriptions-api`, `microservice-core`)
 
-lazy val `cms-api` = (project in file("annette/cms-api"))
+lazy val `cms-api` = (project in file("cms/cms-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -559,5 +559,5 @@ lazy val `authorization`    = authorizationProject(project in file("annette/auth
 lazy val `org-structure`    = orgStructureProject(project in file("annette/org-structure"))
 lazy val `persons`          = personsProject(project in file("annette/persons"))
 lazy val `principal-groups` = principalGroupsProject(project in file("annette/principal-groups"))
-lazy val `subscriptions`    = subscriptionsProject(project in file("annette/subscriptions"))
-lazy val `cms`              = cmsProject(project in file("annette/cms"))
+lazy val `subscriptions`    = subscriptionsProject(project in file("cms/subscriptions"))
+lazy val `cms`              = cmsProject(project in file("cms/cms"))
