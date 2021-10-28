@@ -85,3 +85,14 @@ object AuthenticatedPrincipal {
       case _                                              => None
     }
 }
+
+object AnonymousPrincipal {
+  val PRINCIPAL_TYPE: String                             = "anonymous"
+  val PRINCIPAL_ID: String                               = "user"
+  def apply(): AnnettePrincipal                          = AnnettePrincipal(PRINCIPAL_TYPE, PRINCIPAL_ID)
+  def unapply(principal: AnnettePrincipal): Option[Unit] =
+    principal match {
+      case AnnettePrincipal(PRINCIPAL_TYPE, PRINCIPAL_ID) => Some(())
+      case _                                              => None
+    }
+}
