@@ -246,7 +246,7 @@ lazy val `application-api` = (project in file("annette/application-api"))
     ) ++ Dependencies.tests
   )
   .settings(annetteSettings: _*)
-  .dependsOn(`microservice-core`)
+  .dependsOn(`core`)
 
 def applicationProject(pr: Project) =
   pr
@@ -264,7 +264,7 @@ def applicationProject(pr: Project) =
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`application-api`)
+    .dependsOn(`application-api`, `microservice-core`)
 
 lazy val `application-api-gateway` = (project in file("annette/application-api-gateway"))
   .settings(
@@ -293,7 +293,7 @@ lazy val `authorization-api` = (project in file("annette/authorization-api"))
     )
   )
   .settings(annetteSettings: _*)
-  .dependsOn(`microservice-core`)
+  .dependsOn(`core`)
 
 def authorizationProject(pr: Project) =
   pr
@@ -311,7 +311,7 @@ def authorizationProject(pr: Project) =
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`authorization-api`)
+    .dependsOn(`authorization-api`, `microservice-core`)
 
 lazy val `authorization-api-gateway` = (project in file("annette/authorization-api-gateway"))
   .settings(
@@ -340,7 +340,7 @@ lazy val `org-structure-api` = (project in file("annette/org-structure-api"))
     )
   )
   .settings(annetteSettings: _*)
-  .dependsOn(`microservice-core`)
+  .dependsOn(`core`)
 
 def orgStructureProject(pr: Project) =
   pr
@@ -359,7 +359,7 @@ def orgStructureProject(pr: Project) =
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`org-structure-api`)
+    .dependsOn(`org-structure-api`, `microservice-core`)
 
 lazy val `org-structure-api-gateway` = (project in file("annette/org-structure-api-gateway"))
   .settings(
@@ -388,7 +388,7 @@ lazy val `persons-api` = (project in file("annette/persons-api"))
     )
   )
   .settings(annetteSettings: _*)
-  .dependsOn(`microservice-core`)
+  .dependsOn(`core`)
 
 def personsProject(pr: Project) =
   pr
@@ -406,7 +406,7 @@ def personsProject(pr: Project) =
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`persons-api`)
+    .dependsOn(`persons-api`, `microservice-core`)
 
 lazy val `persons-api-gateway` = (project in file("annette/persons-api-gateway"))
   .settings(
@@ -436,7 +436,7 @@ lazy val `principal-groups-api` = (project in file("annette/principal-groups-api
     ) ++ Dependencies.tests
   )
   .settings(annetteSettings: _*)
-  .dependsOn(`microservice-core`)
+  .dependsOn(`core`)
 
 def principalGroupsProject(pr: Project) =
   pr
@@ -454,7 +454,7 @@ def principalGroupsProject(pr: Project) =
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`principal-groups-api`)
+    .dependsOn(`principal-groups-api`, `microservice-core`)
 
 lazy val `principal-groups-api-gateway` = (project in file("annette/principal-groups-api-gateway"))
   .settings(
@@ -484,7 +484,7 @@ lazy val `subscriptions-api` = (project in file("annette/subscriptions-api"))
     ) ++ Dependencies.tests
   )
   .settings(annetteSettings: _*)
-  .dependsOn(`microservice-core`)
+  .dependsOn(`core`)
 
 def subscriptionsProject(pr: Project) =
   pr
@@ -502,7 +502,7 @@ def subscriptionsProject(pr: Project) =
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`subscriptions-api`)
+    .dependsOn(`subscriptions-api`, `microservice-core`)
 
 lazy val `cms-api` = (project in file("annette/cms-api"))
   .settings(
@@ -513,7 +513,7 @@ lazy val `cms-api` = (project in file("annette/cms-api"))
     ) ++ Dependencies.tests
   )
   .settings(annetteSettings: _*)
-  .dependsOn(`microservice-core`)
+  .dependsOn(`core`)
 
 def cmsProject(pr: Project) =
   pr
@@ -531,7 +531,7 @@ def cmsProject(pr: Project) =
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`cms-api`)
+    .dependsOn(`cms-api`, `microservice-core`)
 
 lazy val `cms-api-gateway` = (project in file("annette/cms-api-gateway"))
   .settings(
