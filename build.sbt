@@ -165,7 +165,7 @@ lazy val `api-gateway-core` = (project in file("annette/api-gateway-core"))
     `persons-api`
   )
 
-lazy val `api-gateway` = (project in file("annette/api-gateway"))
+lazy val `api-gateway` = (project in file("api-gateway/api-gateway"))
   .enablePlugins(LagomPlay, LagomScala)
   .settings(
     // To disable Unused import error for routes
@@ -266,7 +266,7 @@ def applicationProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`application-api`, `microservice-core`)
 
-lazy val `application-api-gateway` = (project in file("annette/application-api-gateway"))
+lazy val `application-api-gateway` = (project in file("api-gateway/application-api-gateway"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslServer % Optional,
@@ -313,7 +313,7 @@ def authorizationProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`authorization-api`, `microservice-core`)
 
-lazy val `authorization-api-gateway` = (project in file("annette/authorization-api-gateway"))
+lazy val `authorization-api-gateway` = (project in file("api-gateway/authorization-api-gateway"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslServer % Optional,
@@ -361,7 +361,7 @@ def orgStructureProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`org-structure-api`, `microservice-core`)
 
-lazy val `org-structure-api-gateway` = (project in file("annette/org-structure-api-gateway"))
+lazy val `org-structure-api-gateway` = (project in file("api-gateway/org-structure-api-gateway"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslServer % Optional,
@@ -408,7 +408,7 @@ def personsProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`persons-api`, `microservice-core`)
 
-lazy val `persons-api-gateway` = (project in file("annette/persons-api-gateway"))
+lazy val `persons-api-gateway` = (project in file("api-gateway/persons-api-gateway"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslServer % Optional,
@@ -456,7 +456,7 @@ def principalGroupsProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`principal-groups-api`, `microservice-core`)
 
-lazy val `principal-groups-api-gateway` = (project in file("annette/principal-groups-api-gateway"))
+lazy val `principal-groups-api-gateway` = (project in file("api-gateway/principal-groups-api-gateway"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslServer % Optional,
@@ -533,7 +533,7 @@ def cmsProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`cms-api`, `microservice-core`)
 
-lazy val `cms-api-gateway` = (project in file("annette/cms-api-gateway"))
+lazy val `cms-api-gateway` = (project in file("api-gateway/cms-api-gateway"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslServer % Optional,
