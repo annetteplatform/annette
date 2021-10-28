@@ -17,17 +17,17 @@
 package biz.lobachev.annette.api_gateway_core.authentication
 
 import biz.lobachev.annette.core.exception.AnnetteException
-import javax.inject.{Inject, Singleton}
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.Json
 import play.api.mvc._
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 @Singleton
-class AuthenticatedAction @Inject() (
-  authenticator: DefaultAuthenticator,
+class CookieAuthenticatedAction @Inject() (
   subjectTransformer: SubjectTransformer,
   val parser: BodyParsers.Default,
   implicit val executionContext: ExecutionContext
@@ -36,26 +36,19 @@ class AuthenticatedAction @Inject() (
 
   def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] = {
     log.info("Request method={}, uri={}", request.method, request.uri, request.connection.remoteAddressString)
-    val subjectFuture = for {
-      subject            <- authenticator.authenticate(request)
-      transformedSubject <- subjectTransformer.transform(subject)
-    } yield transformedSubject
 
-    subjectFuture.transformWith {
-      case Success(subject)   =>
-        block(AuthenticatedRequest[A](subject, request))
-          .map(result =>
-            subject.expirationTime
-              .map(expirationTime =>
-                result.withSession(
-                  "principal" -> subject.principals.head.code,
-                  "exp"       -> expirationTime.toString
-                )
-              )
-              .getOrElse(result)
-          )
-      case Failure(throwable) => notAuthenticated(request, throwable)
-    }
+    val expirationTime = request.session.data.get("exp").flatMap(_.toLongOption)
+    val principal      = request.session.data.get("principal").map(AnnettePrincipal.fromCode(_))
+    if (principal.isDefined && expirationTime.isDefined && System.currentTimeMillis() / 1000L < expirationTime.get)
+      subjectTransformer
+        .transform(Subject(principals = principal.toSeq, Map.empty, None))
+        .transformWith {
+          case Success(subject)   => block(AuthenticatedRequest[A](subject, request))
+          case Failure(throwable) => notAuthenticated(request, throwable)
+        }
+    else
+      notAuthenticated(request, AuthenticationFailedException())
+
   }
 
   protected def notAuthenticated[A](request: Request[A], throwable: Throwable): Future[Result] =

@@ -20,5 +20,6 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 
 case class Subject(
   principals: Seq[AnnettePrincipal],
-  attributes: Map[String, String]
+  attributes: Map[String, String],
+  expirationTime: Option[Long]
 )
