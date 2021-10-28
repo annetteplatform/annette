@@ -332,7 +332,7 @@ lazy val `authorization-api-gateway` = (project in file("api-gateway/authorizati
     `authorization-api`
   )
 
-lazy val `org-structure-api` = (project in file("annette/org-structure-api"))
+lazy val `org-structure-api` = (project in file("principals/org-structure-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -380,7 +380,7 @@ lazy val `org-structure-api-gateway` = (project in file("api-gateway/org-structu
     `org-structure-api`
   )
 
-lazy val `persons-api` = (project in file("annette/persons-api"))
+lazy val `persons-api` = (project in file("principals/persons-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -427,7 +427,7 @@ lazy val `persons-api-gateway` = (project in file("api-gateway/persons-api-gatew
     `persons-api`
   )
 
-lazy val `principal-groups-api` = (project in file("annette/principal-groups-api"))
+lazy val `principal-groups-api` = (project in file("principals/principal-groups-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -556,8 +556,8 @@ lazy val `cms-api-gateway` = (project in file("api-gateway/cms-api-gateway"))
 //lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/ignition-demo"))
 lazy val `application`      = applicationProject(project in file("application/application"))
 lazy val `authorization`    = authorizationProject(project in file("authorization/authorization"))
-lazy val `org-structure`    = orgStructureProject(project in file("annette/org-structure"))
-lazy val `persons`          = personsProject(project in file("annette/persons"))
-lazy val `principal-groups` = principalGroupsProject(project in file("annette/principal-groups"))
+lazy val `org-structure`    = orgStructureProject(project in file("principals/org-structure"))
+lazy val `persons`          = personsProject(project in file("principals/persons"))
+lazy val `principal-groups` = principalGroupsProject(project in file("principals/principal-groups"))
 lazy val `subscriptions`    = subscriptionsProject(project in file("cms/subscriptions"))
 lazy val `cms`              = cmsProject(project in file("cms/cms"))
