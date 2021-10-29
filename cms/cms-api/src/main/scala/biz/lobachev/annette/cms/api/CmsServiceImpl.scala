@@ -17,75 +17,75 @@
 package biz.lobachev.annette.cms.api
 
 import akka.Done
-import biz.lobachev.annette.cms.api.space._
-import biz.lobachev.annette.cms.api.post._
+import biz.lobachev.annette.cms.api.blogs.blog._
+import biz.lobachev.annette.cms.api.blogs.post._
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 
 import scala.concurrent.Future
 
 class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
-  override def createCategory(payload: CreateCategoryPayload): Future[Done] =
-    api.createCategory.invoke(payload)
+  override def createBlogCategory(payload: CreateCategoryPayload): Future[Done] =
+    api.createBlogCategory.invoke(payload)
 
-  override def updateCategory(payload: UpdateCategoryPayload): Future[Done] =
-    api.updateCategory.invoke(payload)
+  override def updateBlogCategory(payload: UpdateCategoryPayload): Future[Done] =
+    api.updateBlogCategory.invoke(payload)
 
-  override def deleteCategory(payload: DeleteCategoryPayload): Future[Done] =
-    api.deleteCategory.invoke(payload)
+  override def deleteBlogCategory(payload: DeleteCategoryPayload): Future[Done] =
+    api.deleteBlogCategory.invoke(payload)
 
-  override def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category] =
-    api.getCategoryById(id, fromReadSide).invoke()
+  override def getBlogCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category] =
+    api.getBlogCategoryById(id, fromReadSide).invoke()
 
-  override def getCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean): Future[Seq[Category]] =
-    api.getCategoriesById(fromReadSide).invoke(ids)
+  override def getBlogCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean): Future[Seq[Category]] =
+    api.getBlogCategoriesById(fromReadSide).invoke(ids)
 
-  override def findCategories(query: CategoryFindQuery): Future[FindResult] =
-    api.findCategories.invoke(query)
+  override def findBlogCategories(query: CategoryFindQuery): Future[FindResult] =
+    api.findBlogCategories.invoke(query)
 
-  override def createSpace(payload: CreateSpacePayload): Future[Done] =
-    api.createSpace.invoke(payload)
+  override def createBlog(payload: CreateBlogPayload): Future[Done] =
+    api.createBlog.invoke(payload)
 
-  override def updateSpaceName(payload: UpdateSpaceNamePayload): Future[Done] =
-    api.updateSpaceName.invoke(payload)
+  override def updateBlogName(payload: UpdateBlogNamePayload): Future[Done] =
+    api.updateBlogName.invoke(payload)
 
-  override def updateSpaceDescription(payload: UpdateSpaceDescriptionPayload): Future[Done] =
-    api.updateSpaceDescription.invoke(payload)
+  override def updateBlogDescription(payload: UpdateBlogDescriptionPayload): Future[Done] =
+    api.updateBlogDescription.invoke(payload)
 
-  override def updateSpaceCategory(payload: UpdateSpaceCategoryPayload): Future[Done] =
-    api.updateSpaceCategory.invoke(payload)
+  override def updateBlogCategoryId(payload: UpdateBlogCategoryPayload): Future[Done] =
+    api.updateBlogCategoryId.invoke(payload)
 
-  override def assignSpaceTargetPrincipal(payload: AssignSpaceTargetPrincipalPayload): Future[Done] =
-    api.assignSpaceTargetPrincipal.invoke(payload)
+  override def assignBlogTargetPrincipal(payload: AssignBlogTargetPrincipalPayload): Future[Done] =
+    api.assignBlogTargetPrincipal.invoke(payload)
 
-  override def unassignSpaceTargetPrincipal(payload: UnassignSpaceTargetPrincipalPayload): Future[Done] =
-    api.unassignSpaceTargetPrincipal.invoke(payload)
+  override def unassignBlogTargetPrincipal(payload: UnassignBlogTargetPrincipalPayload): Future[Done] =
+    api.unassignBlogTargetPrincipal.invoke(payload)
 
-  override def activateSpace(payload: ActivateSpacePayload): Future[Done] =
-    api.activateSpace.invoke(payload)
+  override def activateBlog(payload: ActivateBlogPayload): Future[Done] =
+    api.activateBlog.invoke(payload)
 
-  override def deactivateSpace(payload: DeactivateSpacePayload): Future[Done] =
-    api.deactivateSpace.invoke(payload)
+  override def deactivateBlog(payload: DeactivateBlogPayload): Future[Done] =
+    api.deactivateBlog.invoke(payload)
 
-  override def deleteSpace(payload: DeleteSpacePayload): Future[Done] =
-    api.deleteSpace.invoke(payload)
+  override def deleteBlog(payload: DeleteBlogPayload): Future[Done] =
+    api.deleteBlog.invoke(payload)
 
-  override def getSpaceById(id: SpaceId, fromReadSide: Boolean): Future[Space] =
-    api.getSpaceById(id, fromReadSide).invoke()
+  override def getBlogById(id: BlogId, fromReadSide: Boolean): Future[Blog] =
+    api.getBlogById(id, fromReadSide).invoke()
 
-  override def getSpacesById(ids: Set[SpaceId], fromReadSide: Boolean): Future[Seq[Space]] =
-    api.getSpacesById(fromReadSide).invoke(ids)
+  override def getBlogsById(ids: Set[BlogId], fromReadSide: Boolean): Future[Seq[Blog]] =
+    api.getBlogsById(fromReadSide).invoke(ids)
 
-  override def getSpaceViews(
-    payload: GetSpaceViewsPayload
-  ): Future[Seq[SpaceView]] =
-    api.getSpaceViews.invoke(payload)
+  override def getBlogViews(
+    payload: GetBlogViewsPayload
+  ): Future[Seq[BlogView]] =
+    api.getBlogViews.invoke(payload)
 
-  override def canAccessToSpace(payload: CanAccessToSpacePayload): Future[Boolean] =
-    api.canAccessToSpace.invoke(payload)
+  override def canAccessToBlog(payload: CanAccessToBlogPayload): Future[Boolean] =
+    api.canAccessToBlog.invoke(payload)
 
-  override def findSpaces(query: SpaceFindQuery): Future[FindResult] =
-    api.findSpaces.invoke(query)
+  override def findBlogs(query: BlogFindQuery): Future[FindResult] =
+    api.findBlogs.invoke(query)
 
   override def createPost(payload: CreatePostPayload): Future[Done] =
     api.createPost.invoke(payload)
@@ -173,11 +173,5 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
 
   override def getPostMetricsById(payload: GetPostMetricsPayload): Future[Seq[PostMetric]] =
     api.getPostMetricsById.invoke(payload)
-
-  override def movePost(payload: MovePostPayload): Future[Done] =
-    api.movePost.invoke(payload)
-
-  override def getWikiHierarchyById(id: SpaceId, fromReadSide: Boolean): Future[WikiHierarchy] =
-    api.getWikiHierarchyById(id, fromReadSide).invoke()
 
 }

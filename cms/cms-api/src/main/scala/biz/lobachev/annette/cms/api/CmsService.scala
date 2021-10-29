@@ -17,8 +17,8 @@
 package biz.lobachev.annette.cms.api
 
 import akka.Done
-import biz.lobachev.annette.cms.api.post._
-import biz.lobachev.annette.cms.api.space._
+import biz.lobachev.annette.cms.api.blogs.post._
+import biz.lobachev.annette.cms.api.blogs.blog._
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 
@@ -26,27 +26,27 @@ import scala.concurrent.Future
 
 trait CmsService {
 
-  def createCategory(payload: CreateCategoryPayload): Future[Done]
-  def updateCategory(payload: UpdateCategoryPayload): Future[Done]
-  def deleteCategory(payload: DeleteCategoryPayload): Future[Done]
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean = true): Future[Category]
-  def getCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean = true): Future[Seq[Category]]
-  def findCategories(payload: CategoryFindQuery): Future[FindResult]
+  def createBlogCategory(payload: CreateCategoryPayload): Future[Done]
+  def updateBlogCategory(payload: UpdateCategoryPayload): Future[Done]
+  def deleteBlogCategory(payload: DeleteCategoryPayload): Future[Done]
+  def getBlogCategoryById(id: CategoryId, fromReadSide: Boolean = true): Future[Category]
+  def getBlogCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean = true): Future[Seq[Category]]
+  def findBlogCategories(payload: CategoryFindQuery): Future[FindResult]
 
-  def createSpace(payload: CreateSpacePayload): Future[Done]
-  def updateSpaceName(payload: UpdateSpaceNamePayload): Future[Done]
-  def updateSpaceDescription(payload: UpdateSpaceDescriptionPayload): Future[Done]
-  def updateSpaceCategory(payload: UpdateSpaceCategoryPayload): Future[Done]
-  def assignSpaceTargetPrincipal(payload: AssignSpaceTargetPrincipalPayload): Future[Done]
-  def unassignSpaceTargetPrincipal(payload: UnassignSpaceTargetPrincipalPayload): Future[Done]
-  def activateSpace(payload: ActivateSpacePayload): Future[Done]
-  def deactivateSpace(payload: DeactivateSpacePayload): Future[Done]
-  def deleteSpace(payload: DeleteSpacePayload): Future[Done]
-  def getSpaceById(id: SpaceId, fromReadSide: Boolean = true): Future[Space]
-  def getSpacesById(ids: Set[SpaceId], fromReadSide: Boolean = true): Future[Seq[Space]]
-  def getSpaceViews(payload: GetSpaceViewsPayload): Future[Seq[SpaceView]]
-  def canAccessToSpace(payload: CanAccessToSpacePayload): Future[Boolean]
-  def findSpaces(payload: SpaceFindQuery): Future[FindResult]
+  def createBlog(payload: CreateBlogPayload): Future[Done]
+  def updateBlogName(payload: UpdateBlogNamePayload): Future[Done]
+  def updateBlogDescription(payload: UpdateBlogDescriptionPayload): Future[Done]
+  def updateBlogCategoryId(payload: UpdateBlogCategoryPayload): Future[Done]
+  def assignBlogTargetPrincipal(payload: AssignBlogTargetPrincipalPayload): Future[Done]
+  def unassignBlogTargetPrincipal(payload: UnassignBlogTargetPrincipalPayload): Future[Done]
+  def activateBlog(payload: ActivateBlogPayload): Future[Done]
+  def deactivateBlog(payload: DeactivateBlogPayload): Future[Done]
+  def deleteBlog(payload: DeleteBlogPayload): Future[Done]
+  def getBlogById(id: BlogId, fromReadSide: Boolean = true): Future[Blog]
+  def getBlogsById(ids: Set[BlogId], fromReadSide: Boolean = true): Future[Seq[Blog]]
+  def getBlogViews(payload: GetBlogViewsPayload): Future[Seq[BlogView]]
+  def canAccessToBlog(payload: CanAccessToBlogPayload): Future[Boolean]
+  def findBlogs(payload: BlogFindQuery): Future[FindResult]
 
   def createPost(payload: CreatePostPayload): Future[Done]
   def updatePostFeatured(payload: UpdatePostFeaturedPayload): Future[Done]
@@ -78,8 +78,5 @@ trait CmsService {
   def unlikePost(payload: UnlikePostPayload): Future[Done]
   def getPostMetricById(payload: GetPostMetricPayload): Future[PostMetric]
   def getPostMetricsById(payload: GetPostMetricsPayload): Future[Seq[PostMetric]]
-
-  def movePost(payload: MovePostPayload): Future[Done]
-  def getWikiHierarchyById(id: SpaceId, fromReadSide: Boolean = true): Future[WikiHierarchy]
 
 }

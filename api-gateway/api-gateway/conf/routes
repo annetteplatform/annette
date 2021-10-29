@@ -138,25 +138,25 @@ POST    /api/annette/v1/principalGroup/findCategories                      biz.l
 
 # ************************************** CMS API **************************************
 # CMS Category
-POST    /api/annette/v1/cms/createCategory                  biz.lobachev.annette.cms.gateway.CmsCategoryController.createCategory
-POST    /api/annette/v1/cms/updateCategory                  biz.lobachev.annette.cms.gateway.CmsCategoryController.updateCategory
-POST    /api/annette/v1/cms/deleteCategory                  biz.lobachev.annette.cms.gateway.CmsCategoryController.deleteCategory
-GET     /api/annette/v1/cms/getCategoryById/:id/:fromReadSide biz.lobachev.annette.cms.gateway.CmsCategoryController.getCategoryById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/cms/getCategoriesById/:fromReadSide   biz.lobachev.annette.cms.gateway.CmsCategoryController.getCategoriesById(fromReadSide: Boolean)
-POST    /api/annette/v1/cms/findCategories                  biz.lobachev.annette.cms.gateway.CmsCategoryController.findCategories
-# CMS Space
-POST    /api/annette/v1/cms/createSpace                     biz.lobachev.annette.cms.gateway.CmsSpaceController.createSpace
-POST    /api/annette/v1/cms/updateSpaceName                 biz.lobachev.annette.cms.gateway.CmsSpaceController.updateSpaceName
-POST    /api/annette/v1/cms/updateSpaceDescription          biz.lobachev.annette.cms.gateway.CmsSpaceController.updateSpaceDescription
-POST    /api/annette/v1/cms/updateSpaceCategory             biz.lobachev.annette.cms.gateway.CmsSpaceController.updateSpaceCategory
-POST    /api/annette/v1/cms/assignSpaceTargetPrincipal      biz.lobachev.annette.cms.gateway.CmsSpaceController.assignSpaceTargetPrincipal
-POST    /api/annette/v1/cms/unassignSpaceTargetPrincipal    biz.lobachev.annette.cms.gateway.CmsSpaceController.unassignSpaceTargetPrincipal
-POST    /api/annette/v1/cms/activateSpace                   biz.lobachev.annette.cms.gateway.CmsSpaceController.activateSpace
-POST    /api/annette/v1/cms/deactivateSpace                 biz.lobachev.annette.cms.gateway.CmsSpaceController.deactivateSpace
-POST    /api/annette/v1/cms/deleteSpace                     biz.lobachev.annette.cms.gateway.CmsSpaceController.deleteSpace
-GET     /api/annette/v1/cms/getSpaceById/:id/:fromReadSide  biz.lobachev.annette.cms.gateway.CmsSpaceController.getSpaceById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/cms/getSpacesById/:fromReadSide     biz.lobachev.annette.cms.gateway.CmsSpaceController.getSpacesById(fromReadSide: Boolean)
-POST    /api/annette/v1/cms/findSpaces                      biz.lobachev.annette.cms.gateway.CmsSpaceController.findSpaces
+POST    /api/annette/v1/cms/createBlogCategory                  biz.lobachev.annette.cms.gateway.CmsBlogCategoryController.createBlogCategory
+POST    /api/annette/v1/cms/updateBlogCategory                  biz.lobachev.annette.cms.gateway.CmsBlogCategoryController.updateBlogCategory
+POST    /api/annette/v1/cms/deleteBlogCategory                  biz.lobachev.annette.cms.gateway.CmsBlogCategoryController.deleteBlogCategory
+GET     /api/annette/v1/cms/getBlogCategoryById/:id/:fromReadSide biz.lobachev.annette.cms.gateway.CmsBlogCategoryController.getBlogCategoryById(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/cms/getBlogCategoriesById/:fromReadSide   biz.lobachev.annette.cms.gateway.CmsBlogCategoryController.getBlogCategoriesById(fromReadSide: Boolean)
+POST    /api/annette/v1/cms/findBlogCategories                  biz.lobachev.annette.cms.gateway.CmsBlogCategoryController.findBlogCategories
+# CMS Blog
+POST    /api/annette/v1/cms/createBlog                     biz.lobachev.annette.cms.gateway.CmsBlogController.createBlog
+POST    /api/annette/v1/cms/updateBlogName                 biz.lobachev.annette.cms.gateway.CmsBlogController.updateBlogName
+POST    /api/annette/v1/cms/updateBlogDescription          biz.lobachev.annette.cms.gateway.CmsBlogController.updateBlogDescription
+POST    /api/annette/v1/cms/updateBlogCategory             biz.lobachev.annette.cms.gateway.CmsBlogController.updateBlogCategoryId
+POST    /api/annette/v1/cms/assignBlogTargetPrincipal      biz.lobachev.annette.cms.gateway.CmsBlogController.assignBlogTargetPrincipal
+POST    /api/annette/v1/cms/unassignBlogTargetPrincipal    biz.lobachev.annette.cms.gateway.CmsBlogController.unassignBlogTargetPrincipal
+POST    /api/annette/v1/cms/activateBlog                   biz.lobachev.annette.cms.gateway.CmsBlogController.activateBlog
+POST    /api/annette/v1/cms/deactivateBlog                 biz.lobachev.annette.cms.gateway.CmsBlogController.deactivateBlog
+POST    /api/annette/v1/cms/deleteBlog                     biz.lobachev.annette.cms.gateway.CmsBlogController.deleteBlog
+GET     /api/annette/v1/cms/getBlogById/:id/:fromReadSide  biz.lobachev.annette.cms.gateway.CmsBlogController.getBlogById(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/cms/getBlogsById/:fromReadSide     biz.lobachev.annette.cms.gateway.CmsBlogController.getBlogsById(fromReadSide: Boolean)
+POST    /api/annette/v1/cms/findBlogs                      biz.lobachev.annette.cms.gateway.CmsBlogController.findBlogs
 # CMS Post
 POST    /api/annette/v1/cms/createPost                      biz.lobachev.annette.cms.gateway.CmsPostController.createPost
 POST    /api/annette/v1/cms/updatePostFeatured              biz.lobachev.annette.cms.gateway.CmsPostController.updatePostFeatured
@@ -184,8 +184,63 @@ GET     /api/annette/v1/cms/getPostViewById/:postId         biz.lobachev.annette
 POST    /api/annette/v1/cms/viewPost/:postId                biz.lobachev.annette.cms.gateway.CmsPostViewController.viewPost(postId: String)
 POST    /api/annette/v1/cms/likePost/:postId                biz.lobachev.annette.cms.gateway.CmsPostViewController.likePost(postId: String)
 POST    /api/annette/v1/cms/unlikePost/:postId              biz.lobachev.annette.cms.gateway.CmsPostViewController.unlikePost(postId: String)
+# CMS Blog View
+POST    /api/annette/v1/cms/findBlogViews                  biz.lobachev.annette.cms.gateway.CmsBlogViewController.findBlogViews
+POST    /api/annette/v1/cms/getBlogViewsById               biz.lobachev.annette.cms.gateway.CmsBlogViewController.getBlogViewsById
+POST    /api/annette/v1/cms/subscribeToBlog/:blogId       biz.lobachev.annette.cms.gateway.CmsBlogViewController.subscribeToBlog(blogId: String)
+POST    /api/annette/v1/cms/unsubscribeFromBlog/:blogId   biz.lobachev.annette.cms.gateway.CmsBlogViewController.unsubscribeFromBlog(blogId: String)
+
+
+# ************************************** CMS Pages API **************************************
+# CMS Category
+# POST    /api/annette/v1/cms-pages/createCategory                  biz.lobachev.annette.cms.gateway.pages.CmsCategoryController.createCategory
+# POST    /api/annette/v1/cms-pages/updateCategory                  biz.lobachev.annette.cms.gateway.pages.CmsCategoryController.updateCategory
+# POST    /api/annette/v1/cms-pages/deleteCategory                  biz.lobachev.annette.cms.gateway.pages.CmsCategoryController.deleteCategory
+# GET     /api/annette/v1/cms-pages/getCategoryById/:id/:fromReadSide biz.lobachev.annette.cms.gateway.pages.CmsCategoryController.getCategoryById(id: String, fromReadSide: Boolean)
+# POST    /api/annette/v1/cms-pages/getCategoriesById/:fromReadSide   biz.lobachev.annette.cms.gateway.pages.CmsCategoryController.getCategoriesById(fromReadSide: Boolean)
+# POST    /api/annette/v1/cms-pages/findCategories                  biz.lobachev.annette.cms.gateway.pages.CmsCategoryController.findCategories
+# CMS Space
+# POST    /api/annette/v1/cms-pages/createSpace                     biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.createSpace
+# POST    /api/annette/v1/cms-pages/updateSpaceName                 biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.updateSpaceName
+# POST    /api/annette/v1/cms-pages/updateSpaceDescription          biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.updateSpaceDescription
+# POST    /api/annette/v1/cms-pages/updateSpaceCategory             biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.updateSpaceCategory
+# POST    /api/annette/v1/cms-pages/assignSpaceTargetPrincipal      biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.assignSpaceTargetPrincipal
+# POST    /api/annette/v1/cms-pages/unassignSpaceTargetPrincipal    biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.unassignSpaceTargetPrincipal
+# POST    /api/annette/v1/cms-pages/activateSpace                   biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.activateSpace
+# POST    /api/annette/v1/cms-pages/deactivateSpace                 biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.deactivateSpace
+# POST    /api/annette/v1/cms-pages/deleteSpace                     biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.deleteSpace
+# GET     /api/annette/v1/cms-pages/getSpaceById/:id/:fromReadSide  biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.getSpaceById(id: String, fromReadSide: Boolean)
+# POST    /api/annette/v1/cms-pages/getSpacesById/:fromReadSide     biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.getSpacesById(fromReadSide: Boolean)
+# POST    /api/annette/v1/cms-pages/findSpaces                      biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.findSpaces
+# CMS # POST
+# POST    /api/annette/v1/cms-pages/create# POST                      biz.lobachev.annette.cms.gateway.pages.Cms# POSTController.create# POST
+# POST    /api/annette/v1/cms-pages/update# POSTFeatured              biz.lobachev.annette.cms.gateway.pages.Cms# POSTController.update# POSTFeatured
+# POST    /api/annette/v1/cms-pages/update# POSTTitle                 biz.lobachev.annette.cms.gateway.pages.Cms# POSTController.update# POSTTitle
+# POST    /api/annette/v1/cms-pages/update# POSTAuthor                biz.lobachev.annette.cms.gateway.pages.Cms# POSTController.update# POSTAuthor
+# POST    /api/annette/v1/cms-pages/update# POSTIntro                 biz.lobachev.annette.cms.gateway.pages.Cms# POSTController.update# POSTIntro
+# POST    /api/annette/v1/cms-pages/update# POSTContent               biz.lobachev.annette.cms.gateway.pages.Cms# POSTController.update# POSTContent
+# POST    /api/annette/v1/cms-pages/update# POSTPublicationTimestamp  biz.lobachev.annette.cms.gateway.pages.Cms# POSTController.update# POSTPublicationTimestamp
+# POST    /api/annette/v1/cms-pages/publish# POST/:id                 biz.lobachev.annette.cms.gateway.pages.Cms# POSTController.publish# POST(id: String)
+# POST    /api/annette/v1/cms-pages/unpublish# POST/:id               biz.lobachev.annette.cms.gateway.pages.Cms# POSTController.unpublish# POST(id: String)
+# POST    /api/annette/v1/cms-pages/assign# POSTTargetPrincipal       biz.lobachev.annette.cms.gateway.pages.Cms# POSTController.assign# POSTTargetPrincipal
+# POST    /api/annette/v1/cms-pages/unassign# POSTTargetPrincipal     biz.lobachev.annette.cms.gateway.pages.Cms# POSTController.unassign# POSTTargetPrincipal
+# POST    /api/annette/v1/cms-pages/delete# POST                      biz.lobachev.annette.cms.gateway.pages.Cms# POSTController.delete# POST
+# POST    /api/annette/v1/cms-pages/find# POSTs                       biz.lobachev.annette.cms.gateway.pages.Cms# POSTController.find# POSTs
+# POST    /api/annette/v1/cms-pages/get# POSTAnnotationsById/:fromReadSide   biz.lobachev.annette.cms.gateway.pages.Cms# POSTController.get# POSTAnnotationsById(fromReadSide: Boolean)
+# GET     /api/annette/v1/cms-pages/get# POSTById/:id/:fromReadSide   biz.lobachev.annette.cms.gateway.pages.Cms# POSTController.get# POSTById(id: String, fromReadSide: Boolean)
+# POST    /api/annette/v1/cms-pages/get# POSTsById/:fromReadSide      biz.lobachev.annette.cms.gateway.pages.Cms# POSTController.get# POSTsById(fromReadSide: Boolean)
+
+# ************************************** CMS View API **************************************
+# CMS # POST View
+# POST    /api/annette/v1/cms-pages/find# POSTViews                   biz.lobachev.annette.cms.gateway.pages.Cms# POSTViewController.find# POSTViews
+# POST    /api/annette/v1/cms-pages/get# POSTViewAnnotationsById      biz.lobachev.annette.cms.gateway.pages.Cms# POSTViewController.get# POSTViewAnnotationsById
+# POST    /api/annette/v1/cms-pages/get# POSTViewsById                biz.lobachev.annette.cms.gateway.pages.Cms# POSTViewController.get# POSTViewsById
+# GET     /api/annette/v1/cms-pages/get# POSTViewById/:# POSTId         biz.lobachev.annette.cms.gateway.pages.Cms# POSTViewController.get# POSTViewById(# POSTId: String)
+# POST    /api/annette/v1/cms-pages/view# POST/:# POSTId                biz.lobachev.annette.cms.gateway.pages.Cms# POSTViewController.view# POST(# POSTId: String)
+# POST    /api/annette/v1/cms-pages/like# POST/:# POSTId                biz.lobachev.annette.cms.gateway.pages.Cms# POSTViewController.like# POST(# POSTId: String)
+# POST    /api/annette/v1/cms-pages/unlike# POST/:# POSTId              biz.lobachev.annette.cms.gateway.pages.Cms# POSTViewController.unlike# POST(# POSTId: String)
 # CMS Space View
-POST    /api/annette/v1/cms/findSpaceViews                  biz.lobachev.annette.cms.gateway.CmsSpaceViewController.findSpaceViews
-POST    /api/annette/v1/cms/getSpaceViewsById               biz.lobachev.annette.cms.gateway.CmsSpaceViewController.getSpaceViewsById
-POST    /api/annette/v1/cms/subscribeToSpace/:spaceId       biz.lobachev.annette.cms.gateway.CmsSpaceViewController.subscribeToSpace(spaceId: String)
-POST    /api/annette/v1/cms/unsubscribeFromSpace/:spaceId   biz.lobachev.annette.cms.gateway.CmsSpaceViewController.unsubscribeFromSpace(spaceId: String)
+# POST    /api/annette/v1/cms-pages/findSpaceViews                  biz.lobachev.annette.cms.gateway.pages.CmsSpaceViewController.findSpaceViews
+# POST    /api/annette/v1/cms-pages/getSpaceViewsById               biz.lobachev.annette.cms.gateway.pages.CmsSpaceViewController.getSpaceViewsById
+# POST    /api/annette/v1/cms-pages/subscribeToSpace/:spaceId       biz.lobachev.annette.cms.gateway.pages.CmsSpaceViewController.subscribeToSpace(spaceId: String)
+# POST    /api/annette/v1/cms-pages/unsubscribeFromSpace/:spaceId   biz.lobachev.annette.cms.gateway.pages.CmsSpaceViewController.unsubscribeFromSpace(spaceId: String)

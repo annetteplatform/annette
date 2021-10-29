@@ -19,18 +19,15 @@ package biz.lobachev.annette.cms.impl
 import akka.cluster.sharding.typed.scaladsl.Entity
 import akka.stream.Materializer
 import biz.lobachev.annette.cms.api._
-import biz.lobachev.annette.cms.impl.category.{CategoryEntity, CategoryProvider}
-import biz.lobachev.annette.cms.impl.hierarchy.dao.HierarchyDbDao
-import biz.lobachev.annette.cms.impl.hierarchy.model.HierarchySerializerRegistry
-import biz.lobachev.annette.cms.impl.hierarchy.{HierarchyDbEventProcessor, HierarchyEntity, HierarchyEntityService}
-import biz.lobachev.annette.cms.impl.post._
-import biz.lobachev.annette.cms.impl.post.dao.{PostDbDao, PostIndexDao}
-import biz.lobachev.annette.cms.impl.post.model.PostSerializerRegistry
-import biz.lobachev.annette.cms.impl.space._
-import biz.lobachev.annette.cms.impl.space.dao.{SpaceDbDao, SpaceIndexDao}
-import biz.lobachev.annette.cms.impl.space.model.SpaceSerializerRegistry
+import biz.lobachev.annette.cms.impl.blogs.category.{CategoryEntity, CategoryProvider}
+import biz.lobachev.annette.cms.impl.blogs.post._
+import biz.lobachev.annette.cms.impl.blogs.post.dao.{PostDbDao, PostIndexDao}
+import biz.lobachev.annette.cms.impl.blogs.post.model.PostSerializerRegistry
+import biz.lobachev.annette.cms.impl.blogs.blog._
+import biz.lobachev.annette.cms.impl.blogs.blog.dao.{BlogDbDao, BlogIndexDao}
+import biz.lobachev.annette.cms.impl.blogs.blog.model.BlogSerializerRegistry
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
-import biz.lobachev.annette.cms.impl.category.model.CategorySerializerRegistry
+import biz.lobachev.annette.cms.impl.blogs.category.model.CategorySerializerRegistry
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
 import com.lightbend.lagom.scaladsl.api.LagomConfigComponent
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
@@ -79,10 +76,10 @@ trait CmsComponents
   lazy val jsonSerializerRegistry = ServiceSerializerRegistry
 
   val categoryProvider = new CategoryProvider(
-    typeKeyName = "Category",
-    dbReadSideId = "category-cassandra",
-    configPath = "indexing.category-index",
-    indexReadSideId = "category-indexing"
+    typeKeyName = "BlogCategory",
+    dbReadSideId = "blog-category-cassandra",
+    configPath = "indexing.blog-category-index",
+    indexReadSideId = "blog-category-indexing"
   )
 
   lazy val categoryElastic       = wireWith(categoryProvider.createIndexDao _)
@@ -96,23 +93,14 @@ trait CmsComponents
     }
   )
 
-  lazy val wiredSpaceCasRepository     = wire[SpaceDbDao]
-  lazy val wiredSpaceElasticRepository = wire[SpaceIndexDao]
-  readSide.register(wire[SpaceDbEventProcessor])
-  readSide.register(wire[SpaceIndexEventProcessor])
-  lazy val wiredSpaceEntityService     = wire[SpaceEntityService]
+  lazy val wiredSpaceCasRepository     = wire[BlogDbDao]
+  lazy val wiredSpaceElasticRepository = wire[BlogIndexDao]
+  readSide.register(wire[BlogDbEventProcessor])
+  readSide.register(wire[BlogIndexEventProcessor])
+  lazy val wiredSpaceEntityService     = wire[BlogEntityService]
   clusterSharding.init(
-    Entity(SpaceEntity.typeKey) { entityContext =>
-      SpaceEntity(entityContext)
-    }
-  )
-
-  lazy val wiredHierarchyCasRepository = wire[HierarchyDbDao]
-  readSide.register(wire[HierarchyDbEventProcessor])
-  lazy val wiredHierarchyEntityService = wire[HierarchyEntityService]
-  clusterSharding.init(
-    Entity(HierarchyEntity.typeKey) { entityContext =>
-      HierarchyEntity(entityContext)
+    Entity(BlogEntity.typeKey) { entityContext =>
+      BlogEntity(entityContext)
     }
   )
 
@@ -135,7 +123,6 @@ abstract class CmsServiceApplication(context: LagomApplicationContext)
 object ServiceSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: immutable.Seq[JsonSerializer[_]] =
     CategorySerializerRegistry.serializers ++
-      SpaceSerializerRegistry.serializers ++
-      HierarchySerializerRegistry.serializers ++
+      BlogSerializerRegistry.serializers ++
       PostSerializerRegistry.serializers
 }
