@@ -18,7 +18,7 @@ package biz.lobachev.annette.microservice_core.db
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import io.getquill.MappedEncoding
-import play.api.libs.json.{Json, Reads, Writes}
+import play.api.libs.json.{JsValue, Json, Reads, Writes}
 
 import java.time.{OffsetDateTime, ZoneOffset}
 import java.util.Date
@@ -35,6 +35,12 @@ trait QuillEncoders {
 
   implicit val principalDecoder: MappedEncoding[String, AnnettePrincipal] =
     MappedEncoding[String, AnnettePrincipal](AnnettePrincipal.fromCode)
+
+  implicit val jsValueEncoder: MappedEncoding[JsValue, String] =
+    MappedEncoding[JsValue, String](t => t.toString())
+
+  implicit val jsValueDecoder: MappedEncoding[String, JsValue] =
+    MappedEncoding[String, JsValue](string => Json.parse(string))
 
   def genericJsonEncoder[T](implicit writes: Writes[T]): MappedEncoding[T, String] =
     MappedEncoding[T, String](t => Json.toJson(t).toString())

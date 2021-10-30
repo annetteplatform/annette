@@ -54,8 +54,9 @@ trait CmsServiceApi extends Service {
   def updatePostFeatured: ServiceCall[UpdatePostFeaturedPayload, Done]
   def updatePostAuthor: ServiceCall[UpdatePostAuthorPayload, Done]
   def updatePostTitle: ServiceCall[UpdatePostTitlePayload, Done]
-  def updatePostIntro: ServiceCall[UpdatePostIntroPayload, Done]
-  def updatePostContent: ServiceCall[UpdatePostContentPayload, Done]
+  def updatePostWidgetContent: ServiceCall[UpdatePostWidgetContentPayload, Done]
+  def changePostWidgetContentOrder: ServiceCall[ChangePostWidgetContentOrderPayload, Done]
+  def deletePostWidgetContent: ServiceCall[DeletePostWidgetContentPayload, Done]
   def updatePostPublicationTimestamp: ServiceCall[UpdatePostPublicationTimestampPayload, Done]
   def publishPost: ServiceCall[PublishPostPayload, Done]
   def unpublishPost: ServiceCall[UnpublishPostPayload, Done]
@@ -144,32 +145,33 @@ trait CmsServiceApi extends Service {
     named("cms")
       .withCalls(
         // ************************** CMS Blogs **************************
-        pathCall("/api/cms/v1/createCategory", createBlogCategory),
-        pathCall("/api/cms/v1/updateCategory", updateBlogCategory),
-        pathCall("/api/cms/v1/deleteCategory", deleteBlogCategory),
-        pathCall("/api/cms/v1/getCategoryById/:id/:fromReadSide", getBlogCategoryById _),
-        pathCall("/api/cms/v1/getCategoriesById/:fromReadSide", getBlogCategoriesById _),
-        pathCall("/api/cms/v1/findCategories", findBlogCategories),
-        pathCall("/api/cms/v1/createSpace", createBlog),
-        pathCall("/api/cms/v1/updateSpaceName", updateBlogName),
-        pathCall("/api/cms/v1/updateSpaceDescription", updateBlogDescription),
-        pathCall("/api/cms/v1/updateSpaceCategory", updateBlogCategoryId),
-        pathCall("/api/cms/v1/assignSpaceTargetPrincipal", assignBlogTargetPrincipal),
-        pathCall("/api/cms/v1/unassignSpaceTargetPrincipal", unassignBlogTargetPrincipal),
-        pathCall("/api/cms/v1/activateSpace", activateBlog),
-        pathCall("/api/cms/v1/deactivateSpace", deactivateBlog),
-        pathCall("/api/cms/v1/deleteSpace", deleteBlog),
-        pathCall("/api/cms/v1/getSpaceById/:id/:fromReadSide", getBlogById _),
-        pathCall("/api/cms/v1/getSpacesById/:fromReadSide", getBlogsById _),
-        pathCall("/api/cms/v1/getSpaceViews", getBlogViews),
-        pathCall("/api/cms/v1/canAccessToSpace", canAccessToBlog),
-        pathCall("/api/cms/v1/findSpaces", findBlogs),
+        pathCall("/api/cms/v1/createBlogCategory", createBlogCategory),
+        pathCall("/api/cms/v1/updateBlogCategory", updateBlogCategory),
+        pathCall("/api/cms/v1/deleteBlogCategory", deleteBlogCategory),
+        pathCall("/api/cms/v1/getBlogCategoryById/:id/:fromReadSide", getBlogCategoryById _),
+        pathCall("/api/cms/v1/getBlogCategoriesById/:fromReadSide", getBlogCategoriesById _),
+        pathCall("/api/cms/v1/findBlogCategories", findBlogCategories),
+        pathCall("/api/cms/v1/createBlog", createBlog),
+        pathCall("/api/cms/v1/updateBlogName", updateBlogName),
+        pathCall("/api/cms/v1/updateBlogDescription", updateBlogDescription),
+        pathCall("/api/cms/v1/updateBlogCategoryId", updateBlogCategoryId),
+        pathCall("/api/cms/v1/assignBlogTargetPrincipal", assignBlogTargetPrincipal),
+        pathCall("/api/cms/v1/unassignBlogTargetPrincipal", unassignBlogTargetPrincipal),
+        pathCall("/api/cms/v1/activateBlog", activateBlog),
+        pathCall("/api/cms/v1/deactivateBlog", deactivateBlog),
+        pathCall("/api/cms/v1/deleteBlog", deleteBlog),
+        pathCall("/api/cms/v1/getBlogById/:id/:fromReadSide", getBlogById _),
+        pathCall("/api/cms/v1/getBlogsById/:fromReadSide", getBlogsById _),
+        pathCall("/api/cms/v1/getBlogViews", getBlogViews),
+        pathCall("/api/cms/v1/canAccessToBlog", canAccessToBlog),
+        pathCall("/api/cms/v1/findBlogs", findBlogs),
         pathCall("/api/cms/v1/createPost", createPost),
         pathCall("/api/cms/v1/updatePostFeatured", updatePostFeatured),
         pathCall("/api/cms/v1/updatePostAuthor", updatePostAuthor),
         pathCall("/api/cms/v1/updatePostTitle", updatePostTitle),
-        pathCall("/api/cms/v1/updatePostIntro", updatePostIntro),
-        pathCall("/api/cms/v1/updatePostContent", updatePostContent),
+        pathCall("/api/cms/v1/updatePostWidgetContent", updatePostWidgetContent),
+        pathCall("/api/cms/v1/changePostWidgetContentOrder", changePostWidgetContentOrder),
+        pathCall("/api/cms/v1/deletePostWidgetContent", deletePostWidgetContent),
         pathCall("/api/cms/v1/updatePostPublicationTimestamp", updatePostPublicationTimestamp),
         pathCall("/api/cms/v1/publishPost", publishPost),
         pathCall("/api/cms/v1/unpublishPost", unpublishPost),

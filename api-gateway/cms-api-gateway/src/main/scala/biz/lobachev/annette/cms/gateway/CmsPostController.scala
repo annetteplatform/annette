@@ -84,33 +84,33 @@ class CmsPostController @Inject() (
       }
     }
 
-  def updatePostIntro =
-    authenticated.async(parse.json[UpdatePostIntroPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
-        val payload = request.body
-          .into[UpdatePostIntroPayload]
-          .withFieldConst(_.updatedBy, request.subject.principals.head)
-          .transform
-        for {
-          _    <- cmsService.updatePostIntro(payload)
-          post <- cmsService.getPostById(payload.id, false)
-        } yield Ok(Json.toJson(post))
-      }
-    }
-
-  def updatePostContent =
-    authenticated.async(parse.json[UpdatePostContentPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
-        val payload = request.body
-          .into[UpdatePostContentPayload]
-          .withFieldConst(_.updatedBy, request.subject.principals.head)
-          .transform
-        for {
-          _    <- cmsService.updatePostContent(payload)
-          post <- cmsService.getPostById(payload.id, false)
-        } yield Ok(Json.toJson(post))
-      }
-    }
+//  def updatePostIntro =
+//    authenticated.async(parse.json[UpdatePostIntroPayloadDto]) { implicit request =>
+//      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+//        val payload = request.body
+//          .into[UpdatePostIntroPayload]
+//          .withFieldConst(_.updatedBy, request.subject.principals.head)
+//          .transform
+//        for {
+//          _    <- cmsService.updatePostIntro(payload)
+//          post <- cmsService.getPostById(payload.id, false)
+//        } yield Ok(Json.toJson(post))
+//      }
+//    }
+//
+//  def updatePostContent =
+//    authenticated.async(parse.json[UpdatePostContentPayloadDto]) { implicit request =>
+//      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+//        val payload = request.body
+//          .into[UpdatePostContentPayload]
+//          .withFieldConst(_.updatedBy, request.subject.principals.head)
+//          .transform
+//        for {
+//          _    <- cmsService.updatePostContent(payload)
+//          post <- cmsService.getPostById(payload.id, false)
+//        } yield Ok(Json.toJson(post))
+//      }
+//    }
 
   def updatePostPublicationTimestamp =
     authenticated.async(parse.json[UpdatePostPublicationTimestampPayloadDto]) { implicit request =>

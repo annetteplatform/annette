@@ -99,11 +99,14 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def updatePostTitle(payload: UpdatePostTitlePayload): Future[Done] =
     api.updatePostTitle.invoke(payload)
 
-  override def updatePostIntro(payload: UpdatePostIntroPayload): Future[Done] =
-    api.updatePostIntro.invoke(payload)
+  override def updatePostWidgetContent(payload: UpdatePostWidgetContentPayload): Future[Done] =
+    api.updatePostWidgetContent.invoke(payload)
 
-  override def updatePostContent(payload: UpdatePostContentPayload): Future[Done] =
-    api.updatePostContent.invoke(payload)
+  override def changePostWidgetContentOrder(payload: ChangePostWidgetContentOrderPayload): Future[Done] =
+    api.changePostWidgetContentOrder.invoke(payload)
+
+  override def deletePostWidgetContent(payload: DeletePostWidgetContentPayload): Future[Done] =
+    api.deletePostWidgetContent.invoke(payload)
 
   override def updatePostPublicationTimestamp(payload: UpdatePostPublicationTimestampPayload): Future[Done] =
     api.updatePostPublicationTimestamp.invoke(payload)
@@ -173,5 +176,4 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
 
   override def getPostMetricsById(payload: GetPostMetricsPayload): Future[Seq[PostMetric]] =
     api.getPostMetricsById.invoke(payload)
-
 }

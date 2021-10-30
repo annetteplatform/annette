@@ -17,8 +17,8 @@
 package biz.lobachev.annette.cms.api
 
 import akka.Done
-import biz.lobachev.annette.cms.api.blogs.post._
 import biz.lobachev.annette.cms.api.blogs.blog._
+import biz.lobachev.annette.cms.api.blogs.post._
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 
@@ -52,8 +52,9 @@ trait CmsService {
   def updatePostFeatured(payload: UpdatePostFeaturedPayload): Future[Done]
   def updatePostAuthor(payload: UpdatePostAuthorPayload): Future[Done]
   def updatePostTitle(payload: UpdatePostTitlePayload): Future[Done]
-  def updatePostIntro(payload: UpdatePostIntroPayload): Future[Done]
-  def updatePostContent(payload: UpdatePostContentPayload): Future[Done]
+  def updatePostWidgetContent(payload: UpdatePostWidgetContentPayload): Future[Done]
+  def changePostWidgetContentOrder(payload: ChangePostWidgetContentOrderPayload): Future[Done]
+  def deletePostWidgetContent(payload: DeletePostWidgetContentPayload): Future[Done]
   def updatePostPublicationTimestamp(payload: UpdatePostPublicationTimestampPayload): Future[Done]
   def publishPost(payload: PublishPostPayload): Future[Done]
   def unpublishPost(payload: UnpublishPostPayload): Future[Done]

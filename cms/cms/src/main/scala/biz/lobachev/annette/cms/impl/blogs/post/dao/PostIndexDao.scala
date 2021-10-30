@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.cms.impl.blogs.post.dao
 
-import biz.lobachev.annette.cms.api.blogs.post.{HtmlContent, MarkdownContent, PostContent, PostFindQuery}
+import biz.lobachev.annette.cms.api.blogs.post.{ContentTypes, PostFindQuery}
 import biz.lobachev.annette.cms.impl.blogs.post.PostEntity
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
@@ -36,9 +36,7 @@ class PostIndexDao(client: ElasticClient)(implicit
 
   override def indexConfigPath = "indexing.post-index"
 
-  def createPost(event: PostEntity.PostCreated) = {
-    val intro   = extractText(event.introContent)
-    val content = extractText(event.content)
+  def createPost(event: PostEntity.PostCreated) =
     createIndexDoc(
       event.id,
       "id"                -> event.id,
@@ -46,20 +44,13 @@ class PostIndexDao(client: ElasticClient)(implicit
       "featured"          -> event.featured,
       "authorId"          -> event.authorId.code,
       "title"             -> event.title,
-      "intro"             -> intro,
-      "content"           -> content,
+      "intro"             -> event.introContent.content.values.map(_.indexData).flatten.mkString("\n"),
+      "content"           -> event.content.content.values.map(_.indexData).flatten.mkString("\n"),
       "publicationStatus" -> "draft",
       "targets"           -> event.targets.map(_.code),
       "updatedBy"         -> event.createdBy.code,
       "updatedAt"         -> event.createdAt
     )
-  }
-
-  private def extractText(content: PostContent): String =
-    content match {
-      case MarkdownContent(markdown) => markdown
-      case HtmlContent(html)         => html
-    }
 
   def updatePostFeatured(event: PostEntity.PostFeaturedUpdated) =
     updateIndexDoc(
@@ -85,21 +76,18 @@ class PostIndexDao(client: ElasticClient)(implicit
       "updatedBy" -> event.updatedBy.code
     )
 
-  def updatePostIntro(event: PostEntity.PostIntroUpdated) =
+  def changePostIndex(event: PostEntity.PostIndexChanged) = {
+    val alias = event.contentType match {
+      case ContentTypes.Intro => "intro"
+      case ContentTypes.Post  => "content"
+    }
     updateIndexDoc(
       event.id,
-      "intro"     -> extractText(event.introContent),
+      alias -> event.indexData,
       "updatedAt" -> event.updatedAt,
       "updatedBy" -> event.updatedBy.code
     )
-
-  def updatePostContent(event: PostEntity.PostContentUpdated) =
-    updateIndexDoc(
-      event.id,
-      "content"   -> extractText(event.content),
-      "updatedAt" -> event.updatedAt,
-      "updatedBy" -> event.updatedBy.code
-    )
+  }
 
   def updatePostPublicationTimestamp(event: PostEntity.PostPublicationTimestampUpdated) =
     updateIndexDoc(

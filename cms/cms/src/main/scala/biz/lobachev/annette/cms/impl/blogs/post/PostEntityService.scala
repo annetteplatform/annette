@@ -19,17 +19,16 @@ package biz.lobachev.annette.cms.impl.blogs.post
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
-import org.slf4j.LoggerFactory
-import io.scalaland.chimney.dsl._
-
-import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, Future}
-import biz.lobachev.annette.cms.api.blogs.post.{GetPostMetricPayload, _}
+import biz.lobachev.annette.cms.api.blogs.post._
 import biz.lobachev.annette.cms.impl.blogs.post.dao.{PostDbDao, PostIndexDao}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
+import io.scalaland.chimney.dsl._
+import org.slf4j.LoggerFactory
 
 import scala.collection.immutable.Set
+import scala.concurrent.duration._
+import scala.concurrent.{ExecutionContext, Future}
 
 class PostEntityService(
   clusterSharding: ClusterSharding,
@@ -124,21 +123,31 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def updatePostIntro(payload: UpdatePostIntroPayload): Future[Done] =
+  def updateWidgetContent(payload: UpdatePostWidgetContentPayload): Future[Done] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
-          .into[PostEntity.UpdatePostIntro]
+          .into[PostEntity.UpdateWidgetContent]
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
       .map(convertSuccess(_, payload.id))
 
-  def updatePostContent(payload: UpdatePostContentPayload): Future[Done] =
+  def changeWidgetContentOrder(payload: ChangePostWidgetContentOrderPayload): Future[Done] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
-          .into[PostEntity.UpdatePostContent]
+          .into[PostEntity.ChangeWidgetContentOrder]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
+      .map(convertSuccess(_, payload.id))
+
+  def deleteWidgetContent(payload: DeletePostWidgetContentPayload): Future[Done] =
+    refFor(payload.id)
+      .ask[PostEntity.Confirmation](replyTo =>
+        payload
+          .into[PostEntity.DeleteWidgetContent]
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )

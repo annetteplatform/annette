@@ -162,8 +162,8 @@ POST    /api/annette/v1/cms/createPost                      biz.lobachev.annette
 POST    /api/annette/v1/cms/updatePostFeatured              biz.lobachev.annette.cms.gateway.CmsPostController.updatePostFeatured
 POST    /api/annette/v1/cms/updatePostTitle                 biz.lobachev.annette.cms.gateway.CmsPostController.updatePostTitle
 POST    /api/annette/v1/cms/updatePostAuthor                biz.lobachev.annette.cms.gateway.CmsPostController.updatePostAuthor
-POST    /api/annette/v1/cms/updatePostIntro                 biz.lobachev.annette.cms.gateway.CmsPostController.updatePostIntro
-POST    /api/annette/v1/cms/updatePostContent               biz.lobachev.annette.cms.gateway.CmsPostController.updatePostContent
+#POST    /api/annette/v1/cms/updatePostIntro                 biz.lobachev.annette.cms.gateway.CmsPostController.updatePostIntro
+#POST    /api/annette/v1/cms/updatePostContent               biz.lobachev.annette.cms.gateway.CmsPostController.updatePostContent
 POST    /api/annette/v1/cms/updatePostPublicationTimestamp  biz.lobachev.annette.cms.gateway.CmsPostController.updatePostPublicationTimestamp
 POST    /api/annette/v1/cms/publishPost/:id                 biz.lobachev.annette.cms.gateway.CmsPostController.publishPost(id: String)
 POST    /api/annette/v1/cms/unpublishPost/:id               biz.lobachev.annette.cms.gateway.CmsPostController.unpublishPost(id: String)

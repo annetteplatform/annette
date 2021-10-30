@@ -21,15 +21,15 @@ import akka.{Done, NotUsed}
 import biz.lobachev.annette.cms.api._
 import biz.lobachev.annette.cms.api.blogs.blog._
 import biz.lobachev.annette.cms.api.blogs.post._
-import biz.lobachev.annette.cms.impl.blogs.category.BlogCategoryEntityService
 import biz.lobachev.annette.cms.impl.blogs.blog._
+import biz.lobachev.annette.cms.impl.blogs.category.BlogCategoryEntityService
 import biz.lobachev.annette.cms.impl.blogs.post._
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.{ExecutionContext}
+import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 
 class CmsServiceApiImpl(
@@ -176,14 +176,19 @@ class CmsServiceApiImpl(
       postEntityService.updatePostTitle(payload)
     }
 
-  override def updatePostIntro: ServiceCall[UpdatePostIntroPayload, Done] =
+  override def updatePostWidgetContent: ServiceCall[UpdatePostWidgetContentPayload, Done] =
     ServiceCall { payload =>
-      postEntityService.updatePostIntro(payload)
+      postEntityService.updateWidgetContent(payload)
     }
 
-  override def updatePostContent: ServiceCall[UpdatePostContentPayload, Done] =
+  override def changePostWidgetContentOrder: ServiceCall[ChangePostWidgetContentOrderPayload, Done] =
     ServiceCall { payload =>
-      postEntityService.updatePostContent(payload)
+      postEntityService.changeWidgetContentOrder(payload)
+    }
+
+  override def deletePostWidgetContent: ServiceCall[DeletePostWidgetContentPayload, Done] =
+    ServiceCall { payload =>
+      postEntityService.deleteWidgetContent(payload)
     }
 
   override def updatePostPublicationTimestamp: ServiceCall[UpdatePostPublicationTimestampPayload, Done] =
@@ -610,4 +615,5 @@ class CmsServiceApiImpl(
 //    ServiceCall { _ =>
 //      hierarchyEntityService.getHierarchyById(spaceId, fromReadSide)
 //    }
+
 }
