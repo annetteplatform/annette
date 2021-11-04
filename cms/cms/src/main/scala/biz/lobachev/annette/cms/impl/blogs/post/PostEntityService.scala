@@ -55,6 +55,7 @@ class PostEntityService(
       case PostEntity.PostMediaNotFound                  => throw PostMediaNotFound(id, maybeId.getOrElse(""))
       case PostEntity.PostDocAlreadyExist                => throw PostDocAlreadyExist(id, maybeId.getOrElse(""))
       case PostEntity.PostDocNotFound                    => throw PostDocNotFound(id, maybeId.getOrElse(""))
+      case PostEntity.WidgetContentNotFound              => throw WidgetContentNotFound(id, maybeId.getOrElse(""))
       case _                                             => throw new RuntimeException("Match fail")
     }
 
@@ -131,7 +132,7 @@ class PostEntityService(
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(convertSuccess(_, payload.id))
+      .map(convertSuccess(_, payload.id, Some(payload.widgetContent.id)))
 
   def changeWidgetContentOrder(payload: ChangePostWidgetContentOrderPayload): Future[Done] =
     refFor(payload.id)
@@ -141,7 +142,7 @@ class PostEntityService(
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(convertSuccess(_, payload.id))
+      .map(convertSuccess(_, payload.id, Some(payload.widgetContentId)))
 
   def deleteWidgetContent(payload: DeletePostWidgetContentPayload): Future[Done] =
     refFor(payload.id)
@@ -151,7 +152,7 @@ class PostEntityService(
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(convertSuccess(_, payload.id))
+      .map(convertSuccess(_, payload.id, Some(payload.widgetContentId)))
 
   def updatePostPublicationTimestamp(payload: UpdatePostPublicationTimestampPayload): Future[Done] =
     refFor(payload.id)

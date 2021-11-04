@@ -76,6 +76,27 @@ class PostIndexDao(client: ElasticClient)(implicit
       "updatedBy" -> event.updatedBy.code
     )
 
+  def updatePostWidgetContent(event: PostEntity.PostWidgetContentUpdated) =
+    updateIndexDoc(
+      event.id,
+      "updatedAt" -> event.updatedAt,
+      "updatedBy" -> event.updatedBy.code
+    )
+
+  def changeWidgetContentOrder(event: PostEntity.WidgetContentOrderChanged) =
+    updateIndexDoc(
+      event.id,
+      "updatedAt" -> event.updatedAt,
+      "updatedBy" -> event.updatedBy.code
+    )
+
+  def deleteWidgetContent(event: PostEntity.WidgetContentDeleted) =
+    updateIndexDoc(
+      event.id,
+      "updatedAt" -> event.updatedAt,
+      "updatedBy" -> event.updatedBy.code
+    )
+
   def changePostIndex(event: PostEntity.PostIndexChanged) = {
     val alias = event.contentType match {
       case ContentTypes.Intro => "intro"

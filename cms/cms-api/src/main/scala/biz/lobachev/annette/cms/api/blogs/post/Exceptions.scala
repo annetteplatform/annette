@@ -64,3 +64,10 @@ object PostDocNotFound extends AnnetteTransportExceptionCompanion2 {
   val Arg1Key: String = "postId"
   val Arg2Key: String = "docId"
 }
+
+object WidgetContentNotFound extends AnnetteTransportExceptionCompanion2 {
+  val ErrorCode       = TransportErrorCode.NotFound
+  val MessageCode     = "annette.cms.post.widgetContentNotFound"
+  val Arg1Key: String = "postId"
+  val Arg2Key: String = "widgetContentId"
+}

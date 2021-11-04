@@ -84,33 +84,47 @@ class CmsPostController @Inject() (
       }
     }
 
-//  def updatePostIntro =
-//    authenticated.async(parse.json[UpdatePostIntroPayloadDto]) { implicit request =>
-//      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
-//        val payload = request.body
-//          .into[UpdatePostIntroPayload]
-//          .withFieldConst(_.updatedBy, request.subject.principals.head)
-//          .transform
-//        for {
-//          _    <- cmsService.updatePostIntro(payload)
-//          post <- cmsService.getPostById(payload.id, false)
-//        } yield Ok(Json.toJson(post))
-//      }
-//    }
-//
-//  def updatePostContent =
-//    authenticated.async(parse.json[UpdatePostContentPayloadDto]) { implicit request =>
-//      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
-//        val payload = request.body
-//          .into[UpdatePostContentPayload]
-//          .withFieldConst(_.updatedBy, request.subject.principals.head)
-//          .transform
-//        for {
-//          _    <- cmsService.updatePostContent(payload)
-//          post <- cmsService.getPostById(payload.id, false)
-//        } yield Ok(Json.toJson(post))
-//      }
-//    }
+  def updatePostWidgetContent =
+    authenticated.async(parse.json[UpdatePostWidgetContentPayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+        val payload = request.body
+          .into[UpdatePostWidgetContentPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _    <- cmsService.updatePostWidgetContent(payload)
+          post <- cmsService.getPostById(payload.id, false)
+        } yield Ok(Json.toJson(post))
+      }
+    }
+
+  def changePostWidgetContentOrder =
+    authenticated.async(parse.json[ChangePostWidgetContentOrderPayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+        val payload = request.body
+          .into[ChangePostWidgetContentOrderPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _    <- cmsService.changePostWidgetContentOrder(payload)
+          post <- cmsService.getPostById(payload.id, false)
+        } yield Ok(Json.toJson(post))
+      }
+    }
+
+  def deletePostWidgetContent =
+    authenticated.async(parse.json[DeletePostWidgetContentPayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+        val payload = request.body
+          .into[DeletePostWidgetContentPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _    <- cmsService.deletePostWidgetContent(payload)
+          post <- cmsService.getPostById(payload.id, false)
+        } yield Ok(Json.toJson(post))
+      }
+    }
 
   def updatePostPublicationTimestamp =
     authenticated.async(parse.json[UpdatePostPublicationTimestampPayloadDto]) { implicit request =>
