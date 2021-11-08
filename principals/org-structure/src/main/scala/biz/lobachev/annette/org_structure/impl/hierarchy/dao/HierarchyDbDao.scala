@@ -343,7 +343,7 @@ private[impl] class HierarchyDbDao(
       _ <- event.oldExternalId.map { oldExternalId =>
              ctx.run(
                externalIdSchema
-                 .filter(r => r.externalId == lift(oldExternalId) && r.itemId == lift(event.itemId))
+                 .filter(r => r.externalId == lift(oldExternalId))
                  .delete
              )
            }.getOrElse(Future.successful(Done))
