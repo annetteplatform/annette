@@ -108,7 +108,7 @@ class PersonEntitySpec
 
     }
 
-    "deactivate nonexisting person" in {
+    "delete non-existing person" in {
       val id                  = generateId
       val probe               = createTestProbe[PersonEntity.Confirmation]()
       val entity              = spawn(PersonEntity(PersistenceId("PersonEntity", id)))
