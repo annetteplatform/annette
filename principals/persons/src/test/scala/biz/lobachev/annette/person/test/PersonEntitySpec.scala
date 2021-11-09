@@ -31,7 +31,7 @@ class PersonEntitySpec
       val result = probe.receiveMessage()
       result shouldBe PersonEntity.Success
 
-      entity ! PersonEntity.GetPerson(payload.id, probe.ref)
+      entity ! PersonEntity.GetPerson(payload.id, Seq.empty, probe.ref)
       val result3       = probe.receiveMessage()
       val resultEntity3 = result3.asInstanceOf[PersonEntity.SuccessPerson].entity
       resultEntity3 shouldBe convertToPerson(payload, resultEntity3.updatedAt)
@@ -66,7 +66,7 @@ class PersonEntitySpec
       val result2 = probe.receiveMessage()
       result2 shouldBe PersonEntity.Success
 
-      entity ! PersonEntity.GetPerson(updatePayload.id, probe.ref)
+      entity ! PersonEntity.GetPerson(updatePayload.id, Seq.empty, probe.ref)
       val result3       = probe.receiveMessage()
       val resultEntity3 = result3.asInstanceOf[PersonEntity.SuccessPerson].entity
       resultEntity3 shouldBe convertToPerson(updatePayload, resultEntity3.updatedAt)
@@ -92,7 +92,7 @@ class PersonEntitySpec
       val result1       = probe.receiveMessage()
       result1 shouldBe PersonEntity.Success
 
-      entity ! PersonEntity.GetPerson(createPayload.id, probe.ref)
+      entity ! PersonEntity.GetPerson(createPayload.id, Seq.empty, probe.ref)
       val result2       = probe.receiveMessage()
       val resultEntity2 = result2.asInstanceOf[PersonEntity.SuccessPerson].entity
       resultEntity2 shouldBe convertToPerson(createPayload, resultEntity2.updatedAt)
@@ -102,7 +102,7 @@ class PersonEntitySpec
       val result3       = probe.receiveMessage()
       result3 shouldBe PersonEntity.Success
 
-      entity ! PersonEntity.GetPerson(createPayload.id, probe.ref)
+      entity ! PersonEntity.GetPerson(createPayload.id, Seq.empty, probe.ref)
       val result4 = probe.receiveMessage()
       result4 shouldBe a[PersonEntity.NotFound.type]
 

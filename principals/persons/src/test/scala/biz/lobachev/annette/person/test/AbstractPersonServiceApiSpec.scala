@@ -12,9 +12,9 @@ import org.scalatest.BeforeAndAfterAll
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpec
 
-import scala.concurrent.duration.{FiniteDuration, _}
+import scala.concurrent.duration._
 import scala.concurrent.{Future, Promise}
-import scala.util.Random
+//import scala.util.Random
 
 abstract class AbstractPersonServiceApiSpec extends AsyncWordSpec with BeforeAndAfterAll with Matchers {
 
@@ -27,17 +27,15 @@ abstract class AbstractPersonServiceApiSpec extends AsyncWordSpec with BeforeAnd
   ) { ctx =>
     new PersonServiceApplication(ctx) with LocalServiceLocator {
       override def additionalConfiguration: AdditionalConfiguration =
-        super.additionalConfiguration ++ ConfigFactory.parseString(
-          s"""
-             |cassandra-query-journal.events-by-tag.eventual-consistency-delay = 0s
-             |lagom.circuit-breaker.default.enabled = off
-             |elastic.url = "https://localhost:9200"
-             |elastic.prefix = test-${Random.nextInt(99999)}
-             |elastic.username = admin
-             |elastic.password = admin
-             |elastic.allowInsecure = true
-             |akka.jvm-exit-on-fatal-error = false""".stripMargin
-        )
+        super.additionalConfiguration ++ ConfigFactory
+          .parseString(
+            s"""
+               |cassandra-query-journal.events-by-tag.eventual-consistency-delay = 0s
+               |lagom.circuit-breaker.default.enabled = off
+               |
+               |akka.jvm-exit-on-fatal-error = false""".stripMargin
+          )
+          .resolve()
     }
   }
 
@@ -51,21 +49,21 @@ abstract class AbstractPersonServiceApiSpec extends AsyncWordSpec with BeforeAnd
     server.stop()
 
   def awaitSuccess[T](maxDuration: FiniteDuration = 30.seconds, checkEvery: FiniteDuration = 2.second)(
-    block: => Future[T]
+    block: (Int) => Future[T]
   ): Future[T] = {
     val checkUntil = System.currentTimeMillis() + maxDuration.toMillis
 
-    def doCheck(): Future[T] =
-      block.recoverWith {
+    def doCheck(iteration: Int): Future[T] =
+      block(iteration).recoverWith {
         case _ if checkUntil > System.currentTimeMillis() =>
           val timeout = Promise[T]()
           server.application.actorSystem.scheduler.scheduleOnce(checkEvery) {
-            timeout.completeWith(doCheck())
+            timeout.completeWith(doCheck(iteration + 1))
           }(server.executionContext)
           timeout.future
       }
 
-    doCheck()
+    doCheck(1)
   }
 
 }

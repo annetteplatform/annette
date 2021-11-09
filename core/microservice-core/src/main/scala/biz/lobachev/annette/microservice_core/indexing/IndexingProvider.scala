@@ -60,7 +60,7 @@ object IndexingProvider {
       .load[ConnectionConfig]
       .fold(
         failure => {
-          val description = failure.toList.map(_.description).mkString(", ")
+          val description = failure.toList.map(_.toString).mkString(", ")
           throw ConnectionConfigError(configPath.path, description)
         },
         config => config

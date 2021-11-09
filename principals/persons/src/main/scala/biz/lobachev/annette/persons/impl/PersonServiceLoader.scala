@@ -65,9 +65,9 @@ abstract class PersonServiceApplication(context: LagomApplicationContext)
   import indexingModule._
 
   override lazy val lagomServer = serverFor[PersonServiceApi](wire[PersonServiceApiImpl])
-  lazy val personElastic        = wire[PersonIndexDao]
+  lazy val personIndexDao       = wire[PersonIndexDao]
   lazy val personService        = wire[PersonEntityService]
-  lazy val personRepository     = wire[PersonDbDao]
+  lazy val personDbDao          = wire[PersonDbDao]
   readSide.register(wire[PersonDbEventProcessor])
   readSide.register(wire[PersonIndexEventProcessor])
   clusterSharding.init(
