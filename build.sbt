@@ -544,7 +544,8 @@ lazy val `cms-api-gateway` = (project in file("api-gateway/cms-api-gateway"))
       Dependencies.pureConfig,
       Dependencies.chimney
     ) ++
-      Dependencies.tests
+      Dependencies.tests ++
+      Dependencies.alpakkaS3
   )
   .settings(annetteSettings: _*)
   .dependsOn(

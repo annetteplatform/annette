@@ -37,25 +37,11 @@ object PostNotFound extends AnnetteTransportExceptionCompanion1 {
   val Arg1Key: String = "id"
 }
 
-object PostMediaAlreadyExist extends AnnetteTransportExceptionCompanion2 {
-  val ErrorCode       = TransportErrorCode.BadRequest
-  val MessageCode     = "annette.cms.post.postMediaAlreadyExist"
-  val Arg1Key: String = "postId"
-  val Arg2Key: String = "mediaId"
-}
-
 object PostMediaNotFound extends AnnetteTransportExceptionCompanion2 {
   val ErrorCode       = TransportErrorCode.NotFound
   val MessageCode     = "annette.cms.post.postMediaNotFound"
   val Arg1Key: String = "postId"
   val Arg2Key: String = "mediaId"
-}
-
-object PostDocAlreadyExist extends AnnetteTransportExceptionCompanion2 {
-  val ErrorCode       = TransportErrorCode.BadRequest
-  val MessageCode     = "annette.cms.post.postDocAlreadyExist"
-  val Arg1Key: String = "postId"
-  val Arg2Key: String = "docId"
 }
 
 object PostDocNotFound extends AnnetteTransportExceptionCompanion2 {

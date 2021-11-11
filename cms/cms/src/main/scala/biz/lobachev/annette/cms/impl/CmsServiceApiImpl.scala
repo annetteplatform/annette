@@ -256,9 +256,9 @@ class CmsServiceApiImpl(
       postEntityService.findPosts(query)
     }
 
-  override def addPostMedia: ServiceCall[AddPostMediaPayload, Done] =
+  override def storePostMedia: ServiceCall[StorePostMediaPayload, Done] =
     ServiceCall { payload =>
-      postEntityService.addPostMedia(payload)
+      postEntityService.storePostMedia(payload)
     }
 
   override def removePostMedia: ServiceCall[RemovePostMediaPayload, Done] =
@@ -266,14 +266,9 @@ class CmsServiceApiImpl(
       postEntityService.removePostMedia(payload)
     }
 
-  override def addPostDoc: ServiceCall[AddPostDocPayload, Done] =
+  override def storePostDoc: ServiceCall[StorePostDocPayload, Done] =
     ServiceCall { payload =>
-      postEntityService.addPostDoc(payload)
-    }
-
-  override def updatePostDocName: ServiceCall[UpdatePostDocNamePayload, Done] =
-    ServiceCall { payload =>
-      postEntityService.updatePostDocName(payload)
+      postEntityService.storePostDoc(payload)
     }
 
   override def removePostDoc: ServiceCall[RemovePostDocPayload, Done] =

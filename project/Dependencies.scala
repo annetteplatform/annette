@@ -15,6 +15,7 @@ object Dependencies {
     val chimney                 = "0.6.1"
     val pureConfig              = "0.16.0"
     val quill                   = "3.10.0"
+    val alpakkaS3               = "2.0.2"
   }
 
   val macwire = "com.softwaremill.macwire" %% "macros" % Version.macwire % "provided"
@@ -52,6 +53,13 @@ object Dependencies {
     quillCore,
     "io.getquill" %% "quill-cassandra"       % Version.quill,
     "io.getquill" %% "quill-cassandra-lagom" % Version.quill
+  )
+
+  val alpakkaS3: Seq[ModuleID] = Seq(
+    "com.lightbend.akka" %% "akka-stream-alpakka-s3" % Version.alpakkaS3,
+    "com.typesafe.akka"  %% "akka-stream"            % LagomVersion.akka,
+    "com.typesafe.akka"  %% "akka-http"              % LagomVersion.akkaHttp,
+    "com.typesafe.akka"  %% "akka-http-xml"          % LagomVersion.akkaHttp
   )
 
 }

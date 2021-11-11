@@ -413,7 +413,7 @@ private[impl] class PostDbDao(
       _ <- ctx.run(postViewSchema.filter(_.postId == lift(event.id)).delete)
     } yield Done
 
-  def addPostMedia(event: PostEntity.PostMediaAdded) =
+  def storePostMedia(event: PostEntity.PostMediaStored) =
     for {
       _ <- ctx.run(
              postMediaSchema.insert(
@@ -458,7 +458,7 @@ private[impl] class PostDbDao(
 
     } yield Done
 
-  def addPostDoc(event: PostEntity.PostDocAdded) =
+  def storePostDoc(event: PostEntity.PostDocStored) =
     for {
       _ <- ctx.run(
              postDocSchema.insert(
@@ -471,29 +471,6 @@ private[impl] class PostDbDao(
                  )
                )
              )
-           )
-      _ <- ctx.run(
-             postSchema
-               .filter(_.id == lift(event.postId))
-               .update(
-                 _.updatedAt -> lift(event.updatedAt),
-                 _.updatedBy -> lift(event.updatedBy)
-               )
-           )
-
-    } yield Done
-
-  def updatePostDocName(event: PostEntity.PostDocNameUpdated) =
-    for {
-      _ <- ctx.run(
-             postDocSchema
-               .filter(r =>
-                 r.postId == lift(event.postId) &&
-                   r.docId == lift(event.docId)
-               )
-               .update(
-                 _.name -> lift(event.name)
-               )
            )
       _ <- ctx.run(
              postSchema

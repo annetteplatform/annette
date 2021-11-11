@@ -36,11 +36,13 @@ import biz.lobachev.annette.application.gateway.ApplicationController
 import biz.lobachev.annette.authorization.api.{AuthorizationServiceApi, AuthorizationServiceImpl}
 import biz.lobachev.annette.authorization.gateway.AuthorizationController
 import biz.lobachev.annette.cms.api.{CmsServiceApi, CmsServiceImpl}
+import biz.lobachev.annette.cms.gateway.s3.CmsS3Helper
 import biz.lobachev.annette.cms.gateway.{
   CmsBlogCategoryController,
   CmsBlogController,
   CmsBlogViewController,
   CmsPostController,
+  CmsPostFileController,
   CmsPostViewController
 }
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
@@ -121,11 +123,14 @@ abstract class ServiceGateway(context: Context)
   lazy val principalGroupController = wire[PrincipalGroupController]
   lazy val orgStructureController   = wire[OrgStructureController]
   lazy val applicationController    = wire[ApplicationController]
-  lazy val cmsCategoryController    = wire[CmsBlogCategoryController]
-  lazy val cmsBlogController        = wire[CmsBlogController]
-  lazy val cmsPostController        = wire[CmsPostController]
-  lazy val cmsPostViewController    = wire[CmsPostViewController]
-  lazy val cmsBlogViewController    = wire[CmsBlogViewController]
+
+  lazy val cmsS3Initializer      = wire[CmsS3Helper]
+  lazy val cmsCategoryController = wire[CmsBlogCategoryController]
+  lazy val cmsBlogController     = wire[CmsBlogController]
+  lazy val cmsPostController     = wire[CmsPostController]
+  lazy val cmsPostFileController = wire[CmsPostFileController]
+  lazy val cmsPostViewController = wire[CmsPostViewController]
+  lazy val cmsBlogViewController = wire[CmsBlogViewController]
 
   lazy val authorizationServiceApi = serviceClient.implement[AuthorizationServiceApi]
   lazy val authorizationService    = wire[AuthorizationServiceImpl]

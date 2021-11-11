@@ -132,7 +132,7 @@ object PostEntity {
 
   final case class GetPost(id: PostId, replyTo: ActorRef[Confirmation])           extends Command
   final case class GetPostAnnotation(id: PostId, replyTo: ActorRef[Confirmation]) extends Command
-  final case class AddPostMedia(
+  final case class StorePostMedia(
     postId: PostId,
     mediaId: MediaId,
     filename: String,
@@ -147,19 +147,11 @@ object PostEntity {
     replyTo: ActorRef[Confirmation]
   ) extends Command
 
-  final case class AddPostDoc(
+  final case class StorePostDoc(
     postId: PostId,
     docId: DocId,
     name: String,
     filename: String,
-    updatedBy: AnnettePrincipal,
-    replyTo: ActorRef[Confirmation]
-  ) extends Command
-
-  final case class UpdatePostDocName(
-    postId: PostId,
-    docId: DocId,
-    name: String,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
@@ -179,20 +171,19 @@ object PostEntity {
   final case object PostNotFound                                         extends Confirmation
   final case object WidgetContentNotFound                                extends Confirmation
   final case object PostPublicationDateClearNotAllowed                   extends Confirmation
-  final case object PostMediaAlreadyExist                                extends Confirmation
   final case object PostMediaNotFound                                    extends Confirmation
-  final case object PostDocAlreadyExist                                  extends Confirmation
   final case object PostDocNotFound                                      extends Confirmation
 
-  implicit val confirmationSuccessFormat: Format[Success.type]                             = Json.format
-  implicit val confirmationSuccessPostFormat: Format[SuccessPost]                          = Json.format
-  implicit val confirmationSuccessPostAnnotationFormat: Format[SuccessPostAnnotation]      = Json.format
-  implicit val confirmationPostAlreadyExistFormat: Format[PostAlreadyExist.type]           = Json.format
-  implicit val confirmationPostNotFoundFormat: Format[PostNotFound.type]                   = Json.format
-  implicit val confirmationPostMediaAlreadyExistFormat: Format[PostMediaAlreadyExist.type] = Json.format
-  implicit val confirmationPostMediaNotFoundFormat: Format[PostMediaNotFound.type]         = Json.format
-  implicit val confirmationPostDocAlreadyExistFormat: Format[PostDocAlreadyExist.type]     = Json.format
-  implicit val confirmationPostDocNotFoundFormat: Format[PostDocNotFound.type]             = Json.format
+  implicit val confirmationSuccessFormat: Format[Success.type]                                                       = Json.format
+  implicit val confirmationSuccessPostFormat: Format[SuccessPost]                                                    = Json.format
+  implicit val confirmationSuccessPostAnnotationFormat: Format[SuccessPostAnnotation]                                = Json.format
+  implicit val confirmationPostAlreadyExistFormat: Format[PostAlreadyExist.type]                                     = Json.format
+  implicit val confirmationPostNotFoundFormat: Format[PostNotFound.type]                                             = Json.format
+  implicit val confirmationWidgetContentNotFoundFormat: Format[WidgetContentNotFound.type]                           = Json.format
+  implicit val confirmationPostPublicationDateClearNotAllowedFormat: Format[PostPublicationDateClearNotAllowed.type] =
+    Json.format
+  implicit val confirmationPostMediaNotFoundFormat: Format[PostMediaNotFound.type]                                   = Json.format
+  implicit val confirmationPostDocNotFoundFormat: Format[PostDocNotFound.type]                                       = Json.format
 
   sealed trait Event extends AggregateEvent[Event] {
     override def aggregateTag: AggregateEventTagger[Event] = Event.Tag
@@ -297,7 +288,7 @@ object PostEntity {
     deletedBy: AnnettePrincipal,
     deleteAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
-  final case class PostMediaAdded(
+  final case class PostMediaStored(
     postId: PostId,
     mediaId: MediaId,
     filename: String,
@@ -310,18 +301,11 @@ object PostEntity {
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
-  final case class PostDocAdded(
+  final case class PostDocStored(
     postId: PostId,
     docId: DocId,
     name: String,
     filename: String,
-    updatedBy: AnnettePrincipal,
-    updatedAt: OffsetDateTime = OffsetDateTime.now
-  ) extends Event
-  final case class PostDocNameUpdated(
-    postId: PostId,
-    docId: DocId,
-    name: String,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -346,10 +330,9 @@ object PostEntity {
   implicit val eventPostTargetPrincipalAssignedFormat: Format[PostTargetPrincipalAssigned]         = Json.format
   implicit val eventPostTargetPrincipalUnassignedFormat: Format[PostTargetPrincipalUnassigned]     = Json.format
   implicit val eventPostDeletedFormat: Format[PostDeleted]                                         = Json.format
-  implicit val eventPostMediaAddedFormat: Format[PostMediaAdded]                                   = Json.format
+  implicit val eventPostMediaAddedFormat: Format[PostMediaStored]                                  = Json.format
   implicit val eventPostMediaRemovedFormat: Format[PostMediaRemoved]                               = Json.format
-  implicit val eventPostDocAddedFormat: Format[PostDocAdded]                                       = Json.format
-  implicit val eventPostDocNameUpdatedFormat: Format[PostDocNameUpdated]                           = Json.format
+  implicit val eventPostDocAddedFormat: Format[PostDocStored]                                      = Json.format
   implicit val eventPostDocRemovedFormat: Format[PostDocRemoved]                                   = Json.format
 
   val empty = PostEntity()
@@ -396,10 +379,9 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
       case cmd: DeletePost                     => deletePost(cmd)
       case cmd: GetPost                        => getPost(cmd)
       case cmd: GetPostAnnotation              => getPostAnnotation(cmd)
-      case cmd: AddPostMedia                   => addPostMedia(cmd)
+      case cmd: StorePostMedia                 => storePostMedia(cmd)
       case cmd: RemovePostMedia                => removePostMedia(cmd)
-      case cmd: AddPostDoc                     => addPostDoc(cmd)
-      case cmd: UpdatePostDocName              => updatePostDocName(cmd)
+      case cmd: StorePostDoc                   => storePostDoc(cmd)
       case cmd: RemovePostDoc                  => removePostDoc(cmd)
     }
 
@@ -673,12 +655,11 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
         )
     }
 
-  def addPostMedia(cmd: AddPostMedia): ReplyEffect[Event, PostEntity] =
+  def storePostMedia(cmd: StorePostMedia): ReplyEffect[Event, PostEntity] =
     maybeState match {
-      case None                                             => Effect.reply(cmd.replyTo)(PostNotFound)
-      case Some(state) if state.media.contains(cmd.mediaId) => Effect.reply(cmd.replyTo)(PostMediaAlreadyExist)
-      case Some(_)                                          =>
-        val event = cmd.transformInto[PostMediaAdded]
+      case None    => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(_) =>
+        val event = cmd.transformInto[PostMediaStored]
         Effect
           .persist(event)
           .thenReply(cmd.replyTo)(_ => Success)
@@ -695,23 +676,11 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
           .thenReply(cmd.replyTo)(_ => Success)
     }
 
-  def addPostDoc(cmd: AddPostDoc): ReplyEffect[Event, PostEntity] =
+  def storePostDoc(cmd: StorePostDoc): ReplyEffect[Event, PostEntity] =
     maybeState match {
-      case None                                          => Effect.reply(cmd.replyTo)(PostNotFound)
-      case Some(state) if state.docs.contains(cmd.docId) => Effect.reply(cmd.replyTo)(PostDocAlreadyExist)
-      case Some(_)                                       =>
-        val event = cmd.transformInto[PostDocAdded]
-        Effect
-          .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
-    }
-
-  def updatePostDocName(cmd: UpdatePostDocName): ReplyEffect[Event, PostEntity] =
-    maybeState match {
-      case None                                           => Effect.reply(cmd.replyTo)(PostNotFound)
-      case Some(state) if !state.docs.contains(cmd.docId) => Effect.reply(cmd.replyTo)(PostDocNotFound)
-      case Some(_)                                        =>
-        val event = cmd.transformInto[PostDocNameUpdated]
+      case None    => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(_) =>
+        val event = cmd.transformInto[PostDocStored]
         Effect
           .persist(event)
           .thenReply(cmd.replyTo)(_ => Success)
@@ -744,10 +713,9 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
       case event: PostTargetPrincipalAssigned     => onPostTargetPrincipalAssigned(event)
       case event: PostTargetPrincipalUnassigned   => onPostTargetPrincipalUnassigned(event)
       case _: PostDeleted                         => onPostDeleted()
-      case event: PostMediaAdded                  => onPostMediaAdded(event)
+      case event: PostMediaStored                 => onPostMediaAdded(event)
       case event: PostMediaRemoved                => onPostMediaRemoved(event)
-      case event: PostDocAdded                    => onPostDocAdded(event)
-      case event: PostDocNameUpdated              => onPostDocNameUpdated(event)
+      case event: PostDocStored                   => onPostDocAdded(event)
       case event: PostDocRemoved                  => onPostDocRemoved(event)
     }
 
@@ -933,7 +901,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
   def onPostDeleted(): PostEntity =
     PostEntity(None)
 
-  def onPostMediaAdded(event: PostMediaAdded): PostEntity =
+  def onPostMediaAdded(event: PostMediaStored): PostEntity =
     PostEntity(
       maybeState.map(state =>
         state.copy(
@@ -955,7 +923,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
       )
     )
 
-  def onPostDocAdded(event: PostDocAdded): PostEntity =
+  def onPostDocAdded(event: PostDocStored): PostEntity =
     PostEntity(
       maybeState.map(state =>
         state.copy(
@@ -964,21 +932,6 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
           updatedAt = event.updatedAt
         )
       )
-    )
-
-  def onPostDocNameUpdated(event: PostDocNameUpdated): PostEntity =
-    PostEntity(
-      maybeState.map { state =>
-        val updatedDocs = state.docs
-          .get(event.docId)
-          .map(doc => state.docs + (event.docId -> doc.copy(name = event.name)))
-          .getOrElse(state.docs)
-        state.copy(
-          docs = updatedDocs,
-          updatedBy = event.updatedBy,
-          updatedAt = event.updatedAt
-        )
-      }
     )
 
   def onPostDocRemoved(event: PostDocRemoved): PostEntity =

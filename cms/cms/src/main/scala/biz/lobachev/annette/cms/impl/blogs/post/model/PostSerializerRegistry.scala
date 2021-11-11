@@ -31,15 +31,6 @@ object PostSerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[Post],
       JsonSerializer[OffsetDateTime],
       JsonSerializer[AnnettePrincipal],
-      JsonSerializer[PostEntity.Success.type],
-      JsonSerializer[PostEntity.SuccessPost],
-      JsonSerializer[PostEntity.SuccessPostAnnotation],
-      JsonSerializer[PostEntity.PostAlreadyExist.type],
-      JsonSerializer[PostEntity.PostNotFound.type],
-      JsonSerializer[PostEntity.PostMediaAlreadyExist.type],
-      JsonSerializer[PostEntity.PostMediaNotFound.type],
-      JsonSerializer[PostEntity.PostDocAlreadyExist.type],
-      JsonSerializer[PostEntity.PostDocNotFound.type],
       JsonSerializer[PostEntity.PostCreated],
       JsonSerializer[PostEntity.PostFeaturedUpdated],
       JsonSerializer[PostEntity.PostAuthorUpdated],
@@ -54,10 +45,9 @@ object PostSerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[PostEntity.PostTargetPrincipalAssigned],
       JsonSerializer[PostEntity.PostTargetPrincipalUnassigned],
       JsonSerializer[PostEntity.PostDeleted],
-      JsonSerializer[PostEntity.PostMediaAdded],
+      JsonSerializer[PostEntity.PostMediaStored],
       JsonSerializer[PostEntity.PostMediaRemoved],
-      JsonSerializer[PostEntity.PostDocAdded],
-      JsonSerializer[PostEntity.PostDocNameUpdated],
+      JsonSerializer[PostEntity.PostDocStored],
       JsonSerializer[PostEntity.PostDocRemoved]
     )
 }

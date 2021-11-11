@@ -47,10 +47,9 @@ private[impl] class PostDbEventProcessor(
       .setEventHandler[PostEntity.PostTargetPrincipalAssigned](handle(dbDao.assignPostTargetPrincipal))
       .setEventHandler[PostEntity.PostTargetPrincipalUnassigned](handle(dbDao.unassignPostTargetPrincipal))
       .setEventHandler[PostEntity.PostDeleted](handle(dbDao.deletePost))
-      .setEventHandler[PostEntity.PostMediaAdded](handle(dbDao.addPostMedia))
+      .setEventHandler[PostEntity.PostMediaStored](handle(dbDao.storePostMedia))
       .setEventHandler[PostEntity.PostMediaRemoved](handle(dbDao.removePostMedia))
-      .setEventHandler[PostEntity.PostDocAdded](handle(dbDao.addPostDoc))
-      .setEventHandler[PostEntity.PostDocNameUpdated](handle(dbDao.updatePostDocName))
+      .setEventHandler[PostEntity.PostDocStored](handle(dbDao.storePostDoc))
       .setEventHandler[PostEntity.PostDocRemoved](handle(dbDao.removePostDoc))
       .build()
 

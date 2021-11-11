@@ -175,8 +175,20 @@ POST    /api/annette/v1/cms/findPosts                       biz.lobachev.annette
 POST    /api/annette/v1/cms/getPostAnnotationsById/:fromReadSide   biz.lobachev.annette.cms.gateway.CmsPostController.getPostAnnotationsById(fromReadSide: Boolean)
 GET     /api/annette/v1/cms/getPostById/:id/:fromReadSide   biz.lobachev.annette.cms.gateway.CmsPostController.getPostById(id: String, fromReadSide: Boolean)
 POST    /api/annette/v1/cms/getPostsById/:fromReadSide      biz.lobachev.annette.cms.gateway.CmsPostController.getPostsById(fromReadSide: Boolean)
+POST    /api/annette/v1/cms/uploadPostMedia/:postId/:mediaId    biz.lobachev.annette.cms.gateway.CmsPostController.uploadPostMedia(postId: String, mediaId: String)
+POST    /api/annette/v1/cms/removePostMedia/:postId/:mediaId    biz.lobachev.annette.cms.gateway.CmsPostController.removePostMedia(postId: String, mediaId: String)
+POST    /api/annette/v1/cms/uploadPostDoc/:postId/:docId    biz.lobachev.annette.cms.gateway.CmsPostController.uploadPostDoc(postId: String, docId: String)
+POST    /api/annette/v1/cms/removePostDoc/:postId/:docId    biz.lobachev.annette.cms.gateway.CmsPostController.removePostDoc(postId: String, docId: String)
 
+# CMS Post File
+GET    /api/annette/v1/cms/post/:postId/media/:mediaId    biz.lobachev.annette.cms.gateway.CmsPostFileController.getPostMedia(postId: String, mediaId: String)
+GET    /api/annette/v1/cms/post/:postId/doc/:docId    biz.lobachev.annette.cms.gateway.CmsPostFileController.getPostDoc(postId: String, docId: String)
 # ************************************** CMS View API **************************************
+# CMS Blog View
+POST    /api/annette/v1/cms/findBlogViews                  biz.lobachev.annette.cms.gateway.CmsBlogViewController.findBlogViews
+POST    /api/annette/v1/cms/getBlogViewsById               biz.lobachev.annette.cms.gateway.CmsBlogViewController.getBlogViewsById
+POST    /api/annette/v1/cms/subscribeToBlog/:blogId       biz.lobachev.annette.cms.gateway.CmsBlogViewController.subscribeToBlog(blogId: String)
+POST    /api/annette/v1/cms/unsubscribeFromBlog/:blogId   biz.lobachev.annette.cms.gateway.CmsBlogViewController.unsubscribeFromBlog(blogId: String)
 # CMS Post View
 POST    /api/annette/v1/cms/findPostViews                   biz.lobachev.annette.cms.gateway.CmsPostViewController.findPostViews
 POST    /api/annette/v1/cms/getPostViewAnnotationsById      biz.lobachev.annette.cms.gateway.CmsPostViewController.getPostViewAnnotationsById
@@ -185,11 +197,6 @@ GET     /api/annette/v1/cms/getPostViewById/:postId         biz.lobachev.annette
 POST    /api/annette/v1/cms/viewPost/:postId                biz.lobachev.annette.cms.gateway.CmsPostViewController.viewPost(postId: String)
 POST    /api/annette/v1/cms/likePost/:postId                biz.lobachev.annette.cms.gateway.CmsPostViewController.likePost(postId: String)
 POST    /api/annette/v1/cms/unlikePost/:postId              biz.lobachev.annette.cms.gateway.CmsPostViewController.unlikePost(postId: String)
-# CMS Blog View
-POST    /api/annette/v1/cms/findBlogViews                  biz.lobachev.annette.cms.gateway.CmsBlogViewController.findBlogViews
-POST    /api/annette/v1/cms/getBlogViewsById               biz.lobachev.annette.cms.gateway.CmsBlogViewController.getBlogViewsById
-POST    /api/annette/v1/cms/subscribeToBlog/:blogId       biz.lobachev.annette.cms.gateway.CmsBlogViewController.subscribeToBlog(blogId: String)
-POST    /api/annette/v1/cms/unsubscribeFromBlog/:blogId   biz.lobachev.annette.cms.gateway.CmsBlogViewController.unsubscribeFromBlog(blogId: String)
 
 
 # ************************************** CMS Pages API **************************************

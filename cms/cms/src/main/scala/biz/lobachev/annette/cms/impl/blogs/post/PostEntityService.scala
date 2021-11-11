@@ -51,9 +51,7 @@ class PostEntityService(
       case PostEntity.PostAlreadyExist                   => throw PostAlreadyExist(id)
       case PostEntity.PostNotFound                       => throw PostNotFound(id)
       case PostEntity.PostPublicationDateClearNotAllowed => throw PostPublicationDateClearNotAllowed(id)
-      case PostEntity.PostMediaAlreadyExist              => throw PostMediaAlreadyExist(id, maybeId.getOrElse(""))
       case PostEntity.PostMediaNotFound                  => throw PostMediaNotFound(id, maybeId.getOrElse(""))
-      case PostEntity.PostDocAlreadyExist                => throw PostDocAlreadyExist(id, maybeId.getOrElse(""))
       case PostEntity.PostDocNotFound                    => throw PostDocNotFound(id, maybeId.getOrElse(""))
       case PostEntity.WidgetContentNotFound              => throw WidgetContentNotFound(id, maybeId.getOrElse(""))
       case _                                             => throw new RuntimeException("Match fail")
@@ -61,14 +59,12 @@ class PostEntityService(
 
   private def convertSuccessPost(confirmation: PostEntity.Confirmation, id: PostId): Post =
     confirmation match {
-      case PostEntity.SuccessPost(post)     => post
-      case PostEntity.PostAlreadyExist      => throw PostAlreadyExist(id)
-      case PostEntity.PostNotFound          => throw PostNotFound(id)
-      case PostEntity.PostMediaAlreadyExist => throw PostMediaAlreadyExist(id, "")
-      case PostEntity.PostMediaNotFound     => throw PostMediaNotFound(id, "")
-      case PostEntity.PostDocAlreadyExist   => throw PostDocAlreadyExist(id, "")
-      case PostEntity.PostDocNotFound       => throw PostDocNotFound(id, "")
-      case _                                => throw new RuntimeException("Match fail")
+      case PostEntity.SuccessPost(post) => post
+      case PostEntity.PostAlreadyExist  => throw PostAlreadyExist(id)
+      case PostEntity.PostNotFound      => throw PostNotFound(id)
+      case PostEntity.PostMediaNotFound => throw PostMediaNotFound(id, "")
+      case PostEntity.PostDocNotFound   => throw PostDocNotFound(id, "")
+      case _                            => throw new RuntimeException("Match fail")
     }
 
   private def convertSuccessPostAnnotation(confirmation: PostEntity.Confirmation, id: PostId): PostAnnotation =
@@ -76,9 +72,7 @@ class PostEntityService(
       case PostEntity.SuccessPostAnnotation(postAnnotation) => postAnnotation
       case PostEntity.PostAlreadyExist                      => throw PostAlreadyExist(id)
       case PostEntity.PostNotFound                          => throw PostNotFound(id)
-      case PostEntity.PostMediaAlreadyExist                 => throw PostMediaAlreadyExist(id, "")
       case PostEntity.PostMediaNotFound                     => throw PostMediaNotFound(id, "")
-      case PostEntity.PostDocAlreadyExist                   => throw PostDocAlreadyExist(id, "")
       case PostEntity.PostDocNotFound                       => throw PostDocNotFound(id, "")
       case _                                                => throw new RuntimeException("Match fail")
     }
@@ -227,11 +221,11 @@ class PostEntityService(
   def canAccessToPost(payload: CanAccessToPostPayload): Future[Boolean] =
     dbDao.canAccessToPost(payload.id, payload.principals)
 
-  def addPostMedia(payload: AddPostMediaPayload): Future[Done] =
+  def storePostMedia(payload: StorePostMediaPayload): Future[Done] =
     refFor(payload.postId)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
-          .into[PostEntity.AddPostMedia]
+          .into[PostEntity.StorePostMedia]
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
@@ -247,21 +241,11 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.postId, Some(payload.mediaId)))
 
-  def addPostDoc(payload: AddPostDocPayload): Future[Done] =
+  def storePostDoc(payload: StorePostDocPayload): Future[Done] =
     refFor(payload.postId)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
-          .into[PostEntity.AddPostDoc]
-          .withFieldConst(_.replyTo, replyTo)
-          .transform
-      )
-      .map(convertSuccess(_, payload.postId, Some(payload.docId)))
-
-  def updatePostDocName(payload: UpdatePostDocNamePayload): Future[Done] =
-    refFor(payload.postId)
-      .ask[PostEntity.Confirmation](replyTo =>
-        payload
-          .into[PostEntity.UpdatePostDocName]
+          .into[PostEntity.StorePostDoc]
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )

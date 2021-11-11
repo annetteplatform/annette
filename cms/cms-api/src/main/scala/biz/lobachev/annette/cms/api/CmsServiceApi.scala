@@ -70,10 +70,9 @@ trait CmsServiceApi extends Service {
   def getPostViews: ServiceCall[GetPostViewsPayload, Seq[PostView]]
   def canAccessToPost: ServiceCall[CanAccessToPostPayload, Boolean]
   def findPosts: ServiceCall[PostFindQuery, FindResult]
-  def addPostMedia: ServiceCall[AddPostMediaPayload, Done]
+  def storePostMedia: ServiceCall[StorePostMediaPayload, Done]
   def removePostMedia: ServiceCall[RemovePostMediaPayload, Done]
-  def addPostDoc: ServiceCall[AddPostDocPayload, Done]
-  def updatePostDocName: ServiceCall[UpdatePostDocNamePayload, Done]
+  def storePostDoc: ServiceCall[StorePostDocPayload, Done]
   def removePostDoc: ServiceCall[RemovePostDocPayload, Done]
 
   def viewPost: ServiceCall[ViewPostPayload, Done]
@@ -185,10 +184,9 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/getPostViews", getPostViews),
         pathCall("/api/cms/v1/canAccessToPost", canAccessToPost),
         pathCall("/api/cms/v1/findPosts", findPosts),
-        pathCall("/api/cms/v1/addPostMedia", addPostMedia),
+        pathCall("/api/cms/v1/storePostMedia", storePostMedia),
         pathCall("/api/cms/v1/removePostMedia", removePostMedia),
-        pathCall("/api/cms/v1/addPostDoc", addPostDoc),
-        pathCall("/api/cms/v1/updatePostDocName", updatePostDocName),
+        pathCall("/api/cms/v1/storePostDoc", storePostDoc),
         pathCall("/api/cms/v1/removePostDoc", removePostDoc),
         pathCall("/api/cms/v1/viewPost", viewPost),
         pathCall("/api/cms/v1/likePost", likePost),

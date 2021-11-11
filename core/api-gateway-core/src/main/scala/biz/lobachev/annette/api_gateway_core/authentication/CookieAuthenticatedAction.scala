@@ -28,6 +28,7 @@ import scala.util.{Failure, Success}
 
 @Singleton
 class CookieAuthenticatedAction @Inject() (
+  authenticator: DefaultAuthenticator,
   subjectTransformer: SubjectTransformer,
   val parser: BodyParsers.Default,
   implicit val executionContext: ExecutionContext
@@ -36,18 +37,21 @@ class CookieAuthenticatedAction @Inject() (
 
   def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] = {
     log.info("Request method={}, uri={}", request.method, request.uri, request.connection.remoteAddressString)
-
     val expirationTime = request.session.data.get("exp").flatMap(_.toLongOption)
     val principal      = request.session.data.get("principal").map(AnnettePrincipal.fromCode(_))
-    if (principal.isDefined && expirationTime.isDefined && System.currentTimeMillis() / 1000L < expirationTime.get)
-      subjectTransformer
-        .transform(Subject(principals = principal.toSeq, Map.empty, None))
-        .transformWith {
-          case Success(subject)   => block(AuthenticatedRequest[A](subject, request))
-          case Failure(throwable) => notAuthenticated(request, throwable)
-        }
-    else
-      notAuthenticated(request, AuthenticationFailedException())
+    val maybeSubject   =
+      if (principal.isDefined && expirationTime.isDefined && System.currentTimeMillis() / 1000L < expirationTime.get)
+        Some(Subject(principals = principal.toSeq, Map.empty, None))
+      else None
+    val subjectFuture  = for {
+      subject            <- maybeSubject.map(Future.successful(_)).getOrElse(authenticator.authenticate(request))
+      transformedSubject <- subjectTransformer.transform(subject)
+    } yield transformedSubject
+
+    subjectFuture.transformWith {
+      case Success(subject)   => block(AuthenticatedRequest[A](subject, request))
+      case Failure(throwable) => notAuthenticated(request, throwable)
+    }
 
   }
 

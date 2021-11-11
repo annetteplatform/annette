@@ -19,13 +19,14 @@ package biz.lobachev.annette.cms.api.blogs.post
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
-case class UpdatePostDocNamePayload(
+case class StorePostDocPayload(
   postId: PostId,
   docId: DocId,
   name: String,
+  filename: String,
   updatedBy: AnnettePrincipal
 )
 
-object UpdatePostDocNamePayload {
-  implicit val format: Format[UpdatePostDocNamePayload] = Json.format
+object StorePostDocPayload {
+  implicit val format: Format[StorePostDocPayload] = Json.format
 }

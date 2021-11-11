@@ -147,17 +147,14 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def findPosts(query: PostFindQuery): Future[FindResult] =
     api.findPosts.invoke(query)
 
-  override def addPostMedia(payload: AddPostMediaPayload): Future[Done] =
-    api.addPostMedia.invoke(payload)
+  override def storePostMedia(payload: StorePostMediaPayload): Future[Done] =
+    api.storePostMedia.invoke(payload)
 
   override def removePostMedia(payload: RemovePostMediaPayload): Future[Done] =
     api.removePostMedia.invoke(payload)
 
-  override def addPostDoc(payload: AddPostDocPayload): Future[Done] =
-    api.addPostDoc.invoke(payload)
-
-  override def updatePostDocName(payload: UpdatePostDocNamePayload): Future[Done] =
-    api.updatePostDocName.invoke(payload)
+  override def storePostDoc(payload: StorePostDocPayload): Future[Done] =
+    api.storePostDoc.invoke(payload)
 
   override def removePostDoc(payload: RemovePostDocPayload): Future[Done] =
     api.removePostDoc.invoke(payload)

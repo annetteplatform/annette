@@ -68,10 +68,9 @@ trait CmsService {
   def getPostViews(payload: GetPostViewsPayload): Future[Seq[PostView]]
   def canAccessToPost(payload: CanAccessToPostPayload): Future[Boolean]
   def findPosts(query: PostFindQuery): Future[FindResult]
-  def addPostMedia(payload: AddPostMediaPayload): Future[Done]
+  def storePostMedia(payload: StorePostMediaPayload): Future[Done]
   def removePostMedia(payload: RemovePostMediaPayload): Future[Done]
-  def addPostDoc(payload: AddPostDocPayload): Future[Done]
-  def updatePostDocName(payload: UpdatePostDocNamePayload): Future[Done]
+  def storePostDoc(payload: StorePostDocPayload): Future[Done]
   def removePostDoc(payload: RemovePostDocPayload): Future[Done]
 
   def viewPost(payload: ViewPostPayload): Future[Done]
