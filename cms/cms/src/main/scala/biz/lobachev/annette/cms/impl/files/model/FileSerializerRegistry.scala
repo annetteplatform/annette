@@ -14,19 +14,17 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.api.blogs.post
+package biz.lobachev.annette.cms.impl.files.model
 
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import play.api.libs.json.{Format, Json}
+import biz.lobachev.annette.cms.impl.files.FileEntity
+import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
-case class StorePostDocPayload(
-  postId: PostId,
-  docId: DocId,
-  name: String,
-  filename: String,
-  updatedBy: AnnettePrincipal
-)
-
-object StorePostDocPayload {
-  implicit val format: Format[StorePostDocPayload] = Json.format
+object FileSerializerRegistry extends JsonSerializerRegistry {
+  override def serializers =
+    List(
+      JsonSerializer[FileState],
+      JsonSerializer[FileEntity.FileStored],
+      JsonSerializer[FileEntity.FileNameUpdated],
+      JsonSerializer[FileEntity.FileRemoved]
+    )
 }

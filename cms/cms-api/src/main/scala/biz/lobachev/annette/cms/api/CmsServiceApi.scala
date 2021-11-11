@@ -19,6 +19,13 @@ package biz.lobachev.annette.cms.api
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.cms.api.blogs.blog.{BlogView, _}
 import biz.lobachev.annette.cms.api.blogs.post._
+import biz.lobachev.annette.cms.api.files.{
+  FileDescriptor,
+  RemoveFilePayload,
+  RemoveFilesPayload,
+  StoreFilePayload,
+  UpdateFileNamePayload
+}
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
@@ -70,16 +77,22 @@ trait CmsServiceApi extends Service {
   def getPostViews: ServiceCall[GetPostViewsPayload, Seq[PostView]]
   def canAccessToPost: ServiceCall[CanAccessToPostPayload, Boolean]
   def findPosts: ServiceCall[PostFindQuery, FindResult]
-  def storePostMedia: ServiceCall[StorePostMediaPayload, Done]
-  def removePostMedia: ServiceCall[RemovePostMediaPayload, Done]
-  def storePostDoc: ServiceCall[StorePostDocPayload, Done]
-  def removePostDoc: ServiceCall[RemovePostDocPayload, Done]
+
+  // ************************** CMS Post Metrics **************************
 
   def viewPost: ServiceCall[ViewPostPayload, Done]
   def likePost: ServiceCall[LikePostPayload, Done]
   def unlikePost: ServiceCall[UnlikePostPayload, Done]
   def getPostMetricById: ServiceCall[GetPostMetricPayload, PostMetric]
   def getPostMetricsById: ServiceCall[GetPostMetricsPayload, Seq[PostMetric]]
+
+  // ************************** CMS Files **************************
+
+  def storeFile: ServiceCall[StoreFilePayload, Done]
+  def updateFileName: ServiceCall[UpdateFileNamePayload, Done]
+  def removeFile: ServiceCall[RemoveFilePayload, Done]
+  def removeFiles: ServiceCall[RemoveFilesPayload, Done]
+  def getFiles(objectId: String): ServiceCall[NotUsed, Seq[FileDescriptor]]
 
   // ************************** CMS Pages **************************
 
@@ -184,16 +197,16 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/getPostViews", getPostViews),
         pathCall("/api/cms/v1/canAccessToPost", canAccessToPost),
         pathCall("/api/cms/v1/findPosts", findPosts),
-        pathCall("/api/cms/v1/storePostMedia", storePostMedia),
-        pathCall("/api/cms/v1/removePostMedia", removePostMedia),
-        pathCall("/api/cms/v1/storePostDoc", storePostDoc),
-        pathCall("/api/cms/v1/removePostDoc", removePostDoc),
         pathCall("/api/cms/v1/viewPost", viewPost),
         pathCall("/api/cms/v1/likePost", likePost),
         pathCall("/api/cms/v1/unlikePost", unlikePost),
         pathCall("/api/cms/v1/getPostMetricById", getPostMetricById),
-        pathCall("/api/cms/v1/getPostMetricsById", getPostMetricsById)
-
+        pathCall("/api/cms/v1/getPostMetricsById", getPostMetricsById),
+        pathCall("/api/cms/v1/storeFile", storeFile),
+        pathCall("/api/cms/v1/updateFileName", updateFileName),
+        pathCall("/api/cms/v1/removeFile", removeFile),
+        pathCall("/api/cms/v1/removeFiles", removeFiles),
+        pathCall("/api/cms/v1/getFiles/:objectId/:fileType", getFiles _)
         // ************************** CMS Pages **************************
 
 //        pathCall("/api/cms/v1/createCategory", createCategory),

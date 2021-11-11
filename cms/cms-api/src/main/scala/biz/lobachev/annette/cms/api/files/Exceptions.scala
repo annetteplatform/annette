@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.api.blogs.post
+package biz.lobachev.annette.cms.api.files
 
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import play.api.libs.json.{Format, Json}
+import biz.lobachev.annette.core.exception.AnnetteTransportExceptionCompanion3
+import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
 
-case class RemovePostMediaPayload(
-  postId: PostId,
-  mediaId: MediaId,
-  updatedBy: AnnettePrincipal
-)
-
-object RemovePostMediaPayload {
-  implicit val format: Format[RemovePostMediaPayload] = Json.format
+object FileNotFound extends AnnetteTransportExceptionCompanion3 {
+  val ErrorCode       = TransportErrorCode.NotFound
+  val MessageCode     = "annette.cms.file.fileNotFound"
+  val Arg1Key: String = "objectId"
+  val Arg2Key: String = "fileType"
+  val Arg3Key: String = "fileId"
 }

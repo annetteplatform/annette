@@ -19,6 +19,13 @@ package biz.lobachev.annette.cms.api
 import akka.Done
 import biz.lobachev.annette.cms.api.blogs.blog._
 import biz.lobachev.annette.cms.api.blogs.post._
+import biz.lobachev.annette.cms.api.files.{
+  FileDescriptor,
+  RemoveFilePayload,
+  RemoveFilesPayload,
+  StoreFilePayload,
+  UpdateFileNamePayload
+}
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 
@@ -68,15 +75,17 @@ trait CmsService {
   def getPostViews(payload: GetPostViewsPayload): Future[Seq[PostView]]
   def canAccessToPost(payload: CanAccessToPostPayload): Future[Boolean]
   def findPosts(query: PostFindQuery): Future[FindResult]
-  def storePostMedia(payload: StorePostMediaPayload): Future[Done]
-  def removePostMedia(payload: RemovePostMediaPayload): Future[Done]
-  def storePostDoc(payload: StorePostDocPayload): Future[Done]
-  def removePostDoc(payload: RemovePostDocPayload): Future[Done]
 
   def viewPost(payload: ViewPostPayload): Future[Done]
   def likePost(payload: LikePostPayload): Future[Done]
   def unlikePost(payload: UnlikePostPayload): Future[Done]
   def getPostMetricById(payload: GetPostMetricPayload): Future[PostMetric]
   def getPostMetricsById(payload: GetPostMetricsPayload): Future[Seq[PostMetric]]
+
+  def storeFile(payload: StoreFilePayload): Future[Done]
+  def updateFileName(payload: UpdateFileNamePayload): Future[Done]
+  def removeFile(payload: RemoveFilePayload): Future[Done]
+  def removeFiles(payload: RemoveFilesPayload): Future[Done]
+  def getFiles(objectId: String): Future[Seq[FileDescriptor]]
 
 }

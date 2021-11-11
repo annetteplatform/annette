@@ -40,9 +40,7 @@ case class PostRecord(
   def toPost(
     introWidgetContents: Map[String, WidgetContent],
     postWidgetContents: Map[String, WidgetContent],
-    targets: Set[AnnettePrincipal] = Set.empty,
-    media: Map[MediaId, Media] = Map.empty,
-    docs: Map[DocId, Doc] = Map.empty
+    targets: Set[AnnettePrincipal] = Set.empty
   ): Post =
     this
       .into[Post]
@@ -61,8 +59,6 @@ case class PostRecord(
           .toSeq
       )
       .withFieldConst(_.targets, targets)
-      .withFieldConst(_.media, media)
-      .withFieldConst(_.docs, docs)
       .transform
 
   def toPostView(

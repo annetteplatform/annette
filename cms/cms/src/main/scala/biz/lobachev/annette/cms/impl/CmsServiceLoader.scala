@@ -28,6 +28,9 @@ import biz.lobachev.annette.cms.impl.blogs.blog.dao.{BlogDbDao, BlogIndexDao}
 import biz.lobachev.annette.cms.impl.blogs.blog.model.BlogSerializerRegistry
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.cms.impl.blogs.category.model.CategorySerializerRegistry
+import biz.lobachev.annette.cms.impl.files.dao.FileDbDao
+import biz.lobachev.annette.cms.impl.files.model.FileSerializerRegistry
+import biz.lobachev.annette.cms.impl.files.{FileDbEventProcessor, FileEntity, FileEntityService}
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
 import com.lightbend.lagom.scaladsl.api.LagomConfigComponent
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
@@ -93,11 +96,20 @@ trait CmsComponents
     }
   )
 
-  lazy val wiredSpaceCasRepository     = wire[BlogDbDao]
-  lazy val wiredSpaceElasticRepository = wire[BlogIndexDao]
+  lazy val wiredFileCasRepository = wire[FileDbDao]
+  readSide.register(wire[FileDbEventProcessor])
+  lazy val wiredFileEntityService = wire[FileEntityService]
+  clusterSharding.init(
+    Entity(FileEntity.typeKey) { entityContext =>
+      FileEntity(entityContext)
+    }
+  )
+
+  lazy val wiredBlogCasRepository     = wire[BlogDbDao]
+  lazy val wiredBlogElasticRepository = wire[BlogIndexDao]
   readSide.register(wire[BlogDbEventProcessor])
   readSide.register(wire[BlogIndexEventProcessor])
-  lazy val wiredSpaceEntityService     = wire[BlogEntityService]
+  lazy val wiredBlogEntityService     = wire[BlogEntityService]
   clusterSharding.init(
     Entity(BlogEntity.typeKey) { entityContext =>
       BlogEntity(entityContext)
@@ -124,5 +136,6 @@ object ServiceSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: immutable.Seq[JsonSerializer[_]] =
     CategorySerializerRegistry.serializers ++
       BlogSerializerRegistry.serializers ++
-      PostSerializerRegistry.serializers
+      PostSerializerRegistry.serializers ++
+      FileSerializerRegistry.serializers
 }

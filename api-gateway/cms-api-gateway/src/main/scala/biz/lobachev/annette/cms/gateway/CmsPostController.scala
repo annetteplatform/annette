@@ -364,15 +364,20 @@ class CmsPostController @Inject() (
     } yield Done
   }
 
-  private def cmsRemoveFile(postId: PostId, fileType: String, fileId: String, principal: AnnettePrincipal) =
-    if (fileType == "media")
-      cmsService.removePostMedia(
-        RemovePostMediaPayload(postId, fileId, principal)
-      )
-    else
-      cmsService.removePostDoc(
-        RemovePostDocPayload(postId, fileId, principal)
-      )
+  private def cmsRemoveFile(
+    postId: PostId,
+    fileType: String,
+    fileId: String,
+    principal: AnnettePrincipal
+  ): Future[Done] = ???
+//    if (fileType == "media")
+//      cmsService.removePostMedia(
+//        RemovePostMediaPayload(postId, fileId, principal)
+//      )
+//    else
+//      cmsService.removePostDoc(
+//        RemovePostDocPayload(postId, fileId, principal)
+//      )
 
   private def cmsStoreFile(
     postId: PostId,
@@ -380,14 +385,14 @@ class CmsPostController @Inject() (
     fileId: String,
     principal: AnnettePrincipal,
     filename: String
-  ) =
-    if (fileType == "media")
-      cmsService.storePostMedia(
-        StorePostMediaPayload(postId, fileId, filename, principal)
-      )
-    else
-      cmsService.storePostDoc(
-        StorePostDocPayload(postId, fileId, filename, filename, principal)
-      )
+  ): Future[Done] = ???
+//    if (fileType == "media")
+//      cmsService.storePostMedia(
+//        StorePostMediaPayload(postId, fileId, filename, principal)
+//      )
+//    else
+//      cmsService.storePostDoc(
+//        StorePostDocPayload(postId, fileId, filename, filename, principal)
+//      )
 
 }

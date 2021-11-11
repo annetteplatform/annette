@@ -19,6 +19,13 @@ package biz.lobachev.annette.cms.api
 import akka.Done
 import biz.lobachev.annette.cms.api.blogs.blog._
 import biz.lobachev.annette.cms.api.blogs.post._
+import biz.lobachev.annette.cms.api.files.{
+  FileDescriptor,
+  RemoveFilePayload,
+  RemoveFilesPayload,
+  StoreFilePayload,
+  UpdateFileNamePayload
+}
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 
@@ -147,18 +154,6 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def findPosts(query: PostFindQuery): Future[FindResult] =
     api.findPosts.invoke(query)
 
-  override def storePostMedia(payload: StorePostMediaPayload): Future[Done] =
-    api.storePostMedia.invoke(payload)
-
-  override def removePostMedia(payload: RemovePostMediaPayload): Future[Done] =
-    api.removePostMedia.invoke(payload)
-
-  override def storePostDoc(payload: StorePostDocPayload): Future[Done] =
-    api.storePostDoc.invoke(payload)
-
-  override def removePostDoc(payload: RemovePostDocPayload): Future[Done] =
-    api.removePostDoc.invoke(payload)
-
   override def viewPost(payload: ViewPostPayload): Future[Done] =
     api.viewPost.invoke(payload)
 
@@ -173,4 +168,19 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
 
   override def getPostMetricsById(payload: GetPostMetricsPayload): Future[Seq[PostMetric]] =
     api.getPostMetricsById.invoke(payload)
+
+  override def storeFile(payload: StoreFilePayload): Future[Done] =
+    api.storeFile.invoke(payload)
+
+  override def updateFileName(payload: UpdateFileNamePayload): Future[Done] =
+    api.updateFileName.invoke(payload)
+
+  override def removeFile(payload: RemoveFilePayload): Future[Done] =
+    api.removeFile.invoke(payload)
+
+  override def removeFiles(payload: RemoveFilesPayload): Future[Done] =
+    api.removeFiles.invoke(payload)
+
+  override def getFiles(objectId: String): Future[Seq[FileDescriptor]] =
+    api.getFiles(objectId).invoke()
 }

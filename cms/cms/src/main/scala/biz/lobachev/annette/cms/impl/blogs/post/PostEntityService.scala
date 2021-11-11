@@ -51,8 +51,6 @@ class PostEntityService(
       case PostEntity.PostAlreadyExist                   => throw PostAlreadyExist(id)
       case PostEntity.PostNotFound                       => throw PostNotFound(id)
       case PostEntity.PostPublicationDateClearNotAllowed => throw PostPublicationDateClearNotAllowed(id)
-      case PostEntity.PostMediaNotFound                  => throw PostMediaNotFound(id, maybeId.getOrElse(""))
-      case PostEntity.PostDocNotFound                    => throw PostDocNotFound(id, maybeId.getOrElse(""))
       case PostEntity.WidgetContentNotFound              => throw WidgetContentNotFound(id, maybeId.getOrElse(""))
       case _                                             => throw new RuntimeException("Match fail")
     }
@@ -62,8 +60,6 @@ class PostEntityService(
       case PostEntity.SuccessPost(post) => post
       case PostEntity.PostAlreadyExist  => throw PostAlreadyExist(id)
       case PostEntity.PostNotFound      => throw PostNotFound(id)
-      case PostEntity.PostMediaNotFound => throw PostMediaNotFound(id, "")
-      case PostEntity.PostDocNotFound   => throw PostDocNotFound(id, "")
       case _                            => throw new RuntimeException("Match fail")
     }
 
@@ -72,8 +68,6 @@ class PostEntityService(
       case PostEntity.SuccessPostAnnotation(postAnnotation) => postAnnotation
       case PostEntity.PostAlreadyExist                      => throw PostAlreadyExist(id)
       case PostEntity.PostNotFound                          => throw PostNotFound(id)
-      case PostEntity.PostMediaNotFound                     => throw PostMediaNotFound(id, "")
-      case PostEntity.PostDocNotFound                       => throw PostDocNotFound(id, "")
       case _                                                => throw new RuntimeException("Match fail")
     }
 
@@ -220,46 +214,6 @@ class PostEntityService(
 
   def canAccessToPost(payload: CanAccessToPostPayload): Future[Boolean] =
     dbDao.canAccessToPost(payload.id, payload.principals)
-
-  def storePostMedia(payload: StorePostMediaPayload): Future[Done] =
-    refFor(payload.postId)
-      .ask[PostEntity.Confirmation](replyTo =>
-        payload
-          .into[PostEntity.StorePostMedia]
-          .withFieldConst(_.replyTo, replyTo)
-          .transform
-      )
-      .map(convertSuccess(_, payload.postId, Some(payload.mediaId)))
-
-  def removePostMedia(payload: RemovePostMediaPayload): Future[Done] =
-    refFor(payload.postId)
-      .ask[PostEntity.Confirmation](replyTo =>
-        payload
-          .into[PostEntity.RemovePostMedia]
-          .withFieldConst(_.replyTo, replyTo)
-          .transform
-      )
-      .map(convertSuccess(_, payload.postId, Some(payload.mediaId)))
-
-  def storePostDoc(payload: StorePostDocPayload): Future[Done] =
-    refFor(payload.postId)
-      .ask[PostEntity.Confirmation](replyTo =>
-        payload
-          .into[PostEntity.StorePostDoc]
-          .withFieldConst(_.replyTo, replyTo)
-          .transform
-      )
-      .map(convertSuccess(_, payload.postId, Some(payload.docId)))
-
-  def removePostDoc(payload: RemovePostDocPayload): Future[Done] =
-    refFor(payload.postId)
-      .ask[PostEntity.Confirmation](replyTo =>
-        payload
-          .into[PostEntity.RemovePostDoc]
-          .withFieldConst(_.replyTo, replyTo)
-          .transform
-      )
-      .map(convertSuccess(_, payload.postId, Some(payload.docId)))
 
   def getPostById(id: PostId, fromReadSide: Boolean): Future[Post] =
     if (fromReadSide)

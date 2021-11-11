@@ -47,10 +47,6 @@ private[impl] class PostDbEventProcessor(
       .setEventHandler[PostEntity.PostTargetPrincipalAssigned](handle(dbDao.assignPostTargetPrincipal))
       .setEventHandler[PostEntity.PostTargetPrincipalUnassigned](handle(dbDao.unassignPostTargetPrincipal))
       .setEventHandler[PostEntity.PostDeleted](handle(dbDao.deletePost))
-      .setEventHandler[PostEntity.PostMediaStored](handle(dbDao.storePostMedia))
-      .setEventHandler[PostEntity.PostMediaRemoved](handle(dbDao.removePostMedia))
-      .setEventHandler[PostEntity.PostDocStored](handle(dbDao.storePostDoc))
-      .setEventHandler[PostEntity.PostDocRemoved](handle(dbDao.removePostDoc))
       .build()
 
   def aggregateTags: Set[AggregateEventTag[PostEntity.Event]] = PostEntity.Event.Tag.allTags

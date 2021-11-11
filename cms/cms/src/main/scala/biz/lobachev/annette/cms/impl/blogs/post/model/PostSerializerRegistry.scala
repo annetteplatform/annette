@@ -16,21 +16,13 @@
 
 package biz.lobachev.annette.cms.impl.blogs.post.model
 
-import biz.lobachev.annette.cms.api.blogs.post._
 import biz.lobachev.annette.cms.impl.blogs.post.PostEntity
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
-
-import java.time.OffsetDateTime
 
 object PostSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
       JsonSerializer[PostState],
-      JsonSerializer[PostAnnotation],
-      JsonSerializer[Post],
-      JsonSerializer[OffsetDateTime],
-      JsonSerializer[AnnettePrincipal],
       JsonSerializer[PostEntity.PostCreated],
       JsonSerializer[PostEntity.PostFeaturedUpdated],
       JsonSerializer[PostEntity.PostAuthorUpdated],
@@ -44,10 +36,6 @@ object PostSerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[PostEntity.PostUnpublished],
       JsonSerializer[PostEntity.PostTargetPrincipalAssigned],
       JsonSerializer[PostEntity.PostTargetPrincipalUnassigned],
-      JsonSerializer[PostEntity.PostDeleted],
-      JsonSerializer[PostEntity.PostMediaStored],
-      JsonSerializer[PostEntity.PostMediaRemoved],
-      JsonSerializer[PostEntity.PostDocStored],
-      JsonSerializer[PostEntity.PostDocRemoved]
+      JsonSerializer[PostEntity.PostDeleted]
     )
 }

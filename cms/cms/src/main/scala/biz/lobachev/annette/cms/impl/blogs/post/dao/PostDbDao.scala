@@ -54,15 +54,12 @@ private[impl] class PostDbDao(
   private val postSchema       = quote(querySchema[PostRecord]("posts"))
   private val postWidgetSchema = quote(querySchema[PostWidgetRecord]("post_widgets"))
   private val postTargetSchema = quote(querySchema[PostTargetRecord]("post_targets"))
-  private val postMediaSchema  = quote(querySchema[PostMediaRecord]("post_media"))
-  private val postDocSchema    = quote(querySchema[PostDocRecord]("post_docs"))
   private val postLikeSchema   = quote(querySchema[PostLikeRecord]("post_likes"))
   private val postViewSchema   = quote(querySchema[PostViewRecord]("post_views"))
 
   private implicit val insertPostMeta       = insertMeta[PostRecord]()
   private implicit val updatePostMeta       = updateMeta[PostRecord](_.id)
   private implicit val insertPostTargetMeta = insertMeta[PostTargetRecord]()
-  private implicit val updatePostDocMeta    = updateMeta[PostDocRecord](_.postId, _.docId)
   private implicit val updatePostViewMeta   = updateMeta[PostViewRecord](_.postId, _.principal)
   println(publicationStatusEncoder.toString)
   println(publicationStatusDecoder.toString)
@@ -73,7 +70,6 @@ private[impl] class PostDbDao(
   println(insertPostMeta.toString)
   println(updatePostMeta.toString)
   println(insertPostTargetMeta.toString)
-  println(updatePostDocMeta.toString)
   println(updatePostViewMeta.toString)
 
   def createTables(): Future[Done] = {
@@ -407,101 +403,8 @@ private[impl] class PostDbDao(
       _ <- ctx.run(postSchema.filter(_.id == lift(event.id)).delete)
       _ <- ctx.run(postWidgetSchema.filter(_.postId == lift(event.id)).delete)
       _ <- ctx.run(postTargetSchema.filter(_.postId == lift(event.id)).delete)
-      _ <- ctx.run(postMediaSchema.filter(_.postId == lift(event.id)).delete)
-      _ <- ctx.run(postDocSchema.filter(_.postId == lift(event.id)).delete)
       _ <- ctx.run(postLikeSchema.filter(_.postId == lift(event.id)).delete)
       _ <- ctx.run(postViewSchema.filter(_.postId == lift(event.id)).delete)
-    } yield Done
-
-  def storePostMedia(event: PostEntity.PostMediaStored) =
-    for {
-      _ <- ctx.run(
-             postMediaSchema.insert(
-               lift(
-                 PostMediaRecord(
-                   postId = event.postId,
-                   mediaId = event.mediaId,
-                   filename = event.filename
-                 )
-               )
-             )
-           )
-      _ <- ctx.run(
-             postSchema
-               .filter(_.id == lift(event.postId))
-               .update(
-                 _.updatedAt -> lift(event.updatedAt),
-                 _.updatedBy -> lift(event.updatedBy)
-               )
-           )
-
-    } yield Done
-
-  def removePostMedia(event: PostEntity.PostMediaRemoved) =
-    for {
-      _ <- ctx.run(
-             postMediaSchema
-               .filter(r =>
-                 r.postId == lift(event.postId) &&
-                   r.mediaId == lift(event.mediaId)
-               )
-               .delete
-           )
-      _ <- ctx.run(
-             postSchema
-               .filter(_.id == lift(event.postId))
-               .update(
-                 _.updatedAt -> lift(event.updatedAt),
-                 _.updatedBy -> lift(event.updatedBy)
-               )
-           )
-
-    } yield Done
-
-  def storePostDoc(event: PostEntity.PostDocStored) =
-    for {
-      _ <- ctx.run(
-             postDocSchema.insert(
-               lift(
-                 PostDocRecord(
-                   postId = event.postId,
-                   docId = event.docId,
-                   filename = event.filename,
-                   name = event.name
-                 )
-               )
-             )
-           )
-      _ <- ctx.run(
-             postSchema
-               .filter(_.id == lift(event.postId))
-               .update(
-                 _.updatedAt -> lift(event.updatedAt),
-                 _.updatedBy -> lift(event.updatedBy)
-               )
-           )
-
-    } yield Done
-
-  def removePostDoc(event: PostEntity.PostDocRemoved) =
-    for {
-      _ <- ctx.run(
-             postDocSchema
-               .filter(r =>
-                 r.postId == lift(event.postId) &&
-                   r.docId == lift(event.docId)
-               )
-               .delete
-           )
-      _ <- ctx.run(
-             postSchema
-               .filter(_.id == lift(event.postId))
-               .update(
-                 _.updatedAt -> lift(event.updatedAt),
-                 _.updatedBy -> lift(event.updatedBy)
-               )
-           )
-
     } yield Done
 
   def getPostById(id: PostId): Future[Option[Post]] =
@@ -516,15 +419,11 @@ private[impl] class PostDbDao(
                                .map(_ => getPostWidgets(id, ContentTypes.Post))
                                .getOrElse(Future.successful(Map.empty[String, WidgetContent]))
       targets             <- maybeEntity.map(_ => getPostTargets(id)).getOrElse(Future.successful(Set.empty[AnnettePrincipal]))
-      media               <- maybeEntity.map(_ => getPostMedia(id)).getOrElse(Future.successful(Map.empty[MediaId, Media]))
-      docs                <- maybeEntity.map(_ => getPostDocs(id)).getOrElse(Future.successful(Map.empty[DocId, Doc]))
     } yield maybeEntity.map(
       _.toPost(
         introWidgetContents,
         postWidgetContents,
-        targets,
-        media,
-        docs
+        targets
       )
     )
 
@@ -542,16 +441,6 @@ private[impl] class PostDbDao(
     ctx
       .run(postTargetSchema.filter(_.postId == lift(id)).map(_.principal))
       .map(_.toSet)
-
-  def getPostMedia(id: PostId): Future[Map[MediaId, Media]]             =
-    ctx
-      .run(postMediaSchema.filter(_.postId == lift(id)))
-      .map(_.map(r => r.mediaId -> Media(r.mediaId, r.filename)).toMap)
-
-  private def getPostDocs(id: PostId): Future[Map[DocId, Doc]]          =
-    ctx
-      .run(postDocSchema.filter(_.postId == lift(id)))
-      .map(_.map(r => r.docId -> Doc(r.docId, r.name, r.filename)).toMap)
 
   def getPostAnnotationById(id: PostId): Future[Option[PostAnnotation]] =
     for {

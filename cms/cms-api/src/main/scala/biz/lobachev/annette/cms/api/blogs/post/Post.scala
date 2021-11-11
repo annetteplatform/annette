@@ -34,8 +34,6 @@ case class Post(
   publicationStatus: PublicationStatus.PublicationStatus = PublicationStatus.Draft,
   publicationTimestamp: Option[OffsetDateTime] = None,
   targets: Set[AnnettePrincipal] = Set.empty,
-  media: Map[MediaId, Media] = Map.empty,
-  docs: Map[DocId, Doc] = Map.empty,
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
 )
