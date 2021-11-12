@@ -312,4 +312,12 @@ class CmsPostController @Inject() (
       }
     }
 
+  def getPostFiles(postId: String) =
+    authenticated.async { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+        for {
+          result <- cmsService.getFiles(s"post-$postId")
+        } yield Ok(Json.toJson(result))
+      }
+    }
 }
