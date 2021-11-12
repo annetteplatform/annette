@@ -24,7 +24,6 @@ object FileSerializerRegistry extends JsonSerializerRegistry {
     List(
       JsonSerializer[FileState],
       JsonSerializer[FileEntity.FileStored],
-      JsonSerializer[FileEntity.FileNameUpdated],
       JsonSerializer[FileEntity.FileRemoved]
     )
 }

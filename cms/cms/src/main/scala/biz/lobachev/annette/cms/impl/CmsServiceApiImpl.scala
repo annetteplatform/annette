@@ -21,13 +21,7 @@ import akka.{Done, NotUsed}
 import biz.lobachev.annette.cms.api._
 import biz.lobachev.annette.cms.api.blogs.blog._
 import biz.lobachev.annette.cms.api.blogs.post._
-import biz.lobachev.annette.cms.api.files.{
-  FileDescriptor,
-  RemoveFilePayload,
-  RemoveFilesPayload,
-  StoreFilePayload,
-  UpdateFileNamePayload
-}
+import biz.lobachev.annette.cms.api.files.{FileDescriptor, RemoveFilePayload, RemoveFilesPayload, StoreFilePayload}
 import biz.lobachev.annette.cms.impl.blogs.blog._
 import biz.lobachev.annette.cms.impl.blogs.category.BlogCategoryEntityService
 import biz.lobachev.annette.cms.impl.blogs.post._
@@ -227,7 +221,15 @@ class CmsServiceApiImpl(
 
   override def deletePost: ServiceCall[DeletePostPayload, Done] =
     ServiceCall { payload =>
-      postEntityService.deletePost(payload)
+      for {
+        _ <- postEntityService.deletePost(payload)
+        _ <- fileEntityService.removeFiles(
+               RemoveFilesPayload(
+                 objectId = s"post-${payload.id}",
+                 updatedBy = payload.deletedBy
+               )
+             )
+      } yield Done
     }
 
   override def getPostById(id: PostId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Post] =
@@ -293,11 +295,6 @@ class CmsServiceApiImpl(
   override def storeFile: ServiceCall[StoreFilePayload, Done] =
     ServiceCall { payload =>
       fileEntityService.storeFile(payload)
-    }
-
-  override def updateFileName: ServiceCall[UpdateFileNamePayload, Done] =
-    ServiceCall { payload =>
-      fileEntityService.updateFileName(payload)
     }
 
   override def removeFile: ServiceCall[RemoveFilePayload, Done] =

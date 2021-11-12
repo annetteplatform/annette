@@ -10,7 +10,6 @@ case class FileState(
   objectId: String,
   fileType: FileType,
   fileId: String,
-  name: String,
   filename: String,
   contentType: Option[String],
   updatedBy: AnnettePrincipal,

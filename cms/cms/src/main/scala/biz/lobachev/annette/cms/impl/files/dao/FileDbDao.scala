@@ -1,16 +1,19 @@
 package biz.lobachev.annette.cms.impl.files.dao
 
 import akka.Done
+import biz.lobachev.annette.cms.api.CmsStorage
 import biz.lobachev.annette.cms.api.files.FileTypes.FileType
 import biz.lobachev.annette.cms.api.files.{FileDescriptor, FileTypes}
 import biz.lobachev.annette.cms.impl.files.FileEntity
 import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class FileDbDao(
-  override val session: CassandraSession
+  override val session: CassandraSession,
+  cmsStorage: CmsStorage
 )(implicit
   ec: ExecutionContext
 //  materializer: Materializer
@@ -38,7 +41,6 @@ private[impl] class FileDbDao(
                .column("object_id", Text)
                .column("file_type", Text)
                .column("file_id", Text)
-               .column("name", Text)
                .column("filename", Text)
                .column("content_type", Text)
                .column("updated_at", Timestamp)
@@ -51,26 +53,27 @@ private[impl] class FileDbDao(
   }
 
   def storeFile(event: FileEntity.FileStored): Future[Done] =
-    Future {
-      println(event)
-      ???
-    }
-
-  def updateFileName(event: FileEntity.FileNameUpdated): Future[Done] =
-    Future {
-      println(event)
-      ???
-    }
+    ctx.run(
+      fileSchema.insert(lift(event.transformInto[FileDescriptor]))
+    )
 
   def removeFile(event: FileEntity.FileRemoved): Future[Done] =
-    Future {
-      println(event)
-      ???
-    }
+    for {
+      _ <- cmsStorage.deleteFile(event.objectId, event.fileType, event.fileId)
+      _ <- ctx.run(
+             fileSchema
+               .filter(r =>
+                 r.objectId == lift(event.objectId) &&
+                   r.fileType == lift(event.fileType) &&
+                   r.fileId == lift(event.fileId)
+               )
+               .delete
+           )
+    } yield Done
 
   def getFiles(objectId: String): Future[Seq[FileDescriptor]] =
-    Future {
-      println(objectId)
-      ???
-    }
+    ctx.run(
+      fileSchema.filter(_.objectId == lift(objectId))
+    )
+
 }

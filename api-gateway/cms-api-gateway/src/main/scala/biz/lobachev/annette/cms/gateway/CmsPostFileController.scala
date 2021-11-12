@@ -18,6 +18,8 @@ package biz.lobachev.annette.cms.gateway
 
 import akka.stream.Materializer
 import biz.lobachev.annette.api_gateway_core.authentication.CookieAuthenticatedAction
+import biz.lobachev.annette.cms.api.CmsStorage
+import biz.lobachev.annette.cms.api.files.FileTypes
 import biz.lobachev.annette.cms.gateway.s3.CmsS3Helper
 import play.api.mvc.{AbstractController, ControllerComponents}
 
@@ -27,25 +29,18 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class CmsPostFileController @Inject() (
   cookieAuthenticated: CookieAuthenticatedAction,
-//  authorizer: Authorizer,
   cc: ControllerComponents,
 //  cmsService: CmsService,
+  cmsStorage: CmsStorage,
   cmsS3Helper: CmsS3Helper,
   implicit val ec: ExecutionContext,
   implicit val materializer: Materializer
 ) extends AbstractController(cc) {
 
-  def getPostMedia(postId: String, mediaId: String) =
+  def getFile(objectId: String, fileType: String, fileId: String) =
     cookieAuthenticated.async { _ =>
       for {
-        (fileStream, metadata) <- cmsS3Helper.downloadPostFile(postId, "media", mediaId)
-      } yield cmsS3Helper.sendS3Stream(fileStream, metadata)
-    }
-
-  def getPostDoc(postId: String, docId: String) =
-    cookieAuthenticated.async { _ =>
-      for {
-        (fileStream, metadata) <- cmsS3Helper.downloadPostFile(postId, "doc", docId)
+        (fileStream, metadata) <- cmsStorage.downloadFile(objectId, FileTypes.withName(fileType), fileId)
       } yield cmsS3Helper.sendS3Stream(fileStream, metadata)
     }
 

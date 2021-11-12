@@ -19,13 +19,7 @@ package biz.lobachev.annette.cms.api
 import akka.Done
 import biz.lobachev.annette.cms.api.blogs.blog._
 import biz.lobachev.annette.cms.api.blogs.post._
-import biz.lobachev.annette.cms.api.files.{
-  FileDescriptor,
-  RemoveFilePayload,
-  RemoveFilesPayload,
-  StoreFilePayload,
-  UpdateFileNamePayload
-}
+import biz.lobachev.annette.cms.api.files.{FileDescriptor, RemoveFilePayload, RemoveFilesPayload, StoreFilePayload}
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 
@@ -83,7 +77,6 @@ trait CmsService {
   def getPostMetricsById(payload: GetPostMetricsPayload): Future[Seq[PostMetric]]
 
   def storeFile(payload: StoreFilePayload): Future[Done]
-  def updateFileName(payload: UpdateFileNamePayload): Future[Done]
   def removeFile(payload: RemoveFilePayload): Future[Done]
   def removeFiles(payload: RemoveFilesPayload): Future[Done]
   def getFiles(objectId: String): Future[Seq[FileDescriptor]]

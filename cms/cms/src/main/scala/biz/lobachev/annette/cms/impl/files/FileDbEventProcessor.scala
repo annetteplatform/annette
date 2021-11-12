@@ -35,7 +35,6 @@ private[impl] class FileDbEventProcessor(
       .builder[FileEntity.Event]("file-cas")
       .setGlobalPrepare(dbDao.createTables)
       .setEventHandler[FileEntity.FileStored](handle(dbDao.storeFile))
-      .setEventHandler[FileEntity.FileNameUpdated](handle(dbDao.updateFileName))
       .setEventHandler[FileEntity.FileRemoved](handle(dbDao.removeFile))
       .build()
 

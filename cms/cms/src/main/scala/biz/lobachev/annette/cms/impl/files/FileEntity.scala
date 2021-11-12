@@ -40,18 +40,8 @@ object FileEntity {
     objectId: String,
     fileType: FileType,
     fileId: String,
-    name: String,
     filename: String,
     contentType: Option[String],
-    updatedBy: AnnettePrincipal,
-    replyTo: ActorRef[Confirmation]
-  ) extends Command
-
-  final case class UpdateFileName(
-    objectId: String,
-    fileType: FileType,
-    fileId: String,
-    name: String,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
@@ -85,20 +75,12 @@ object FileEntity {
     objectId: String,
     fileType: FileType,
     fileId: String,
-    name: String,
     filename: String,
     contentType: Option[String],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
-  final case class FileNameUpdated(
-    objectId: String,
-    fileType: FileType,
-    fileId: String,
-    name: String,
-    updatedBy: AnnettePrincipal,
-    updatedAt: OffsetDateTime = OffsetDateTime.now
-  ) extends Event
+
   final case class FileRemoved(
     objectId: String,
     fileType: FileType,
@@ -107,9 +89,8 @@ object FileEntity {
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
 
-  implicit val eventFileStoredFormat: Format[FileStored]           = Json.format
-  implicit val eventFileNameUpdatedFormat: Format[FileNameUpdated] = Json.format
-  implicit val eventFileRemovedFormat: Format[FileRemoved]         = Json.format
+  implicit val eventFileStoredFormat: Format[FileStored]   = Json.format
+  implicit val eventFileRemovedFormat: Format[FileRemoved] = Json.format
 
   val empty = FileEntity()
 
@@ -139,9 +120,8 @@ final case class FileEntity(maybeState: Option[FileState] = None) {
 
   def applyCommand(cmd: FileEntity.Command): ReplyEffect[FileEntity.Event, FileEntity] =
     cmd match {
-      case cmd: FileEntity.StoreFile      => storeFile(cmd)
-      case cmd: FileEntity.UpdateFileName => updateFileName(cmd)
-      case cmd: FileEntity.RemoveFile     => removeFile(cmd)
+      case cmd: FileEntity.StoreFile  => storeFile(cmd)
+      case cmd: FileEntity.RemoveFile => removeFile(cmd)
 
     }
 
@@ -151,16 +131,6 @@ final case class FileEntity(maybeState: Option[FileState] = None) {
       .persist(event)
       .thenReply(cmd.replyTo)(_ => FileEntity.Success)
   }
-
-  def updateFileName(cmd: FileEntity.UpdateFileName): ReplyEffect[FileEntity.Event, FileEntity] =
-    maybeState match {
-      case None    => Effect.reply(cmd.replyTo)(FileEntity.FileNotFound)
-      case Some(_) =>
-        val event = cmd.transformInto[FileEntity.FileNameUpdated]
-        Effect
-          .persist(event)
-          .thenReply(cmd.replyTo)(_ => FileEntity.Success)
-    }
 
   def removeFile(cmd: FileEntity.RemoveFile): ReplyEffect[FileEntity.Event, FileEntity] =
     maybeState match {
@@ -174,9 +144,8 @@ final case class FileEntity(maybeState: Option[FileState] = None) {
 
   def applyEvent(event: FileEntity.Event): FileEntity =
     event match {
-      case event: FileEntity.FileStored      => onFileStored(event)
-      case event: FileEntity.FileNameUpdated => onFileNameUpdated(event)
-      case _: FileEntity.FileRemoved         => onFileRemoved()
+      case event: FileEntity.FileStored => onFileStored(event)
+      case _: FileEntity.FileRemoved    => onFileRemoved()
 
     }
 
@@ -185,17 +154,6 @@ final case class FileEntity(maybeState: Option[FileState] = None) {
       Some(
         event
           .transformInto[FileState]
-      )
-    )
-
-  def onFileNameUpdated(event: FileEntity.FileNameUpdated): FileEntity =
-    FileEntity(
-      maybeState.map(
-        _.copy(
-          name = event.name,
-          updatedBy = event.updatedBy,
-          updatedAt = event.updatedAt
-        )
       )
     )
 

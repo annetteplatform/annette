@@ -19,13 +19,7 @@ package biz.lobachev.annette.cms.api
 import akka.Done
 import biz.lobachev.annette.cms.api.blogs.blog._
 import biz.lobachev.annette.cms.api.blogs.post._
-import biz.lobachev.annette.cms.api.files.{
-  FileDescriptor,
-  RemoveFilePayload,
-  RemoveFilesPayload,
-  StoreFilePayload,
-  UpdateFileNamePayload
-}
+import biz.lobachev.annette.cms.api.files.{FileDescriptor, RemoveFilePayload, RemoveFilesPayload, StoreFilePayload}
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 
@@ -171,9 +165,6 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
 
   override def storeFile(payload: StoreFilePayload): Future[Done] =
     api.storeFile.invoke(payload)
-
-  override def updateFileName(payload: UpdateFileNamePayload): Future[Done] =
-    api.updateFileName.invoke(payload)
 
   override def removeFile(payload: RemoveFilePayload): Future[Done] =
     api.removeFile.invoke(payload)

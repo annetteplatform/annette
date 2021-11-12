@@ -52,16 +52,6 @@ class FileEntityService(
       )
       .map(conf => convertSuccess(conf, payload.objectId, payload.fileType, payload.fileId))
 
-  def updateFileName(payload: UpdateFileNamePayload): Future[Done] =
-    refFor(payload.objectId, payload.fileType, payload.fileId)
-      .ask[FileEntity.Confirmation](replyTo =>
-        payload
-          .into[FileEntity.UpdateFileName]
-          .withFieldConst(_.replyTo, replyTo)
-          .transform
-      )
-      .map(conf => convertSuccess(conf, payload.objectId, payload.fileType, payload.fileId))
-
   def removeFile(payload: RemoveFilePayload): Future[Done] =
     refFor(payload.objectId, payload.fileType, payload.fileId)
       .ask[FileEntity.Confirmation](replyTo =>
@@ -101,17 +91,5 @@ class FileEntityService(
       case FileEntity.FileNotFound => throw FileNotFound(objectId, fileType.toString, fileId)
       case _                       => throw new RuntimeException("Match fail")
     }
-
-//  private def convertSuccessFileDescriptor(
-//    confirmation: FileEntity.Confirmation,
-//    objectId: String,
-//    fileType: FileType,
-//    fileId: String
-//  ): FileDescriptor =
-//    confirmation match {
-//      case FileEntity.SuccessFile(file) => file
-//      case FileEntity.FileNotFound      => throw FileNotFound(objectId, fileType.toString, fileId)
-//      case _                            => throw new RuntimeException("Match fail")
-//    }
 
 }

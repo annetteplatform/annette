@@ -16,28 +16,20 @@
 
 package biz.lobachev.annette.cms.gateway
 
-import akka.Done
-import akka.http.scaladsl.model.ContentType
 import akka.stream.Materializer
-import akka.stream.alpakka.s3.MetaHeaders
-import akka.stream.alpakka.s3.scaladsl.S3
-import akka.stream.scaladsl.FileIO
 import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
-import biz.lobachev.annette.cms.api.CmsService
 import biz.lobachev.annette.cms.api.blogs.post._
+import biz.lobachev.annette.cms.api.files.{FileTypes, RemoveFilePayload, StoreFilePayload}
+import biz.lobachev.annette.cms.api.{CmsService, CmsStorage}
 import biz.lobachev.annette.cms.gateway.blogs.post._
-import biz.lobachev.annette.cms.gateway.s3.CmsS3Helper
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.SortBy
 import io.scalaland.chimney.dsl._
-import play.api.libs.Files
 import play.api.libs.json.Json
-import play.api.mvc.{AbstractController, Action, ControllerComponents, MultipartFormData}
+import play.api.mvc.{AbstractController, Action, ControllerComponents}
 
-import java.net.URLEncoder
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class CmsPostController @Inject() (
@@ -45,7 +37,7 @@ class CmsPostController @Inject() (
   authorizer: Authorizer,
   cc: ControllerComponents,
   cmsService: CmsService,
-  cmsS3Initializer: CmsS3Helper,
+  cmsStorage: CmsStorage,
   implicit val ec: ExecutionContext,
   implicit val materializer: Materializer
 ) extends AbstractController(cc) {
@@ -284,115 +276,40 @@ class CmsPostController @Inject() (
       }
     }
 
-  def uploadPostMedia(postId: String, mediaId: String) =
+  def uploadPostFile(postId: String, fileType: String, fileId: String) =
     authenticated.async(parse.multipartFormData) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
         val maybeFile = request.body.file("file")
+        val filename  = maybeFile.get.filename
+        val payload   = StoreFilePayload(
+          objectId = s"post-$postId",
+          fileType = FileTypes.withName(fileType),
+          fileId = fileId,
+          filename = maybeFile.get.filename,
+          contentType = fileMimeTypes.forFileName(filename).getOrElse(play.api.http.ContentTypes.BINARY),
+          updatedBy = request.subject.principals.head
+        )
         for {
-          _ <- uploadFile(postId, "media", mediaId, maybeFile, request.subject.principals.head)
+          _ <- cmsService.storeFile(payload)
+          _ <- cmsStorage.uploadFile(maybeFile.get.ref.path, payload)
         } yield Ok("")
       }
     }
 
-  def removePostMedia(postId: String, mediaId: String) =
+  def removePostFile(postId: String, fileType: String, fileId: String) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
         for {
-          _ <- cmsRemoveFile(postId, "media", mediaId, request.subject.principals.head)
+          _ <- cmsService.removeFile(
+                 RemoveFilePayload(
+                   objectId = s"post-$postId",
+                   fileType = FileTypes.withName(fileType),
+                   fileId = fileId,
+                   updatedBy = request.subject.principals.head
+                 )
+               )
         } yield Ok("")
       }
     }
-
-  def uploadPostDoc(postId: String, docId: String) =
-    authenticated.async(parse.multipartFormData) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
-        val maybeFile = request.body.file("file")
-        for {
-          _ <- uploadFile(postId, "doc", docId, maybeFile, request.subject.principals.head)
-        } yield Ok("")
-      }
-    }
-
-  def removePostDoc(postId: String, docId: String) =
-    authenticated.async { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
-        for {
-          _ <- cmsRemoveFile(postId, "doc", docId, request.subject.principals.head)
-        } yield Ok("")
-      }
-    }
-
-  private def uploadFile(
-    postId: PostId,
-    fileType: String,
-    fileId: String,
-    maybeFile: Option[MultipartFormData.FilePart[Files.TemporaryFile]],
-    principal: AnnettePrincipal
-  ): Future[Done] = {
-    if (maybeFile.isEmpty) throw FileNotFoundInRequest(postId, fileId)
-
-    val filename = maybeFile.get.filename
-    for {
-      _ <- cmsStoreFile(postId, fileType, fileId, principal, filename)
-
-      metaHeaders = Map(
-                      "filename" -> URLEncoder.encode(maybeFile.get.filename, "UTF-8"),
-                      "postId"   -> postId,
-                      "fileType" -> fileType
-                    )
-      uploadSink  = S3.multipartUpload(
-                      cmsS3Initializer.postFileBucket,
-                      cmsS3Initializer.makePostS3FileKey(postId, fileType, fileId),
-                      metaHeaders = MetaHeaders(metaHeaders),
-                      contentType = ContentType
-                        .parse(
-                          fileMimeTypes.forFileName(filename).getOrElse(play.api.http.ContentTypes.BINARY)
-                        )
-                        .toOption
-                        .get
-                    )
-
-      _          <- FileIO
-                      .fromPath(maybeFile.get.ref.path)
-                      .runWith(uploadSink)
-                      .recoverWith {
-                        case th =>
-                          // remove file if upload failed
-                          cmsRemoveFile(postId, fileType, fileId, principal)
-                          Future.failed(th)
-                      }
-    } yield Done
-  }
-
-  private def cmsRemoveFile(
-    postId: PostId,
-    fileType: String,
-    fileId: String,
-    principal: AnnettePrincipal
-  ): Future[Done] = ???
-//    if (fileType == "media")
-//      cmsService.removePostMedia(
-//        RemovePostMediaPayload(postId, fileId, principal)
-//      )
-//    else
-//      cmsService.removePostDoc(
-//        RemovePostDocPayload(postId, fileId, principal)
-//      )
-
-  private def cmsStoreFile(
-    postId: PostId,
-    fileType: String,
-    fileId: String,
-    principal: AnnettePrincipal,
-    filename: String
-  ): Future[Done] = ???
-//    if (fileType == "media")
-//      cmsService.storePostMedia(
-//        StorePostMediaPayload(postId, fileId, filename, principal)
-//      )
-//    else
-//      cmsService.storePostDoc(
-//        StorePostDocPayload(postId, fileId, filename, filename, principal)
-//      )
 
 }

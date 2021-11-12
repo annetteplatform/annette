@@ -175,14 +175,11 @@ POST    /api/annette/v1/cms/findPosts                       biz.lobachev.annette
 POST    /api/annette/v1/cms/getPostAnnotationsById/:fromReadSide   biz.lobachev.annette.cms.gateway.CmsPostController.getPostAnnotationsById(fromReadSide: Boolean)
 GET     /api/annette/v1/cms/getPostById/:id/:fromReadSide   biz.lobachev.annette.cms.gateway.CmsPostController.getPostById(id: String, fromReadSide: Boolean)
 POST    /api/annette/v1/cms/getPostsById/:fromReadSide      biz.lobachev.annette.cms.gateway.CmsPostController.getPostsById(fromReadSide: Boolean)
-POST    /api/annette/v1/cms/uploadPostMedia/:postId/:mediaId    biz.lobachev.annette.cms.gateway.CmsPostController.uploadPostMedia(postId: String, mediaId: String)
-POST    /api/annette/v1/cms/removePostMedia/:postId/:mediaId    biz.lobachev.annette.cms.gateway.CmsPostController.removePostMedia(postId: String, mediaId: String)
-POST    /api/annette/v1/cms/uploadPostDoc/:postId/:docId    biz.lobachev.annette.cms.gateway.CmsPostController.uploadPostDoc(postId: String, docId: String)
-POST    /api/annette/v1/cms/removePostDoc/:postId/:docId    biz.lobachev.annette.cms.gateway.CmsPostController.removePostDoc(postId: String, docId: String)
+POST    /api/annette/v1/cms/uploadPostFile/:postId/:fileType/:fileId    biz.lobachev.annette.cms.gateway.CmsPostController.uploadPostFile(postId: String, fileType: String, fileId: String)
+POST    /api/annette/v1/cms/removePostFile/:postId/:fileType/:fileId    biz.lobachev.annette.cms.gateway.CmsPostController.removePostFile(postId: String, fileType: String, fileId: String)
 
 # CMS Post File
-GET    /api/annette/v1/cms/post/:postId/media/:mediaId    biz.lobachev.annette.cms.gateway.CmsPostFileController.getPostMedia(postId: String, mediaId: String)
-GET    /api/annette/v1/cms/post/:postId/doc/:docId    biz.lobachev.annette.cms.gateway.CmsPostFileController.getPostDoc(postId: String, docId: String)
+GET    /api/annette/v1/cms/file/:objectId/:fileType/:fileId    biz.lobachev.annette.cms.gateway.CmsPostFileController.getFile(objectId: String, fileType: String, fileId: String)
 # ************************************** CMS View API **************************************
 # CMS Blog View
 POST    /api/annette/v1/cms/findBlogViews                  biz.lobachev.annette.cms.gateway.CmsBlogViewController.findBlogViews

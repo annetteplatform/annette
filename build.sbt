@@ -510,7 +510,8 @@ lazy val `cms-api` = (project in file("cms/cms-api"))
       lagomScaladslApi,
       lagomScaladslTestKit,
       Dependencies.chimney
-    ) ++ Dependencies.tests
+    ) ++ Dependencies.tests ++
+      Dependencies.alpakkaS3
   )
   .settings(annetteSettings: _*)
   .dependsOn(`core`)
@@ -544,8 +545,7 @@ lazy val `cms-api-gateway` = (project in file("api-gateway/cms-api-gateway"))
       Dependencies.pureConfig,
       Dependencies.chimney
     ) ++
-      Dependencies.tests ++
-      Dependencies.alpakkaS3
+      Dependencies.tests
   )
   .settings(annetteSettings: _*)
   .dependsOn(

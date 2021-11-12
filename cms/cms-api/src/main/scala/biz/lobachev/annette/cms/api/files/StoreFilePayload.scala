@@ -8,9 +8,8 @@ case class StoreFilePayload(
   objectId: String,
   fileType: FileType,
   fileId: String,
-  name: String,
   filename: String,
-  contentType: Option[String],
+  contentType: String,
   updatedBy: AnnettePrincipal
 )
 

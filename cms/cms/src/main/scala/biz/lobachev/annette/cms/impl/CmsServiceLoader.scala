@@ -96,6 +96,7 @@ trait CmsComponents
     }
   )
 
+  lazy val cmsCmsStorage          = wire[CmsStorage]
   lazy val wiredFileCasRepository = wire[FileDbDao]
   readSide.register(wire[FileDbEventProcessor])
   lazy val wiredFileEntityService = wire[FileEntityService]

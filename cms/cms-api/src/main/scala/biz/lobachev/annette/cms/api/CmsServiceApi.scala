@@ -19,13 +19,7 @@ package biz.lobachev.annette.cms.api
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.cms.api.blogs.blog.{BlogView, _}
 import biz.lobachev.annette.cms.api.blogs.post._
-import biz.lobachev.annette.cms.api.files.{
-  FileDescriptor,
-  RemoveFilePayload,
-  RemoveFilesPayload,
-  StoreFilePayload,
-  UpdateFileNamePayload
-}
+import biz.lobachev.annette.cms.api.files.{FileDescriptor, RemoveFilePayload, RemoveFilesPayload, StoreFilePayload}
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
@@ -89,7 +83,6 @@ trait CmsServiceApi extends Service {
   // ************************** CMS Files **************************
 
   def storeFile: ServiceCall[StoreFilePayload, Done]
-  def updateFileName: ServiceCall[UpdateFileNamePayload, Done]
   def removeFile: ServiceCall[RemoveFilePayload, Done]
   def removeFiles: ServiceCall[RemoveFilesPayload, Done]
   def getFiles(objectId: String): ServiceCall[NotUsed, Seq[FileDescriptor]]
@@ -203,10 +196,9 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/getPostMetricById", getPostMetricById),
         pathCall("/api/cms/v1/getPostMetricsById", getPostMetricsById),
         pathCall("/api/cms/v1/storeFile", storeFile),
-        pathCall("/api/cms/v1/updateFileName", updateFileName),
         pathCall("/api/cms/v1/removeFile", removeFile),
         pathCall("/api/cms/v1/removeFiles", removeFiles),
-        pathCall("/api/cms/v1/getFiles/:objectId/:fileType", getFiles _)
+        pathCall("/api/cms/v1/getFiles/:objectId", getFiles _)
         // ************************** CMS Pages **************************
 
 //        pathCall("/api/cms/v1/createCategory", createCategory),
