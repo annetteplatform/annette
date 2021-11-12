@@ -41,7 +41,7 @@ object FileEntity {
     fileType: FileType,
     fileId: String,
     filename: String,
-    contentType: Option[String],
+    contentType: String,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
@@ -76,7 +76,7 @@ object FileEntity {
     fileType: FileType,
     fileId: String,
     filename: String,
-    contentType: Option[String],
+    contentType: String,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event

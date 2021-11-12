@@ -11,7 +11,7 @@ case class FileDescriptor(
   fileType: FileType,
   fileId: String,
   filename: String,
-  contentType: Option[String],
+  contentType: String,
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime
 )

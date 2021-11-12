@@ -17,7 +17,7 @@
 package biz.lobachev.annette.cms.gateway
 
 import akka.stream.Materializer
-import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
+import biz.lobachev.annette.api_gateway_core.authentication.{AuthenticatedAction, CookieAuthenticatedAction}
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.blogs.post._
 import biz.lobachev.annette.cms.api.files.{FileTypes, RemoveFilePayload, StoreFilePayload}
@@ -28,12 +28,14 @@ import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, Action, ControllerComponents}
 
+import java.util.UUID
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
 
 @Singleton
 class CmsPostController @Inject() (
   authenticated: AuthenticatedAction,
+  cookieAuthenticated: CookieAuthenticatedAction,
   authorizer: Authorizer,
   cc: ControllerComponents,
   cmsService: CmsService,
@@ -276,23 +278,23 @@ class CmsPostController @Inject() (
       }
     }
 
-  def uploadPostFile(postId: String, fileType: String, fileId: String) =
-    authenticated.async(parse.multipartFormData) { implicit request =>
+  def uploadPostFile(postId: String, fileType: String) =
+    cookieAuthenticated.async(parse.multipartFormData) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
-        val maybeFile = request.body.file("file")
-        val filename  = maybeFile.get.filename
-        val payload   = StoreFilePayload(
+        val file    = request.body.files.head
+        val fileId  = UUID.randomUUID().toString
+        val payload = StoreFilePayload(
           objectId = s"post-$postId",
           fileType = FileTypes.withName(fileType),
           fileId = fileId,
-          filename = maybeFile.get.filename,
-          contentType = fileMimeTypes.forFileName(filename).getOrElse(play.api.http.ContentTypes.BINARY),
+          filename = file.filename,
+          contentType = fileMimeTypes.forFileName(file.filename).getOrElse(play.api.http.ContentTypes.BINARY),
           updatedBy = request.subject.principals.head
         )
         for {
           _ <- cmsService.storeFile(payload)
-          _ <- cmsStorage.uploadFile(maybeFile.get.ref.path, payload)
-        } yield Ok("")
+          _ <- cmsStorage.uploadFile(file.ref.path, payload)
+        } yield Ok(Json.toJson(payload))
       }
     }
 

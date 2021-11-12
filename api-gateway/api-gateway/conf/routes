@@ -175,7 +175,7 @@ POST    /api/annette/v1/cms/findPosts                       biz.lobachev.annette
 POST    /api/annette/v1/cms/getPostAnnotationsById/:fromReadSide   biz.lobachev.annette.cms.gateway.CmsPostController.getPostAnnotationsById(fromReadSide: Boolean)
 GET     /api/annette/v1/cms/getPostById/:id/:fromReadSide   biz.lobachev.annette.cms.gateway.CmsPostController.getPostById(id: String, fromReadSide: Boolean)
 POST    /api/annette/v1/cms/getPostsById/:fromReadSide      biz.lobachev.annette.cms.gateway.CmsPostController.getPostsById(fromReadSide: Boolean)
-POST    /api/annette/v1/cms/uploadPostFile/:postId/:fileType/:fileId    biz.lobachev.annette.cms.gateway.CmsPostController.uploadPostFile(postId: String, fileType: String, fileId: String)
+POST    /api/annette/v1/cms/uploadPostFile/:postId/:fileType    biz.lobachev.annette.cms.gateway.CmsPostController.uploadPostFile(postId: String, fileType: String)
 POST    /api/annette/v1/cms/removePostFile/:postId/:fileType/:fileId    biz.lobachev.annette.cms.gateway.CmsPostController.removePostFile(postId: String, fileType: String, fileId: String)
 GET     /api/annette/v1/cms/getPostFiles/:postId                        biz.lobachev.annette.cms.gateway.CmsPostController.getPostFiles(postId: String)
 
