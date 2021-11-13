@@ -34,7 +34,7 @@ class CmsS3Helper(
       LAST_MODIFIED       -> metadata.lastModified.toRfc1123DateTimeString()
     )
     if (noCacheHeader) headers = headers :+ (CACHE_CONTROL -> "no-cache")
-    metadata.eTag.foreach(etag => headers = headers :+ (ETAG -> etag))
+    metadata.eTag.foreach(etag => headers = headers :+ (ETAG -> s""""${etag}""""))
 
     Results.Ok
       .sendEntity(HttpEntity.Streamed(fileStream, Some(metadata.contentLength), metadata.contentType))
