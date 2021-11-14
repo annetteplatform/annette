@@ -16,15 +16,19 @@
 
 package biz.lobachev.annette.cms.gateway
 
+import akka.http.scaladsl.model.DateTime
 import akka.stream.Materializer
 import biz.lobachev.annette.api_gateway_core.authentication.CookieAuthenticatedAction
 import biz.lobachev.annette.cms.api.CmsStorage
 import biz.lobachev.annette.cms.api.files.FileTypes
 import biz.lobachev.annette.cms.gateway.s3.CmsS3Helper
-import play.api.mvc.{AbstractController, ControllerComponents}
+import play.api.mvc.{AbstractController, ControllerComponents, Results}
 
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import javax.inject.{Inject, Singleton}
 import scala.concurrent.ExecutionContext
+import scala.util.Try
 
 @Singleton
 class CmsPostFileController @Inject() (
@@ -38,10 +42,28 @@ class CmsPostFileController @Inject() (
 ) extends AbstractController(cc) {
 
   def getFile(objectId: String, fileType: String, fileId: String) =
-    cookieAuthenticated.async { _ =>
+    cookieAuthenticated.async { request =>
+      val ifModifiedSince = request.headers
+        .get("If-Modified-Since")
+        .flatMap(timestamp =>
+          Try(ZonedDateTime.parse(timestamp, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant.getEpochSecond).toOption
+        )
+      val ifNoneMatch     = request.headers.get("If-None-Match")
       for {
         (fileStream, metadata) <- cmsStorage.downloadFile(objectId, FileTypes.withName(fileType), fileId)
-      } yield cmsS3Helper.sendS3Stream(fileStream, metadata)
+      } yield (ifModifiedSince, ifNoneMatch) match {
+        case (Some(timestamp), _) if timestamp >= metadata.lastModified.toEpochSecond            =>
+          Results.NotModified
+        case (_, Some(etag)) if metadata.eTag.map(metaETag => metaETag == etag).getOrElse(false) =>
+          Results.NotModified
+        case _                                                                                   =>
+          cmsS3Helper.sendS3Stream(fileStream, metadata)
+      }
+
     }
+
+  implicit class DateTimeEpoch(dateTime: DateTime) {
+    def toEpochSecond: Long = dateTime.clicks / 1000
+  }
 
 }
