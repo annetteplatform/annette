@@ -41,6 +41,6 @@ class CmsS3Helper(
       .withHeaders(headers: _*)
   }
 
-  private def getFilenameOpt(metadata: ObjectMetadata): Option[String] =
+  def getFilenameOpt(metadata: ObjectMetadata): Option[String] =
     metadata.metadata.find(_.is("x-amz-meta-filename")).map(_.value())
 }
