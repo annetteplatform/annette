@@ -2,6 +2,7 @@ package biz.lobachev.annette.cms.api
 
 import akka.actor.ActorSystem
 import akka.http.scaladsl.model.ContentType
+import akka.http.scaladsl.model.headers.ByteRange
 import akka.stream.Materializer
 import akka.stream.alpakka.s3.scaladsl.S3
 import akka.stream.alpakka.s3.{BucketAccess, MetaHeaders, MultipartUploadResult, ObjectMetadata}
@@ -73,9 +74,10 @@ class CmsStorage(
   def downloadFile(
     objectId: String,
     fileType: FileType,
-    fileId: String
+    fileId: String,
+    range: Option[ByteRange] = None
   ): Future[(Source[ByteString, NotUsed], ObjectMetadata)] =
-    S3.download(fileBucket, makeS3FileKey(objectId, fileType, fileId)).runWith(Sink.head).map {
+    S3.download(fileBucket, makeS3FileKey(objectId, fileType, fileId), range).runWith(Sink.head).map {
       case Some((source, metadata)) => (source, metadata)
       case None                     => throw FileNotFound(objectId, fileType.toString, fileId)
     }

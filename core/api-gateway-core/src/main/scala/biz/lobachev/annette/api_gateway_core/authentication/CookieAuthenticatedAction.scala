@@ -89,7 +89,7 @@ class CookieAuthenticatedAction @Inject() (
         result.map(
           _.withSession(
             "principal" -> subject.principals.head.code,
-            "exp"       -> expirationTime.get.toString
+            "exp"       -> (expirationTime.get + 600L).toString
           )
         )
       case Failure(throwable) => notAuthenticated(request, throwable)

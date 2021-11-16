@@ -30,7 +30,6 @@ private[impl] class FileDbDao(
 
   println(fileTypeEncoder.toString)
   println(fileTypeDecoder.toString)
-  println(fileSchema.toString)
   println(updateFileMeta.toString)
 
   def createTables(): Future[Done] = {
