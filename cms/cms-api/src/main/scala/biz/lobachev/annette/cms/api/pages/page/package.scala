@@ -17,7 +17,5 @@
 package biz.lobachev.annette.cms.api.pages
 
 package object page {
-  type PostId  = String
-  type DocId   = String
-  type MediaId = String
+  type PageId = String
 }

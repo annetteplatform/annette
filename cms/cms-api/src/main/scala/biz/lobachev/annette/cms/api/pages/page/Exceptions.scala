@@ -19,48 +19,27 @@ package biz.lobachev.annette.cms.api.pages.page
 import biz.lobachev.annette.core.exception.{AnnetteTransportExceptionCompanion1, AnnetteTransportExceptionCompanion2}
 import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
 
-object PostAlreadyExist extends AnnetteTransportExceptionCompanion1 {
+object PageAlreadyExist extends AnnetteTransportExceptionCompanion1 {
   val ErrorCode       = TransportErrorCode.BadRequest
-  val MessageCode     = "annette.cms.post.postAlreadyExist"
+  val MessageCode     = "annette.cms.page.pageAlreadyExist"
   val Arg1Key: String = "id"
 }
 
-object PostPublicationDateClearNotAllowed extends AnnetteTransportExceptionCompanion1 {
+object PagePublicationDateClearNotAllowed extends AnnetteTransportExceptionCompanion1 {
   val ErrorCode       = TransportErrorCode.NotFound
-  val MessageCode     = "annette.cms.post.postPublicationDateClearNotAllowed"
+  val MessageCode     = "annette.cms.page.pagePublicationDateClearNotAllowed"
   val Arg1Key: String = "id"
 }
 
-object PostNotFound extends AnnetteTransportExceptionCompanion1 {
+object PageNotFound extends AnnetteTransportExceptionCompanion1 {
   val ErrorCode       = TransportErrorCode.NotFound
-  val MessageCode     = "annette.cms.post.postNotFound"
+  val MessageCode     = "annette.cms.page.pageNotFound"
   val Arg1Key: String = "id"
 }
 
-object PostMediaAlreadyExist extends AnnetteTransportExceptionCompanion2 {
-  val ErrorCode       = TransportErrorCode.BadRequest
-  val MessageCode     = "annette.cms.post.postMediaAlreadyExist"
-  val Arg1Key: String = "postId"
-  val Arg2Key: String = "mediaId"
-}
-
-object PostMediaNotFound extends AnnetteTransportExceptionCompanion2 {
+object WidgetContentNotFound extends AnnetteTransportExceptionCompanion2 {
   val ErrorCode       = TransportErrorCode.NotFound
-  val MessageCode     = "annette.cms.post.postMediaNotFound"
-  val Arg1Key: String = "postId"
-  val Arg2Key: String = "mediaId"
-}
-
-object PostDocAlreadyExist extends AnnetteTransportExceptionCompanion2 {
-  val ErrorCode       = TransportErrorCode.BadRequest
-  val MessageCode     = "annette.cms.post.postDocAlreadyExist"
-  val Arg1Key: String = "postId"
-  val Arg2Key: String = "docId"
-}
-
-object PostDocNotFound extends AnnetteTransportExceptionCompanion2 {
-  val ErrorCode       = TransportErrorCode.NotFound
-  val MessageCode     = "annette.cms.post.postDocNotFound"
-  val Arg1Key: String = "postId"
-  val Arg2Key: String = "docId"
+  val MessageCode     = "annette.cms.page.widgetContentNotFound"
+  val Arg1Key: String = "pageId"
+  val Arg2Key: String = "widgetContentId"
 }

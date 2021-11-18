@@ -30,15 +30,3 @@ object SpaceNotFound extends AnnetteTransportExceptionCompanion1 {
   val MessageCode     = "annette.cms.space.spaceNotFound"
   val Arg1Key: String = "id"
 }
-
-object InvalidParent extends AnnetteTransportExceptionCompanion1 {
-  val ErrorCode       = TransportErrorCode.BadRequest
-  val MessageCode     = "annette.cms.space.invalidParent"
-  val Arg1Key: String = "id"
-}
-
-object PostHasChild extends AnnetteTransportExceptionCompanion1 {
-  val ErrorCode       = TransportErrorCode.BadRequest
-  val MessageCode     = "annette.cms.space.postHasChild"
-  val Arg1Key: String = "id"
-}

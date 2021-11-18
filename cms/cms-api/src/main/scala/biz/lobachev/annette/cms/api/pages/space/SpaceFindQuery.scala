@@ -16,7 +16,6 @@
 
 package biz.lobachev.annette.cms.api.pages.space
 
-import biz.lobachev.annette.cms.api.pages.space.SpaceType.SpaceType
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.CategoryId
 import biz.lobachev.annette.core.model.indexing.SortBy
@@ -27,7 +26,6 @@ case class SpaceFindQuery(
   size: Int,
   filter: Option[String] = None,
   spaceIds: Option[Set[SpaceId]] = None,
-  spaceType: Option[SpaceType] = None,
   categories: Option[Set[CategoryId]] = None,
   targets: Option[Set[AnnettePrincipal]] = None,
   active: Option[Boolean] = None,

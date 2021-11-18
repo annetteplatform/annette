@@ -37,20 +37,6 @@ object PostNotFound extends AnnetteTransportExceptionCompanion1 {
   val Arg1Key: String = "id"
 }
 
-object PostMediaNotFound extends AnnetteTransportExceptionCompanion2 {
-  val ErrorCode       = TransportErrorCode.NotFound
-  val MessageCode     = "annette.cms.post.postMediaNotFound"
-  val Arg1Key: String = "postId"
-  val Arg2Key: String = "mediaId"
-}
-
-object PostDocNotFound extends AnnetteTransportExceptionCompanion2 {
-  val ErrorCode       = TransportErrorCode.NotFound
-  val MessageCode     = "annette.cms.post.postDocNotFound"
-  val Arg1Key: String = "postId"
-  val Arg2Key: String = "docId"
-}
-
 object WidgetContentNotFound extends AnnetteTransportExceptionCompanion2 {
   val ErrorCode       = TransportErrorCode.NotFound
   val MessageCode     = "annette.cms.post.widgetContentNotFound"

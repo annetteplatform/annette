@@ -21,11 +21,16 @@ import akka.{Done, NotUsed}
 import biz.lobachev.annette.cms.api._
 import biz.lobachev.annette.cms.api.blogs.blog._
 import biz.lobachev.annette.cms.api.blogs.post._
-import biz.lobachev.annette.cms.api.files.{FileDescriptor, RemoveFilePayload, RemoveFilesPayload, StoreFilePayload}
+import biz.lobachev.annette.cms.api.files._
+import biz.lobachev.annette.cms.api.pages.space._
+import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.cms.impl.blogs.blog._
 import biz.lobachev.annette.cms.impl.blogs.category.BlogCategoryEntityService
 import biz.lobachev.annette.cms.impl.blogs.post._
 import biz.lobachev.annette.cms.impl.files.FileEntityService
+import biz.lobachev.annette.cms.impl.pages.category.SpaceCategoryEntityService
+import biz.lobachev.annette.cms.impl.pages.page.PageEntityService
+import biz.lobachev.annette.cms.impl.pages.space.SpaceEntityService
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 import com.lightbend.lagom.scaladsl.api.ServiceCall
@@ -38,6 +43,9 @@ class CmsServiceApiImpl(
   blogCategoryEntityService: BlogCategoryEntityService,
   blogEntityService: BlogEntityService,
   postEntityService: PostEntityService,
+  spaceCategoryEntityService: SpaceCategoryEntityService,
+  spaceEntityService: SpaceEntityService,
+  pageEntityService: PageEntityService,
   fileEntityService: FileEntityService
 )(implicit
   ec: ExecutionContext
@@ -46,6 +54,28 @@ class CmsServiceApiImpl(
   implicit val timeout = Timeout(50.seconds)
 
   val log = LoggerFactory.getLogger(this.getClass)
+
+  // ************************** CMS Files **************************
+
+  override def storeFile: ServiceCall[StoreFilePayload, Done] =
+    ServiceCall { payload =>
+      fileEntityService.storeFile(payload)
+    }
+
+  override def removeFile: ServiceCall[RemoveFilePayload, Done] =
+    ServiceCall { payload =>
+      fileEntityService.removeFile(payload)
+    }
+
+  override def removeFiles: ServiceCall[RemoveFilesPayload, Done] =
+    ServiceCall { payload =>
+      fileEntityService.removeFiles(payload)
+    }
+
+  override def getFiles(objectId: String): ServiceCall[NotUsed, Seq[FileDescriptor]] =
+    ServiceCall { _ =>
+      fileEntityService.getFiles(objectId)
+    }
 
   // ************************** CMS Blogs **************************
 
@@ -305,23 +335,262 @@ class CmsServiceApiImpl(
       postEntityService.getPostMetricsById(payload)
     }
 
-  override def storeFile: ServiceCall[StoreFilePayload, Done] =
+  // ************************** CMS Pages **************************
+
+  override def createSpaceCategory: ServiceCall[CreateCategoryPayload, Done] =
     ServiceCall { payload =>
-      fileEntityService.storeFile(payload)
+      spaceCategoryEntityService.createCategory(payload)
     }
 
-  override def removeFile: ServiceCall[RemoveFilePayload, Done] =
+  override def updateSpaceCategory: ServiceCall[UpdateCategoryPayload, Done] =
     ServiceCall { payload =>
-      fileEntityService.removeFile(payload)
+      spaceCategoryEntityService.updateCategory(payload)
     }
 
-  override def removeFiles: ServiceCall[RemoveFilesPayload, Done] =
+  override def deleteSpaceCategory: ServiceCall[DeleteCategoryPayload, Done] =
     ServiceCall { payload =>
-      fileEntityService.removeFiles(payload)
+      spaceCategoryEntityService.deleteCategory(payload)
     }
 
-  override def getFiles(objectId: String): ServiceCall[NotUsed, Seq[FileDescriptor]] =
+  override def getSpaceCategoryById(id: CategoryId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Category] =
     ServiceCall { _ =>
-      fileEntityService.getFiles(objectId)
+      spaceCategoryEntityService.getCategoryById(id, fromReadSide)
     }
+
+  override def getSpaceCategoriesById(
+    fromReadSide: Boolean = true
+  ): ServiceCall[Set[CategoryId], Seq[Category]] =
+    ServiceCall { ids =>
+      spaceCategoryEntityService.getCategoriesById(ids, fromReadSide)
+    }
+
+  override def findSpaceCategories: ServiceCall[CategoryFindQuery, FindResult] =
+    ServiceCall { query =>
+      spaceCategoryEntityService.findCategories(query)
+    }
+
+  override def createSpace: ServiceCall[CreateSpacePayload, Done] =
+    ServiceCall { payload =>
+      spaceEntityService.createSpace(payload)
+    }
+
+  override def updateSpaceName: ServiceCall[UpdateSpaceNamePayload, Done] =
+    ServiceCall { payload =>
+      spaceEntityService.updateSpaceName(payload)
+    }
+
+  override def updateSpaceDescription: ServiceCall[UpdateSpaceDescriptionPayload, Done] =
+    ServiceCall { payload =>
+      spaceEntityService.updateSpaceDescription(payload)
+    }
+
+  override def updateSpaceCategoryId: ServiceCall[UpdateSpaceCategoryPayload, Done] =
+    ServiceCall { payload =>
+      spaceEntityService.updateSpaceCategoryId(payload)
+    }
+
+  override def assignSpaceTargetPrincipal: ServiceCall[AssignSpaceTargetPrincipalPayload, Done] =
+    ServiceCall { payload =>
+      spaceEntityService.assignSpaceTargetPrincipal(payload)
+    }
+
+  override def unassignSpaceTargetPrincipal: ServiceCall[UnassignSpaceTargetPrincipalPayload, Done] =
+    ServiceCall { payload =>
+      spaceEntityService.unassignSpaceTargetPrincipal(payload)
+    }
+
+  override def activateSpace: ServiceCall[ActivateSpacePayload, Done] =
+    ServiceCall { payload =>
+      spaceEntityService.activateSpace(payload)
+    }
+
+  override def deactivateSpace: ServiceCall[DeactivateSpacePayload, Done] =
+    ServiceCall { payload =>
+      spaceEntityService.deactivateSpace(payload)
+    }
+
+  override def deleteSpace: ServiceCall[DeleteSpacePayload, Done] =
+    ServiceCall { payload =>
+      // TODO: validate if pages exist
+      spaceEntityService.deleteSpace(payload)
+    }
+
+  override def getSpaceById(id: SpaceId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Space] =
+    ServiceCall { _ =>
+      spaceEntityService.getSpaceById(id, fromReadSide)
+    }
+
+  override def getSpacesById(fromReadSide: Boolean = true): ServiceCall[Set[SpaceId], Seq[Space]] =
+    ServiceCall { ids =>
+      spaceEntityService.getSpacesById(ids, fromReadSide)
+    }
+
+  override def getSpaceViews: ServiceCall[GetSpaceViewsPayload, Seq[SpaceView]] =
+    ServiceCall { payload =>
+      spaceEntityService.getSpaceViews(payload)
+    }
+
+  override def canAccessToSpace: ServiceCall[CanAccessToSpacePayload, Boolean] =
+    ServiceCall { payload =>
+      spaceEntityService.canAccessToSpace(payload)
+    }
+
+  override def findSpaces: ServiceCall[SpaceFindQuery, FindResult] =
+    ServiceCall { query =>
+      spaceEntityService.findSpaces(query)
+    }
+
+  override def createPage: ServiceCall[CreatePagePayload, Done] =
+    ServiceCall { payload =>
+      for {
+        // validate if space exist
+        // TODO: create isSpaceExist method
+        space <- spaceEntityService.getSpaceById(payload.spaceId, false)
+        _     <- pageEntityService
+                   .createPage(payload, space.targets)
+
+      } yield Done
+    }
+
+  override def updatePageFeatured: ServiceCall[UpdatePageFeaturedPayload, Done] =
+    ServiceCall { payload =>
+      pageEntityService.updatePageFeatured(payload)
+    }
+
+  override def updatePageAuthor: ServiceCall[UpdatePageAuthorPayload, Done] =
+    ServiceCall { payload =>
+      pageEntityService.updatePageAuthor(payload)
+    }
+
+  override def updatePageTitle: ServiceCall[UpdatePageTitlePayload, Done] =
+    ServiceCall { payload =>
+      pageEntityService.updatePageTitle(payload)
+    }
+
+  override def updatePageWidgetContent: ServiceCall[UpdatePageWidgetContentPayload, Done] =
+    ServiceCall { payload =>
+      pageEntityService.updateWidgetContent(payload)
+    }
+
+  override def changePageWidgetContentOrder: ServiceCall[ChangePageWidgetContentOrderPayload, Done] =
+    ServiceCall { payload =>
+      pageEntityService.changeWidgetContentOrder(payload)
+    }
+
+  override def deletePageWidgetContent: ServiceCall[DeletePageWidgetContentPayload, Done] =
+    ServiceCall { payload =>
+      pageEntityService.deleteWidgetContent(payload)
+    }
+
+  override def updatePagePublicationTimestamp: ServiceCall[UpdatePagePublicationTimestampPayload, Done] =
+    ServiceCall { payload =>
+      pageEntityService.updatePagePublicationTimestamp(payload)
+    }
+
+  override def publishPage: ServiceCall[PublishPagePayload, Done] =
+    ServiceCall { payload =>
+      pageEntityService.publishPage(payload)
+    }
+
+  override def unpublishPage: ServiceCall[UnpublishPagePayload, Done] =
+    ServiceCall { payload =>
+      pageEntityService.unpublishPage(payload)
+    }
+
+  override def assignPageTargetPrincipal: ServiceCall[AssignPageTargetPrincipalPayload, Done] =
+    ServiceCall { payload =>
+      pageEntityService.assignPageTargetPrincipal(payload)
+    }
+
+  override def unassignPageTargetPrincipal: ServiceCall[UnassignPageTargetPrincipalPayload, Done] =
+    ServiceCall { payload =>
+      pageEntityService.unassignPageTargetPrincipal(payload)
+    }
+
+  override def deletePage: ServiceCall[DeletePagePayload, Done] =
+    ServiceCall { payload =>
+      for {
+        _ <- pageEntityService.deletePage(payload)
+        _ <- fileEntityService.removeFiles(
+               RemoveFilesPayload(
+                 objectId = s"page-${payload.id}",
+                 updatedBy = payload.deletedBy
+               )
+             )
+      } yield Done
+    }
+
+  override def getPageById(
+    id: PageId,
+    fromReadSide: Boolean = true,
+    withIntro: Option[Boolean] = None,
+    withContent: Option[Boolean] = None,
+    withTargets: Option[Boolean] = None
+  ): ServiceCall[NotUsed, Page] =
+    ServiceCall { _ =>
+      pageEntityService.getPageById(
+        id,
+        fromReadSide,
+        withIntro.getOrElse(false),
+        withContent.getOrElse(false),
+        withTargets.getOrElse(false)
+      )
+    }
+
+  override def getPagesById(
+    fromReadSide: Boolean = true,
+    withIntro: Option[Boolean] = None,
+    withContent: Option[Boolean] = None,
+    withTargets: Option[Boolean] = None
+  ): ServiceCall[Set[PageId], Seq[Page]] =
+    ServiceCall { ids =>
+      pageEntityService.getPagesById(
+        ids,
+        fromReadSide,
+        withIntro.getOrElse(false),
+        withContent.getOrElse(false),
+        withTargets.getOrElse(false)
+      )
+    }
+
+  override def getPageViews: ServiceCall[GetPageViewsPayload, Seq[PageView]] =
+    ServiceCall { payload =>
+      pageEntityService.getPageViews(payload)
+    }
+
+  override def canAccessToPage: ServiceCall[CanAccessToPagePayload, Boolean] =
+    ServiceCall { payload =>
+      pageEntityService.canAccessToPage(payload)
+    }
+
+  override def findPages: ServiceCall[PageFindQuery, FindResult] =
+    ServiceCall { query =>
+      pageEntityService.findPages(query)
+    }
+
+  override def viewPage: ServiceCall[ViewPagePayload, Done] =
+    ServiceCall { payload =>
+      pageEntityService.viewPage(payload)
+    }
+
+  override def likePage: ServiceCall[LikePagePayload, Done] =
+    ServiceCall { payload =>
+      pageEntityService.likePage(payload)
+    }
+
+  override def unlikePage: ServiceCall[UnlikePagePayload, Done] =
+    ServiceCall { payload =>
+      pageEntityService.unlikePage(payload)
+    }
+
+  override def getPageMetricById: ServiceCall[GetPageMetricPayload, PageMetric] =
+    ServiceCall { payload =>
+      pageEntityService.getPageMetricById(payload)
+    }
+
+  override def getPageMetricsById: ServiceCall[GetPageMetricsPayload, Seq[PageMetric]] =
+    ServiceCall { payload =>
+      pageEntityService.getPageMetricsById(payload)
+    }
+
 }

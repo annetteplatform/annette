@@ -33,10 +33,10 @@ import scala.util.Try
 
 class BlogCategoryEntityService(
   clusterSharding: ClusterSharding,
-  dbDao: dao.CategoryDbDao,
-  indexDao: dao.CategoryIndexDao,
+  dbDao: dao.BlogCategoryDbDao,
+  indexDao: dao.BlogCategoryIndexDao,
   config: Config,
-  typeKey: EntityTypeKey[CategoryEntity.Command]
+  typeKey: EntityTypeKey[BlogCategoryEntity.Command]
 )(implicit
   ec: ExecutionContext,
   val materializer: Materializer
@@ -47,22 +47,22 @@ class BlogCategoryEntityService(
       .map(d => Timeout(FiniteDuration(d.toNanos, TimeUnit.NANOSECONDS)))
       .getOrElse(Timeout(60.seconds))
 
-  private def refFor(id: CategoryId): EntityRef[CategoryEntity.Command] =
+  private def refFor(id: CategoryId): EntityRef[BlogCategoryEntity.Command] =
     clusterSharding.entityRefFor(typeKey, id)
 
-  private def convertSuccess(id: CategoryId, confirmation: CategoryEntity.Confirmation): Done =
+  private def convertSuccess(id: CategoryId, confirmation: BlogCategoryEntity.Confirmation): Done =
     confirmation match {
-      case CategoryEntity.Success      => Done
-      case CategoryEntity.NotFound     => throw CategoryNotFound(id)
-      case CategoryEntity.AlreadyExist => throw CategoryAlreadyExist(id)
-      case _                           => throw new RuntimeException("Match fail")
+      case BlogCategoryEntity.Success      => Done
+      case BlogCategoryEntity.NotFound     => throw CategoryNotFound(id)
+      case BlogCategoryEntity.AlreadyExist => throw CategoryAlreadyExist(id)
+      case _                               => throw new RuntimeException("Match fail")
     }
 
   def createCategory(payload: CreateCategoryPayload): Future[Done] =
     refFor(payload.id)
-      .ask[CategoryEntity.Confirmation] { replyTo =>
+      .ask[BlogCategoryEntity.Confirmation] { replyTo =>
         payload
-          .into[CategoryEntity.CreateCategory]
+          .into[BlogCategoryEntity.CreateCategory]
           .withFieldConst(_.replyTo, replyTo)
           .transform
       }
@@ -70,9 +70,9 @@ class BlogCategoryEntityService(
 
   def updateCategory(payload: UpdateCategoryPayload): Future[Done] =
     refFor(payload.id)
-      .ask[CategoryEntity.Confirmation] { replyTo =>
+      .ask[BlogCategoryEntity.Confirmation] { replyTo =>
         payload
-          .into[CategoryEntity.UpdateCategory]
+          .into[BlogCategoryEntity.UpdateCategory]
           .withFieldConst(_.replyTo, replyTo)
           .transform
       }
@@ -80,9 +80,9 @@ class BlogCategoryEntityService(
 
   def deleteCategory(payload: DeleteCategoryPayload): Future[Done] =
     refFor(payload.id)
-      .ask[CategoryEntity.Confirmation] { replyTo =>
+      .ask[BlogCategoryEntity.Confirmation] { replyTo =>
         payload
-          .into[CategoryEntity.DeleteCategory]
+          .into[BlogCategoryEntity.DeleteCategory]
           .withFieldConst(_.replyTo, replyTo)
           .transform
       }
@@ -98,10 +98,10 @@ class BlogCategoryEntityService(
       }
     else
       refFor(id)
-        .ask[CategoryEntity.Confirmation](CategoryEntity.GetCategory(id, _))
+        .ask[BlogCategoryEntity.Confirmation](BlogCategoryEntity.GetCategory(id, _))
         .map {
-          case CategoryEntity.SuccessCategory(entity) => entity
-          case _                                      => throw CategoryNotFound(id)
+          case BlogCategoryEntity.SuccessCategory(entity) => entity
+          case _                                          => throw CategoryNotFound(id)
         }
 
   def getCategoriesById(
@@ -113,10 +113,10 @@ class BlogCategoryEntityService(
       Source(ids)
         .mapAsync(1) { id =>
           refFor(id)
-            .ask[CategoryEntity.Confirmation](CategoryEntity.GetCategory(id, _))
+            .ask[BlogCategoryEntity.Confirmation](BlogCategoryEntity.GetCategory(id, _))
             .map {
-              case CategoryEntity.SuccessCategory(entity) => Some(entity)
-              case _                                      => None
+              case BlogCategoryEntity.SuccessCategory(entity) => Some(entity)
+              case _                                          => None
             }
         }
         .runWith(Sink.seq)

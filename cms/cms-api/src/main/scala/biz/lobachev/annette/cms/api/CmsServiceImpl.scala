@@ -19,13 +19,32 @@ package biz.lobachev.annette.cms.api
 import akka.Done
 import biz.lobachev.annette.cms.api.blogs.blog._
 import biz.lobachev.annette.cms.api.blogs.post._
-import biz.lobachev.annette.cms.api.files.{FileDescriptor, RemoveFilePayload, RemoveFilesPayload, StoreFilePayload}
+import biz.lobachev.annette.cms.api.files._
+import biz.lobachev.annette.cms.api.pages.page._
+import biz.lobachev.annette.cms.api.pages.space._
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 
 import scala.concurrent.Future
 
 class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
+
+  // ************************** CMS Files **************************
+
+  override def storeFile(payload: StoreFilePayload): Future[Done] =
+    api.storeFile.invoke(payload)
+
+  override def removeFile(payload: RemoveFilePayload): Future[Done] =
+    api.removeFile.invoke(payload)
+
+  override def removeFiles(payload: RemoveFilesPayload): Future[Done] =
+    api.removeFiles.invoke(payload)
+
+  override def getFiles(objectId: String): Future[Seq[FileDescriptor]] =
+    api.getFiles(objectId).invoke()
+
+  // ************************** CMS Blogs **************************
+
   override def createBlogCategory(payload: CreateCategoryPayload): Future[Done] =
     api.createBlogCategory.invoke(payload)
 
@@ -169,15 +188,149 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def getPostMetricsById(payload: GetPostMetricsPayload): Future[Seq[PostMetric]] =
     api.getPostMetricsById.invoke(payload)
 
-  override def storeFile(payload: StoreFilePayload): Future[Done] =
-    api.storeFile.invoke(payload)
+  // ************************** CMS Pages **************************
 
-  override def removeFile(payload: RemoveFilePayload): Future[Done] =
-    api.removeFile.invoke(payload)
+  override def createSpaceCategory(payload: CreateCategoryPayload): Future[Done] =
+    api.createSpaceCategory.invoke(payload)
 
-  override def removeFiles(payload: RemoveFilesPayload): Future[Done] =
-    api.removeFiles.invoke(payload)
+  override def updateSpaceCategory(payload: UpdateCategoryPayload): Future[Done] =
+    api.updateSpaceCategory.invoke(payload)
 
-  override def getFiles(objectId: String): Future[Seq[FileDescriptor]] =
-    api.getFiles(objectId).invoke()
+  override def deleteSpaceCategory(payload: DeleteCategoryPayload): Future[Done] =
+    api.deleteSpaceCategory.invoke(payload)
+
+  override def getSpaceCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category] =
+    api.getSpaceCategoryById(id, fromReadSide).invoke()
+
+  override def getSpaceCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean): Future[Seq[Category]] =
+    api.getSpaceCategoriesById(fromReadSide).invoke(ids)
+
+  override def findSpaceCategories(query: CategoryFindQuery): Future[FindResult] =
+    api.findSpaceCategories.invoke(query)
+
+  override def createSpace(payload: CreateSpacePayload): Future[Done] =
+    api.createSpace.invoke(payload)
+
+  override def updateSpaceName(payload: UpdateSpaceNamePayload): Future[Done] =
+    api.updateSpaceName.invoke(payload)
+
+  override def updateSpaceDescription(payload: UpdateSpaceDescriptionPayload): Future[Done] =
+    api.updateSpaceDescription.invoke(payload)
+
+  override def updateSpaceCategoryId(payload: UpdateSpaceCategoryPayload): Future[Done] =
+    api.updateSpaceCategoryId.invoke(payload)
+
+  override def assignSpaceTargetPrincipal(payload: AssignSpaceTargetPrincipalPayload): Future[Done] =
+    api.assignSpaceTargetPrincipal.invoke(payload)
+
+  override def unassignSpaceTargetPrincipal(payload: UnassignSpaceTargetPrincipalPayload): Future[Done] =
+    api.unassignSpaceTargetPrincipal.invoke(payload)
+
+  override def activateSpace(payload: ActivateSpacePayload): Future[Done] =
+    api.activateSpace.invoke(payload)
+
+  override def deactivateSpace(payload: DeactivateSpacePayload): Future[Done] =
+    api.deactivateSpace.invoke(payload)
+
+  override def deleteSpace(payload: DeleteSpacePayload): Future[Done] =
+    api.deleteSpace.invoke(payload)
+
+  override def getSpaceById(id: SpaceId, fromReadSide: Boolean): Future[Space] =
+    api.getSpaceById(id, fromReadSide).invoke()
+
+  override def getSpacesById(ids: Set[SpaceId], fromReadSide: Boolean): Future[Seq[Space]] =
+    api.getSpacesById(fromReadSide).invoke(ids)
+
+  override def getSpaceViews(
+    payload: GetSpaceViewsPayload
+  ): Future[Seq[SpaceView]] =
+    api.getSpaceViews.invoke(payload)
+
+  override def canAccessToSpace(payload: CanAccessToSpacePayload): Future[Boolean] =
+    api.canAccessToSpace.invoke(payload)
+
+  override def findSpaces(query: SpaceFindQuery): Future[FindResult] =
+    api.findSpaces.invoke(query)
+
+  override def createPage(payload: CreatePagePayload): Future[Done] =
+    api.createPage.invoke(payload)
+
+  override def updatePageFeatured(payload: UpdatePageFeaturedPayload): Future[Done] =
+    api.updatePageFeatured.invoke(payload)
+
+  override def updatePageAuthor(payload: UpdatePageAuthorPayload): Future[Done] =
+    api.updatePageAuthor.invoke(payload)
+
+  override def updatePageTitle(payload: UpdatePageTitlePayload): Future[Done] =
+    api.updatePageTitle.invoke(payload)
+
+  override def updatePageWidgetContent(payload: UpdatePageWidgetContentPayload): Future[Done] =
+    api.updatePageWidgetContent.invoke(payload)
+
+  override def changePageWidgetContentOrder(payload: ChangePageWidgetContentOrderPayload): Future[Done] =
+    api.changePageWidgetContentOrder.invoke(payload)
+
+  override def deletePageWidgetContent(payload: DeletePageWidgetContentPayload): Future[Done] =
+    api.deletePageWidgetContent.invoke(payload)
+
+  override def updatePagePublicationTimestamp(payload: UpdatePagePublicationTimestampPayload): Future[Done] =
+    api.updatePagePublicationTimestamp.invoke(payload)
+
+  override def publishPage(payload: PublishPagePayload): Future[Done] =
+    api.publishPage.invoke(payload)
+
+  override def unpublishPage(payload: UnpublishPagePayload): Future[Done] =
+    api.unpublishPage.invoke(payload)
+
+  override def assignPageTargetPrincipal(payload: AssignPageTargetPrincipalPayload): Future[Done] =
+    api.assignPageTargetPrincipal.invoke(payload)
+
+  override def unassignPageTargetPrincipal(payload: UnassignPageTargetPrincipalPayload): Future[Done] =
+    api.unassignPageTargetPrincipal.invoke(payload)
+
+  override def deletePage(payload: DeletePagePayload): Future[Done] =
+    api.deletePage.invoke(payload)
+
+  override def getPageById(
+    id: PageId,
+    fromReadSide: Boolean,
+    withIntro: Option[Boolean] = None,
+    withContent: Option[Boolean] = None,
+    withTargets: Option[Boolean] = None
+  ): Future[Page] =
+    api.getPageById(id, fromReadSide, withIntro, withContent, withTargets).invoke()
+
+  override def getPagesById(
+    ids: Set[PageId],
+    fromReadSide: Boolean,
+    withIntro: Option[Boolean] = None,
+    withContent: Option[Boolean] = None,
+    withTargets: Option[Boolean] = None
+  ): Future[Seq[Page]] =
+    api.getPagesById(fromReadSide, withIntro, withContent, withTargets).invoke(ids)
+
+  override def getPageViews(payload: GetPageViewsPayload): Future[Seq[PageView]] =
+    api.getPageViews.invoke(payload)
+
+  override def canAccessToPage(payload: CanAccessToPagePayload): Future[Boolean] =
+    api.canAccessToPage.invoke(payload)
+
+  override def findPages(query: PageFindQuery): Future[FindResult] =
+    api.findPages.invoke(query)
+
+  override def viewPage(payload: ViewPagePayload): Future[Done] =
+    api.viewPage.invoke(payload)
+
+  override def likePage(payload: LikePagePayload): Future[Done] =
+    api.likePage.invoke(payload)
+
+  override def unlikePage(payload: UnlikePagePayload): Future[Done] =
+    api.unlikePage.invoke(payload)
+
+  override def getPageMetricById(payload: GetPageMetricPayload): Future[PageMetric] =
+    api.getPageMetricById.invoke(payload)
+
+  override def getPageMetricsById(payload: GetPageMetricsPayload): Future[Seq[PageMetric]] =
+    api.getPageMetricsById.invoke(payload)
+
 }
