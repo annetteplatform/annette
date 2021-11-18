@@ -62,10 +62,20 @@ trait CmsService {
   def assignPostTargetPrincipal(payload: AssignPostTargetPrincipalPayload): Future[Done]
   def unassignPostTargetPrincipal(payload: UnassignPostTargetPrincipalPayload): Future[Done]
   def deletePost(payload: DeletePostPayload): Future[Done]
-  def getPostById(id: PostId, fromReadSide: Boolean = true): Future[Post]
-  def getPostAnnotationById(id: PostId, fromReadSide: Boolean = true): Future[PostAnnotation]
-  def getPostsById(ids: Set[PostId], fromReadSide: Boolean = true): Future[Seq[Post]]
-  def getPostAnnotationsById(ids: Set[PostId], fromReadSide: Boolean = true): Future[Seq[PostAnnotation]]
+  def getPostById(
+    id: PostId,
+    fromReadSide: Boolean = true,
+    withIntro: Option[Boolean],
+    withContent: Option[Boolean],
+    withTargets: Option[Boolean]
+  ): Future[Post]
+  def getPostsById(
+    ids: Set[PostId],
+    fromReadSide: Boolean = true,
+    withIntro: Option[Boolean],
+    withContent: Option[Boolean],
+    withTargets: Option[Boolean]
+  ): Future[Seq[Post]]
   def getPostViews(payload: GetPostViewsPayload): Future[Seq[PostView]]
   def canAccessToPost(payload: CanAccessToPostPayload): Future[Boolean]
   def findPosts(query: PostFindQuery): Future[FindResult]

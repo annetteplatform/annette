@@ -130,21 +130,25 @@ object PostEntity {
     replyTo: ActorRef[Confirmation]
   ) extends Command
 
-  final case class GetPost(id: PostId, replyTo: ActorRef[Confirmation])           extends Command
-  final case class GetPostAnnotation(id: PostId, replyTo: ActorRef[Confirmation]) extends Command
+  final case class GetPost(
+    id: PostId,
+    withIntro: Boolean,
+    withContent: Boolean,
+    withTargets: Boolean,
+    replyTo: ActorRef[Confirmation]
+  ) extends Command
 
   sealed trait Confirmation
-  final case object Success                                              extends Confirmation
-  final case class SuccessPost(post: Post)                               extends Confirmation
-  final case class SuccessPostAnnotation(postAnnotation: PostAnnotation) extends Confirmation
-  final case object PostAlreadyExist                                     extends Confirmation
-  final case object PostNotFound                                         extends Confirmation
-  final case object WidgetContentNotFound                                extends Confirmation
-  final case object PostPublicationDateClearNotAllowed                   extends Confirmation
+  final case object Success                                    extends Confirmation
+  final case class SuccessPost(post: Post)                     extends Confirmation
+  final case class SuccessPostAnnotation(postAnnotation: Post) extends Confirmation
+  final case object PostAlreadyExist                           extends Confirmation
+  final case object PostNotFound                               extends Confirmation
+  final case object WidgetContentNotFound                      extends Confirmation
+  final case object PostPublicationDateClearNotAllowed         extends Confirmation
 
   implicit val confirmationSuccessFormat: Format[Success.type]                                                       = Json.format
   implicit val confirmationSuccessPostFormat: Format[SuccessPost]                                                    = Json.format
-  implicit val confirmationSuccessPostAnnotationFormat: Format[SuccessPostAnnotation]                                = Json.format
   implicit val confirmationPostAlreadyExistFormat: Format[PostAlreadyExist.type]                                     = Json.format
   implicit val confirmationPostNotFoundFormat: Format[PostNotFound.type]                                             = Json.format
   implicit val confirmationWidgetContentNotFoundFormat: Format[WidgetContentNotFound.type]                           = Json.format
@@ -313,7 +317,6 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
       case cmd: UnassignPostTargetPrincipal    => unassignPostTargetPrincipal(cmd)
       case cmd: DeletePost                     => deletePost(cmd)
       case cmd: GetPost                        => getPost(cmd)
-      case cmd: GetPostAnnotation              => getPostAnnotation(cmd)
     }
 
   def createPost(cmd: CreatePost): ReplyEffect[Event, PostEntity] =
@@ -565,22 +568,9 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
           SuccessPost(
             state
               .into[Post]
-              .withFieldComputed(_.introContent, _.introContent.toSerialContent)
-              .withFieldComputed(_.content, _.content.toSerialContent)
-              .transform
-          )
-        )
-    }
-
-  def getPostAnnotation(cmd: GetPostAnnotation): ReplyEffect[Event, PostEntity] =
-    maybeState match {
-      case None        => Effect.reply(cmd.replyTo)(PostNotFound)
-      case Some(state) =>
-        Effect.reply(cmd.replyTo)(
-          SuccessPostAnnotation(
-            state
-              .into[PostAnnotation]
-              .withFieldComputed(_.introContent, _.introContent.toSerialContent)
+              .withFieldComputed(_.introContent, c => if (cmd.withIntro) Some(c.introContent.toSerialContent) else None)
+              .withFieldComputed(_.content, c => if (cmd.withContent) Some(c.content.toSerialContent) else None)
+              .withFieldComputed(_.targets, c => if (cmd.withTargets) Some(c.targets) else None)
               .transform
           )
         )

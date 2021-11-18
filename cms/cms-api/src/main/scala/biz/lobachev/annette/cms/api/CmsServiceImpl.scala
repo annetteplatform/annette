@@ -127,17 +127,23 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def deletePost(payload: DeletePostPayload): Future[Done] =
     api.deletePost.invoke(payload)
 
-  override def getPostById(id: PostId, fromReadSide: Boolean): Future[Post] =
-    api.getPostById(id, fromReadSide).invoke()
+  override def getPostById(
+    id: PostId,
+    fromReadSide: Boolean,
+    withIntro: Option[Boolean] = None,
+    withContent: Option[Boolean] = None,
+    withTargets: Option[Boolean] = None
+  ): Future[Post] =
+    api.getPostById(id, fromReadSide, withIntro, withContent, withTargets).invoke()
 
-  override def getPostAnnotationById(id: PostId, fromReadSide: Boolean): Future[PostAnnotation] =
-    api.getPostAnnotationById(id, fromReadSide).invoke()
-
-  override def getPostsById(ids: Set[PostId], fromReadSide: Boolean): Future[Seq[Post]] =
-    api.getPostsById(fromReadSide).invoke(ids)
-
-  override def getPostAnnotationsById(ids: Set[PostId], fromReadSide: Boolean): Future[Seq[PostAnnotation]] =
-    api.getPostAnnotationsById(fromReadSide).invoke(ids)
+  override def getPostsById(
+    ids: Set[PostId],
+    fromReadSide: Boolean,
+    withIntro: Option[Boolean] = None,
+    withContent: Option[Boolean] = None,
+    withTargets: Option[Boolean] = None
+  ): Future[Seq[Post]] =
+    api.getPostsById(fromReadSide, withIntro, withContent, withTargets).invoke(ids)
 
   override def getPostViews(payload: GetPostViewsPayload): Future[Seq[PostView]] =
     api.getPostViews.invoke(payload)

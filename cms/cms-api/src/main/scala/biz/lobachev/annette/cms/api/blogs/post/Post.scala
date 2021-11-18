@@ -29,11 +29,12 @@ case class Post(
   featured: Boolean,
   authorId: AnnettePrincipal,
   title: String,
-  introContent: SerialContent,
-  content: SerialContent,
   publicationStatus: PublicationStatus.PublicationStatus = PublicationStatus.Draft,
   publicationTimestamp: Option[OffsetDateTime] = None,
-  targets: Set[AnnettePrincipal] = Set.empty,
+  introContent: Option[SerialContent] = None,
+  content: Option[SerialContent] = None,
+  targets: Option[Set[AnnettePrincipal]] = None,
+  metric: Option[PostMetric] = None,
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
 )

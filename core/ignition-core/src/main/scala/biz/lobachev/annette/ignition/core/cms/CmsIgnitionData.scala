@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.ignition.core.cms
 
-import biz.lobachev.annette.cms.api.blogs.post.{PostContent, PostId}
+import biz.lobachev.annette.cms.api.blogs.post.{PostId}
 import biz.lobachev.annette.cms.api.blogs.blog.BlogId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.CategoryId
@@ -51,9 +51,9 @@ case class PostData(
   parent: Option[PostId] = None,
   featured: Boolean,
   authorId: AnnettePrincipal,
-  title: String,
-  introContent: PostContent,
-  content: PostContent
+  title: String
+//  introContent: PostContent,
+//  content: PostContent
 )
 
 object PostData {

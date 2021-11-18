@@ -38,28 +38,28 @@ case class PostRecord(
   updatedAt: OffsetDateTime = OffsetDateTime.now
 ) {
   def toPost(
-    introWidgetContents: Map[String, WidgetContent],
-    postWidgetContents: Map[String, WidgetContent],
-    targets: Set[AnnettePrincipal] = Set.empty
+    maybeIntroWidgetContents: Option[Map[String, WidgetContent]],
+    maybePostWidgetContents: Option[Map[String, WidgetContent]],
+    maybeTargets: Option[Set[AnnettePrincipal]]
   ): Post =
-    this
-      .into[Post]
-      .withFieldComputed(
-        _.introContent,
-        _.introContentOrder
-          .map(c => introWidgetContents.get(c))
-          .flatten
-          .toSeq
-      )
-      .withFieldComputed(
-        _.content,
-        _.postContentOrder
-          .map(c => postWidgetContents.get(c))
-          .flatten
-          .toSeq
-      )
-      .withFieldConst(_.targets, targets)
-      .transform
+    Post(
+      id = id,
+      blogId = blogId,
+      featured = featured,
+      authorId = authorId,
+      title = title,
+      publicationStatus = publicationStatus,
+      publicationTimestamp = publicationTimestamp,
+      introContent = maybeIntroWidgetContents.map(introWidgetContents =>
+        introContentOrder.map(c => introWidgetContents.get(c)).flatten
+      ),
+      content =
+        maybePostWidgetContents.map(postWidgetContents => postContentOrder.map(c => postWidgetContents.get(c)).flatten),
+      targets = maybeTargets,
+      metric = None,
+      updatedBy = updatedBy,
+      updatedAt = updatedAt
+    )
 
   def toPostView(
     introWidgetContents: Map[String, WidgetContent],
@@ -81,7 +81,6 @@ case class PostRecord(
             r.postContentOrder
               .map(c => postWidgetContents.get(c))
               .flatten
-              .toSeq
           )
       )
       .transform

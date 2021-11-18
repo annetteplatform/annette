@@ -57,7 +57,13 @@ class CmsPostController @Inject() (
           .transform
         for {
           _    <- cmsService.createPost(payload)
-          post <- cmsService.getPostById(payload.id, false)
+          post <- cmsService.getPostById(
+                    id = payload.id,
+                    fromReadSide = false,
+                    withIntro = Some(true),
+                    withContent = Some(true),
+                    withTargets = Some(true)
+                  )
         } yield Ok(Json.toJson(post))
       }
     }
@@ -71,7 +77,13 @@ class CmsPostController @Inject() (
           .transform
         for {
           _    <- cmsService.updatePostTitle(payload)
-          post <- cmsService.getPostById(payload.id, false)
+          post <- cmsService.getPostById(
+                    id = payload.id,
+                    fromReadSide = false,
+                    withIntro = Some(true),
+                    withContent = Some(true),
+                    withTargets = Some(true)
+                  )
         } yield Ok(Json.toJson(post))
       }
     }
@@ -85,7 +97,13 @@ class CmsPostController @Inject() (
           .transform
         for {
           _    <- cmsService.updatePostAuthor(payload)
-          post <- cmsService.getPostById(payload.id, false)
+          post <- cmsService.getPostById(
+                    id = payload.id,
+                    fromReadSide = false,
+                    withIntro = Some(true),
+                    withContent = Some(true),
+                    withTargets = Some(true)
+                  )
         } yield Ok(Json.toJson(post))
       }
     }
@@ -99,7 +117,13 @@ class CmsPostController @Inject() (
           .transform
         for {
           _    <- cmsService.updatePostWidgetContent(payload)
-          post <- cmsService.getPostById(payload.id, false)
+          post <- cmsService.getPostById(
+                    id = payload.id,
+                    fromReadSide = false,
+                    withIntro = Some(true),
+                    withContent = Some(true),
+                    withTargets = Some(true)
+                  )
         } yield Ok(Json.toJson(post))
       }
     }
@@ -113,7 +137,13 @@ class CmsPostController @Inject() (
           .transform
         for {
           _    <- cmsService.changePostWidgetContentOrder(payload)
-          post <- cmsService.getPostById(payload.id, false)
+          post <- cmsService.getPostById(
+                    id = payload.id,
+                    fromReadSide = false,
+                    withIntro = Some(true),
+                    withContent = Some(true),
+                    withTargets = Some(true)
+                  )
         } yield Ok(Json.toJson(post))
       }
     }
@@ -127,7 +157,13 @@ class CmsPostController @Inject() (
           .transform
         for {
           _    <- cmsService.deletePostWidgetContent(payload)
-          post <- cmsService.getPostById(payload.id, false)
+          post <- cmsService.getPostById(
+                    id = payload.id,
+                    fromReadSide = false,
+                    withIntro = Some(true),
+                    withContent = Some(true),
+                    withTargets = Some(true)
+                  )
         } yield Ok(Json.toJson(post))
       }
     }
@@ -141,7 +177,13 @@ class CmsPostController @Inject() (
           .transform
         for {
           _    <- cmsService.updatePostPublicationTimestamp(payload)
-          post <- cmsService.getPostById(payload.id, false)
+          post <- cmsService.getPostById(
+                    id = payload.id,
+                    fromReadSide = false,
+                    withIntro = Some(true),
+                    withContent = Some(true),
+                    withTargets = Some(true)
+                  )
         } yield Ok(Json.toJson(post))
       }
     }
@@ -152,7 +194,13 @@ class CmsPostController @Inject() (
         val payload = PublishPostPayload(id, request.subject.principals.head)
         for {
           _    <- cmsService.publishPost(payload)
-          post <- cmsService.getPostById(id, false)
+          post <- cmsService.getPostById(
+                    id = id,
+                    fromReadSide = false,
+                    withIntro = Some(true),
+                    withContent = Some(true),
+                    withTargets = Some(true)
+                  )
         } yield Ok(Json.toJson(post))
       }
     }
@@ -163,7 +211,13 @@ class CmsPostController @Inject() (
         val payload = UnpublishPostPayload(id, request.subject.principals.head)
         for {
           _    <- cmsService.unpublishPost(payload)
-          post <- cmsService.getPostById(id, false)
+          post <- cmsService.getPostById(
+                    id = id,
+                    fromReadSide = false,
+                    withIntro = Some(true),
+                    withContent = Some(true),
+                    withTargets = Some(true)
+                  )
         } yield Ok(Json.toJson(post))
       }
     }
@@ -177,7 +231,13 @@ class CmsPostController @Inject() (
           .transform
         for {
           _    <- cmsService.updatePostFeatured(payload)
-          post <- cmsService.getPostById(payload.id, false)
+          post <- cmsService.getPostById(
+                    id = payload.id,
+                    fromReadSide = false,
+                    withIntro = Some(true),
+                    withContent = Some(true),
+                    withTargets = Some(true)
+                  )
         } yield Ok(Json.toJson(post))
       }
     }
@@ -191,7 +251,13 @@ class CmsPostController @Inject() (
           .transform
         for {
           _    <- cmsService.assignPostTargetPrincipal(payload)
-          post <- cmsService.getPostById(payload.id, false)
+          post <- cmsService.getPostById(
+                    id = payload.id,
+                    fromReadSide = false,
+                    withIntro = Some(true),
+                    withContent = Some(true),
+                    withTargets = Some(true)
+                  )
         } yield Ok(Json.toJson(post))
       }
     }
@@ -205,7 +271,13 @@ class CmsPostController @Inject() (
           .transform
         for {
           _    <- cmsService.unassignPostTargetPrincipal(payload)
-          post <- cmsService.getPostById(payload.id, false)
+          post <- cmsService.getPostById(
+                    id = payload.id,
+                    fromReadSide = false,
+                    withIntro = Some(true),
+                    withContent = Some(true),
+                    withTargets = Some(true)
+                  )
         } yield Ok(Json.toJson(post))
       }
     }
@@ -249,31 +321,32 @@ class CmsPostController @Inject() (
       }
     }
 
-  def getPostAnnotationsById(fromReadSide: Boolean) =
+  def getPostsById(
+    fromReadSide: Boolean,
+    withIntro: Option[Boolean] = None,
+    withContent: Option[Boolean] = None,
+    withTargets: Option[Boolean] = None
+  ) =
     authenticated.async(parse.json[Set[PostId]]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
         val ids = request.request.body
         for {
-          postAnnotations <- cmsService.getPostAnnotationsById(ids, fromReadSide)
-        } yield Ok(Json.toJson(postAnnotations))
-      }
-    }
-
-  def getPostsById(fromReadSide: Boolean) =
-    authenticated.async(parse.json[Set[PostId]]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
-        val ids = request.request.body
-        for {
-          result <- cmsService.getPostsById(ids, fromReadSide)
+          result <- cmsService.getPostsById(ids, fromReadSide, withIntro, withContent, withTargets)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def getPostById(id: PostId, fromReadSide: Boolean) =
+  def getPostById(
+    id: PostId,
+    fromReadSide: Boolean,
+    withIntro: Option[Boolean] = None,
+    withContent: Option[Boolean] = None,
+    withTargets: Option[Boolean] = None
+  ) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
         for {
-          result <- cmsService.getPostById(id, fromReadSide)
+          result <- cmsService.getPostById(id, fromReadSide, withIntro, withContent, withTargets)
         } yield Ok(Json.toJson(result))
       }
     }

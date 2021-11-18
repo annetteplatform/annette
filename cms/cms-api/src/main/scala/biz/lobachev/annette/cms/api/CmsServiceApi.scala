@@ -64,10 +64,19 @@ trait CmsServiceApi extends Service {
   def assignPostTargetPrincipal: ServiceCall[AssignPostTargetPrincipalPayload, Done]
   def unassignPostTargetPrincipal: ServiceCall[UnassignPostTargetPrincipalPayload, Done]
   def deletePost: ServiceCall[DeletePostPayload, Done]
-  def getPostById(id: PostId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Post]
-  def getPostAnnotationById(id: PostId, fromReadSide: Boolean = true): ServiceCall[NotUsed, PostAnnotation]
-  def getPostsById(fromReadSide: Boolean = true): ServiceCall[Set[PostId], Seq[Post]]
-  def getPostAnnotationsById(fromReadSide: Boolean = true): ServiceCall[Set[PostId], Seq[PostAnnotation]]
+  def getPostById(
+    id: PostId,
+    fromReadSide: Boolean = true,
+    withIntro: Option[Boolean] = None,
+    withContent: Option[Boolean] = None,
+    withTargets: Option[Boolean] = None
+  ): ServiceCall[NotUsed, Post]
+  def getPostsById(
+    fromReadSide: Boolean = true,
+    withIntro: Option[Boolean] = None,
+    withContent: Option[Boolean] = None,
+    withTargets: Option[Boolean] = None
+  ): ServiceCall[Set[PostId], Seq[Post]]
   def getPostViews: ServiceCall[GetPostViewsPayload, Seq[PostView]]
   def canAccessToPost: ServiceCall[CanAccessToPostPayload, Boolean]
   def findPosts: ServiceCall[PostFindQuery, FindResult]
@@ -183,10 +192,8 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/assignPostTargetPrincipal", assignPostTargetPrincipal),
         pathCall("/api/cms/v1/unassignPostTargetPrincipal", unassignPostTargetPrincipal),
         pathCall("/api/cms/v1/deletePost", deletePost),
-        pathCall("/api/cms/v1/getPostById/:id/:fromReadSide", getPostById _),
-        pathCall("/api/cms/v1/getPostAnnotationById/:id/:fromReadSide", getPostAnnotationById _),
-        pathCall("/api/cms/v1/getPostsById/:fromReadSide", getPostsById _),
-        pathCall("/api/cms/v1/getPostAnnotationsById/:fromReadSide", getPostAnnotationsById _),
+        pathCall("/api/cms/v1/getPostById/:id/:fromReadSide?withIntro&withContent&withTargets", getPostById _),
+        pathCall("/api/cms/v1/getPostsById/:fromReadSide?withIntro&withContent&withTargets", getPostsById _),
         pathCall("/api/cms/v1/getPostViews", getPostViews),
         pathCall("/api/cms/v1/canAccessToPost", canAccessToPost),
         pathCall("/api/cms/v1/findPosts", findPosts),

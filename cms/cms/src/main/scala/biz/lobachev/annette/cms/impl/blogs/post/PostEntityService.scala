@@ -63,14 +63,6 @@ class PostEntityService(
       case _                            => throw new RuntimeException("Match fail")
     }
 
-  private def convertSuccessPostAnnotation(confirmation: PostEntity.Confirmation, id: PostId): PostAnnotation =
-    confirmation match {
-      case PostEntity.SuccessPostAnnotation(postAnnotation) => postAnnotation
-      case PostEntity.PostAlreadyExist                      => throw PostAlreadyExist(id)
-      case PostEntity.PostNotFound                          => throw PostNotFound(id)
-      case _                                                => throw new RuntimeException("Match fail")
-    }
-
   def createPost(payload: CreatePostPayload, targets: Set[AnnettePrincipal]): Future[Done] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
@@ -202,64 +194,47 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def getPost(id: PostId): Future[Post] =
+  def getPost(id: PostId, withIntro: Boolean, withContent: Boolean, withTargets: Boolean): Future[Post] =
     refFor(id)
-      .ask[PostEntity.Confirmation](PostEntity.GetPost(id, _))
+      .ask[PostEntity.Confirmation](
+        PostEntity.GetPost(id, withIntro, withContent, withTargets, _)
+      )
       .map(convertSuccessPost(_, id))
-
-  def getPostAnnotation(id: PostId): Future[PostAnnotation] =
-    refFor(id)
-      .ask[PostEntity.Confirmation](PostEntity.GetPostAnnotation(id, _))
-      .map(convertSuccessPostAnnotation(_, id))
 
   def canAccessToPost(payload: CanAccessToPostPayload): Future[Boolean] =
     dbDao.canAccessToPost(payload.id, payload.principals)
 
-  def getPostById(id: PostId, fromReadSide: Boolean): Future[Post] =
-    if (fromReadSide)
-      dbDao
-        .getPostById(id)
-        .map(_.getOrElse(throw PostNotFound(id)))
-    else
-      getPost(id)
-
-  def getPostAnnotationById(
+  def getPostById(
     id: PostId,
-    fromReadSide: Boolean
-  ): Future[PostAnnotation] =
+    fromReadSide: Boolean,
+    withIntro: Boolean,
+    withContent: Boolean,
+    withTargets: Boolean
+  ): Future[Post] =
     if (fromReadSide)
       dbDao
-        .getPostAnnotationById(id)
+        .getPostById(id, withIntro, withContent, withTargets)
         .map(_.getOrElse(throw PostNotFound(id)))
     else
-      getPostAnnotation(id)
+      getPost(id, withIntro, withContent, withTargets)
 
-  def getPostsById(ids: Set[PostId], fromReadSide: Boolean): Future[Seq[Post]] =
+  def getPostsById(
+    ids: Set[PostId],
+    fromReadSide: Boolean,
+    withIntro: Boolean,
+    withContent: Boolean,
+    withTargets: Boolean
+  ): Future[Seq[Post]] =
     if (fromReadSide)
-      dbDao.getPostsById(ids)
+      dbDao.getPostsById(ids, withIntro, withContent, withTargets)
     else
       Future
         .traverse(ids) { id =>
           refFor(id)
-            .ask[PostEntity.Confirmation](PostEntity.GetPost(id, _))
+            .ask[PostEntity.Confirmation](PostEntity.GetPost(id, withIntro, withContent, withTargets, _))
             .map {
               case PostEntity.SuccessPost(post) => Some(post)
               case _                            => None
-            }
-        }
-        .map(_.flatten.toSeq)
-
-  def getPostAnnotationsById(ids: Set[PostId], fromReadSide: Boolean): Future[Seq[PostAnnotation]] =
-    if (fromReadSide)
-      dbDao.getPostAnnotationsById(ids)
-    else
-      Future
-        .traverse(ids) { id =>
-          refFor(id)
-            .ask[PostEntity.Confirmation](PostEntity.GetPostAnnotation(id, _))
-            .map {
-              case PostEntity.SuccessPostAnnotation(post) => Some(post)
-              case _                                      => None
             }
         }
         .map(_.flatten.toSeq)

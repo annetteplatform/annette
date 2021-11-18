@@ -232,24 +232,37 @@ class CmsServiceApiImpl(
       } yield Done
     }
 
-  override def getPostById(id: PostId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Post] =
+  override def getPostById(
+    id: PostId,
+    fromReadSide: Boolean = true,
+    withIntro: Option[Boolean] = None,
+    withContent: Option[Boolean] = None,
+    withTargets: Option[Boolean] = None
+  ): ServiceCall[NotUsed, Post] =
     ServiceCall { _ =>
-      postEntityService.getPostById(id, fromReadSide)
+      postEntityService.getPostById(
+        id,
+        fromReadSide,
+        withIntro.getOrElse(false),
+        withContent.getOrElse(false),
+        withTargets.getOrElse(false)
+      )
     }
 
-  override def getPostAnnotationById(id: PostId, fromReadSide: Boolean = true): ServiceCall[NotUsed, PostAnnotation] =
-    ServiceCall { _ =>
-      postEntityService.getPostAnnotationById(id, fromReadSide)
-    }
-
-  override def getPostsById(fromReadSide: Boolean = true): ServiceCall[Set[PostId], Seq[Post]] =
+  override def getPostsById(
+    fromReadSide: Boolean = true,
+    withIntro: Option[Boolean] = None,
+    withContent: Option[Boolean] = None,
+    withTargets: Option[Boolean] = None
+  ): ServiceCall[Set[PostId], Seq[Post]] =
     ServiceCall { ids =>
-      postEntityService.getPostsById(ids, fromReadSide)
-    }
-
-  override def getPostAnnotationsById(fromReadSide: Boolean = true): ServiceCall[Set[PostId], Seq[PostAnnotation]] =
-    ServiceCall { ids =>
-      postEntityService.getPostAnnotationsById(ids, fromReadSide)
+      postEntityService.getPostsById(
+        ids,
+        fromReadSide,
+        withIntro.getOrElse(false),
+        withContent.getOrElse(false),
+        withTargets.getOrElse(false)
+      )
     }
 
   override def getPostViews: ServiceCall[GetPostViewsPayload, Seq[PostView]] =
