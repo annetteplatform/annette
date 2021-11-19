@@ -123,7 +123,6 @@ trait CmsServiceApi extends Service {
   def findSpaces: ServiceCall[SpaceFindQuery, FindResult]
 
   def createPage: ServiceCall[CreatePagePayload, Done]
-  def updatePageFeatured: ServiceCall[UpdatePageFeaturedPayload, Done]
   def updatePageAuthor: ServiceCall[UpdatePageAuthorPayload, Done]
   def updatePageTitle: ServiceCall[UpdatePageTitlePayload, Done]
   def updatePageWidgetContent: ServiceCall[UpdatePageWidgetContentPayload, Done]
@@ -138,13 +137,11 @@ trait CmsServiceApi extends Service {
   def getPageById(
     id: PageId,
     fromReadSide: Boolean = true,
-    withIntro: Option[Boolean] = None,
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
   ): ServiceCall[NotUsed, Page]
   def getPagesById(
     fromReadSide: Boolean = true,
-    withIntro: Option[Boolean] = None,
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
   ): ServiceCall[Set[PageId], Seq[Page]]
@@ -235,7 +232,6 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/canAccessToSpace", canAccessToSpace),
         pathCall("/api/cms/v1/findSpaces", findSpaces),
         pathCall("/api/cms/v1/createPage", createPage),
-        pathCall("/api/cms/v1/updatePageFeatured", updatePageFeatured),
         pathCall("/api/cms/v1/updatePageAuthor", updatePageAuthor),
         pathCall("/api/cms/v1/updatePageTitle", updatePageTitle),
         pathCall("/api/cms/v1/updatePageWidgetContent", updatePageWidgetContent),
@@ -247,8 +243,8 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/assignPageTargetPrincipal", assignPageTargetPrincipal),
         pathCall("/api/cms/v1/unassignPageTargetPrincipal", unassignPageTargetPrincipal),
         pathCall("/api/cms/v1/deletePage", deletePage),
-        pathCall("/api/cms/v1/getPageById/:id/:fromReadSide?withIntro&withContent&withTargets", getPageById _),
-        pathCall("/api/cms/v1/getPagesById/:fromReadSide?withIntro&withContent&withTargets", getPagesById _),
+        pathCall("/api/cms/v1/getPageById/:id/:fromReadSide?withContent&withTargets", getPageById _),
+        pathCall("/api/cms/v1/getPagesById/:fromReadSide?withContent&withTargets", getPagesById _),
         pathCall("/api/cms/v1/getPageViews", getPageViews),
         pathCall("/api/cms/v1/canAccessToPage", canAccessToPage),
         pathCall("/api/cms/v1/findPages", findPages),

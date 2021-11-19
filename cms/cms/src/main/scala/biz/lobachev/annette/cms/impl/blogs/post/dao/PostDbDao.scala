@@ -106,25 +106,6 @@ private[impl] class PostDbDao(
            )
 
       _ <- session.executeCreateTable(
-             CassandraTableBuilder("post_media")
-               .column("post_id", Text)
-               .column("media_id", Text)
-               .column("filename", Text)
-               .withPrimaryKey("post_id", "media_id")
-               .build
-           )
-
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("post_docs")
-               .column("post_id", Text)
-               .column("doc_id", Text)
-               .column("name", Text)
-               .column("filename", Text)
-               .withPrimaryKey("post_id", "doc_id")
-               .build
-           )
-
-      _ <- session.executeCreateTable(
              CassandraTableBuilder("post_likes")
                .column("post_id", Text)
                .column("principal", Text)

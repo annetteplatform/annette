@@ -26,12 +26,10 @@ import java.time.OffsetDateTime
 case class Page(
   id: PageId,
   spaceId: SpaceId,
-  featured: Boolean,
   authorId: AnnettePrincipal,
   title: String,
   publicationStatus: PublicationStatus.PublicationStatus = PublicationStatus.Draft,
   publicationTimestamp: Option[OffsetDateTime] = None,
-  introContent: Option[SerialContent] = None,
   content: Option[SerialContent] = None,
   targets: Option[Set[AnnettePrincipal]] = None,
   metric: Option[PageMetric] = None,

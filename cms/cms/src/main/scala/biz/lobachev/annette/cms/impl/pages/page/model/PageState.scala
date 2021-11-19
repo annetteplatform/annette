@@ -28,10 +28,8 @@ import java.time.OffsetDateTime
 case class PageState(
   id: PageId,
   spaceId: SpaceId,
-  featured: Boolean,
   authorId: AnnettePrincipal,
   title: String,
-  introContent: Content,
   content: Content,
   publicationStatus: PublicationStatus = PublicationStatus.Draft,
   publicationTimestamp: Option[OffsetDateTime] = None,

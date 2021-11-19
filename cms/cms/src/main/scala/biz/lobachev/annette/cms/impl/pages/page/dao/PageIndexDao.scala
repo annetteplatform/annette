@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.cms.impl.pages.page.dao
 
-import biz.lobachev.annette.cms.api.pages.page.{ContentTypes, PageFindQuery}
+import biz.lobachev.annette.cms.api.pages.page.{PageFindQuery}
 import biz.lobachev.annette.cms.impl.pages.page.PageEntity
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
@@ -41,23 +41,13 @@ class PageIndexDao(client: ElasticClient)(implicit
       event.id,
       "id"                -> event.id,
       "spaceId"           -> event.spaceId,
-      "featured"          -> event.featured,
       "authorId"          -> event.authorId.code,
       "title"             -> event.title,
-      "intro"             -> event.introContent.content.values.map(_.indexData).flatten.mkString("\n"),
       "content"           -> event.content.content.values.map(_.indexData).flatten.mkString("\n"),
       "publicationStatus" -> "draft",
       "targets"           -> event.targets.map(_.code),
       "updatedBy"         -> event.createdBy.code,
       "updatedAt"         -> event.createdAt
-    )
-
-  def updatePageFeatured(event: PageEntity.PageFeaturedUpdated) =
-    updateIndexDoc(
-      event.id,
-      "featured"  -> event.featured,
-      "updatedAt" -> event.updatedAt,
-      "updatedBy" -> event.updatedBy.code
     )
 
   def updatePageAuthor(event: PageEntity.PageAuthorUpdated) =
@@ -98,13 +88,10 @@ class PageIndexDao(client: ElasticClient)(implicit
     )
 
   def changePageIndex(event: PageEntity.PageIndexChanged) = {
-    val alias = event.contentType match {
-      case ContentTypes.Intro => "intro"
-      case ContentTypes.Page  => "content"
-    }
+    val alias = "content"
     updateIndexDoc(
       event.id,
-      alias -> event.indexData,
+      alias       -> event.indexData,
       "updatedAt" -> event.updatedAt,
       "updatedBy" -> event.updatedBy.code
     )
@@ -186,11 +173,10 @@ class PageIndexDao(client: ElasticClient)(implicit
 
     val filterQuery                   = buildFilterQuery(
       query.filter,
-      Seq("title" -> 3.0, "intro" -> 2.0, "content" -> 1.0)
+      Seq("title" -> 3.0, "content" -> 1.0)
     )
     val pageIdsQuery                  = query.pageIds.map(pageIds => termsSetQuery(alias2FieldName("id"), pageIds, script("1"))).toSeq
     val spaceQuery                    = query.spaces.map(spaces => termsSetQuery(alias2FieldName("spaceId"), spaces, script("1"))).toSeq
-    val featuredQuery                 = query.featured.map(matchQuery(alias2FieldName("featured"), _)).toSeq
     val authorsQuery                  =
       query.authors.map(authors => termsSetQuery(alias2FieldName("authorId"), authors.map(_.code), script("1"))).toSeq
     val publicationStatusQuery        = query.publicationStatus.map(matchQuery(alias2FieldName("publicationStatus"), _)).toSeq
@@ -209,7 +195,7 @@ class PageIndexDao(client: ElasticClient)(implicit
     val searchRequest = search(indexName)
       .bool(
         must(
-          filterQuery ++ pageIdsQuery ++ spaceQuery ++ featuredQuery ++
+          filterQuery ++ pageIdsQuery ++ spaceQuery ++
             authorsQuery ++ publicationStatusQuery ++ publicationTimestampFromQuery ++
             publicationTimestampToQuery ++ targetsQuery
         )

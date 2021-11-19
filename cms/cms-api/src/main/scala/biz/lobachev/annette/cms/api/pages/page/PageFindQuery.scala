@@ -29,7 +29,6 @@ case class PageFindQuery(
   filter: Option[String] = None,
   pageIds: Option[Set[PageId]] = None,
   spaces: Option[Set[SpaceId]] = None,
-  featured: Option[Boolean] = None,
   authors: Option[Set[AnnettePrincipal]] = None,
   publicationStatus: Option[PublicationStatus.PublicationStatus] = None,
   publicationTimestampFrom: Option[OffsetDateTime] = None,

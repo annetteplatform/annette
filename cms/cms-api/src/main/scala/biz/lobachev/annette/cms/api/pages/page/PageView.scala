@@ -26,10 +26,8 @@ import java.time.OffsetDateTime
 case class PageView(
   id: PageId,
   spaceId: SpaceId,
-  featured: Boolean,
   authorId: AnnettePrincipal,
   title: String,
-  introContent: SerialContent,
   content: Option[SerialContent] = None,
   publicationStatus: PublicationStatus.PublicationStatus = PublicationStatus.Draft,
   publicationTimestamp: Option[OffsetDateTime] = None,

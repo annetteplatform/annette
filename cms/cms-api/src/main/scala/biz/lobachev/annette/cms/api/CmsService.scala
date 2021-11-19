@@ -122,7 +122,6 @@ trait CmsService {
   def findSpaces(payload: SpaceFindQuery): Future[FindResult]
 
   def createPage(payload: CreatePagePayload): Future[Done]
-  def updatePageFeatured(payload: UpdatePageFeaturedPayload): Future[Done]
   def updatePageAuthor(payload: UpdatePageAuthorPayload): Future[Done]
   def updatePageTitle(payload: UpdatePageTitlePayload): Future[Done]
   def updatePageWidgetContent(payload: UpdatePageWidgetContentPayload): Future[Done]
@@ -137,14 +136,12 @@ trait CmsService {
   def getPageById(
     id: PageId,
     fromReadSide: Boolean = true,
-    withIntro: Option[Boolean],
     withContent: Option[Boolean],
     withTargets: Option[Boolean]
   ): Future[Page]
   def getPagesById(
     ids: Set[PageId],
     fromReadSide: Boolean = true,
-    withIntro: Option[Boolean],
     withContent: Option[Boolean],
     withTargets: Option[Boolean]
   ): Future[Seq[Page]]

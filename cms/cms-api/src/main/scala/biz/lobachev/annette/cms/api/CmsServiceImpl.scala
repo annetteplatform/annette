@@ -255,9 +255,6 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def createPage(payload: CreatePagePayload): Future[Done] =
     api.createPage.invoke(payload)
 
-  override def updatePageFeatured(payload: UpdatePageFeaturedPayload): Future[Done] =
-    api.updatePageFeatured.invoke(payload)
-
   override def updatePageAuthor(payload: UpdatePageAuthorPayload): Future[Done] =
     api.updatePageAuthor.invoke(payload)
 
@@ -294,20 +291,18 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def getPageById(
     id: PageId,
     fromReadSide: Boolean,
-    withIntro: Option[Boolean] = None,
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
   ): Future[Page] =
-    api.getPageById(id, fromReadSide, withIntro, withContent, withTargets).invoke()
+    api.getPageById(id, fromReadSide, withContent, withTargets).invoke()
 
   override def getPagesById(
     ids: Set[PageId],
     fromReadSide: Boolean,
-    withIntro: Option[Boolean] = None,
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
   ): Future[Seq[Page]] =
-    api.getPagesById(fromReadSide, withIntro, withContent, withTargets).invoke(ids)
+    api.getPagesById(fromReadSide, withContent, withTargets).invoke(ids)
 
   override def getPageViews(payload: GetPageViewsPayload): Future[Seq[PageView]] =
     api.getPageViews.invoke(payload)

@@ -139,13 +139,12 @@ object PostEntity {
   ) extends Command
 
   sealed trait Confirmation
-  final case object Success                                    extends Confirmation
-  final case class SuccessPost(post: Post)                     extends Confirmation
-  final case class SuccessPostAnnotation(postAnnotation: Post) extends Confirmation
-  final case object PostAlreadyExist                           extends Confirmation
-  final case object PostNotFound                               extends Confirmation
-  final case object WidgetContentNotFound                      extends Confirmation
-  final case object PostPublicationDateClearNotAllowed         extends Confirmation
+  final case object Success                            extends Confirmation
+  final case class SuccessPost(post: Post)             extends Confirmation
+  final case object PostAlreadyExist                   extends Confirmation
+  final case object PostNotFound                       extends Confirmation
+  final case object WidgetContentNotFound              extends Confirmation
+  final case object PostPublicationDateClearNotAllowed extends Confirmation
 
   implicit val confirmationSuccessFormat: Format[Success.type]                                                       = Json.format
   implicit val confirmationSuccessPostFormat: Format[SuccessPost]                                                    = Json.format

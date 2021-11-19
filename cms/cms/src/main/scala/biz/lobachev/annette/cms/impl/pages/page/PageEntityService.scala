@@ -74,16 +74,6 @@ class PageEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def updatePageFeatured(payload: UpdatePageFeaturedPayload): Future[Done] =
-    refFor(payload.id)
-      .ask[PageEntity.Confirmation](replyTo =>
-        payload
-          .into[PageEntity.UpdatePageFeatured]
-          .withFieldConst(_.replyTo, replyTo)
-          .transform
-      )
-      .map(convertSuccess(_, payload.id))
-
   def updatePageAuthor(payload: UpdatePageAuthorPayload): Future[Done] =
     refFor(payload.id)
       .ask[PageEntity.Confirmation](replyTo =>
@@ -194,10 +184,10 @@ class PageEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def getPage(id: PageId, withIntro: Boolean, withContent: Boolean, withTargets: Boolean): Future[Page] =
+  def getPage(id: PageId, withContent: Boolean, withTargets: Boolean): Future[Page] =
     refFor(id)
       .ask[PageEntity.Confirmation](
-        PageEntity.GetPage(id, withIntro, withContent, withTargets, _)
+        PageEntity.GetPage(id, withContent, withTargets, _)
       )
       .map(convertSuccessPage(_, id))
 
@@ -207,31 +197,29 @@ class PageEntityService(
   def getPageById(
     id: PageId,
     fromReadSide: Boolean,
-    withIntro: Boolean,
     withContent: Boolean,
     withTargets: Boolean
   ): Future[Page] =
     if (fromReadSide)
       dbDao
-        .getPageById(id, withIntro, withContent, withTargets)
+        .getPageById(id, withContent, withTargets)
         .map(_.getOrElse(throw PageNotFound(id)))
     else
-      getPage(id, withIntro, withContent, withTargets)
+      getPage(id, withContent, withTargets)
 
   def getPagesById(
     ids: Set[PageId],
     fromReadSide: Boolean,
-    withIntro: Boolean,
     withContent: Boolean,
     withTargets: Boolean
   ): Future[Seq[Page]] =
     if (fromReadSide)
-      dbDao.getPagesById(ids, withIntro, withContent, withTargets)
+      dbDao.getPagesById(ids, withContent, withTargets)
     else
       Future
         .traverse(ids) { id =>
           refFor(id)
-            .ask[PageEntity.Confirmation](PageEntity.GetPage(id, withIntro, withContent, withTargets, _))
+            .ask[PageEntity.Confirmation](PageEntity.GetPage(id, withContent, withTargets, _))
             .map {
               case PageEntity.SuccessPage(page) => Some(page)
               case _                            => None

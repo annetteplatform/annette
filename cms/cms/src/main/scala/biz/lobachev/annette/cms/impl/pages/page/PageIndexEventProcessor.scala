@@ -35,7 +35,6 @@ private[impl] class PageIndexEventProcessor(
       .builder[PageEntity.Event]("page-index")
       .setGlobalPrepare(indexDao.createEntityIndex)
       .setEventHandler[PageEntity.PageCreated](handle(indexDao.createPage))
-      .setEventHandler[PageEntity.PageFeaturedUpdated](handle(indexDao.updatePageFeatured))
       .setEventHandler[PageEntity.PageAuthorUpdated](handle(indexDao.updatePageAuthor))
       .setEventHandler[PageEntity.PageTitleUpdated](handle(indexDao.updatePageTitle))
       .setEventHandler[PageEntity.PageWidgetContentUpdated](handle(indexDao.updatePageWidgetContent))

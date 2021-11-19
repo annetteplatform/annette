@@ -24,7 +24,6 @@ object PageSerializerRegistry extends JsonSerializerRegistry {
     List(
       JsonSerializer[PageState],
       JsonSerializer[PageEntity.PageCreated],
-      JsonSerializer[PageEntity.PageFeaturedUpdated],
       JsonSerializer[PageEntity.PageAuthorUpdated],
       JsonSerializer[PageEntity.PageTitleUpdated],
       JsonSerializer[PageEntity.PageWidgetContentUpdated],

@@ -27,32 +27,25 @@ import java.time.OffsetDateTime
 case class PageRecord(
   id: PageId,
   spaceId: SpaceId,
-  featured: Boolean,
   authorId: AnnettePrincipal,
   title: String,
   publicationStatus: PublicationStatus.PublicationStatus = PublicationStatus.Draft,
   publicationTimestamp: Option[OffsetDateTime] = None,
-  introContentOrder: List[String],
   pageContentOrder: List[String],
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
 ) {
   def toPage(
-    maybeIntroWidgetContents: Option[Map[String, WidgetContent]],
     maybePageWidgetContents: Option[Map[String, WidgetContent]],
     maybeTargets: Option[Set[AnnettePrincipal]]
   ): Page =
     Page(
       id = id,
       spaceId = spaceId,
-      featured = featured,
       authorId = authorId,
       title = title,
       publicationStatus = publicationStatus,
       publicationTimestamp = publicationTimestamp,
-      introContent = maybeIntroWidgetContents.map(introWidgetContents =>
-        introContentOrder.map(c => introWidgetContents.get(c)).flatten
-      ),
       content =
         maybePageWidgetContents.map(pageWidgetContents => pageContentOrder.map(c => pageWidgetContents.get(c)).flatten),
       targets = maybeTargets,
@@ -62,18 +55,10 @@ case class PageRecord(
     )
 
   def toPageView(
-    introWidgetContents: Map[String, WidgetContent],
     pageWidgetContents: Map[String, WidgetContent]
   ): PageView =
     this
       .into[PageView]
-      .withFieldComputed(
-        _.introContent,
-        _.introContentOrder
-          .map(c => introWidgetContents.get(c))
-          .flatten
-          .toSeq
-      )
       .withFieldComputed(
         _.content,
         r =>

@@ -35,7 +35,6 @@ private[impl] class PageDbEventProcessor(
       .builder[PageEntity.Event]("page-cas")
       .setGlobalPrepare(dbDao.createTables)
       .setEventHandler[PageEntity.PageCreated](handle(dbDao.createPage))
-      .setEventHandler[PageEntity.PageFeaturedUpdated](handle(dbDao.updatePageFeatured))
       .setEventHandler[PageEntity.PageAuthorUpdated](handle(dbDao.updatePageAuthor))
       .setEventHandler[PageEntity.PageTitleUpdated](handle(dbDao.updatePageTitle))
       .setEventHandler[PageEntity.PageWidgetContentUpdated](handle(dbDao.updatePageWidgetContent))

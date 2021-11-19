@@ -22,8 +22,7 @@ import play.api.libs.json.{Format, Json}
 case class GetPageViewsPayload(
   ids: Set[PageId],
   directPrincipal: AnnettePrincipal,
-  principals: Set[AnnettePrincipal],
-  withContent: Boolean
+  principals: Set[AnnettePrincipal]
 )
 
 object GetPageViewsPayload {

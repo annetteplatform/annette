@@ -24,10 +24,8 @@ import play.api.libs.json.{Format, Json}
 case class CreatePagePayload(
   id: PageId,
   spaceId: SpaceId,
-  featured: Boolean,
   authorId: AnnettePrincipal,
   title: String,
-  introContent: SerialContent,
   content: SerialContent,
   createdBy: AnnettePrincipal
 )

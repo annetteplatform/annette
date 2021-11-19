@@ -19,7 +19,6 @@ package biz.lobachev.annette.cms.impl.pages.page.dao
 import akka.Done
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
-import biz.lobachev.annette.cms.api.pages.page.ContentTypes.ContentType
 import biz.lobachev.annette.cms.api.pages.page.PublicationStatus.PublicationStatus
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.cms.api.content.WidgetContent
@@ -45,9 +44,6 @@ private[impl] class PageDbDao(
   private implicit val publicationStatusEncoder = genericStringEncoder[PublicationStatus]
   private implicit val publicationStatusDecoder = genericStringDecoder[PublicationStatus](PublicationStatus.withName)
 
-  private implicit val contentTypeEncoder = genericStringEncoder[ContentType]
-  private implicit val contentTypeDecoder = genericStringDecoder[ContentType](ContentTypes.withName)
-
   private val pageSchema       = quote(querySchema[PageRecord]("pages"))
   private val pageWidgetSchema = quote(querySchema[PageWidgetRecord]("page_widgets"))
   private val pageTargetSchema = quote(querySchema[PageTargetRecord]("page_targets"))
@@ -60,8 +56,6 @@ private[impl] class PageDbDao(
   private implicit val updatePageViewMeta   = updateMeta[PageViewRecord](_.pageId, _.principal)
   println(publicationStatusEncoder.toString)
   println(publicationStatusDecoder.toString)
-  println(contentTypeEncoder.toString)
-  println(contentTypeDecoder.toString)
   println(insertPageMeta.toString)
   println(updatePageMeta.toString)
   println(insertPageTargetMeta.toString)
@@ -74,12 +68,10 @@ private[impl] class PageDbDao(
              CassandraTableBuilder("pages")
                .column("id", Text, true)
                .column("space_id", Text)
-               .column("featured", Boolean)
                .column("author_id", Text)
                .column("title", Text)
                .column("publication_status", Text)
                .column("publication_timestamp", Timestamp)
-               .column("intro_content_order", List(Text))
                .column("page_content_order", List(Text))
                .column("updated_at", Timestamp)
                .column("updated_by", Text)
@@ -89,12 +81,11 @@ private[impl] class PageDbDao(
       _ <- session.executeCreateTable(
              CassandraTableBuilder("page_widgets")
                .column("page_id", Text)
-               .column("content_type", Text)
                .column("widget_content_id", Text)
                .column("widget_type", Text)
                .column("data", Text)
                .column("index_data", Text)
-               .withPrimaryKey("page_id", "content_type", "widget_content_id")
+               .withPrimaryKey("page_id", "widget_content_id")
                .build
            )
       _ <- session.executeCreateTable(
@@ -102,25 +93,6 @@ private[impl] class PageDbDao(
                .column("page_id", Text)
                .column("principal", Text)
                .withPrimaryKey("page_id", "principal")
-               .build
-           )
-
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("page_media")
-               .column("page_id", Text)
-               .column("media_id", Text)
-               .column("filename", Text)
-               .withPrimaryKey("page_id", "media_id")
-               .build
-           )
-
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("page_docs")
-               .column("page_id", Text)
-               .column("doc_id", Text)
-               .column("name", Text)
-               .column("filename", Text)
-               .withPrimaryKey("page_id", "doc_id")
                .build
            )
 
@@ -146,30 +118,18 @@ private[impl] class PageDbDao(
   def createPage(event: PageEntity.PageCreated) = {
     val pageRecord = event
       .into[PageRecord]
-      .withFieldComputed(_.introContentOrder, _.introContent.contentOrder.toList)
       .withFieldComputed(_.pageContentOrder, _.content.contentOrder.toList)
       .withFieldComputed(_.updatedAt, _.createdAt)
       .withFieldComputed(_.updatedBy, _.createdBy)
       .transform
     for {
       _ <- ctx.run(pageSchema.insert(lift(pageRecord)))
-      _ <- Source(event.introContent.content.values.toSeq)
-             .mapAsync(1) { widget =>
-               val pageWidgetRecord = widget
-                 .into[PageWidgetRecord]
-                 .withFieldConst(_.pageId, event.id)
-                 .withFieldConst(_.contentType, ContentTypes.Intro)
-                 .withFieldComputed(_.widgetContentId, _.id)
-                 .transform
-               ctx.run(pageWidgetSchema.insert(lift(pageWidgetRecord)))
-             }
-             .runWith(Sink.ignore)
+
       _ <- Source(event.content.content.values.toSeq)
              .mapAsync(1) { widget =>
                val pageWidgetRecord = widget
                  .into[PageWidgetRecord]
                  .withFieldConst(_.pageId, event.id)
-                 .withFieldConst(_.contentType, ContentTypes.Page)
                  .withFieldComputed(_.widgetContentId, _.id)
                  .transform
                ctx.run(pageWidgetSchema.insert(lift(pageWidgetRecord)))
@@ -186,17 +146,6 @@ private[impl] class PageDbDao(
              .runWith(Sink.ignore)
     } yield Done
   }
-
-  def updatePageFeatured(event: PageEntity.PageFeaturedUpdated) =
-    ctx.run(
-      pageSchema
-        .filter(_.id == lift(event.id))
-        .update(
-          _.featured  -> lift(event.featured),
-          _.updatedAt -> lift(event.updatedAt),
-          _.updatedBy -> lift(event.updatedBy)
-        )
-    )
 
   def updatePageAuthor(event: PageEntity.PageAuthorUpdated) =
     ctx.run(
@@ -224,91 +173,50 @@ private[impl] class PageDbDao(
     val pageWidget = event.widgetContent
       .into[PageWidgetRecord]
       .withFieldConst(_.pageId, event.id)
-      .withFieldConst(_.contentType, event.contentType)
       .withFieldComputed(_.widgetContentId, _.id)
       .transform
     for {
-      _ <- event.contentType match {
-             case ContentTypes.Intro =>
-               ctx.run(
-                 pageSchema
-                   .filter(_.id == lift(event.id))
-                   .update(
-                     _.introContentOrder -> lift(event.contentOrder.toList),
-                     _.updatedAt         -> lift(event.updatedAt),
-                     _.updatedBy         -> lift(event.updatedBy)
-                   )
+      _ <- ctx.run(
+             pageSchema
+               .filter(_.id == lift(event.id))
+               .update(
+                 _.pageContentOrder -> lift(event.contentOrder.toList),
+                 _.updatedAt        -> lift(event.updatedAt),
+                 _.updatedBy        -> lift(event.updatedBy)
                )
-             case ContentTypes.Page  =>
-               ctx.run(
-                 pageSchema
-                   .filter(_.id == lift(event.id))
-                   .update(
-                     _.pageContentOrder -> lift(event.contentOrder.toList),
-                     _.updatedAt        -> lift(event.updatedAt),
-                     _.updatedBy        -> lift(event.updatedBy)
-                   )
-               )
-           }
+           )
       _ <- ctx.run(pageWidgetSchema.insert(lift(pageWidget)))
     } yield Done
   }
 
   def changeWidgetContentOrder(event: PageEntity.WidgetContentOrderChanged) =
     for {
-      _ <- event.contentType match {
-             case ContentTypes.Intro =>
-               ctx.run(
-                 pageSchema
-                   .filter(_.id == lift(event.id))
-                   .update(
-                     _.introContentOrder -> lift(event.contentOrder.toList),
-                     _.updatedAt         -> lift(event.updatedAt),
-                     _.updatedBy         -> lift(event.updatedBy)
-                   )
+      _ <- ctx.run(
+             pageSchema
+               .filter(_.id == lift(event.id))
+               .update(
+                 _.pageContentOrder -> lift(event.contentOrder.toList),
+                 _.updatedAt        -> lift(event.updatedAt),
+                 _.updatedBy        -> lift(event.updatedBy)
                )
-             case ContentTypes.Page  =>
-               ctx.run(
-                 pageSchema
-                   .filter(_.id == lift(event.id))
-                   .update(
-                     _.pageContentOrder -> lift(event.contentOrder.toList),
-                     _.updatedAt        -> lift(event.updatedAt),
-                     _.updatedBy        -> lift(event.updatedBy)
-                   )
-               )
-           }
+           )
     } yield Done
 
   def deleteWidgetContent(event: PageEntity.WidgetContentDeleted) =
     for {
-      _ <- event.contentType match {
-             case ContentTypes.Intro =>
-               ctx.run(
-                 pageSchema
-                   .filter(_.id == lift(event.id))
-                   .update(
-                     _.introContentOrder -> lift(event.contentOrder.toList),
-                     _.updatedAt         -> lift(event.updatedAt),
-                     _.updatedBy         -> lift(event.updatedBy)
-                   )
+      _ <- ctx.run(
+             pageSchema
+               .filter(_.id == lift(event.id))
+               .update(
+                 _.pageContentOrder -> lift(event.contentOrder.toList),
+                 _.updatedAt        -> lift(event.updatedAt),
+                 _.updatedBy        -> lift(event.updatedBy)
                )
-             case ContentTypes.Page  =>
-               ctx.run(
-                 pageSchema
-                   .filter(_.id == lift(event.id))
-                   .update(
-                     _.pageContentOrder -> lift(event.contentOrder.toList),
-                     _.updatedAt        -> lift(event.updatedAt),
-                     _.updatedBy        -> lift(event.updatedBy)
-                   )
-               )
-           }
+           )
       _ <- ctx.run(
              pageWidgetSchema
                .filter(r =>
                  r.pageId == lift(event.id) &&
-                   r.contentType == lift(event.contentType) &&
                    r.widgetContentId == lift(event.widgetContentId)
                )
                .delete
@@ -404,71 +312,56 @@ private[impl] class PageDbDao(
 
   def getPageById(
     id: PageId,
-    withIntro: Boolean,
     withContent: Boolean,
     withTargets: Boolean
   ): Future[Option[Page]] =
     for {
-      maybeEntity              <- ctx
-                                    .run(pageSchema.filter(_.id == lift(id)))
-                                    .map(_.headOption)
-      maybeIntroWidgetContents <- if (withIntro)
-                                    maybeEntity
-                                      .map(_ => getPageWidgets(id, ContentTypes.Intro).map(Some(_)))
-                                      .getOrElse(Future.successful(None))
-                                  else Future.successful(None)
-      maybePageWidgetContents  <- if (withContent)
-                                    maybeEntity
-                                      .map(_ => getPageWidgets(id, ContentTypes.Page).map(Some(_)))
-                                      .getOrElse(Future.successful(None))
-                                  else Future.successful(None)
-      maybeTargets             <- if (withTargets)
-                                    maybeEntity.map(_ => getPageTargets(id).map(Some(_))).getOrElse(Future.successful(None))
-                                  else Future.successful(None)
+      maybeEntity             <- ctx
+                                   .run(pageSchema.filter(_.id == lift(id)))
+                                   .map(_.headOption)
+      maybePageWidgetContents <- if (withContent)
+                                   maybeEntity
+                                     .map(_ => getPageWidgets(id).map(Some(_)))
+                                     .getOrElse(Future.successful(None))
+                                 else Future.successful(None)
+      maybeTargets            <- if (withTargets)
+                                   maybeEntity.map(_ => getPageTargets(id).map(Some(_))).getOrElse(Future.successful(None))
+                                 else Future.successful(None)
     } yield maybeEntity.map(
       _.toPage(
-        maybeIntroWidgetContents,
         maybePageWidgetContents,
         maybeTargets
       )
     )
 
-  private def getPageWidgets(id: PageId, contentType: ContentType): Future[Map[String, WidgetContent]] =
+  private def getPageWidgets(id: PageId): Future[Map[String, WidgetContent]] =
     ctx
       .run(
-        pageWidgetSchema.filter(r =>
-          r.pageId == lift(id) &&
-            r.contentType == lift(contentType)
-        )
+        pageWidgetSchema.filter(r => r.pageId == lift(id))
       )
       .map(_.map(c => c.widgetContentId -> c.toWidgetContent).toMap)
 
-  private def getPageTargets(id: PageId): Future[Set[AnnettePrincipal]]                                =
+  private def getPageTargets(id: PageId): Future[Set[AnnettePrincipal]]      =
     ctx
       .run(pageTargetSchema.filter(_.pageId == lift(id)).map(_.principal))
       .map(_.toSet)
 
   def getPagesById(
     ids: Set[PageId],
-    withIntro: Boolean,
     withContent: Boolean,
     withTargets: Boolean
   ): Future[Seq[Page]] =
     Source(ids)
-      .mapAsync(1)(id => getPageById(id, withIntro, withContent, withTargets))
+      .mapAsync(1)(id => getPageById(id, withContent, withTargets))
       .runWith(Sink.seq)
       .map(_.flatten)
 
   private def getPageWidgetsMap(
-    ids: Set[PageId],
-    contentType: ContentType
+    ids: Set[PageId]
   ): Future[Map[String, Map[String, WidgetContent]]]                                  =
     ctx
       .run(
-        pageWidgetSchema.filter(r =>
-          liftQuery(ids).contains(r.pageId) &&
-            r.contentType == lift(contentType)
-        )
+        pageWidgetSchema.filter(r => liftQuery(ids).contains(r.pageId))
       )
       .map(_.groupBy(_.pageId).map { case k -> v => k -> v.map(c => c.widgetContentId -> c.toWidgetContent).toMap })
 
@@ -488,8 +381,7 @@ private[impl] class PageDbDao(
   def getPageViewsById(payload: GetPageViewsPayload): Future[Seq[PageView]] =
     for {
       allowedPageIds    <- getAllowedPageIds(payload.ids, payload.principals + payload.directPrincipal)
-      pageViews         <- if (payload.withContent) getPageViewsWithContent(allowedPageIds)
-                           else getPageViewsWithoutContent(allowedPageIds)
+      pageViews         <- getPageViewsWithContent(allowedPageIds)
       publishedPageViews = pageViews.filter(page =>
                              page.publicationStatus == PublicationStatus.Published &&
                                page.publicationTimestamp.map(_.compareTo(OffsetDateTime.now) <= 0).getOrElse(true)
@@ -502,56 +394,14 @@ private[impl] class PageDbDao(
 
   def getPageViewsWithContent(ids: Set[String]): Future[Seq[PageView]] =
     for {
-      pages           <- ctx.run(
-                           pageSchema
-                             .filter(b => liftQuery(ids).contains(b.id))
-                         )
-      introWidgetsMap <- getPageWidgetsMap(ids, ContentTypes.Intro)
-      pageWidgetsMap  <- getPageWidgetsMap(ids, ContentTypes.Page)
+      pages          <- ctx.run(
+                          pageSchema
+                            .filter(b => liftQuery(ids).contains(b.id))
+                        )
+      pageWidgetsMap <- getPageWidgetsMap(ids)
     } yield pages.map { r =>
-      val introWidgets = introWidgetsMap.get(r.id).getOrElse(Map.empty)
-      val pageWidgets  = pageWidgetsMap.get(r.id).getOrElse(Map.empty)
-      r.toPageView(introWidgets, pageWidgets)
-    }
-
-  def getPageViewsWithoutContent(ids: Set[String]): Future[Seq[PageView]] =
-    for {
-      pages           <- ctx
-                           .run(
-                             pageSchema
-                               .filter(b => liftQuery(ids).contains(b.id))
-                               .map(r =>
-                                 (
-                                   r.id,                   // 1
-                                   r.spaceId,              // 2
-                                   r.featured,             // 3
-                                   r.authorId,             // 4
-                                   r.title,                // 5
-                                   r.introContentOrder,    // 6
-                                   r.publicationStatus,    // 7
-                                   r.publicationTimestamp, // 8
-                                   r.updatedBy,            // 9
-                                   r.updatedAt             // 10
-                                 )
-                               )
-                           )
-      introWidgetsMap <- getPageWidgetsMap(ids, ContentTypes.Intro)
-    } yield pages.map { r =>
-      val introWidgets = introWidgetsMap.get(r._1).getOrElse(Map.empty)
-      PageView(
-        id = r._1,
-        spaceId = r._2,
-        featured = r._3,
-        authorId = r._4,
-        title = r._5,
-        introContent = r._6.map(c => introWidgets.get(c)).flatten,
-        content = None,
-        publicationStatus = r._7,
-        publicationTimestamp = r._8,
-        metric = None,
-        updatedBy = r._9,
-        updatedAt = r._10
-      )
+      val pageWidgets = pageWidgetsMap.get(r.id).getOrElse(Map.empty)
+      r.toPageView(pageWidgets)
     }
 
   private def getAllowedPageIds(ids: Set[PageId], principals: Set[AnnettePrincipal]): Future[Set[String]] =

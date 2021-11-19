@@ -452,11 +452,6 @@ class CmsServiceApiImpl(
       } yield Done
     }
 
-  override def updatePageFeatured: ServiceCall[UpdatePageFeaturedPayload, Done] =
-    ServiceCall { payload =>
-      pageEntityService.updatePageFeatured(payload)
-    }
-
   override def updatePageAuthor: ServiceCall[UpdatePageAuthorPayload, Done] =
     ServiceCall { payload =>
       pageEntityService.updatePageAuthor(payload)
@@ -523,7 +518,6 @@ class CmsServiceApiImpl(
   override def getPageById(
     id: PageId,
     fromReadSide: Boolean = true,
-    withIntro: Option[Boolean] = None,
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
   ): ServiceCall[NotUsed, Page] =
@@ -531,7 +525,6 @@ class CmsServiceApiImpl(
       pageEntityService.getPageById(
         id,
         fromReadSide,
-        withIntro.getOrElse(false),
         withContent.getOrElse(false),
         withTargets.getOrElse(false)
       )
@@ -539,7 +532,6 @@ class CmsServiceApiImpl(
 
   override def getPagesById(
     fromReadSide: Boolean = true,
-    withIntro: Option[Boolean] = None,
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
   ): ServiceCall[Set[PageId], Seq[Page]] =
@@ -547,7 +539,6 @@ class CmsServiceApiImpl(
       pageEntityService.getPagesById(
         ids,
         fromReadSide,
-        withIntro.getOrElse(false),
         withContent.getOrElse(false),
         withTargets.getOrElse(false)
       )
