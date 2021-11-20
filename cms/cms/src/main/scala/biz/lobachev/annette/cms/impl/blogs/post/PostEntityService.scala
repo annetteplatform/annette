@@ -20,6 +20,7 @@ import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
 import biz.lobachev.annette.cms.api.blogs.post._
+import biz.lobachev.annette.cms.api.common.Updated
 import biz.lobachev.annette.cms.impl.blogs.post.dao.{PostDbDao, PostIndexDao}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
@@ -45,9 +46,13 @@ class PostEntityService(
   private def refFor(id: PostId): EntityRef[PostEntity.Command] =
     clusterSharding.entityRefFor(PostEntity.typeKey, id)
 
-  private def convertSuccess(confirmation: PostEntity.Confirmation, id: PostId, maybeId: Option[String] = None): Done =
+  private def convertSuccess(
+    confirmation: PostEntity.Confirmation,
+    id: PostId,
+    maybeId: Option[String] = None
+  ): Updated =
     confirmation match {
-      case PostEntity.Success                            => Done
+      case PostEntity.Success(updatedBy, updatedAt)      => Updated(updatedBy, updatedAt)
       case PostEntity.PostAlreadyExist                   => throw PostAlreadyExist(id)
       case PostEntity.PostNotFound                       => throw PostNotFound(id)
       case PostEntity.PostPublicationDateClearNotAllowed => throw PostPublicationDateClearNotAllowed(id)
@@ -63,7 +68,7 @@ class PostEntityService(
       case _                            => throw new RuntimeException("Match fail")
     }
 
-  def createPost(payload: CreatePostPayload, targets: Set[AnnettePrincipal]): Future[Done] =
+  def createPost(payload: CreatePostPayload, targets: Set[AnnettePrincipal]): Future[Post] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -72,9 +77,9 @@ class PostEntityService(
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(convertSuccess(_, payload.id))
+      .map(convertSuccessPost(_, payload.id))
 
-  def updatePostFeatured(payload: UpdatePostFeaturedPayload): Future[Done] =
+  def updatePostFeatured(payload: UpdatePostFeaturedPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -84,7 +89,7 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def updatePostAuthor(payload: UpdatePostAuthorPayload): Future[Done] =
+  def updatePostAuthor(payload: UpdatePostAuthorPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -94,7 +99,7 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def updatePostTitle(payload: UpdatePostTitlePayload): Future[Done] =
+  def updatePostTitle(payload: UpdatePostTitlePayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -104,7 +109,7 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def updateWidgetContent(payload: UpdatePostWidgetContentPayload): Future[Done] =
+  def updateWidgetContent(payload: UpdatePostWidgetContentPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -114,7 +119,7 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id, Some(payload.widgetContent.id)))
 
-  def changeWidgetContentOrder(payload: ChangePostWidgetContentOrderPayload): Future[Done] =
+  def changeWidgetContentOrder(payload: ChangePostWidgetContentOrderPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -124,7 +129,7 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id, Some(payload.widgetContentId)))
 
-  def deleteWidgetContent(payload: DeletePostWidgetContentPayload): Future[Done] =
+  def deleteWidgetContent(payload: DeletePostWidgetContentPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -134,7 +139,7 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id, Some(payload.widgetContentId)))
 
-  def updatePostPublicationTimestamp(payload: UpdatePostPublicationTimestampPayload): Future[Done] =
+  def updatePostPublicationTimestamp(payload: UpdatePostPublicationTimestampPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -144,7 +149,7 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def publishPost(payload: PublishPostPayload): Future[Done] =
+  def publishPost(payload: PublishPostPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -154,7 +159,7 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def unpublishPost(payload: UnpublishPostPayload): Future[Done] =
+  def unpublishPost(payload: UnpublishPostPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -164,7 +169,7 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def assignPostTargetPrincipal(payload: AssignPostTargetPrincipalPayload): Future[Done] =
+  def assignPostTargetPrincipal(payload: AssignPostTargetPrincipalPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -174,7 +179,7 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def unassignPostTargetPrincipal(payload: UnassignPostTargetPrincipalPayload): Future[Done] =
+  def unassignPostTargetPrincipal(payload: UnassignPostTargetPrincipalPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -184,7 +189,7 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def deletePost(payload: DeletePostPayload): Future[Done] =
+  def deletePost(payload: DeletePostPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -239,7 +244,7 @@ class PostEntityService(
         }
         .map(_.flatten.toSeq)
 
-  def getPostViews(payload: GetPostViewsPayload): Future[Seq[PostView]] =
+  def getPostViews(payload: GetPostViewsPayload): Future[Seq[Post]] =
     dbDao.getPostViewsById(payload)
 
   def findPosts(query: PostFindQuery): Future[FindResult] = indexDao.findPosts(query)

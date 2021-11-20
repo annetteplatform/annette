@@ -22,7 +22,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.cms.api.blogs.post.ContentTypes.ContentType
 import biz.lobachev.annette.cms.api.blogs.post.PublicationStatus.PublicationStatus
 import biz.lobachev.annette.cms.api.blogs.post._
-import biz.lobachev.annette.cms.api.content.WidgetContent
+import biz.lobachev.annette.cms.api.common.WidgetContent
 import biz.lobachev.annette.cms.impl.blogs.post.PostEntity
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
@@ -395,12 +395,12 @@ private[impl] class PostDbDao(
                                     .map(_.headOption)
       maybeIntroWidgetContents <- if (withIntro)
                                     maybeEntity
-                                      .map(_ => getPostWidgets(id, ContentTypes.Intro).map(Some(_)))
+                                      .map(_ => getWidgetContents(id, ContentTypes.Intro).map(Some(_)))
                                       .getOrElse(Future.successful(None))
                                   else Future.successful(None)
       maybePostWidgetContents  <- if (withContent)
                                     maybeEntity
-                                      .map(_ => getPostWidgets(id, ContentTypes.Post).map(Some(_)))
+                                      .map(_ => getWidgetContents(id, ContentTypes.Post).map(Some(_)))
                                       .getOrElse(Future.successful(None))
                                   else Future.successful(None)
       maybeTargets             <- if (withTargets)
@@ -414,17 +414,35 @@ private[impl] class PostDbDao(
       )
     )
 
-  private def getPostWidgets(id: PostId, contentType: ContentType): Future[Map[String, WidgetContent]] =
+  private def getWidgetContents(id: PostId, contentType: ContentType): Future[Map[String, WidgetContent]] =
     ctx
       .run(
-        postWidgetSchema.filter(r =>
-          r.postId == lift(id) &&
-            r.contentType == lift(contentType)
-        )
+        postWidgetSchema
+          .filter(r =>
+            r.postId == lift(id) &&
+              r.contentType == lift(contentType)
+          )
+          .map(r =>
+            (
+              r.widgetContentId, // 1
+              r.widgetType,      // 2
+              r.data             // 3
+            )
+          )
       )
-      .map(_.map(c => c.widgetContentId -> c.toWidgetContent).toMap)
+      .map(
+        _.map(c =>
+          c._1 ->
+            WidgetContent(
+              id = c._1,
+              widgetType = c._2,
+              data = c._3,
+              indexData = None
+            )
+        ).toMap
+      )
 
-  private def getPostTargets(id: PostId): Future[Set[AnnettePrincipal]]                                =
+  private def getPostTargets(id: PostId): Future[Set[AnnettePrincipal]] =
     ctx
       .run(postTargetSchema.filter(_.postId == lift(id)).map(_.principal))
       .map(_.toSet)
@@ -440,19 +458,6 @@ private[impl] class PostDbDao(
       .runWith(Sink.seq)
       .map(_.flatten)
 
-  private def getPostWidgetsMap(
-    ids: Set[PostId],
-    contentType: ContentType
-  ): Future[Map[String, Map[String, WidgetContent]]]                                  =
-    ctx
-      .run(
-        postWidgetSchema.filter(r =>
-          liftQuery(ids).contains(r.postId) &&
-            r.contentType == lift(contentType)
-        )
-      )
-      .map(_.groupBy(_.postId).map { case k -> v => k -> v.map(c => c.widgetContentId -> c.toWidgetContent).toMap })
-
   def canAccessToPost(id: PostId, principals: Set[AnnettePrincipal]): Future[Boolean] =
     for {
       maybeCount <- ctx
@@ -466,11 +471,11 @@ private[impl] class PostDbDao(
                       )
     } yield maybeCount.map(_ > 0).getOrElse(false)
 
-  def getPostViewsById(payload: GetPostViewsPayload): Future[Seq[PostView]] =
+  def getPostViewsById(payload: GetPostViewsPayload): Future[Seq[Post]] =
     for {
       allowedPostIds    <- getAllowedPostIds(payload.ids, payload.principals + payload.directPrincipal)
-      postViews         <- if (payload.withContent) getPostViewsWithContent(allowedPostIds)
-                           else getPostViewsWithoutContent(allowedPostIds)
+      postViews         <- if (payload.withContent) getPostsById(allowedPostIds, true, true, false)
+                           else getPostsById(allowedPostIds, true, false, false)
       publishedPostViews = postViews.filter(post =>
                              post.publicationStatus == PublicationStatus.Published &&
                                post.publicationTimestamp.map(_.compareTo(OffsetDateTime.now) <= 0).getOrElse(true)
@@ -480,60 +485,6 @@ private[impl] class PostDbDao(
 
     } yield publishedPostViews
       .map(pv => pv.copy(metric = metricsMap.get(pv.id)))
-
-  def getPostViewsWithContent(ids: Set[String]): Future[Seq[PostView]] =
-    for {
-      posts           <- ctx.run(
-                           postSchema
-                             .filter(b => liftQuery(ids).contains(b.id))
-                         )
-      introWidgetsMap <- getPostWidgetsMap(ids, ContentTypes.Intro)
-      postWidgetsMap  <- getPostWidgetsMap(ids, ContentTypes.Post)
-    } yield posts.map { r =>
-      val introWidgets = introWidgetsMap.get(r.id).getOrElse(Map.empty)
-      val postWidgets  = postWidgetsMap.get(r.id).getOrElse(Map.empty)
-      r.toPostView(introWidgets, postWidgets)
-    }
-
-  def getPostViewsWithoutContent(ids: Set[String]): Future[Seq[PostView]] =
-    for {
-      posts           <- ctx
-                           .run(
-                             postSchema
-                               .filter(b => liftQuery(ids).contains(b.id))
-                               .map(r =>
-                                 (
-                                   r.id,                   // 1
-                                   r.blogId,               // 2
-                                   r.featured,             // 3
-                                   r.authorId,             // 4
-                                   r.title,                // 5
-                                   r.introContentOrder,    // 6
-                                   r.publicationStatus,    // 7
-                                   r.publicationTimestamp, // 8
-                                   r.updatedBy,            // 9
-                                   r.updatedAt             // 10
-                                 )
-                               )
-                           )
-      introWidgetsMap <- getPostWidgetsMap(ids, ContentTypes.Intro)
-    } yield posts.map { r =>
-      val introWidgets = introWidgetsMap.get(r._1).getOrElse(Map.empty)
-      PostView(
-        id = r._1,
-        blogId = r._2,
-        featured = r._3,
-        authorId = r._4,
-        title = r._5,
-        introContent = r._6.map(c => introWidgets.get(c)).flatten,
-        content = None,
-        publicationStatus = r._7,
-        publicationTimestamp = r._8,
-        metric = None,
-        updatedBy = r._9,
-        updatedAt = r._10
-      )
-    }
 
   private def getAllowedPostIds(ids: Set[PostId], principals: Set[AnnettePrincipal]): Future[Set[String]] =
     ctx

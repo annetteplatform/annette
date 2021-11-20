@@ -56,14 +56,7 @@ class CmsPostController @Inject() (
           .withFieldConst(_.createdBy, request.subject.principals.head)
           .transform
         for {
-          _    <- cmsService.createPost(payload)
-          post <- cmsService.getPostById(
-                    id = payload.id,
-                    fromReadSide = false,
-                    withIntro = Some(true),
-                    withContent = Some(true),
-                    withTargets = Some(true)
-                  )
+          post <- cmsService.createPost(payload)
         } yield Ok(Json.toJson(post))
       }
     }
@@ -76,15 +69,8 @@ class CmsPostController @Inject() (
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
-          _    <- cmsService.updatePostTitle(payload)
-          post <- cmsService.getPostById(
-                    id = payload.id,
-                    fromReadSide = false,
-                    withIntro = Some(true),
-                    withContent = Some(true),
-                    withTargets = Some(true)
-                  )
-        } yield Ok(Json.toJson(post))
+          updated <- cmsService.updatePostTitle(payload)
+        } yield Ok(Json.toJson(updated))
       }
     }
 
@@ -96,15 +82,8 @@ class CmsPostController @Inject() (
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
-          _    <- cmsService.updatePostAuthor(payload)
-          post <- cmsService.getPostById(
-                    id = payload.id,
-                    fromReadSide = false,
-                    withIntro = Some(true),
-                    withContent = Some(true),
-                    withTargets = Some(true)
-                  )
-        } yield Ok(Json.toJson(post))
+          updated <- cmsService.updatePostAuthor(payload)
+        } yield Ok(Json.toJson(updated))
       }
     }
 
@@ -116,15 +95,8 @@ class CmsPostController @Inject() (
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
-          _    <- cmsService.updatePostWidgetContent(payload)
-          post <- cmsService.getPostById(
-                    id = payload.id,
-                    fromReadSide = false,
-                    withIntro = Some(true),
-                    withContent = Some(true),
-                    withTargets = Some(true)
-                  )
-        } yield Ok(Json.toJson(post))
+          updated <- cmsService.updatePostWidgetContent(payload)
+        } yield Ok(Json.toJson(updated))
       }
     }
 
@@ -136,15 +108,8 @@ class CmsPostController @Inject() (
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
-          _    <- cmsService.changePostWidgetContentOrder(payload)
-          post <- cmsService.getPostById(
-                    id = payload.id,
-                    fromReadSide = false,
-                    withIntro = Some(true),
-                    withContent = Some(true),
-                    withTargets = Some(true)
-                  )
-        } yield Ok(Json.toJson(post))
+          updated <- cmsService.changePostWidgetContentOrder(payload)
+        } yield Ok(Json.toJson(updated))
       }
     }
 
@@ -156,15 +121,8 @@ class CmsPostController @Inject() (
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
-          _    <- cmsService.deletePostWidgetContent(payload)
-          post <- cmsService.getPostById(
-                    id = payload.id,
-                    fromReadSide = false,
-                    withIntro = Some(true),
-                    withContent = Some(true),
-                    withTargets = Some(true)
-                  )
-        } yield Ok(Json.toJson(post))
+          updated <- cmsService.deletePostWidgetContent(payload)
+        } yield Ok(Json.toJson(updated))
       }
     }
 
@@ -176,15 +134,8 @@ class CmsPostController @Inject() (
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
-          _    <- cmsService.updatePostPublicationTimestamp(payload)
-          post <- cmsService.getPostById(
-                    id = payload.id,
-                    fromReadSide = false,
-                    withIntro = Some(true),
-                    withContent = Some(true),
-                    withTargets = Some(true)
-                  )
-        } yield Ok(Json.toJson(post))
+          updated <- cmsService.updatePostPublicationTimestamp(payload)
+        } yield Ok(Json.toJson(updated))
       }
     }
 
@@ -193,15 +144,8 @@ class CmsPostController @Inject() (
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
         val payload = PublishPostPayload(id, request.subject.principals.head)
         for {
-          _    <- cmsService.publishPost(payload)
-          post <- cmsService.getPostById(
-                    id = id,
-                    fromReadSide = false,
-                    withIntro = Some(true),
-                    withContent = Some(true),
-                    withTargets = Some(true)
-                  )
-        } yield Ok(Json.toJson(post))
+          updated <- cmsService.publishPost(payload)
+        } yield Ok(Json.toJson(updated))
       }
     }
 
@@ -210,15 +154,8 @@ class CmsPostController @Inject() (
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
         val payload = UnpublishPostPayload(id, request.subject.principals.head)
         for {
-          _    <- cmsService.unpublishPost(payload)
-          post <- cmsService.getPostById(
-                    id = id,
-                    fromReadSide = false,
-                    withIntro = Some(true),
-                    withContent = Some(true),
-                    withTargets = Some(true)
-                  )
-        } yield Ok(Json.toJson(post))
+          updated <- cmsService.unpublishPost(payload)
+        } yield Ok(Json.toJson(updated))
       }
     }
 
@@ -230,15 +167,8 @@ class CmsPostController @Inject() (
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
-          _    <- cmsService.updatePostFeatured(payload)
-          post <- cmsService.getPostById(
-                    id = payload.id,
-                    fromReadSide = false,
-                    withIntro = Some(true),
-                    withContent = Some(true),
-                    withTargets = Some(true)
-                  )
-        } yield Ok(Json.toJson(post))
+          updated <- cmsService.updatePostFeatured(payload)
+        } yield Ok(Json.toJson(updated))
       }
     }
 
@@ -250,15 +180,8 @@ class CmsPostController @Inject() (
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
-          _    <- cmsService.assignPostTargetPrincipal(payload)
-          post <- cmsService.getPostById(
-                    id = payload.id,
-                    fromReadSide = false,
-                    withIntro = Some(true),
-                    withContent = Some(true),
-                    withTargets = Some(true)
-                  )
-        } yield Ok(Json.toJson(post))
+          updated <- cmsService.assignPostTargetPrincipal(payload)
+        } yield Ok(Json.toJson(updated))
       }
     }
 
@@ -270,15 +193,8 @@ class CmsPostController @Inject() (
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
-          _    <- cmsService.unassignPostTargetPrincipal(payload)
-          post <- cmsService.getPostById(
-                    id = payload.id,
-                    fromReadSide = false,
-                    withIntro = Some(true),
-                    withContent = Some(true),
-                    withTargets = Some(true)
-                  )
-        } yield Ok(Json.toJson(post))
+          updated <- cmsService.unassignPostTargetPrincipal(payload)
+        } yield Ok(Json.toJson(updated))
       }
     }
 
@@ -290,8 +206,8 @@ class CmsPostController @Inject() (
           .withFieldConst(_.deletedBy, request.subject.principals.head)
           .transform
         for {
-          _ <- cmsService.deletePost(payload)
-        } yield Ok(Json.toJson(""))
+          updated <- cmsService.deletePost(payload)
+        } yield Ok(Json.toJson(updated))
       }
     }
 

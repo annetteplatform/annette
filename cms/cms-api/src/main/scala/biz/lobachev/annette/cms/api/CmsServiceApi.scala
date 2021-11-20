@@ -19,6 +19,7 @@ package biz.lobachev.annette.cms.api
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.cms.api.blogs.blog.{BlogView, _}
 import biz.lobachev.annette.cms.api.blogs.post._
+import biz.lobachev.annette.cms.api.common.Updated
 import biz.lobachev.annette.cms.api.files._
 import biz.lobachev.annette.cms.api.pages.space._
 import biz.lobachev.annette.cms.api.pages.page._
@@ -60,19 +61,19 @@ trait CmsServiceApi extends Service {
   def canAccessToBlog: ServiceCall[CanAccessToBlogPayload, Boolean]
   def findBlogs: ServiceCall[BlogFindQuery, FindResult]
 
-  def createPost: ServiceCall[CreatePostPayload, Done]
-  def updatePostFeatured: ServiceCall[UpdatePostFeaturedPayload, Done]
-  def updatePostAuthor: ServiceCall[UpdatePostAuthorPayload, Done]
-  def updatePostTitle: ServiceCall[UpdatePostTitlePayload, Done]
-  def updatePostWidgetContent: ServiceCall[UpdatePostWidgetContentPayload, Done]
-  def changePostWidgetContentOrder: ServiceCall[ChangePostWidgetContentOrderPayload, Done]
-  def deletePostWidgetContent: ServiceCall[DeletePostWidgetContentPayload, Done]
-  def updatePostPublicationTimestamp: ServiceCall[UpdatePostPublicationTimestampPayload, Done]
-  def publishPost: ServiceCall[PublishPostPayload, Done]
-  def unpublishPost: ServiceCall[UnpublishPostPayload, Done]
-  def assignPostTargetPrincipal: ServiceCall[AssignPostTargetPrincipalPayload, Done]
-  def unassignPostTargetPrincipal: ServiceCall[UnassignPostTargetPrincipalPayload, Done]
-  def deletePost: ServiceCall[DeletePostPayload, Done]
+  def createPost: ServiceCall[CreatePostPayload, Post]
+  def updatePostFeatured: ServiceCall[UpdatePostFeaturedPayload, Updated]
+  def updatePostAuthor: ServiceCall[UpdatePostAuthorPayload, Updated]
+  def updatePostTitle: ServiceCall[UpdatePostTitlePayload, Updated]
+  def updatePostWidgetContent: ServiceCall[UpdatePostWidgetContentPayload, Updated]
+  def changePostWidgetContentOrder: ServiceCall[ChangePostWidgetContentOrderPayload, Updated]
+  def deletePostWidgetContent: ServiceCall[DeletePostWidgetContentPayload, Updated]
+  def updatePostPublicationTimestamp: ServiceCall[UpdatePostPublicationTimestampPayload, Updated]
+  def publishPost: ServiceCall[PublishPostPayload, Updated]
+  def unpublishPost: ServiceCall[UnpublishPostPayload, Updated]
+  def assignPostTargetPrincipal: ServiceCall[AssignPostTargetPrincipalPayload, Updated]
+  def unassignPostTargetPrincipal: ServiceCall[UnassignPostTargetPrincipalPayload, Updated]
+  def deletePost: ServiceCall[DeletePostPayload, Updated]
   def getPostById(
     id: PostId,
     fromReadSide: Boolean = true,
@@ -86,7 +87,7 @@ trait CmsServiceApi extends Service {
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
   ): ServiceCall[Set[PostId], Seq[Post]]
-  def getPostViews: ServiceCall[GetPostViewsPayload, Seq[PostView]]
+  def getPostViews: ServiceCall[GetPostViewsPayload, Seq[Post]]
   def canAccessToPost: ServiceCall[CanAccessToPostPayload, Boolean]
   def findPosts: ServiceCall[PostFindQuery, FindResult]
 

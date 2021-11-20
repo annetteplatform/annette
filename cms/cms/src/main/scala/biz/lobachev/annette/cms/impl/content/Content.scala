@@ -1,13 +1,13 @@
 package biz.lobachev.annette.cms.impl.content
 
-import biz.lobachev.annette.cms.api.content.{SerialContent, WidgetContent}
+import biz.lobachev.annette.cms.api.common.{SerialContent, WidgetContent}
 import play.api.libs.json.{Format, Json}
 
 case class Content(
   contentOrder: Seq[String],
   content: Map[String, WidgetContent]
 ) {
-  def toSerialContent: SerialContent = contentOrder.map(content.get(_)).flatten
+  def toSerialContent: SerialContent = contentOrder.map(content.get(_).map(_.copy(indexData = None))).flatten
 }
 
 object Content {

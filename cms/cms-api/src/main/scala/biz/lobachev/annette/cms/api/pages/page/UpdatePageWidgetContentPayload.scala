@@ -1,6 +1,6 @@
 package biz.lobachev.annette.cms.api.pages.page
 
-import biz.lobachev.annette.cms.api.content.WidgetContent
+import biz.lobachev.annette.cms.api.common.WidgetContent
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 

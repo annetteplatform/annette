@@ -18,9 +18,8 @@ package biz.lobachev.annette.cms.impl.blogs.post.dao
 
 import biz.lobachev.annette.cms.api.blogs.blog.BlogId
 import biz.lobachev.annette.cms.api.blogs.post._
-import biz.lobachev.annette.cms.api.content.WidgetContent
+import biz.lobachev.annette.cms.api.common.WidgetContent
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import io.scalaland.chimney.dsl._
 
 import java.time.OffsetDateTime
 
@@ -60,28 +59,4 @@ case class PostRecord(
       updatedBy = updatedBy,
       updatedAt = updatedAt
     )
-
-  def toPostView(
-    introWidgetContents: Map[String, WidgetContent],
-    postWidgetContents: Map[String, WidgetContent]
-  ): PostView =
-    this
-      .into[PostView]
-      .withFieldComputed(
-        _.introContent,
-        _.introContentOrder
-          .map(c => introWidgetContents.get(c))
-          .flatten
-          .toSeq
-      )
-      .withFieldComputed(
-        _.content,
-        r =>
-          Some(
-            r.postContentOrder
-              .map(c => postWidgetContents.get(c))
-              .flatten
-          )
-      )
-      .transform
 }

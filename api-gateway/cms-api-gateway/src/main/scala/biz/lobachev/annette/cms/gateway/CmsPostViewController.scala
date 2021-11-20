@@ -199,7 +199,6 @@ class CmsPostViewController @Inject() (
                                 targets = Some(targets)
                               )
                             )
-        _                 = println(s"getLimitedBlogs: findResult ${findResults.toString}")
       } yield findResults.hits.map(_.id).toSet
     else
       // restrict blogs that user subscribed and has access

@@ -22,7 +22,7 @@ import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.cms.api.pages.space.SpaceId
 import biz.lobachev.annette.cms.api.pages.page._
-import biz.lobachev.annette.cms.api.content.{SerialContent, WidgetContent}
+import biz.lobachev.annette.cms.api.common.{SerialContent, WidgetContent}
 import biz.lobachev.annette.cms.impl.pages.page.model.PageState
 import biz.lobachev.annette.cms.impl.content.Content
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal

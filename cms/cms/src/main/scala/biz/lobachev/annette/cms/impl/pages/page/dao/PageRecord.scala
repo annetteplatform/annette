@@ -18,7 +18,7 @@ package biz.lobachev.annette.cms.impl.pages.page.dao
 
 import biz.lobachev.annette.cms.api.pages.space.SpaceId
 import biz.lobachev.annette.cms.api.pages.page._
-import biz.lobachev.annette.cms.api.content.WidgetContent
+import biz.lobachev.annette.cms.api.common.WidgetContent
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import io.scalaland.chimney.dsl._
 

@@ -17,7 +17,7 @@
 package biz.lobachev.annette.cms.api.pages.page
 
 import biz.lobachev.annette.cms.api.pages.space.SpaceId
-import biz.lobachev.annette.cms.api.content.SerialContent
+import biz.lobachev.annette.cms.api.common.SerialContent
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 

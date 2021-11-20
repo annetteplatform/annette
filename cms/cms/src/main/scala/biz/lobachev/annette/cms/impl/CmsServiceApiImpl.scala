@@ -21,6 +21,7 @@ import akka.{Done, NotUsed}
 import biz.lobachev.annette.cms.api._
 import biz.lobachev.annette.cms.api.blogs.blog._
 import biz.lobachev.annette.cms.api.blogs.post._
+import biz.lobachev.annette.cms.api.common.Updated
 import biz.lobachev.annette.cms.api.files._
 import biz.lobachev.annette.cms.api.pages.space._
 import biz.lobachev.annette.cms.api.pages.page._
@@ -182,84 +183,84 @@ class CmsServiceApiImpl(
       blogEntityService.findBlogs(query)
     }
 
-  override def createPost: ServiceCall[CreatePostPayload, Done] =
+  override def createPost: ServiceCall[CreatePostPayload, Post] =
     ServiceCall { payload =>
       for {
         // validate if blog exist
         // TODO: create isBlogExist method
-        blog <- blogEntityService.getBlogById(payload.blogId, false)
-        _    <- postEntityService
-                  .createPost(payload, blog.targets)
+        blog    <- blogEntityService.getBlogById(payload.blogId, false)
+        updated <- postEntityService
+                     .createPost(payload, blog.targets)
 
-      } yield Done
+      } yield updated
     }
 
-  override def updatePostFeatured: ServiceCall[UpdatePostFeaturedPayload, Done] =
+  override def updatePostFeatured: ServiceCall[UpdatePostFeaturedPayload, Updated] =
     ServiceCall { payload =>
       postEntityService.updatePostFeatured(payload)
     }
 
-  override def updatePostAuthor: ServiceCall[UpdatePostAuthorPayload, Done] =
+  override def updatePostAuthor: ServiceCall[UpdatePostAuthorPayload, Updated] =
     ServiceCall { payload =>
       postEntityService.updatePostAuthor(payload)
     }
 
-  override def updatePostTitle: ServiceCall[UpdatePostTitlePayload, Done] =
+  override def updatePostTitle: ServiceCall[UpdatePostTitlePayload, Updated] =
     ServiceCall { payload =>
       postEntityService.updatePostTitle(payload)
     }
 
-  override def updatePostWidgetContent: ServiceCall[UpdatePostWidgetContentPayload, Done] =
+  override def updatePostWidgetContent: ServiceCall[UpdatePostWidgetContentPayload, Updated] =
     ServiceCall { payload =>
       postEntityService.updateWidgetContent(payload)
     }
 
-  override def changePostWidgetContentOrder: ServiceCall[ChangePostWidgetContentOrderPayload, Done] =
+  override def changePostWidgetContentOrder: ServiceCall[ChangePostWidgetContentOrderPayload, Updated] =
     ServiceCall { payload =>
       postEntityService.changeWidgetContentOrder(payload)
     }
 
-  override def deletePostWidgetContent: ServiceCall[DeletePostWidgetContentPayload, Done] =
+  override def deletePostWidgetContent: ServiceCall[DeletePostWidgetContentPayload, Updated] =
     ServiceCall { payload =>
       postEntityService.deleteWidgetContent(payload)
     }
 
-  override def updatePostPublicationTimestamp: ServiceCall[UpdatePostPublicationTimestampPayload, Done] =
+  override def updatePostPublicationTimestamp: ServiceCall[UpdatePostPublicationTimestampPayload, Updated] =
     ServiceCall { payload =>
       postEntityService.updatePostPublicationTimestamp(payload)
     }
 
-  override def publishPost: ServiceCall[PublishPostPayload, Done] =
+  override def publishPost: ServiceCall[PublishPostPayload, Updated] =
     ServiceCall { payload =>
       postEntityService.publishPost(payload)
     }
 
-  override def unpublishPost: ServiceCall[UnpublishPostPayload, Done] =
+  override def unpublishPost: ServiceCall[UnpublishPostPayload, Updated] =
     ServiceCall { payload =>
       postEntityService.unpublishPost(payload)
     }
 
-  override def assignPostTargetPrincipal: ServiceCall[AssignPostTargetPrincipalPayload, Done] =
+  override def assignPostTargetPrincipal: ServiceCall[AssignPostTargetPrincipalPayload, Updated] =
     ServiceCall { payload =>
       postEntityService.assignPostTargetPrincipal(payload)
     }
 
-  override def unassignPostTargetPrincipal: ServiceCall[UnassignPostTargetPrincipalPayload, Done] =
+  override def unassignPostTargetPrincipal: ServiceCall[UnassignPostTargetPrincipalPayload, Updated] =
     ServiceCall { payload =>
       postEntityService.unassignPostTargetPrincipal(payload)
     }
 
-  override def deletePost: ServiceCall[DeletePostPayload, Done] =
+  override def deletePost: ServiceCall[DeletePostPayload, Updated] =
     ServiceCall { payload =>
       for {
-        _ <- postEntityService.deletePost(payload)
-        _ <- fileEntityService.removeFiles(
-               RemoveFilesPayload(
-                 objectId = s"post-${payload.id}",
-                 updatedBy = payload.deletedBy
-               )
-             )
-      } yield Done
+        updated <- postEntityService.deletePost(payload)
+        _       <- fileEntityService.removeFiles(
+                     RemoveFilesPayload(
+                       objectId = s"post-${payload.id}",
+                       updatedBy = payload.deletedBy
+                     )
+                   )
+      } yield updated
     }
 
   override def getPostById(
@@ -295,7 +296,7 @@ class CmsServiceApiImpl(
       )
     }
 
-  override def getPostViews: ServiceCall[GetPostViewsPayload, Seq[PostView]] =
+  override def getPostViews: ServiceCall[GetPostViewsPayload, Seq[Post]] =
     ServiceCall { payload =>
       postEntityService.getPostViews(payload)
     }

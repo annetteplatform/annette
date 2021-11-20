@@ -1,4 +1,4 @@
-package biz.lobachev.annette.cms.api.content
+package biz.lobachev.annette.cms.api.common
 
 import play.api.libs.json.{Format, JsValue, Json}
 

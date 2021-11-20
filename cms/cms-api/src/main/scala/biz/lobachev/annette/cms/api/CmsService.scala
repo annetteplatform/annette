@@ -19,6 +19,7 @@ package biz.lobachev.annette.cms.api
 import akka.Done
 import biz.lobachev.annette.cms.api.blogs.blog._
 import biz.lobachev.annette.cms.api.blogs.post._
+import biz.lobachev.annette.cms.api.common.Updated
 import biz.lobachev.annette.cms.api.pages.space._
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.cms.api.files.{FileDescriptor, RemoveFilePayload, RemoveFilesPayload, StoreFilePayload}
@@ -60,19 +61,19 @@ trait CmsService {
   def canAccessToBlog(payload: CanAccessToBlogPayload): Future[Boolean]
   def findBlogs(payload: BlogFindQuery): Future[FindResult]
 
-  def createPost(payload: CreatePostPayload): Future[Done]
-  def updatePostFeatured(payload: UpdatePostFeaturedPayload): Future[Done]
-  def updatePostAuthor(payload: UpdatePostAuthorPayload): Future[Done]
-  def updatePostTitle(payload: UpdatePostTitlePayload): Future[Done]
-  def updatePostWidgetContent(payload: UpdatePostWidgetContentPayload): Future[Done]
-  def changePostWidgetContentOrder(payload: ChangePostWidgetContentOrderPayload): Future[Done]
-  def deletePostWidgetContent(payload: DeletePostWidgetContentPayload): Future[Done]
-  def updatePostPublicationTimestamp(payload: UpdatePostPublicationTimestampPayload): Future[Done]
-  def publishPost(payload: PublishPostPayload): Future[Done]
-  def unpublishPost(payload: UnpublishPostPayload): Future[Done]
-  def assignPostTargetPrincipal(payload: AssignPostTargetPrincipalPayload): Future[Done]
-  def unassignPostTargetPrincipal(payload: UnassignPostTargetPrincipalPayload): Future[Done]
-  def deletePost(payload: DeletePostPayload): Future[Done]
+  def createPost(payload: CreatePostPayload): Future[Post]
+  def updatePostFeatured(payload: UpdatePostFeaturedPayload): Future[Updated]
+  def updatePostAuthor(payload: UpdatePostAuthorPayload): Future[Updated]
+  def updatePostTitle(payload: UpdatePostTitlePayload): Future[Updated]
+  def updatePostWidgetContent(payload: UpdatePostWidgetContentPayload): Future[Updated]
+  def changePostWidgetContentOrder(payload: ChangePostWidgetContentOrderPayload): Future[Updated]
+  def deletePostWidgetContent(payload: DeletePostWidgetContentPayload): Future[Updated]
+  def updatePostPublicationTimestamp(payload: UpdatePostPublicationTimestampPayload): Future[Updated]
+  def publishPost(payload: PublishPostPayload): Future[Updated]
+  def unpublishPost(payload: UnpublishPostPayload): Future[Updated]
+  def assignPostTargetPrincipal(payload: AssignPostTargetPrincipalPayload): Future[Updated]
+  def unassignPostTargetPrincipal(payload: UnassignPostTargetPrincipalPayload): Future[Updated]
+  def deletePost(payload: DeletePostPayload): Future[Updated]
   def getPostById(
     id: PostId,
     fromReadSide: Boolean = true,
@@ -87,7 +88,7 @@ trait CmsService {
     withContent: Option[Boolean],
     withTargets: Option[Boolean]
   ): Future[Seq[Post]]
-  def getPostViews(payload: GetPostViewsPayload): Future[Seq[PostView]]
+  def getPostViews(payload: GetPostViewsPayload): Future[Seq[Post]]
   def canAccessToPost(payload: CanAccessToPostPayload): Future[Boolean]
   def findPosts(query: PostFindQuery): Future[FindResult]
 

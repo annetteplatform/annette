@@ -21,7 +21,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.cms.api.pages.page.PublicationStatus.PublicationStatus
 import biz.lobachev.annette.cms.api.pages.page._
-import biz.lobachev.annette.cms.api.content.WidgetContent
+import biz.lobachev.annette.cms.api.common.WidgetContent
 import biz.lobachev.annette.cms.impl.pages.page.PageEntity
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}

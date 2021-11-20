@@ -22,7 +22,7 @@ import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.cms.api.blogs.blog.BlogId
 import biz.lobachev.annette.cms.api.blogs.post._
-import biz.lobachev.annette.cms.api.content.{SerialContent, WidgetContent}
+import biz.lobachev.annette.cms.api.common.{SerialContent, WidgetContent}
 import ContentTypes.ContentType
 import biz.lobachev.annette.cms.impl.blogs.post.model.PostState
 import biz.lobachev.annette.cms.impl.content.Content
@@ -139,14 +139,14 @@ object PostEntity {
   ) extends Command
 
   sealed trait Confirmation
-  final case object Success                            extends Confirmation
-  final case class SuccessPost(post: Post)             extends Confirmation
-  final case object PostAlreadyExist                   extends Confirmation
-  final case object PostNotFound                       extends Confirmation
-  final case object WidgetContentNotFound              extends Confirmation
-  final case object PostPublicationDateClearNotAllowed extends Confirmation
+  final case class Success(updatedBy: AnnettePrincipal, updatedAt: OffsetDateTime) extends Confirmation
+  final case class SuccessPost(post: Post)                                         extends Confirmation
+  final case object PostAlreadyExist                                               extends Confirmation
+  final case object PostNotFound                                                   extends Confirmation
+  final case object WidgetContentNotFound                                          extends Confirmation
+  final case object PostPublicationDateClearNotAllowed                             extends Confirmation
 
-  implicit val confirmationSuccessFormat: Format[Success.type]                                                       = Json.format
+  implicit val confirmationSuccessFormat: Format[Success]                                                            = Json.format
   implicit val confirmationSuccessPostFormat: Format[SuccessPost]                                                    = Json.format
   implicit val confirmationPostAlreadyExistFormat: Format[PostAlreadyExist.type]                                     = Json.format
   implicit val confirmationPostNotFoundFormat: Format[PostNotFound.type]                                             = Json.format
@@ -326,10 +326,18 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
           .withFieldComputed(_.introContent, c => Content.fromSerialContent(c.introContent))
           .withFieldComputed(_.content, c => Content.fromSerialContent(c.content))
           .transform
-
         Effect
           .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(postEntity =>
+            SuccessPost(
+              postEntity.maybeState.get
+                .into[Post]
+                .withFieldComputed(_.introContent, c => Some(c.introContent.toSerialContent))
+                .withFieldComputed(_.content, c => Some(c.content.toSerialContent))
+                .withFieldComputed(_.targets, c => Some(c.targets))
+                .transform
+            )
+          )
       case Some(_) => Effect.reply(cmd.replyTo)(PostAlreadyExist)
     }
 
@@ -340,7 +348,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
         val event = cmd.transformInto[PostFeaturedUpdated]
         Effect
           .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(event.updatedBy, event.updatedAt))
     }
 
   def updatePostAuthor(cmd: UpdatePostAuthor): ReplyEffect[Event, PostEntity] =
@@ -350,7 +358,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
         val event = cmd.transformInto[PostAuthorUpdated]
         Effect
           .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(event.updatedBy, event.updatedAt))
     }
 
   def updatePostTitle(cmd: UpdatePostTitle): ReplyEffect[Event, PostEntity] =
@@ -360,7 +368,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
         val event = cmd.transformInto[PostTitleUpdated]
         Effect
           .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(event.updatedBy, event.updatedAt))
     }
 
   def updatePostWidgetContent(cmd: UpdateWidgetContent): ReplyEffect[Event, PostEntity] =
@@ -402,7 +410,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
         )
         Effect
           .persist(Seq(updateEvent) ++ indexEvent.toSeq)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(updateEvent.updatedBy, updateEvent.updatedAt))
 
       // create
       case Some(state) =>
@@ -432,7 +440,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
         )
         Effect
           .persist(Seq(updateEvent) ++ indexEvent.toSeq)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(updateEvent.updatedBy, updateEvent.updatedAt))
     }
 
   def changeWidgetContentOrder(cmd: ChangeWidgetContentOrder): ReplyEffect[Event, PostEntity] =
@@ -463,8 +471,8 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
 
           Effect
             .persist(updateEvent)
-            .thenReply(cmd.replyTo)(_ => Success)
-        } else Effect.reply(cmd.replyTo)(Success)
+            .thenReply(cmd.replyTo)(_ => Success(updateEvent.updatedBy, updateEvent.updatedAt))
+        } else Effect.reply(cmd.replyTo)(Success(state.updatedBy, state.updatedAt))
       case _    => Effect.reply(cmd.replyTo)(WidgetContentNotFound)
 
     }
@@ -486,7 +494,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
 
         Effect
           .persist(updateEvent)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(updateEvent.updatedBy, updateEvent.updatedAt))
       case _    => Effect.reply(cmd.replyTo)(WidgetContentNotFound)
     }
 
@@ -501,7 +509,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
         val event = cmd.transformInto[PostPublicationTimestampUpdated]
         Effect
           .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(event.updatedBy, event.updatedAt))
     }
 
   def publishPost(cmd: PublishPost): ReplyEffect[Event, PostEntity] =
@@ -514,7 +522,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
           .transform
         Effect
           .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(event.updatedBy, event.updatedAt))
     }
 
   def unpublishPost(cmd: UnpublishPost): ReplyEffect[Event, PostEntity] =
@@ -524,29 +532,31 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
         val event = cmd.transformInto[PostUnpublished]
         Effect
           .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(event.updatedBy, event.updatedAt))
     }
 
   def assignPostTargetPrincipal(cmd: AssignPostTargetPrincipal): ReplyEffect[Event, PostEntity] =
     maybeState match {
       case None                                                 => Effect.reply(cmd.replyTo)(PostNotFound)
-      case Some(state) if state.targets.contains(cmd.principal) => Effect.reply(cmd.replyTo)(Success)
+      case Some(state) if state.targets.contains(cmd.principal) =>
+        Effect.reply(cmd.replyTo)(Success(state.updatedBy, state.updatedAt))
       case Some(_)                                              =>
         val event = cmd.transformInto[PostTargetPrincipalAssigned]
         Effect
           .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(event.updatedBy, event.updatedAt))
     }
 
   def unassignPostTargetPrincipal(cmd: UnassignPostTargetPrincipal): ReplyEffect[Event, PostEntity] =
     maybeState match {
       case None                                                  => Effect.reply(cmd.replyTo)(PostNotFound)
-      case Some(state) if !state.targets.contains(cmd.principal) => Effect.reply(cmd.replyTo)(Success)
+      case Some(state) if !state.targets.contains(cmd.principal) =>
+        Effect.reply(cmd.replyTo)(Success(state.updatedBy, state.updatedAt))
       case Some(_)                                               =>
         val event = cmd.transformInto[PostTargetPrincipalUnassigned]
         Effect
           .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(event.updatedBy, event.updatedAt))
     }
 
   def deletePost(cmd: DeletePost): ReplyEffect[Event, PostEntity] =
@@ -556,7 +566,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
         val event = cmd.transformInto[PostDeleted]
         Effect
           .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(event.deletedBy, event.deleteAt))
     }
 
   def getPost(cmd: GetPost): ReplyEffect[Event, PostEntity] =

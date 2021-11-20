@@ -19,6 +19,7 @@ package biz.lobachev.annette.cms.api
 import akka.Done
 import biz.lobachev.annette.cms.api.blogs.blog._
 import biz.lobachev.annette.cms.api.blogs.post._
+import biz.lobachev.annette.cms.api.common.Updated
 import biz.lobachev.annette.cms.api.files._
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.cms.api.pages.space._
@@ -107,43 +108,43 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def findBlogs(query: BlogFindQuery): Future[FindResult] =
     api.findBlogs.invoke(query)
 
-  override def createPost(payload: CreatePostPayload): Future[Done] =
+  override def createPost(payload: CreatePostPayload): Future[Post] =
     api.createPost.invoke(payload)
 
-  override def updatePostFeatured(payload: UpdatePostFeaturedPayload): Future[Done] =
+  override def updatePostFeatured(payload: UpdatePostFeaturedPayload): Future[Updated] =
     api.updatePostFeatured.invoke(payload)
 
-  override def updatePostAuthor(payload: UpdatePostAuthorPayload): Future[Done] =
+  override def updatePostAuthor(payload: UpdatePostAuthorPayload): Future[Updated] =
     api.updatePostAuthor.invoke(payload)
 
-  override def updatePostTitle(payload: UpdatePostTitlePayload): Future[Done] =
+  override def updatePostTitle(payload: UpdatePostTitlePayload): Future[Updated] =
     api.updatePostTitle.invoke(payload)
 
-  override def updatePostWidgetContent(payload: UpdatePostWidgetContentPayload): Future[Done] =
+  override def updatePostWidgetContent(payload: UpdatePostWidgetContentPayload): Future[Updated] =
     api.updatePostWidgetContent.invoke(payload)
 
-  override def changePostWidgetContentOrder(payload: ChangePostWidgetContentOrderPayload): Future[Done] =
+  override def changePostWidgetContentOrder(payload: ChangePostWidgetContentOrderPayload): Future[Updated] =
     api.changePostWidgetContentOrder.invoke(payload)
 
-  override def deletePostWidgetContent(payload: DeletePostWidgetContentPayload): Future[Done] =
+  override def deletePostWidgetContent(payload: DeletePostWidgetContentPayload): Future[Updated] =
     api.deletePostWidgetContent.invoke(payload)
 
-  override def updatePostPublicationTimestamp(payload: UpdatePostPublicationTimestampPayload): Future[Done] =
+  override def updatePostPublicationTimestamp(payload: UpdatePostPublicationTimestampPayload): Future[Updated] =
     api.updatePostPublicationTimestamp.invoke(payload)
 
-  override def publishPost(payload: PublishPostPayload): Future[Done] =
+  override def publishPost(payload: PublishPostPayload): Future[Updated] =
     api.publishPost.invoke(payload)
 
-  override def unpublishPost(payload: UnpublishPostPayload): Future[Done] =
+  override def unpublishPost(payload: UnpublishPostPayload): Future[Updated] =
     api.unpublishPost.invoke(payload)
 
-  override def assignPostTargetPrincipal(payload: AssignPostTargetPrincipalPayload): Future[Done] =
+  override def assignPostTargetPrincipal(payload: AssignPostTargetPrincipalPayload): Future[Updated] =
     api.assignPostTargetPrincipal.invoke(payload)
 
-  override def unassignPostTargetPrincipal(payload: UnassignPostTargetPrincipalPayload): Future[Done] =
+  override def unassignPostTargetPrincipal(payload: UnassignPostTargetPrincipalPayload): Future[Updated] =
     api.unassignPostTargetPrincipal.invoke(payload)
 
-  override def deletePost(payload: DeletePostPayload): Future[Done] =
+  override def deletePost(payload: DeletePostPayload): Future[Updated] =
     api.deletePost.invoke(payload)
 
   override def getPostById(
@@ -164,7 +165,7 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   ): Future[Seq[Post]] =
     api.getPostsById(fromReadSide, withIntro, withContent, withTargets).invoke(ids)
 
-  override def getPostViews(payload: GetPostViewsPayload): Future[Seq[PostView]] =
+  override def getPostViews(payload: GetPostViewsPayload): Future[Seq[Post]] =
     api.getPostViews.invoke(payload)
 
   override def canAccessToPost(payload: CanAccessToPostPayload): Future[Boolean] =
