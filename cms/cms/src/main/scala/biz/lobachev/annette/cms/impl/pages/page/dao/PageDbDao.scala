@@ -356,15 +356,6 @@ private[impl] class PageDbDao(
       .runWith(Sink.seq)
       .map(_.flatten)
 
-  private def getPageWidgetsMap(
-    ids: Set[PageId]
-  ): Future[Map[String, Map[String, WidgetContent]]]                                  =
-    ctx
-      .run(
-        pageWidgetSchema.filter(r => liftQuery(ids).contains(r.pageId))
-      )
-      .map(_.groupBy(_.pageId).map { case k -> v => k -> v.map(c => c.widgetContentId -> c.toWidgetContent).toMap })
-
   def canAccessToPage(id: PageId, principals: Set[AnnettePrincipal]): Future[Boolean] =
     for {
       maybeCount <- ctx
@@ -378,10 +369,10 @@ private[impl] class PageDbDao(
                       )
     } yield maybeCount.map(_ > 0).getOrElse(false)
 
-  def getPageViewsById(payload: GetPageViewsPayload): Future[Seq[PageView]] =
+  def getPageViewsById(payload: GetPageViewsPayload): Future[Seq[Page]] =
     for {
       allowedPageIds    <- getAllowedPageIds(payload.ids, payload.principals + payload.directPrincipal)
-      pageViews         <- getPageViewsWithContent(allowedPageIds)
+      pageViews         <- getPagesById(allowedPageIds, true, false)
       publishedPageViews = pageViews.filter(page =>
                              page.publicationStatus == PublicationStatus.Published &&
                                page.publicationTimestamp.map(_.compareTo(OffsetDateTime.now) <= 0).getOrElse(true)
@@ -391,18 +382,6 @@ private[impl] class PageDbDao(
 
     } yield publishedPageViews
       .map(pv => pv.copy(metric = metricsMap.get(pv.id)))
-
-  def getPageViewsWithContent(ids: Set[String]): Future[Seq[PageView]] =
-    for {
-      pages          <- ctx.run(
-                          pageSchema
-                            .filter(b => liftQuery(ids).contains(b.id))
-                        )
-      pageWidgetsMap <- getPageWidgetsMap(ids)
-    } yield pages.map { r =>
-      val pageWidgets = pageWidgetsMap.get(r.id).getOrElse(Map.empty)
-      r.toPageView(pageWidgets)
-    }
 
   private def getAllowedPageIds(ids: Set[PageId], principals: Set[AnnettePrincipal]): Future[Set[String]] =
     ctx

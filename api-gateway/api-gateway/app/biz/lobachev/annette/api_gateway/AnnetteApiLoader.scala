@@ -36,14 +36,21 @@ import biz.lobachev.annette.application.gateway.ApplicationController
 import biz.lobachev.annette.authorization.api.{AuthorizationServiceApi, AuthorizationServiceImpl}
 import biz.lobachev.annette.authorization.gateway.AuthorizationController
 import biz.lobachev.annette.cms.api.{CmsServiceApi, CmsServiceImpl, CmsStorage}
+import biz.lobachev.annette.cms.gateway.files.CmsFileController
 import biz.lobachev.annette.cms.gateway.s3.CmsS3Helper
-import biz.lobachev.annette.cms.gateway.{
+import biz.lobachev.annette.cms.gateway.blogs.{
   CmsBlogCategoryController,
   CmsBlogController,
   CmsBlogViewController,
   CmsPostController,
-  CmsPostFileController,
   CmsPostViewController
+}
+import biz.lobachev.annette.cms.gateway.pages.{
+  CmsPageController,
+  CmsPageViewController,
+  CmsSpaceCategoryController,
+  CmsSpaceController,
+  CmsSpaceViewController
 }
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.org_structure.api.{OrgStructureServiceApi, OrgStructureServiceImpl}
@@ -124,14 +131,19 @@ abstract class ServiceGateway(context: Context)
   lazy val orgStructureController   = wire[OrgStructureController]
   lazy val applicationController    = wire[ApplicationController]
 
-  lazy val cmsCmsStorage         = wire[CmsStorage]
-  lazy val cmsCmsS3Helper        = wire[CmsS3Helper]
-  lazy val cmsCategoryController = wire[CmsBlogCategoryController]
-  lazy val cmsBlogController     = wire[CmsBlogController]
-  lazy val cmsPostController     = wire[CmsPostController]
-  lazy val cmsPostFileController = wire[CmsPostFileController]
-  lazy val cmsPostViewController = wire[CmsPostViewController]
-  lazy val cmsBlogViewController = wire[CmsBlogViewController]
+  lazy val cmsCmsStorage              = wire[CmsStorage]
+  lazy val cmsCmsS3Helper             = wire[CmsS3Helper]
+  lazy val cmsBlogCategoryController  = wire[CmsBlogCategoryController]
+  lazy val cmsBlogController          = wire[CmsBlogController]
+  lazy val cmsPostController          = wire[CmsPostController]
+  lazy val cmsPostViewController      = wire[CmsPostViewController]
+  lazy val cmsBlogViewController      = wire[CmsBlogViewController]
+  lazy val cmsSpaceCategoryController = wire[CmsSpaceCategoryController]
+  lazy val cmsSpaceController         = wire[CmsSpaceController]
+  lazy val cmsPageController          = wire[CmsPageController]
+  lazy val cmsPageViewController      = wire[CmsPageViewController]
+  lazy val cmsSpaceViewController     = wire[CmsSpaceViewController]
+  lazy val cmsPostFileController      = wire[CmsFileController]
 
   lazy val authorizationServiceApi = serviceClient.implement[AuthorizationServiceApi]
   lazy val authorizationService    = wire[AuthorizationServiceImpl]

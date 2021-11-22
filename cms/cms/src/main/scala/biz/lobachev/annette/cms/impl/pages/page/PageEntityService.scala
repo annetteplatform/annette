@@ -19,6 +19,7 @@ package biz.lobachev.annette.cms.impl.pages.page
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
+import biz.lobachev.annette.cms.api.common.Updated
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.cms.impl.pages.page.dao.{PageDbDao, PageIndexDao}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
@@ -45,9 +46,13 @@ class PageEntityService(
   private def refFor(id: PageId): EntityRef[PageEntity.Command] =
     clusterSharding.entityRefFor(PageEntity.typeKey, id)
 
-  private def convertSuccess(confirmation: PageEntity.Confirmation, id: PageId, maybeId: Option[String] = None): Done =
+  private def convertSuccess(
+    confirmation: PageEntity.Confirmation,
+    id: PageId,
+    maybeId: Option[String] = None
+  ): Updated =
     confirmation match {
-      case PageEntity.Success                            => Done
+      case PageEntity.Success(updatedBy, updatedAt)      => Updated(updatedBy, updatedAt)
       case PageEntity.PageAlreadyExist                   => throw PageAlreadyExist(id)
       case PageEntity.PageNotFound                       => throw PageNotFound(id)
       case PageEntity.PagePublicationDateClearNotAllowed => throw PagePublicationDateClearNotAllowed(id)
@@ -63,7 +68,7 @@ class PageEntityService(
       case _                            => throw new RuntimeException("Match fail")
     }
 
-  def createPage(payload: CreatePagePayload, targets: Set[AnnettePrincipal]): Future[Done] =
+  def createPage(payload: CreatePagePayload, targets: Set[AnnettePrincipal]): Future[Page] =
     refFor(payload.id)
       .ask[PageEntity.Confirmation](replyTo =>
         payload
@@ -72,9 +77,9 @@ class PageEntityService(
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(convertSuccess(_, payload.id))
+      .map(convertSuccessPage(_, payload.id))
 
-  def updatePageAuthor(payload: UpdatePageAuthorPayload): Future[Done] =
+  def updatePageAuthor(payload: UpdatePageAuthorPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PageEntity.Confirmation](replyTo =>
         payload
@@ -84,7 +89,7 @@ class PageEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def updatePageTitle(payload: UpdatePageTitlePayload): Future[Done] =
+  def updatePageTitle(payload: UpdatePageTitlePayload): Future[Updated] =
     refFor(payload.id)
       .ask[PageEntity.Confirmation](replyTo =>
         payload
@@ -94,7 +99,7 @@ class PageEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def updateWidgetContent(payload: UpdatePageWidgetContentPayload): Future[Done] =
+  def updateWidgetContent(payload: UpdatePageWidgetContentPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PageEntity.Confirmation](replyTo =>
         payload
@@ -104,7 +109,7 @@ class PageEntityService(
       )
       .map(convertSuccess(_, payload.id, Some(payload.widgetContent.id)))
 
-  def changeWidgetContentOrder(payload: ChangePageWidgetContentOrderPayload): Future[Done] =
+  def changeWidgetContentOrder(payload: ChangePageWidgetContentOrderPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PageEntity.Confirmation](replyTo =>
         payload
@@ -114,7 +119,7 @@ class PageEntityService(
       )
       .map(convertSuccess(_, payload.id, Some(payload.widgetContentId)))
 
-  def deleteWidgetContent(payload: DeletePageWidgetContentPayload): Future[Done] =
+  def deleteWidgetContent(payload: DeletePageWidgetContentPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PageEntity.Confirmation](replyTo =>
         payload
@@ -124,7 +129,7 @@ class PageEntityService(
       )
       .map(convertSuccess(_, payload.id, Some(payload.widgetContentId)))
 
-  def updatePagePublicationTimestamp(payload: UpdatePagePublicationTimestampPayload): Future[Done] =
+  def updatePagePublicationTimestamp(payload: UpdatePagePublicationTimestampPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PageEntity.Confirmation](replyTo =>
         payload
@@ -134,7 +139,7 @@ class PageEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def publishPage(payload: PublishPagePayload): Future[Done] =
+  def publishPage(payload: PublishPagePayload): Future[Updated] =
     refFor(payload.id)
       .ask[PageEntity.Confirmation](replyTo =>
         payload
@@ -144,7 +149,7 @@ class PageEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def unpublishPage(payload: UnpublishPagePayload): Future[Done] =
+  def unpublishPage(payload: UnpublishPagePayload): Future[Updated] =
     refFor(payload.id)
       .ask[PageEntity.Confirmation](replyTo =>
         payload
@@ -154,7 +159,7 @@ class PageEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def assignPageTargetPrincipal(payload: AssignPageTargetPrincipalPayload): Future[Done] =
+  def assignPageTargetPrincipal(payload: AssignPageTargetPrincipalPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PageEntity.Confirmation](replyTo =>
         payload
@@ -164,7 +169,7 @@ class PageEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def unassignPageTargetPrincipal(payload: UnassignPageTargetPrincipalPayload): Future[Done] =
+  def unassignPageTargetPrincipal(payload: UnassignPageTargetPrincipalPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PageEntity.Confirmation](replyTo =>
         payload
@@ -174,7 +179,7 @@ class PageEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def deletePage(payload: DeletePagePayload): Future[Done] =
+  def deletePage(payload: DeletePagePayload): Future[Updated] =
     refFor(payload.id)
       .ask[PageEntity.Confirmation](replyTo =>
         payload
@@ -227,7 +232,7 @@ class PageEntityService(
         }
         .map(_.flatten.toSeq)
 
-  def getPageViews(payload: GetPageViewsPayload): Future[Seq[PageView]] =
+  def getPageViews(payload: GetPageViewsPayload): Future[Seq[Page]] =
     dbDao.getPageViewsById(payload)
 
   def findPages(query: PageFindQuery): Future[FindResult] = indexDao.findPages(query)

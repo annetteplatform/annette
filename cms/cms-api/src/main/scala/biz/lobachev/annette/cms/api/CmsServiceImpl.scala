@@ -253,40 +253,40 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def findSpaces(query: SpaceFindQuery): Future[FindResult] =
     api.findSpaces.invoke(query)
 
-  override def createPage(payload: CreatePagePayload): Future[Done] =
+  override def createPage(payload: CreatePagePayload): Future[Page] =
     api.createPage.invoke(payload)
 
-  override def updatePageAuthor(payload: UpdatePageAuthorPayload): Future[Done] =
+  override def updatePageAuthor(payload: UpdatePageAuthorPayload): Future[Updated] =
     api.updatePageAuthor.invoke(payload)
 
-  override def updatePageTitle(payload: UpdatePageTitlePayload): Future[Done] =
+  override def updatePageTitle(payload: UpdatePageTitlePayload): Future[Updated] =
     api.updatePageTitle.invoke(payload)
 
-  override def updatePageWidgetContent(payload: UpdatePageWidgetContentPayload): Future[Done] =
+  override def updatePageWidgetContent(payload: UpdatePageWidgetContentPayload): Future[Updated] =
     api.updatePageWidgetContent.invoke(payload)
 
-  override def changePageWidgetContentOrder(payload: ChangePageWidgetContentOrderPayload): Future[Done] =
+  override def changePageWidgetContentOrder(payload: ChangePageWidgetContentOrderPayload): Future[Updated] =
     api.changePageWidgetContentOrder.invoke(payload)
 
-  override def deletePageWidgetContent(payload: DeletePageWidgetContentPayload): Future[Done] =
+  override def deletePageWidgetContent(payload: DeletePageWidgetContentPayload): Future[Updated] =
     api.deletePageWidgetContent.invoke(payload)
 
-  override def updatePagePublicationTimestamp(payload: UpdatePagePublicationTimestampPayload): Future[Done] =
+  override def updatePagePublicationTimestamp(payload: UpdatePagePublicationTimestampPayload): Future[Updated] =
     api.updatePagePublicationTimestamp.invoke(payload)
 
-  override def publishPage(payload: PublishPagePayload): Future[Done] =
+  override def publishPage(payload: PublishPagePayload): Future[Updated] =
     api.publishPage.invoke(payload)
 
-  override def unpublishPage(payload: UnpublishPagePayload): Future[Done] =
+  override def unpublishPage(payload: UnpublishPagePayload): Future[Updated] =
     api.unpublishPage.invoke(payload)
 
-  override def assignPageTargetPrincipal(payload: AssignPageTargetPrincipalPayload): Future[Done] =
+  override def assignPageTargetPrincipal(payload: AssignPageTargetPrincipalPayload): Future[Updated] =
     api.assignPageTargetPrincipal.invoke(payload)
 
-  override def unassignPageTargetPrincipal(payload: UnassignPageTargetPrincipalPayload): Future[Done] =
+  override def unassignPageTargetPrincipal(payload: UnassignPageTargetPrincipalPayload): Future[Updated] =
     api.unassignPageTargetPrincipal.invoke(payload)
 
-  override def deletePage(payload: DeletePagePayload): Future[Done] =
+  override def deletePage(payload: DeletePagePayload): Future[Updated] =
     api.deletePage.invoke(payload)
 
   override def getPageById(
@@ -305,7 +305,7 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   ): Future[Seq[Page]] =
     api.getPagesById(fromReadSide, withContent, withTargets).invoke(ids)
 
-  override def getPageViews(payload: GetPageViewsPayload): Future[Seq[PageView]] =
+  override def getPageViews(payload: GetPageViewsPayload): Future[Seq[Page]] =
     api.getPageViews.invoke(payload)
 
   override def canAccessToPage(payload: CanAccessToPagePayload): Future[Boolean] =

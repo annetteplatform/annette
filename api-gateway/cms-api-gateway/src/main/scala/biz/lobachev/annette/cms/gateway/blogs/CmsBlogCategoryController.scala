@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway
+package biz.lobachev.annette.cms.gateway.blogs
 
 import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
@@ -27,7 +27,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, Action, ControllerComponents}
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class CmsBlogCategoryController @Inject() (

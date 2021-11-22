@@ -122,18 +122,18 @@ trait CmsService {
   def canAccessToSpace(payload: CanAccessToSpacePayload): Future[Boolean]
   def findSpaces(payload: SpaceFindQuery): Future[FindResult]
 
-  def createPage(payload: CreatePagePayload): Future[Done]
-  def updatePageAuthor(payload: UpdatePageAuthorPayload): Future[Done]
-  def updatePageTitle(payload: UpdatePageTitlePayload): Future[Done]
-  def updatePageWidgetContent(payload: UpdatePageWidgetContentPayload): Future[Done]
-  def changePageWidgetContentOrder(payload: ChangePageWidgetContentOrderPayload): Future[Done]
-  def deletePageWidgetContent(payload: DeletePageWidgetContentPayload): Future[Done]
-  def updatePagePublicationTimestamp(payload: UpdatePagePublicationTimestampPayload): Future[Done]
-  def publishPage(payload: PublishPagePayload): Future[Done]
-  def unpublishPage(payload: UnpublishPagePayload): Future[Done]
-  def assignPageTargetPrincipal(payload: AssignPageTargetPrincipalPayload): Future[Done]
-  def unassignPageTargetPrincipal(payload: UnassignPageTargetPrincipalPayload): Future[Done]
-  def deletePage(payload: DeletePagePayload): Future[Done]
+  def createPage(payload: CreatePagePayload): Future[Page]
+  def updatePageAuthor(payload: UpdatePageAuthorPayload): Future[Updated]
+  def updatePageTitle(payload: UpdatePageTitlePayload): Future[Updated]
+  def updatePageWidgetContent(payload: UpdatePageWidgetContentPayload): Future[Updated]
+  def changePageWidgetContentOrder(payload: ChangePageWidgetContentOrderPayload): Future[Updated]
+  def deletePageWidgetContent(payload: DeletePageWidgetContentPayload): Future[Updated]
+  def updatePagePublicationTimestamp(payload: UpdatePagePublicationTimestampPayload): Future[Updated]
+  def publishPage(payload: PublishPagePayload): Future[Updated]
+  def unpublishPage(payload: UnpublishPagePayload): Future[Updated]
+  def assignPageTargetPrincipal(payload: AssignPageTargetPrincipalPayload): Future[Updated]
+  def unassignPageTargetPrincipal(payload: UnassignPageTargetPrincipalPayload): Future[Updated]
+  def deletePage(payload: DeletePagePayload): Future[Updated]
   def getPageById(
     id: PageId,
     fromReadSide: Boolean = true,
@@ -146,7 +146,7 @@ trait CmsService {
     withContent: Option[Boolean],
     withTargets: Option[Boolean]
   ): Future[Seq[Page]]
-  def getPageViews(payload: GetPageViewsPayload): Future[Seq[PageView]]
+  def getPageViews(payload: GetPageViewsPayload): Future[Seq[Page]]
   def canAccessToPage(payload: CanAccessToPagePayload): Future[Boolean]
   def findPages(query: PageFindQuery): Future[FindResult]
 

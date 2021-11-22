@@ -28,4 +28,13 @@ object Permissions {
 
   final val MAINTAIN_ALL_POSTS = Permission("annette.cms.post.maintain.all")
 
+  final val VIEW_SPACES = Permission("annette.cms.space.view")
+
+  final val VIEW_ALL_SPACE_CATEGORIES     = Permission("annette.cms.spaceCategory.view.all")
+  final val MAINTAIN_ALL_SPACE_CATEGORIES = Permission("annette.cms.spaceCategory.maintain.all")
+
+  final val MAINTAIN_ALL_SPACES = Permission("annette.cms.space.maintain.all")
+
+  final val MAINTAIN_ALL_PAGES = Permission("annette.cms.page.maintain.all")
+
 }

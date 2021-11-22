@@ -14,28 +14,22 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.api.pages.page
+package biz.lobachev.annette.cms.gateway.pages.space
 
 import biz.lobachev.annette.cms.api.pages.space.SpaceId
-import biz.lobachev.annette.cms.api.common.SerialContent
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.category.CategoryId
+import biz.lobachev.annette.core.model.indexing.SortBy
 import play.api.libs.json.{Format, Json}
 
-import java.time.OffsetDateTime
-
-case class PageView(
-  id: PageId,
-  spaceId: SpaceId,
-  authorId: AnnettePrincipal,
-  title: String,
-  content: Option[SerialContent] = None,
-  publicationStatus: PublicationStatus.PublicationStatus = PublicationStatus.Draft,
-  publicationTimestamp: Option[OffsetDateTime] = None,
-  metric: Option[PageMetric] = None,
-  updatedBy: AnnettePrincipal,
-  updatedAt: OffsetDateTime = OffsetDateTime.now
+case class SpaceFindQueryDto(
+  offset: Int = 0,
+  size: Int,
+  filter: Option[String] = None,
+  spaceIds: Option[Set[SpaceId]] = None,
+  categories: Option[Set[CategoryId]] = None,
+  sortBy: Option[Seq[SortBy]] = None
 )
 
-object PageView {
-  implicit val format: Format[PageView] = Json.format
+object SpaceFindQueryDto {
+  implicit val format: Format[SpaceFindQueryDto] = Json.format
 }

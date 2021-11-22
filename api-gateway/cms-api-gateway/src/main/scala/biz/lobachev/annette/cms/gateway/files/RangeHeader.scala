@@ -1,4 +1,4 @@
-package biz.lobachev.annette.cms.gateway
+package biz.lobachev.annette.cms.gateway.files
 
 import akka.http.scaladsl.model.headers.ByteRange
 

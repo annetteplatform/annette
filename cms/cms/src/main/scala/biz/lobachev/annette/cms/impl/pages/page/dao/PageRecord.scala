@@ -20,7 +20,6 @@ import biz.lobachev.annette.cms.api.pages.space.SpaceId
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.cms.api.common.WidgetContent
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import io.scalaland.chimney.dsl._
 
 import java.time.OffsetDateTime
 
@@ -54,19 +53,4 @@ case class PageRecord(
       updatedAt = updatedAt
     )
 
-  def toPageView(
-    pageWidgetContents: Map[String, WidgetContent]
-  ): PageView =
-    this
-      .into[PageView]
-      .withFieldComputed(
-        _.content,
-        r =>
-          Some(
-            r.pageContentOrder
-              .map(c => pageWidgetContents.get(c))
-              .flatten
-          )
-      )
-      .transform
 }

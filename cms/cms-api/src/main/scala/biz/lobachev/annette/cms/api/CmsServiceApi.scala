@@ -123,18 +123,18 @@ trait CmsServiceApi extends Service {
   def canAccessToSpace: ServiceCall[CanAccessToSpacePayload, Boolean]
   def findSpaces: ServiceCall[SpaceFindQuery, FindResult]
 
-  def createPage: ServiceCall[CreatePagePayload, Done]
-  def updatePageAuthor: ServiceCall[UpdatePageAuthorPayload, Done]
-  def updatePageTitle: ServiceCall[UpdatePageTitlePayload, Done]
-  def updatePageWidgetContent: ServiceCall[UpdatePageWidgetContentPayload, Done]
-  def changePageWidgetContentOrder: ServiceCall[ChangePageWidgetContentOrderPayload, Done]
-  def deletePageWidgetContent: ServiceCall[DeletePageWidgetContentPayload, Done]
-  def updatePagePublicationTimestamp: ServiceCall[UpdatePagePublicationTimestampPayload, Done]
-  def publishPage: ServiceCall[PublishPagePayload, Done]
-  def unpublishPage: ServiceCall[UnpublishPagePayload, Done]
-  def assignPageTargetPrincipal: ServiceCall[AssignPageTargetPrincipalPayload, Done]
-  def unassignPageTargetPrincipal: ServiceCall[UnassignPageTargetPrincipalPayload, Done]
-  def deletePage: ServiceCall[DeletePagePayload, Done]
+  def createPage: ServiceCall[CreatePagePayload, Page]
+  def updatePageAuthor: ServiceCall[UpdatePageAuthorPayload, Updated]
+  def updatePageTitle: ServiceCall[UpdatePageTitlePayload, Updated]
+  def updatePageWidgetContent: ServiceCall[UpdatePageWidgetContentPayload, Updated]
+  def changePageWidgetContentOrder: ServiceCall[ChangePageWidgetContentOrderPayload, Updated]
+  def deletePageWidgetContent: ServiceCall[DeletePageWidgetContentPayload, Updated]
+  def updatePagePublicationTimestamp: ServiceCall[UpdatePagePublicationTimestampPayload, Updated]
+  def publishPage: ServiceCall[PublishPagePayload, Updated]
+  def unpublishPage: ServiceCall[UnpublishPagePayload, Updated]
+  def assignPageTargetPrincipal: ServiceCall[AssignPageTargetPrincipalPayload, Updated]
+  def unassignPageTargetPrincipal: ServiceCall[UnassignPageTargetPrincipalPayload, Updated]
+  def deletePage: ServiceCall[DeletePagePayload, Updated]
   def getPageById(
     id: PageId,
     fromReadSide: Boolean = true,
@@ -146,7 +146,7 @@ trait CmsServiceApi extends Service {
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
   ): ServiceCall[Set[PageId], Seq[Page]]
-  def getPageViews: ServiceCall[GetPageViewsPayload, Seq[PageView]]
+  def getPageViews: ServiceCall[GetPageViewsPayload, Seq[Page]]
   def canAccessToPage: ServiceCall[CanAccessToPagePayload, Boolean]
   def findPages: ServiceCall[PageFindQuery, FindResult]
 

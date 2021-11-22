@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway
+package biz.lobachev.annette.cms.gateway.files
 
 import akka.http.scaladsl.model.DateTime
 import akka.stream.Materializer
@@ -33,7 +33,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
 @Singleton
-class CmsPostFileController @Inject() (
+class CmsFileController @Inject() (
   cookieAuthenticated: CookieAuthenticatedAction,
   cc: ControllerComponents,
 //  cmsService: CmsService,

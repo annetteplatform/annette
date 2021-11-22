@@ -125,12 +125,12 @@ object PageEntity {
   ) extends Command
 
   sealed trait Confirmation
-  final case object Success                            extends Confirmation
-  final case class SuccessPage(page: Page)             extends Confirmation
-  final case object PageAlreadyExist                   extends Confirmation
-  final case object PageNotFound                       extends Confirmation
-  final case object WidgetContentNotFound              extends Confirmation
-  final case object PagePublicationDateClearNotAllowed extends Confirmation
+  final case class Success(updatedBy: AnnettePrincipal, updatedAt: OffsetDateTime) extends Confirmation
+  final case class SuccessPage(page: Page)                                         extends Confirmation
+  final case object PageAlreadyExist                                               extends Confirmation
+  final case object PageNotFound                                                   extends Confirmation
+  final case object WidgetContentNotFound                                          extends Confirmation
+  final case object PagePublicationDateClearNotAllowed                             extends Confirmation
 
   implicit val confirmationSuccessFormat: Format[Success.type]                                                       = Json.format
   implicit val confirmationSuccessPageFormat: Format[SuccessPage]                                                    = Json.format
@@ -300,7 +300,15 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
 
         Effect
           .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(pageEntity =>
+            SuccessPage(
+              pageEntity.maybeState.get
+                .into[Page]
+                .withFieldComputed(_.content, c => Some(c.content.toSerialContent))
+                .withFieldComputed(_.targets, c => Some(c.targets))
+                .transform
+            )
+          )
       case Some(_) => Effect.reply(cmd.replyTo)(PageAlreadyExist)
     }
 
@@ -311,7 +319,7 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
         val event = cmd.transformInto[PageAuthorUpdated]
         Effect
           .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(event.updatedBy, event.updatedAt))
     }
 
   def updatePageTitle(cmd: UpdatePageTitle): ReplyEffect[Event, PageEntity] =
@@ -321,7 +329,7 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
         val event = cmd.transformInto[PageTitleUpdated]
         Effect
           .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(event.updatedBy, event.updatedAt))
     }
 
   def updatePageWidgetContent(cmd: UpdateWidgetContent): ReplyEffect[Event, PageEntity] =
@@ -357,7 +365,7 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
         )
         Effect
           .persist(Seq(updateEvent) ++ indexEvent.toSeq)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(updateEvent.updatedBy, updateEvent.updatedAt))
 
       // create
       case Some(state)                                                         =>
@@ -383,7 +391,7 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
         )
         Effect
           .persist(Seq(updateEvent) ++ indexEvent.toSeq)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(updateEvent.updatedBy, updateEvent.updatedAt))
     }
 
   def changeWidgetContentOrder(cmd: ChangeWidgetContentOrder): ReplyEffect[Event, PageEntity] =
@@ -412,8 +420,8 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
 
           Effect
             .persist(updateEvent)
-            .thenReply(cmd.replyTo)(_ => Success)
-        } else Effect.reply(cmd.replyTo)(Success)
+            .thenReply(cmd.replyTo)(_ => Success(updateEvent.updatedBy, updateEvent.updatedAt))
+        } else Effect.reply(cmd.replyTo)(Success(state.updatedBy, state.updatedAt))
       case _                                                                  => Effect.reply(cmd.replyTo)(WidgetContentNotFound)
 
     }
@@ -429,7 +437,7 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
 
         Effect
           .persist(updateEvent)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(updateEvent.updatedBy, updateEvent.updatedAt))
       case _                                                                  => Effect.reply(cmd.replyTo)(WidgetContentNotFound)
     }
 
@@ -444,7 +452,7 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
         val event = cmd.transformInto[PagePublicationTimestampUpdated]
         Effect
           .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(event.updatedBy, event.updatedAt))
     }
 
   def publishPage(cmd: PublishPage): ReplyEffect[Event, PageEntity] =
@@ -457,7 +465,7 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
           .transform
         Effect
           .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(event.updatedBy, event.updatedAt))
     }
 
   def unpublishPage(cmd: UnpublishPage): ReplyEffect[Event, PageEntity] =
@@ -467,29 +475,31 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
         val event = cmd.transformInto[PageUnpublished]
         Effect
           .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(event.updatedBy, event.updatedAt))
     }
 
   def assignPageTargetPrincipal(cmd: AssignPageTargetPrincipal): ReplyEffect[Event, PageEntity] =
     maybeState match {
       case None                                                 => Effect.reply(cmd.replyTo)(PageNotFound)
-      case Some(state) if state.targets.contains(cmd.principal) => Effect.reply(cmd.replyTo)(Success)
+      case Some(state) if state.targets.contains(cmd.principal) =>
+        Effect.reply(cmd.replyTo)(Success(state.updatedBy, state.updatedAt))
       case Some(_)                                              =>
         val event = cmd.transformInto[PageTargetPrincipalAssigned]
         Effect
           .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(event.updatedBy, event.updatedAt))
     }
 
   def unassignPageTargetPrincipal(cmd: UnassignPageTargetPrincipal): ReplyEffect[Event, PageEntity] =
     maybeState match {
       case None                                                  => Effect.reply(cmd.replyTo)(PageNotFound)
-      case Some(state) if !state.targets.contains(cmd.principal) => Effect.reply(cmd.replyTo)(Success)
+      case Some(state) if !state.targets.contains(cmd.principal) =>
+        Effect.reply(cmd.replyTo)(Success(state.updatedBy, state.updatedAt))
       case Some(_)                                               =>
         val event = cmd.transformInto[PageTargetPrincipalUnassigned]
         Effect
           .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(event.updatedBy, event.updatedAt))
     }
 
   def deletePage(cmd: DeletePage): ReplyEffect[Event, PageEntity] =
@@ -499,7 +509,7 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
         val event = cmd.transformInto[PageDeleted]
         Effect
           .persist(event)
-          .thenReply(cmd.replyTo)(_ => Success)
+          .thenReply(cmd.replyTo)(_ => Success(event.deletedBy, event.deleteAt))
     }
 
   def getPage(cmd: GetPage): ReplyEffect[Event, PageEntity] =

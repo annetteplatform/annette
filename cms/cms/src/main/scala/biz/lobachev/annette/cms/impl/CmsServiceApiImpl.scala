@@ -441,79 +441,79 @@ class CmsServiceApiImpl(
       spaceEntityService.findSpaces(query)
     }
 
-  override def createPage: ServiceCall[CreatePagePayload, Done] =
+  override def createPage: ServiceCall[CreatePagePayload, Page] =
     ServiceCall { payload =>
       for {
         // validate if space exist
         // TODO: create isSpaceExist method
         space <- spaceEntityService.getSpaceById(payload.spaceId, false)
-        _     <- pageEntityService
+        page  <- pageEntityService
                    .createPage(payload, space.targets)
 
-      } yield Done
+      } yield page
     }
 
-  override def updatePageAuthor: ServiceCall[UpdatePageAuthorPayload, Done] =
+  override def updatePageAuthor: ServiceCall[UpdatePageAuthorPayload, Updated] =
     ServiceCall { payload =>
       pageEntityService.updatePageAuthor(payload)
     }
 
-  override def updatePageTitle: ServiceCall[UpdatePageTitlePayload, Done] =
+  override def updatePageTitle: ServiceCall[UpdatePageTitlePayload, Updated] =
     ServiceCall { payload =>
       pageEntityService.updatePageTitle(payload)
     }
 
-  override def updatePageWidgetContent: ServiceCall[UpdatePageWidgetContentPayload, Done] =
+  override def updatePageWidgetContent: ServiceCall[UpdatePageWidgetContentPayload, Updated] =
     ServiceCall { payload =>
       pageEntityService.updateWidgetContent(payload)
     }
 
-  override def changePageWidgetContentOrder: ServiceCall[ChangePageWidgetContentOrderPayload, Done] =
+  override def changePageWidgetContentOrder: ServiceCall[ChangePageWidgetContentOrderPayload, Updated] =
     ServiceCall { payload =>
       pageEntityService.changeWidgetContentOrder(payload)
     }
 
-  override def deletePageWidgetContent: ServiceCall[DeletePageWidgetContentPayload, Done] =
+  override def deletePageWidgetContent: ServiceCall[DeletePageWidgetContentPayload, Updated] =
     ServiceCall { payload =>
       pageEntityService.deleteWidgetContent(payload)
     }
 
-  override def updatePagePublicationTimestamp: ServiceCall[UpdatePagePublicationTimestampPayload, Done] =
+  override def updatePagePublicationTimestamp: ServiceCall[UpdatePagePublicationTimestampPayload, Updated] =
     ServiceCall { payload =>
       pageEntityService.updatePagePublicationTimestamp(payload)
     }
 
-  override def publishPage: ServiceCall[PublishPagePayload, Done] =
+  override def publishPage: ServiceCall[PublishPagePayload, Updated] =
     ServiceCall { payload =>
       pageEntityService.publishPage(payload)
     }
 
-  override def unpublishPage: ServiceCall[UnpublishPagePayload, Done] =
+  override def unpublishPage: ServiceCall[UnpublishPagePayload, Updated] =
     ServiceCall { payload =>
       pageEntityService.unpublishPage(payload)
     }
 
-  override def assignPageTargetPrincipal: ServiceCall[AssignPageTargetPrincipalPayload, Done] =
+  override def assignPageTargetPrincipal: ServiceCall[AssignPageTargetPrincipalPayload, Updated] =
     ServiceCall { payload =>
       pageEntityService.assignPageTargetPrincipal(payload)
     }
 
-  override def unassignPageTargetPrincipal: ServiceCall[UnassignPageTargetPrincipalPayload, Done] =
+  override def unassignPageTargetPrincipal: ServiceCall[UnassignPageTargetPrincipalPayload, Updated] =
     ServiceCall { payload =>
       pageEntityService.unassignPageTargetPrincipal(payload)
     }
 
-  override def deletePage: ServiceCall[DeletePagePayload, Done] =
+  override def deletePage: ServiceCall[DeletePagePayload, Updated] =
     ServiceCall { payload =>
       for {
-        _ <- pageEntityService.deletePage(payload)
-        _ <- fileEntityService.removeFiles(
-               RemoveFilesPayload(
-                 objectId = s"page-${payload.id}",
-                 updatedBy = payload.deletedBy
-               )
-             )
-      } yield Done
+        updated <- pageEntityService.deletePage(payload)
+        _       <- fileEntityService.removeFiles(
+                     RemoveFilesPayload(
+                       objectId = s"page-${payload.id}",
+                       updatedBy = payload.deletedBy
+                     )
+                   )
+      } yield updated
     }
 
   override def getPageById(
@@ -545,7 +545,7 @@ class CmsServiceApiImpl(
       )
     }
 
-  override def getPageViews: ServiceCall[GetPageViewsPayload, Seq[PageView]] =
+  override def getPageViews: ServiceCall[GetPageViewsPayload, Seq[Page]] =
     ServiceCall { payload =>
       pageEntityService.getPageViews(payload)
     }

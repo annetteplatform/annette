@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway
+package biz.lobachev.annette.cms.gateway.blogs
 
 import akka.stream.Materializer
 import biz.lobachev.annette.api_gateway_core.authentication.{AuthenticatedAction, CookieAuthenticatedAction}
@@ -22,6 +22,7 @@ import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.blogs.post._
 import biz.lobachev.annette.cms.api.files.{FileTypes, RemoveFilePayload, StoreFilePayload}
 import biz.lobachev.annette.cms.api.{CmsService, CmsStorage}
+import biz.lobachev.annette.cms.gateway.Permissions
 import biz.lobachev.annette.cms.gateway.blogs.post._
 import biz.lobachev.annette.core.model.indexing.SortBy
 import io.scalaland.chimney.dsl._

@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway
+package biz.lobachev.annette.cms.gateway.blogs
 
 import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.CmsService
 import biz.lobachev.annette.cms.api.blogs.blog._
-import biz.lobachev.annette.cms.gateway.Permissions.{MAINTAIN_ALL_BLOGS}
+import biz.lobachev.annette.cms.gateway.Permissions
+import biz.lobachev.annette.cms.gateway.Permissions.MAINTAIN_ALL_BLOGS
 import biz.lobachev.annette.cms.gateway.blogs.blog._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, Action, ControllerComponents}
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class CmsBlogController @Inject() (
