@@ -25,8 +25,6 @@ import biz.lobachev.annette.cms.gateway.Permissions
 import biz.lobachev.annette.cms.gateway.pages.page._
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.{FindResult, SortBy}
-import biz.lobachev.annette.subscription.api.SubscriptionService
-import biz.lobachev.annette.subscription.api.subscription.SubscriptionFindQuery
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, Action, ControllerComponents}
@@ -40,12 +38,9 @@ class CmsPageViewController @Inject() (
   authenticated: AuthenticatedAction,
   authorizer: Authorizer,
   cc: ControllerComponents,
-  subscriptionService: SubscriptionService,
   cmsService: CmsService,
   implicit val ec: ExecutionContext
 ) extends AbstractController(cc) {
-
-  val spaceSubscriptionType = "space"
 
   def findPageViews: Action[PageViewFindQueryDto] =
     authenticated.async(parse.json[PageViewFindQueryDto]) { implicit request =>
@@ -53,6 +48,7 @@ class CmsPageViewController @Inject() (
         val payload = request.request.body
         for {
           spaces <- getLimitedSpaces(payload.spaces.getOrElse(Set.empty), request.subject.principals.toSet)
+          _       = println(spaces)
           result <- if (spaces.nonEmpty) {
                       val sortBy =
                         if (payload.filter.map(_.isEmpty).getOrElse(true) && payload.sortBy.isEmpty)
@@ -166,41 +162,15 @@ class CmsPageViewController @Inject() (
     }
 
   private def getLimitedSpaces(spaces: Set[SpaceId], targets: Set[AnnettePrincipal]): Future[Set[SpaceId]] =
-    if (spaces.nonEmpty)
-      // restrict spaces that user has access
-      for {
-        findResults       <- cmsService.findSpaces(
-                               SpaceFindQuery(
-                                 size = spaces.size,
-                                 spaceIds = Some(spaces),
-                                 active = Some(true),
-                                 targets = Some(targets)
-                               )
-                             )
-      } yield findResults.hits.map(_.id).toSet
-    else
-      // restrict spaces that user subscribed and has access
-      for {
-        subscriptions     <- subscriptionService.findSubscriptions(
-                               SubscriptionFindQuery(
-                                 size = 100,
-                                 subscriptionType = Some(Set(spaceSubscriptionType)),
-                                 principals = Some(targets)
-                               )
-                             )
-        subscribedSpaceIds = subscriptions.hits.map(_.subscription.objectId)
-        result            <- if (subscribedSpaceIds.nonEmpty)
-                               cmsService
-                                 .findSpaces(
-                                   SpaceFindQuery(
-                                     size = subscribedSpaceIds.size,
-                                     spaceIds = Some(subscribedSpaceIds.toSet),
-                                     active = Some(true),
-                                     targets = Some(targets)
-                                   )
-                                 )
-                                 .map(_.hits.map(_.id).toSet)
-                             else Future.successful(Set.empty[SpaceId])
-      } yield result
+    for {
+      findResults <- cmsService.findSpaces(
+                       SpaceFindQuery(
+                         size = 100,
+                         spaceIds = if (spaces.isEmpty) None else Some(spaces),
+                         active = Some(true),
+                         targets = Some(targets)
+                       )
+                     )
+    } yield findResults.hits.map(_.id).toSet
 
 }
