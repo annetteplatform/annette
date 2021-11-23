@@ -1,19 +1,19 @@
 package biz.lobachev.annette.cms.impl.pages.page.dao
 
+import biz.lobachev.annette.cms.api.content.Widget
 import biz.lobachev.annette.cms.api.pages.page.PageId
-import biz.lobachev.annette.cms.api.common.WidgetContent
 import play.api.libs.json.JsValue
 
 case class PageWidgetRecord(
   pageId: PageId,
-  widgetContentId: String,
+  widgetId: String,
   widgetType: String,
   data: JsValue,
   indexData: Option[String]
 ) {
-  def toWidgetContent: WidgetContent =
-    WidgetContent(
-      id = widgetContentId,
+  def toWidget: Widget =
+    Widget(
+      id = widgetId,
       widgetType = widgetType,
       data = data,
       indexData = indexData

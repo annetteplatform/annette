@@ -162,9 +162,9 @@ POST    /api/annette/v1/cms/createPost                      biz.lobachev.annette
 POST    /api/annette/v1/cms/updatePostFeatured              biz.lobachev.annette.cms.gateway.blogs.CmsPostController.updatePostFeatured
 POST    /api/annette/v1/cms/updatePostTitle                 biz.lobachev.annette.cms.gateway.blogs.CmsPostController.updatePostTitle
 POST    /api/annette/v1/cms/updatePostAuthor                biz.lobachev.annette.cms.gateway.blogs.CmsPostController.updatePostAuthor
-POST    /api/annette/v1/cms/updatePostWidgetContent         biz.lobachev.annette.cms.gateway.blogs.CmsPostController.updatePostWidgetContent
-POST    /api/annette/v1/cms/changePostWidgetContentOrder    biz.lobachev.annette.cms.gateway.blogs.CmsPostController.changePostWidgetContentOrder
-POST    /api/annette/v1/cms/deletePostWidgetContent         biz.lobachev.annette.cms.gateway.blogs.CmsPostController.deletePostWidgetContent
+POST    /api/annette/v1/cms/updatePostWidget                biz.lobachev.annette.cms.gateway.blogs.CmsPostController.updatePostWidget
+POST    /api/annette/v1/cms/changePostWidgetOrder           biz.lobachev.annette.cms.gateway.blogs.CmsPostController.changePostWidgetOrder
+POST    /api/annette/v1/cms/deletePostWidget                biz.lobachev.annette.cms.gateway.blogs.CmsPostController.deletePostWidget
 POST    /api/annette/v1/cms/updatePostPublicationTimestamp  biz.lobachev.annette.cms.gateway.blogs.CmsPostController.updatePostPublicationTimestamp
 POST    /api/annette/v1/cms/publishPost/:id                 biz.lobachev.annette.cms.gateway.blogs.CmsPostController.publishPost(id: String)
 POST    /api/annette/v1/cms/unpublishPost/:id               biz.lobachev.annette.cms.gateway.blogs.CmsPostController.unpublishPost(id: String)
@@ -217,9 +217,9 @@ POST    /api/annette/v1/cms/findSpaces                      biz.lobachev.annette
 POST    /api/annette/v1/cms/createPage                      biz.lobachev.annette.cms.gateway.pages.CmsPageController.createPage
 POST    /api/annette/v1/cms/updatePageTitle                 biz.lobachev.annette.cms.gateway.pages.CmsPageController.updatePageTitle
 POST    /api/annette/v1/cms/updatePageAuthor                biz.lobachev.annette.cms.gateway.pages.CmsPageController.updatePageAuthor
-POST    /api/annette/v1/cms/updatePageWidgetContent         biz.lobachev.annette.cms.gateway.pages.CmsPageController.updatePageWidgetContent
-POST    /api/annette/v1/cms/changePageWidgetContentOrder    biz.lobachev.annette.cms.gateway.pages.CmsPageController.changePageWidgetContentOrder
-POST    /api/annette/v1/cms/deletePageWidgetContent         biz.lobachev.annette.cms.gateway.pages.CmsPageController.deletePageWidgetContent
+POST    /api/annette/v1/cms/updatePageWidget                biz.lobachev.annette.cms.gateway.pages.CmsPageController.updatePageWidget
+POST    /api/annette/v1/cms/changePageWidgetOrder           biz.lobachev.annette.cms.gateway.pages.CmsPageController.changePageWidgetOrder
+POST    /api/annette/v1/cms/deletePageWidget                biz.lobachev.annette.cms.gateway.pages.CmsPageController.deletePageWidget
 POST    /api/annette/v1/cms/updatePagePublicationTimestamp  biz.lobachev.annette.cms.gateway.pages.CmsPageController.updatePagePublicationTimestamp
 POST    /api/annette/v1/cms/publishPage/:id                 biz.lobachev.annette.cms.gateway.pages.CmsPageController.publishPage(id: String)
 POST    /api/annette/v1/cms/unpublishPage/:id               biz.lobachev.annette.cms.gateway.pages.CmsPageController.unpublishPage(id: String)

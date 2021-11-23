@@ -20,6 +20,15 @@ import akka.stream.Materializer
 import biz.lobachev.annette.api_gateway_core.authentication.{AuthenticatedAction, CookieAuthenticatedAction}
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.blogs.post._
+import biz.lobachev.annette.cms.api.common.article.{
+  PublishPayload,
+  UnpublishPayload,
+  UpdateAuthorPayload,
+  UpdatePublicationTimestampPayload,
+  UpdateTitlePayload
+}
+import biz.lobachev.annette.cms.api.common.{AssignTargetPrincipalPayload, DeletePayload, UnassignTargetPrincipalPayload}
+import biz.lobachev.annette.cms.api.content.{ChangeWidgetOrderPayload, DeleteWidgetPayload, UpdateWidgetPayload}
 import biz.lobachev.annette.cms.api.files.{FileTypes, RemoveFilePayload, StoreFilePayload}
 import biz.lobachev.annette.cms.api.{CmsService, CmsStorage}
 import biz.lobachev.annette.cms.gateway.Permissions
@@ -66,7 +75,7 @@ class CmsPostController @Inject() (
     authenticated.async(parse.json[UpdatePostTitlePayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
         val payload = request.body
-          .into[UpdatePostTitlePayload]
+          .into[UpdateTitlePayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -79,7 +88,7 @@ class CmsPostController @Inject() (
     authenticated.async(parse.json[UpdatePostAuthorPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
         val payload = request.body
-          .into[UpdatePostAuthorPayload]
+          .into[UpdateAuthorPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -88,41 +97,41 @@ class CmsPostController @Inject() (
       }
     }
 
-  def updatePostWidgetContent =
-    authenticated.async(parse.json[UpdatePostWidgetContentPayloadDto]) { implicit request =>
+  def updatePostWidget =
+    authenticated.async(parse.json[UpdateWidgetPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
         val payload = request.body
-          .into[UpdatePostWidgetContentPayload]
+          .into[UpdateWidgetPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
-          updated <- cmsService.updatePostWidgetContent(payload)
+          updated <- cmsService.updatePostWidget(payload)
         } yield Ok(Json.toJson(updated))
       }
     }
 
-  def changePostWidgetContentOrder =
-    authenticated.async(parse.json[ChangePostWidgetContentOrderPayloadDto]) { implicit request =>
+  def changePostWidgetOrder =
+    authenticated.async(parse.json[ChangePostWidgetOrderPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
         val payload = request.body
-          .into[ChangePostWidgetContentOrderPayload]
+          .into[ChangeWidgetOrderPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
-          updated <- cmsService.changePostWidgetContentOrder(payload)
+          updated <- cmsService.changePostWidgetOrder(payload)
         } yield Ok(Json.toJson(updated))
       }
     }
 
-  def deletePostWidgetContent =
-    authenticated.async(parse.json[DeletePostWidgetContentPayloadDto]) { implicit request =>
+  def deletePostWidget =
+    authenticated.async(parse.json[DeletePostWidgetPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
         val payload = request.body
-          .into[DeletePostWidgetContentPayload]
+          .into[DeleteWidgetPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
-          updated <- cmsService.deletePostWidgetContent(payload)
+          updated <- cmsService.deletePostWidget(payload)
         } yield Ok(Json.toJson(updated))
       }
     }
@@ -131,7 +140,7 @@ class CmsPostController @Inject() (
     authenticated.async(parse.json[UpdatePostPublicationTimestampPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
         val payload = request.body
-          .into[UpdatePostPublicationTimestampPayload]
+          .into[UpdatePublicationTimestampPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -143,7 +152,7 @@ class CmsPostController @Inject() (
   def publishPost(id: String) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
-        val payload = PublishPostPayload(id, request.subject.principals.head)
+        val payload = PublishPayload(id, request.subject.principals.head)
         for {
           updated <- cmsService.publishPost(payload)
         } yield Ok(Json.toJson(updated))
@@ -153,7 +162,7 @@ class CmsPostController @Inject() (
   def unpublishPost(id: String) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
-        val payload = UnpublishPostPayload(id, request.subject.principals.head)
+        val payload = UnpublishPayload(id, request.subject.principals.head)
         for {
           updated <- cmsService.unpublishPost(payload)
         } yield Ok(Json.toJson(updated))
@@ -177,7 +186,7 @@ class CmsPostController @Inject() (
     authenticated.async(parse.json[AssignPostTargetPrincipalPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
         val payload = request.body
-          .into[AssignPostTargetPrincipalPayload]
+          .into[AssignTargetPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -190,7 +199,7 @@ class CmsPostController @Inject() (
     authenticated.async(parse.json[UnassignPostTargetPrincipalPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
         val payload = request.body
-          .into[UnassignPostTargetPrincipalPayload]
+          .into[UnassignTargetPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -203,7 +212,7 @@ class CmsPostController @Inject() (
     authenticated.async(parse.json[DeletePostPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
         val payload = request.body
-          .into[DeletePostPayload]
+          .into[DeletePayload]
           .withFieldConst(_.deletedBy, request.subject.principals.head)
           .transform
         for {

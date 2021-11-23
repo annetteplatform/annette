@@ -19,6 +19,17 @@ package biz.lobachev.annette.cms.impl.pages.space
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
+import biz.lobachev.annette.cms.api.common.{
+  ActivatePayload,
+  AssignTargetPrincipalPayload,
+  CanAccessToEntityPayload,
+  DeactivatePayload,
+  DeletePayload,
+  UnassignTargetPrincipalPayload,
+  UpdateCategoryIdPayload,
+  UpdateDescriptionPayload,
+  UpdateNamePayload
+}
 import biz.lobachev.annette.cms.api.pages.space.{GetSpaceViewsPayload, _}
 import biz.lobachev.annette.cms.impl.pages.space.dao.{SpaceDbDao, SpaceIndexDao}
 import biz.lobachev.annette.core.model.indexing.FindResult
@@ -69,7 +80,7 @@ class SpaceEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def updateSpaceName(payload: UpdateSpaceNamePayload): Future[Done] =
+  def updateSpaceName(payload: UpdateNamePayload): Future[Done] =
     refFor(payload.id)
       .ask[SpaceEntity.Confirmation](replyTo =>
         payload
@@ -79,7 +90,7 @@ class SpaceEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def updateSpaceDescription(payload: UpdateSpaceDescriptionPayload): Future[Done] =
+  def updateSpaceDescription(payload: UpdateDescriptionPayload): Future[Done] =
     refFor(payload.id)
       .ask[SpaceEntity.Confirmation](replyTo =>
         payload
@@ -89,7 +100,7 @@ class SpaceEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def updateSpaceCategoryId(payload: UpdateSpaceCategoryPayload): Future[Done] =
+  def updateSpaceCategoryId(payload: UpdateCategoryIdPayload): Future[Done] =
     refFor(payload.id)
       .ask[SpaceEntity.Confirmation](replyTo =>
         payload
@@ -99,7 +110,7 @@ class SpaceEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def assignSpaceTargetPrincipal(payload: AssignSpaceTargetPrincipalPayload): Future[Done] =
+  def assignSpaceTargetPrincipal(payload: AssignTargetPrincipalPayload): Future[Done] =
     refFor(payload.id)
       .ask[SpaceEntity.Confirmation](replyTo =>
         payload
@@ -109,7 +120,7 @@ class SpaceEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def unassignSpaceTargetPrincipal(payload: UnassignSpaceTargetPrincipalPayload): Future[Done] =
+  def unassignSpaceTargetPrincipal(payload: UnassignTargetPrincipalPayload): Future[Done] =
     refFor(payload.id)
       .ask[SpaceEntity.Confirmation](replyTo =>
         payload
@@ -119,7 +130,7 @@ class SpaceEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def activateSpace(payload: ActivateSpacePayload): Future[Done] =
+  def activateSpace(payload: ActivatePayload): Future[Done] =
     refFor(payload.id)
       .ask[SpaceEntity.Confirmation](replyTo =>
         payload
@@ -129,7 +140,7 @@ class SpaceEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def deactivateSpace(payload: DeactivateSpacePayload): Future[Done] =
+  def deactivateSpace(payload: DeactivatePayload): Future[Done] =
     refFor(payload.id)
       .ask[SpaceEntity.Confirmation](replyTo =>
         payload
@@ -139,7 +150,7 @@ class SpaceEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def deleteSpace(payload: DeleteSpacePayload): Future[Done] =
+  def deleteSpace(payload: DeletePayload): Future[Done] =
     refFor(payload.id)
       .ask[SpaceEntity.Confirmation](replyTo =>
         payload
@@ -180,7 +191,7 @@ class SpaceEntityService(
   def getSpaceViews(payload: GetSpaceViewsPayload): Future[Seq[SpaceView]] =
     dbDao.getSpaceViews(payload.ids, payload.principals)
 
-  def canAccessToSpace(payload: CanAccessToSpacePayload): Future[Boolean] =
+  def canAccessToSpace(payload: CanAccessToEntityPayload): Future[Boolean] =
     dbDao.canAccessToSpace(payload.id, payload.principals)
 
   def findSpaces(query: SpaceFindQuery): Future[FindResult] = indexDao.findSpaces(query)

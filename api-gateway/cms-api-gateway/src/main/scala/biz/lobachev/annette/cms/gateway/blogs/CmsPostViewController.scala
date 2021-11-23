@@ -18,9 +18,17 @@ package biz.lobachev.annette.cms.gateway.blogs
 
 import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
-import biz.lobachev.annette.cms.api.CmsService
+import biz.lobachev.annette.cms.api.{common, CmsService}
 import biz.lobachev.annette.cms.api.blogs.blog._
 import biz.lobachev.annette.cms.api.blogs.post._
+import biz.lobachev.annette.cms.api.common.article.{
+  GetMetricPayload,
+  LikePayload,
+  PublicationStatus,
+  UnlikePayload,
+  ViewPayload
+}
+import biz.lobachev.annette.cms.api.common.CanAccessToEntityPayload
 import biz.lobachev.annette.cms.gateway.Permissions
 import biz.lobachev.annette.cms.gateway.blogs.post._
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
@@ -139,15 +147,15 @@ class CmsPostViewController @Inject() (
       authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         for {
           canAccess <- cmsService.canAccessToPost(
-                         CanAccessToPostPayload(
+                         CanAccessToEntityPayload(
                            id,
                            request.subject.principals.toSet
                          )
                        )
           _         <- if (canAccess)
-                         cmsService.viewPost(ViewPostPayload(id, request.subject.principals.head))
+                         cmsService.viewPost(ViewPayload(id, request.subject.principals.head))
                        else Future.failed(PostNotFound(id))
-          result    <- cmsService.getPostMetricById(GetPostMetricPayload(id, request.subject.principals.head))
+          result    <- cmsService.getPostMetricById(GetMetricPayload(id, request.subject.principals.head))
         } yield Ok(Json.toJson(result))
       }
     }
@@ -157,15 +165,15 @@ class CmsPostViewController @Inject() (
       authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         for {
           canAccess <- cmsService.canAccessToPost(
-                         CanAccessToPostPayload(
+                         common.CanAccessToEntityPayload(
                            id,
                            request.subject.principals.toSet
                          )
                        )
           _         <- if (canAccess)
-                         cmsService.likePost(LikePostPayload(id, request.subject.principals.head))
+                         cmsService.likePost(LikePayload(id, request.subject.principals.head))
                        else Future.failed(PostNotFound(id))
-          result    <- cmsService.getPostMetricById(GetPostMetricPayload(id, request.subject.principals.head))
+          result    <- cmsService.getPostMetricById(GetMetricPayload(id, request.subject.principals.head))
         } yield Ok(Json.toJson(result))
       }
     }
@@ -175,15 +183,15 @@ class CmsPostViewController @Inject() (
       authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         for {
           canAccess <- cmsService.canAccessToPost(
-                         CanAccessToPostPayload(
+                         common.CanAccessToEntityPayload(
                            id,
                            request.subject.principals.toSet
                          )
                        )
           _         <- if (canAccess)
-                         cmsService.unlikePost(UnlikePostPayload(id, request.subject.principals.head))
+                         cmsService.unlikePost(UnlikePayload(id, request.subject.principals.head))
                        else Future.failed(PostNotFound(id))
-          result    <- cmsService.getPostMetricById(GetPostMetricPayload(id, request.subject.principals.head))
+          result    <- cmsService.getPostMetricById(GetMetricPayload(id, request.subject.principals.head))
         } yield Ok(Json.toJson(result))
       }
     }

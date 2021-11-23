@@ -19,7 +19,37 @@ package biz.lobachev.annette.cms.api
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.cms.api.blogs.blog.{BlogView, _}
 import biz.lobachev.annette.cms.api.blogs.post._
-import biz.lobachev.annette.cms.api.common.Updated
+import biz.lobachev.annette.cms.api.common.article.{
+  GetMetricPayload,
+  GetMetricsPayload,
+  LikePayload,
+  Metric,
+  PublishPayload,
+  UnlikePayload,
+  UnpublishPayload,
+  UpdateAuthorPayload,
+  UpdatePublicationTimestampPayload,
+  UpdateTitlePayload
+}
+import biz.lobachev.annette.cms.api.common.{
+  article,
+  ActivatePayload,
+  AssignTargetPrincipalPayload,
+  CanAccessToEntityPayload,
+  DeactivatePayload,
+  DeletePayload,
+  UnassignTargetPrincipalPayload,
+  UpdateCategoryIdPayload,
+  UpdateDescriptionPayload,
+  UpdateNamePayload,
+  Updated
+}
+import biz.lobachev.annette.cms.api.content.{
+  ChangeWidgetOrderPayload,
+  DeleteWidgetPayload,
+  UpdateContentSettingsPayload,
+  UpdateWidgetPayload
+}
 import biz.lobachev.annette.cms.api.files._
 import biz.lobachev.annette.cms.api.pages.space._
 import biz.lobachev.annette.cms.api.pages.page._
@@ -47,33 +77,34 @@ trait CmsServiceApi extends Service {
   def findBlogCategories: ServiceCall[CategoryFindQuery, FindResult]
 
   def createBlog: ServiceCall[CreateBlogPayload, Done]
-  def updateBlogName: ServiceCall[UpdateBlogNamePayload, Done]
-  def updateBlogDescription: ServiceCall[UpdateBlogDescriptionPayload, Done]
-  def updateBlogCategoryId: ServiceCall[UpdateBlogCategoryPayload, Done]
-  def assignBlogTargetPrincipal: ServiceCall[AssignBlogTargetPrincipalPayload, Done]
-  def unassignBlogTargetPrincipal: ServiceCall[UnassignBlogTargetPrincipalPayload, Done]
-  def activateBlog: ServiceCall[ActivateBlogPayload, Done]
-  def deactivateBlog: ServiceCall[DeactivateBlogPayload, Done]
-  def deleteBlog: ServiceCall[DeleteBlogPayload, Done]
+  def updateBlogName: ServiceCall[UpdateNamePayload, Done]
+  def updateBlogDescription: ServiceCall[UpdateDescriptionPayload, Done]
+  def updateBlogCategoryId: ServiceCall[common.UpdateCategoryIdPayload, Done]
+  def assignBlogTargetPrincipal: ServiceCall[AssignTargetPrincipalPayload, Done]
+  def unassignBlogTargetPrincipal: ServiceCall[UnassignTargetPrincipalPayload, Done]
+  def activateBlog: ServiceCall[ActivatePayload, Done]
+  def deactivateBlog: ServiceCall[DeactivatePayload, Done]
+  def deleteBlog: ServiceCall[DeletePayload, Done]
   def getBlogById(id: BlogId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Blog]
   def getBlogsById(fromReadSide: Boolean = true): ServiceCall[Set[BlogId], Seq[Blog]]
   def getBlogViews: ServiceCall[GetBlogViewsPayload, Seq[BlogView]]
-  def canAccessToBlog: ServiceCall[CanAccessToBlogPayload, Boolean]
+  def canAccessToBlog: ServiceCall[CanAccessToEntityPayload, Boolean]
   def findBlogs: ServiceCall[BlogFindQuery, FindResult]
 
   def createPost: ServiceCall[CreatePostPayload, Post]
   def updatePostFeatured: ServiceCall[UpdatePostFeaturedPayload, Updated]
-  def updatePostAuthor: ServiceCall[UpdatePostAuthorPayload, Updated]
-  def updatePostTitle: ServiceCall[UpdatePostTitlePayload, Updated]
-  def updatePostWidgetContent: ServiceCall[UpdatePostWidgetContentPayload, Updated]
-  def changePostWidgetContentOrder: ServiceCall[ChangePostWidgetContentOrderPayload, Updated]
-  def deletePostWidgetContent: ServiceCall[DeletePostWidgetContentPayload, Updated]
-  def updatePostPublicationTimestamp: ServiceCall[UpdatePostPublicationTimestampPayload, Updated]
-  def publishPost: ServiceCall[PublishPostPayload, Updated]
-  def unpublishPost: ServiceCall[UnpublishPostPayload, Updated]
-  def assignPostTargetPrincipal: ServiceCall[AssignPostTargetPrincipalPayload, Updated]
-  def unassignPostTargetPrincipal: ServiceCall[UnassignPostTargetPrincipalPayload, Updated]
-  def deletePost: ServiceCall[DeletePostPayload, Updated]
+  def updatePostAuthor: ServiceCall[UpdateAuthorPayload, Updated]
+  def updatePostTitle: ServiceCall[UpdateTitlePayload, Updated]
+  def updatePostContentSettings: ServiceCall[UpdateContentSettingsPayload, Updated]
+  def updatePostWidget: ServiceCall[UpdateWidgetPayload, Updated]
+  def changePostWidgetOrder: ServiceCall[ChangeWidgetOrderPayload, Updated]
+  def deletePostWidget: ServiceCall[DeleteWidgetPayload, Updated]
+  def updatePostPublicationTimestamp: ServiceCall[UpdatePublicationTimestampPayload, Updated]
+  def publishPost: ServiceCall[PublishPayload, Updated]
+  def unpublishPost: ServiceCall[UnpublishPayload, Updated]
+  def assignPostTargetPrincipal: ServiceCall[AssignTargetPrincipalPayload, Updated]
+  def unassignPostTargetPrincipal: ServiceCall[UnassignTargetPrincipalPayload, Updated]
+  def deletePost: ServiceCall[DeletePayload, Updated]
   def getPostById(
     id: PostId,
     fromReadSide: Boolean = true,
@@ -88,16 +119,16 @@ trait CmsServiceApi extends Service {
     withTargets: Option[Boolean] = None
   ): ServiceCall[Set[PostId], Seq[Post]]
   def getPostViews: ServiceCall[GetPostViewsPayload, Seq[Post]]
-  def canAccessToPost: ServiceCall[CanAccessToPostPayload, Boolean]
+  def canAccessToPost: ServiceCall[CanAccessToEntityPayload, Boolean]
   def findPosts: ServiceCall[PostFindQuery, FindResult]
 
   // ************************** CMS Post Metrics **************************
 
-  def viewPost: ServiceCall[ViewPostPayload, Done]
-  def likePost: ServiceCall[LikePostPayload, Done]
-  def unlikePost: ServiceCall[UnlikePostPayload, Done]
-  def getPostMetricById: ServiceCall[GetPostMetricPayload, PostMetric]
-  def getPostMetricsById: ServiceCall[GetPostMetricsPayload, Seq[PostMetric]]
+  def viewPost: ServiceCall[article.ViewPayload, Done]
+  def likePost: ServiceCall[LikePayload, Done]
+  def unlikePost: ServiceCall[UnlikePayload, Done]
+  def getPostMetricById: ServiceCall[GetMetricPayload, Metric]
+  def getPostMetricsById: ServiceCall[GetMetricsPayload, Seq[Metric]]
 
   // ************************** CMS Pages **************************
 
@@ -109,32 +140,33 @@ trait CmsServiceApi extends Service {
   def findSpaceCategories: ServiceCall[CategoryFindQuery, FindResult]
 
   def createSpace: ServiceCall[CreateSpacePayload, Done]
-  def updateSpaceName: ServiceCall[UpdateSpaceNamePayload, Done]
-  def updateSpaceDescription: ServiceCall[UpdateSpaceDescriptionPayload, Done]
-  def updateSpaceCategoryId: ServiceCall[UpdateSpaceCategoryPayload, Done]
-  def assignSpaceTargetPrincipal: ServiceCall[AssignSpaceTargetPrincipalPayload, Done]
-  def unassignSpaceTargetPrincipal: ServiceCall[UnassignSpaceTargetPrincipalPayload, Done]
-  def activateSpace: ServiceCall[ActivateSpacePayload, Done]
-  def deactivateSpace: ServiceCall[DeactivateSpacePayload, Done]
-  def deleteSpace: ServiceCall[DeleteSpacePayload, Done]
+  def updateSpaceName: ServiceCall[UpdateNamePayload, Done]
+  def updateSpaceDescription: ServiceCall[UpdateDescriptionPayload, Done]
+  def updateSpaceCategoryId: ServiceCall[UpdateCategoryIdPayload, Done]
+  def assignSpaceTargetPrincipal: ServiceCall[AssignTargetPrincipalPayload, Done]
+  def unassignSpaceTargetPrincipal: ServiceCall[UnassignTargetPrincipalPayload, Done]
+  def activateSpace: ServiceCall[ActivatePayload, Done]
+  def deactivateSpace: ServiceCall[DeactivatePayload, Done]
+  def deleteSpace: ServiceCall[DeletePayload, Done]
   def getSpaceById(id: SpaceId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Space]
   def getSpacesById(fromReadSide: Boolean = true): ServiceCall[Set[SpaceId], Seq[Space]]
   def getSpaceViews: ServiceCall[GetSpaceViewsPayload, Seq[SpaceView]]
-  def canAccessToSpace: ServiceCall[CanAccessToSpacePayload, Boolean]
+  def canAccessToSpace: ServiceCall[CanAccessToEntityPayload, Boolean]
   def findSpaces: ServiceCall[SpaceFindQuery, FindResult]
 
   def createPage: ServiceCall[CreatePagePayload, Page]
-  def updatePageAuthor: ServiceCall[UpdatePageAuthorPayload, Updated]
-  def updatePageTitle: ServiceCall[UpdatePageTitlePayload, Updated]
-  def updatePageWidgetContent: ServiceCall[UpdatePageWidgetContentPayload, Updated]
-  def changePageWidgetContentOrder: ServiceCall[ChangePageWidgetContentOrderPayload, Updated]
-  def deletePageWidgetContent: ServiceCall[DeletePageWidgetContentPayload, Updated]
-  def updatePagePublicationTimestamp: ServiceCall[UpdatePagePublicationTimestampPayload, Updated]
-  def publishPage: ServiceCall[PublishPagePayload, Updated]
-  def unpublishPage: ServiceCall[UnpublishPagePayload, Updated]
-  def assignPageTargetPrincipal: ServiceCall[AssignPageTargetPrincipalPayload, Updated]
-  def unassignPageTargetPrincipal: ServiceCall[UnassignPageTargetPrincipalPayload, Updated]
-  def deletePage: ServiceCall[DeletePagePayload, Updated]
+  def updatePageAuthor: ServiceCall[UpdateAuthorPayload, Updated]
+  def updatePageTitle: ServiceCall[UpdateTitlePayload, Updated]
+  def updatePageContentSettings: ServiceCall[UpdateContentSettingsPayload, Updated]
+  def updatePageWidget: ServiceCall[UpdateWidgetPayload, Updated]
+  def changePageWidgetOrder: ServiceCall[ChangeWidgetOrderPayload, Updated]
+  def deletePageWidget: ServiceCall[DeleteWidgetPayload, Updated]
+  def updatePagePublicationTimestamp: ServiceCall[UpdatePublicationTimestampPayload, Updated]
+  def publishPage: ServiceCall[PublishPayload, Updated]
+  def unpublishPage: ServiceCall[UnpublishPayload, Updated]
+  def assignPageTargetPrincipal: ServiceCall[AssignTargetPrincipalPayload, Updated]
+  def unassignPageTargetPrincipal: ServiceCall[UnassignTargetPrincipalPayload, Updated]
+  def deletePage: ServiceCall[DeletePayload, Updated]
   def getPageById(
     id: PageId,
     fromReadSide: Boolean = true,
@@ -147,16 +179,16 @@ trait CmsServiceApi extends Service {
     withTargets: Option[Boolean] = None
   ): ServiceCall[Set[PageId], Seq[Page]]
   def getPageViews: ServiceCall[GetPageViewsPayload, Seq[Page]]
-  def canAccessToPage: ServiceCall[CanAccessToPagePayload, Boolean]
+  def canAccessToPage: ServiceCall[CanAccessToEntityPayload, Boolean]
   def findPages: ServiceCall[PageFindQuery, FindResult]
 
   // ************************** CMS Page Metrics **************************
 
-  def viewPage: ServiceCall[ViewPagePayload, Done]
-  def likePage: ServiceCall[LikePagePayload, Done]
-  def unlikePage: ServiceCall[UnlikePagePayload, Done]
-  def getPageMetricById: ServiceCall[GetPageMetricPayload, PageMetric]
-  def getPageMetricsById: ServiceCall[GetPageMetricsPayload, Seq[PageMetric]]
+  def viewPage: ServiceCall[article.ViewPayload, Done]
+  def likePage: ServiceCall[LikePayload, Done]
+  def unlikePage: ServiceCall[UnlikePayload, Done]
+  def getPageMetricById: ServiceCall[GetMetricPayload, Metric]
+  def getPageMetricsById: ServiceCall[GetMetricsPayload, Seq[Metric]]
 
   final override def descriptor = {
     import Service._
@@ -192,9 +224,10 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/updatePostFeatured", updatePostFeatured),
         pathCall("/api/cms/v1/updatePostAuthor", updatePostAuthor),
         pathCall("/api/cms/v1/updatePostTitle", updatePostTitle),
-        pathCall("/api/cms/v1/updatePostWidgetContent", updatePostWidgetContent),
-        pathCall("/api/cms/v1/changePostWidgetContentOrder", changePostWidgetContentOrder),
-        pathCall("/api/cms/v1/deletePostWidgetContent", deletePostWidgetContent),
+        pathCall("/api/cms/v1/updatePostContentSettings", updatePostContentSettings),
+        pathCall("/api/cms/v1/updatePostWidget", updatePostWidget),
+        pathCall("/api/cms/v1/changePostWidgetOrder", changePostWidgetOrder),
+        pathCall("/api/cms/v1/deletePostWidget", deletePostWidget),
         pathCall("/api/cms/v1/updatePostPublicationTimestamp", updatePostPublicationTimestamp),
         pathCall("/api/cms/v1/publishPost", publishPost),
         pathCall("/api/cms/v1/unpublishPost", unpublishPost),
@@ -235,9 +268,10 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/createPage", createPage),
         pathCall("/api/cms/v1/updatePageAuthor", updatePageAuthor),
         pathCall("/api/cms/v1/updatePageTitle", updatePageTitle),
-        pathCall("/api/cms/v1/updatePageWidgetContent", updatePageWidgetContent),
-        pathCall("/api/cms/v1/changePageWidgetContentOrder", changePageWidgetContentOrder),
-        pathCall("/api/cms/v1/deletePageWidgetContent", deletePageWidgetContent),
+        pathCall("/api/cms/v1/updatePageContentSettings", updatePageContentSettings),
+        pathCall("/api/cms/v1/updatePageWidget", updatePageWidget),
+        pathCall("/api/cms/v1/changePageWidgetOrder", changePageWidgetOrder),
+        pathCall("/api/cms/v1/deletePageWidget", deletePageWidget),
         pathCall("/api/cms/v1/updatePagePublicationTimestamp", updatePagePublicationTimestamp),
         pathCall("/api/cms/v1/publishPage", publishPage),
         pathCall("/api/cms/v1/unpublishPage", unpublishPage),

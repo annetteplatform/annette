@@ -19,7 +19,37 @@ package biz.lobachev.annette.cms.api
 import akka.Done
 import biz.lobachev.annette.cms.api.blogs.blog._
 import biz.lobachev.annette.cms.api.blogs.post._
-import biz.lobachev.annette.cms.api.common.Updated
+import biz.lobachev.annette.cms.api.common.article.{
+  GetMetricPayload,
+  GetMetricsPayload,
+  LikePayload,
+  Metric,
+  PublishPayload,
+  UnlikePayload,
+  UnpublishPayload,
+  UpdateAuthorPayload,
+  UpdatePublicationTimestampPayload,
+  UpdateTitlePayload
+}
+import biz.lobachev.annette.cms.api.common.{
+  article,
+  ActivatePayload,
+  AssignTargetPrincipalPayload,
+  CanAccessToEntityPayload,
+  DeactivatePayload,
+  DeletePayload,
+  UnassignTargetPrincipalPayload,
+  UpdateCategoryIdPayload,
+  UpdateDescriptionPayload,
+  UpdateNamePayload,
+  Updated
+}
+import biz.lobachev.annette.cms.api.content.{
+  ChangeWidgetOrderPayload,
+  DeleteWidgetPayload,
+  UpdateContentSettingsPayload,
+  UpdateWidgetPayload
+}
 import biz.lobachev.annette.cms.api.pages.space._
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.cms.api.files.{FileDescriptor, RemoveFilePayload, RemoveFilesPayload, StoreFilePayload}
@@ -47,33 +77,34 @@ trait CmsService {
   def findBlogCategories(payload: CategoryFindQuery): Future[FindResult]
 
   def createBlog(payload: CreateBlogPayload): Future[Done]
-  def updateBlogName(payload: UpdateBlogNamePayload): Future[Done]
-  def updateBlogDescription(payload: UpdateBlogDescriptionPayload): Future[Done]
-  def updateBlogCategoryId(payload: UpdateBlogCategoryPayload): Future[Done]
-  def assignBlogTargetPrincipal(payload: AssignBlogTargetPrincipalPayload): Future[Done]
-  def unassignBlogTargetPrincipal(payload: UnassignBlogTargetPrincipalPayload): Future[Done]
-  def activateBlog(payload: ActivateBlogPayload): Future[Done]
-  def deactivateBlog(payload: DeactivateBlogPayload): Future[Done]
-  def deleteBlog(payload: DeleteBlogPayload): Future[Done]
+  def updateBlogName(payload: UpdateNamePayload): Future[Done]
+  def updateBlogDescription(payload: UpdateDescriptionPayload): Future[Done]
+  def updateBlogCategoryId(payload: UpdateCategoryIdPayload): Future[Done]
+  def assignBlogTargetPrincipal(payload: AssignTargetPrincipalPayload): Future[Done]
+  def unassignBlogTargetPrincipal(payload: UnassignTargetPrincipalPayload): Future[Done]
+  def activateBlog(payload: ActivatePayload): Future[Done]
+  def deactivateBlog(payload: DeactivatePayload): Future[Done]
+  def deleteBlog(payload: DeletePayload): Future[Done]
   def getBlogById(id: BlogId, fromReadSide: Boolean = true): Future[Blog]
   def getBlogsById(ids: Set[BlogId], fromReadSide: Boolean = true): Future[Seq[Blog]]
   def getBlogViews(payload: GetBlogViewsPayload): Future[Seq[BlogView]]
-  def canAccessToBlog(payload: CanAccessToBlogPayload): Future[Boolean]
+  def canAccessToBlog(payload: CanAccessToEntityPayload): Future[Boolean]
   def findBlogs(payload: BlogFindQuery): Future[FindResult]
 
   def createPost(payload: CreatePostPayload): Future[Post]
   def updatePostFeatured(payload: UpdatePostFeaturedPayload): Future[Updated]
-  def updatePostAuthor(payload: UpdatePostAuthorPayload): Future[Updated]
-  def updatePostTitle(payload: UpdatePostTitlePayload): Future[Updated]
-  def updatePostWidgetContent(payload: UpdatePostWidgetContentPayload): Future[Updated]
-  def changePostWidgetContentOrder(payload: ChangePostWidgetContentOrderPayload): Future[Updated]
-  def deletePostWidgetContent(payload: DeletePostWidgetContentPayload): Future[Updated]
-  def updatePostPublicationTimestamp(payload: UpdatePostPublicationTimestampPayload): Future[Updated]
-  def publishPost(payload: PublishPostPayload): Future[Updated]
-  def unpublishPost(payload: UnpublishPostPayload): Future[Updated]
-  def assignPostTargetPrincipal(payload: AssignPostTargetPrincipalPayload): Future[Updated]
-  def unassignPostTargetPrincipal(payload: UnassignPostTargetPrincipalPayload): Future[Updated]
-  def deletePost(payload: DeletePostPayload): Future[Updated]
+  def updatePostAuthor(payload: UpdateAuthorPayload): Future[Updated]
+  def updatePostTitle(payload: UpdateTitlePayload): Future[Updated]
+  def updatePostContentSettings(payload: UpdateContentSettingsPayload): Future[Updated]
+  def updatePostWidget(payload: UpdateWidgetPayload): Future[Updated]
+  def changePostWidgetOrder(payload: ChangeWidgetOrderPayload): Future[Updated]
+  def deletePostWidget(payload: DeleteWidgetPayload): Future[Updated]
+  def updatePostPublicationTimestamp(payload: UpdatePublicationTimestampPayload): Future[Updated]
+  def publishPost(payload: PublishPayload): Future[Updated]
+  def unpublishPost(payload: UnpublishPayload): Future[Updated]
+  def assignPostTargetPrincipal(payload: AssignTargetPrincipalPayload): Future[Updated]
+  def unassignPostTargetPrincipal(payload: UnassignTargetPrincipalPayload): Future[Updated]
+  def deletePost(payload: DeletePayload): Future[Updated]
   def getPostById(
     id: PostId,
     fromReadSide: Boolean = true,
@@ -89,14 +120,14 @@ trait CmsService {
     withTargets: Option[Boolean]
   ): Future[Seq[Post]]
   def getPostViews(payload: GetPostViewsPayload): Future[Seq[Post]]
-  def canAccessToPost(payload: CanAccessToPostPayload): Future[Boolean]
+  def canAccessToPost(payload: CanAccessToEntityPayload): Future[Boolean]
   def findPosts(query: PostFindQuery): Future[FindResult]
 
-  def viewPost(payload: ViewPostPayload): Future[Done]
-  def likePost(payload: LikePostPayload): Future[Done]
-  def unlikePost(payload: UnlikePostPayload): Future[Done]
-  def getPostMetricById(payload: GetPostMetricPayload): Future[PostMetric]
-  def getPostMetricsById(payload: GetPostMetricsPayload): Future[Seq[PostMetric]]
+  def viewPost(payload: article.ViewPayload): Future[Done]
+  def likePost(payload: LikePayload): Future[Done]
+  def unlikePost(payload: UnlikePayload): Future[Done]
+  def getPostMetricById(payload: GetMetricPayload): Future[Metric]
+  def getPostMetricsById(payload: GetMetricsPayload): Future[Seq[Metric]]
 
   // ************************** CMS Pages **************************
 
@@ -108,32 +139,33 @@ trait CmsService {
   def findSpaceCategories(payload: CategoryFindQuery): Future[FindResult]
 
   def createSpace(payload: CreateSpacePayload): Future[Done]
-  def updateSpaceName(payload: UpdateSpaceNamePayload): Future[Done]
-  def updateSpaceDescription(payload: UpdateSpaceDescriptionPayload): Future[Done]
-  def updateSpaceCategoryId(payload: UpdateSpaceCategoryPayload): Future[Done]
-  def assignSpaceTargetPrincipal(payload: AssignSpaceTargetPrincipalPayload): Future[Done]
-  def unassignSpaceTargetPrincipal(payload: UnassignSpaceTargetPrincipalPayload): Future[Done]
-  def activateSpace(payload: ActivateSpacePayload): Future[Done]
-  def deactivateSpace(payload: DeactivateSpacePayload): Future[Done]
-  def deleteSpace(payload: DeleteSpacePayload): Future[Done]
+  def updateSpaceName(payload: UpdateNamePayload): Future[Done]
+  def updateSpaceDescription(payload: UpdateDescriptionPayload): Future[Done]
+  def updateSpaceCategoryId(payload: UpdateCategoryIdPayload): Future[Done]
+  def assignSpaceTargetPrincipal(payload: AssignTargetPrincipalPayload): Future[Done]
+  def unassignSpaceTargetPrincipal(payload: UnassignTargetPrincipalPayload): Future[Done]
+  def activateSpace(payload: ActivatePayload): Future[Done]
+  def deactivateSpace(payload: DeactivatePayload): Future[Done]
+  def deleteSpace(payload: DeletePayload): Future[Done]
   def getSpaceById(id: SpaceId, fromReadSide: Boolean = true): Future[Space]
   def getSpacesById(ids: Set[SpaceId], fromReadSide: Boolean = true): Future[Seq[Space]]
   def getSpaceViews(payload: GetSpaceViewsPayload): Future[Seq[SpaceView]]
-  def canAccessToSpace(payload: CanAccessToSpacePayload): Future[Boolean]
+  def canAccessToSpace(payload: CanAccessToEntityPayload): Future[Boolean]
   def findSpaces(payload: SpaceFindQuery): Future[FindResult]
 
   def createPage(payload: CreatePagePayload): Future[Page]
-  def updatePageAuthor(payload: UpdatePageAuthorPayload): Future[Updated]
-  def updatePageTitle(payload: UpdatePageTitlePayload): Future[Updated]
-  def updatePageWidgetContent(payload: UpdatePageWidgetContentPayload): Future[Updated]
-  def changePageWidgetContentOrder(payload: ChangePageWidgetContentOrderPayload): Future[Updated]
-  def deletePageWidgetContent(payload: DeletePageWidgetContentPayload): Future[Updated]
-  def updatePagePublicationTimestamp(payload: UpdatePagePublicationTimestampPayload): Future[Updated]
-  def publishPage(payload: PublishPagePayload): Future[Updated]
-  def unpublishPage(payload: UnpublishPagePayload): Future[Updated]
-  def assignPageTargetPrincipal(payload: AssignPageTargetPrincipalPayload): Future[Updated]
-  def unassignPageTargetPrincipal(payload: UnassignPageTargetPrincipalPayload): Future[Updated]
-  def deletePage(payload: DeletePagePayload): Future[Updated]
+  def updatePageAuthor(payload: UpdateAuthorPayload): Future[Updated]
+  def updatePageTitle(payload: UpdateTitlePayload): Future[Updated]
+  def updatePageContentSettings(payload: UpdateContentSettingsPayload): Future[Updated]
+  def updatePageWidget(payload: UpdateWidgetPayload): Future[Updated]
+  def changePageWidgetOrder(payload: ChangeWidgetOrderPayload): Future[Updated]
+  def deletePageWidget(payload: DeleteWidgetPayload): Future[Updated]
+  def updatePagePublicationTimestamp(payload: UpdatePublicationTimestampPayload): Future[Updated]
+  def publishPage(payload: PublishPayload): Future[Updated]
+  def unpublishPage(payload: UnpublishPayload): Future[Updated]
+  def assignPageTargetPrincipal(payload: AssignTargetPrincipalPayload): Future[Updated]
+  def unassignPageTargetPrincipal(payload: UnassignTargetPrincipalPayload): Future[Updated]
+  def deletePage(payload: DeletePayload): Future[Updated]
   def getPageById(
     id: PageId,
     fromReadSide: Boolean = true,
@@ -147,13 +179,13 @@ trait CmsService {
     withTargets: Option[Boolean]
   ): Future[Seq[Page]]
   def getPageViews(payload: GetPageViewsPayload): Future[Seq[Page]]
-  def canAccessToPage(payload: CanAccessToPagePayload): Future[Boolean]
+  def canAccessToPage(payload: CanAccessToEntityPayload): Future[Boolean]
   def findPages(query: PageFindQuery): Future[FindResult]
 
-  def viewPage(payload: ViewPagePayload): Future[Done]
-  def likePage(payload: LikePagePayload): Future[Done]
-  def unlikePage(payload: UnlikePagePayload): Future[Done]
-  def getPageMetricById(payload: GetPageMetricPayload): Future[PageMetric]
-  def getPageMetricsById(payload: GetPageMetricsPayload): Future[Seq[PageMetric]]
+  def viewPage(payload: article.ViewPayload): Future[Done]
+  def likePage(payload: LikePayload): Future[Done]
+  def unlikePage(payload: UnlikePayload): Future[Done]
+  def getPageMetricById(payload: GetMetricPayload): Future[Metric]
+  def getPageMetricsById(payload: GetMetricsPayload): Future[Seq[Metric]]
 
 }

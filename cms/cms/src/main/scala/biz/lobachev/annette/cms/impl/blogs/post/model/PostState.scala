@@ -16,10 +16,11 @@
 
 package biz.lobachev.annette.cms.impl.blogs.post.model
 
-import biz.lobachev.annette.cms.api.blogs.post.PublicationStatus.PublicationStatus
+import biz.lobachev.annette.cms.api.common.article.PublicationStatus.PublicationStatus
 import biz.lobachev.annette.cms.api.blogs.post._
 import biz.lobachev.annette.cms.api.blogs.blog.BlogId
-import biz.lobachev.annette.cms.impl.content.Content
+import biz.lobachev.annette.cms.api.common.article.PublicationStatus
+import biz.lobachev.annette.cms.api.content.Content
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 

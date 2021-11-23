@@ -19,9 +19,10 @@ package biz.lobachev.annette.cms.impl.pages.page.dao
 import akka.Done
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
-import biz.lobachev.annette.cms.api.pages.page.PublicationStatus.PublicationStatus
+import biz.lobachev.annette.cms.api.common.article.{Metric, PublicationStatus}
+import biz.lobachev.annette.cms.api.content.Widget
+import biz.lobachev.annette.cms.api.common.article.PublicationStatus.PublicationStatus
 import biz.lobachev.annette.cms.api.pages.page._
-import biz.lobachev.annette.cms.api.common.WidgetContent
 import biz.lobachev.annette.cms.impl.pages.page.PageEntity
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
@@ -72,6 +73,7 @@ private[impl] class PageDbDao(
                .column("title", Text)
                .column("publication_status", Text)
                .column("publication_timestamp", Timestamp)
+               .column("page_content_settings", Text)
                .column("page_content_order", List(Text))
                .column("updated_at", Timestamp)
                .column("updated_by", Text)
@@ -81,11 +83,11 @@ private[impl] class PageDbDao(
       _ <- session.executeCreateTable(
              CassandraTableBuilder("page_widgets")
                .column("page_id", Text)
-               .column("widget_content_id", Text)
+               .column("widget_id", Text)
                .column("widget_type", Text)
                .column("data", Text)
                .column("index_data", Text)
-               .withPrimaryKey("page_id", "widget_content_id")
+               .withPrimaryKey("page_id", "widget_id")
                .build
            )
       _ <- session.executeCreateTable(
@@ -118,19 +120,20 @@ private[impl] class PageDbDao(
   def createPage(event: PageEntity.PageCreated) = {
     val pageRecord = event
       .into[PageRecord]
-      .withFieldComputed(_.pageContentOrder, _.content.contentOrder.toList)
+      .withFieldComputed(_.pageContentSettings, _.content.settings)
+      .withFieldComputed(_.pageContentOrder, _.content.widgetOrder.toList)
       .withFieldComputed(_.updatedAt, _.createdAt)
       .withFieldComputed(_.updatedBy, _.createdBy)
       .transform
     for {
       _ <- ctx.run(pageSchema.insert(lift(pageRecord)))
 
-      _ <- Source(event.content.content.values.toSeq)
+      _ <- Source(event.content.widgets.values.toSeq)
              .mapAsync(1) { widget =>
                val pageWidgetRecord = widget
                  .into[PageWidgetRecord]
                  .withFieldConst(_.pageId, event.id)
-                 .withFieldComputed(_.widgetContentId, _.id)
+                 .withFieldComputed(_.widgetId, _.id)
                  .transform
                ctx.run(pageWidgetSchema.insert(lift(pageWidgetRecord)))
              }
@@ -169,18 +172,31 @@ private[impl] class PageDbDao(
         )
     )
 
-  def updatePageWidgetContent(event: PageEntity.PageWidgetContentUpdated) = {
-    val pageWidget = event.widgetContent
+  def updateContentSettings(event: PageEntity.ContentSettingsUpdated) =
+    for {
+      _ <- ctx.run(
+             pageSchema
+               .filter(_.id == lift(event.id))
+               .update(
+                 _.pageContentSettings -> lift(event.settings),
+                 _.updatedAt           -> lift(event.updatedAt),
+                 _.updatedBy           -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
+
+  def updatePageWidget(event: PageEntity.PageWidgetUpdated) = {
+    val pageWidget = event.widget
       .into[PageWidgetRecord]
       .withFieldConst(_.pageId, event.id)
-      .withFieldComputed(_.widgetContentId, _.id)
+      .withFieldComputed(_.widgetId, _.id)
       .transform
     for {
       _ <- ctx.run(
              pageSchema
                .filter(_.id == lift(event.id))
                .update(
-                 _.pageContentOrder -> lift(event.contentOrder.toList),
+                 _.pageContentOrder -> lift(event.widgetOrder.toList),
                  _.updatedAt        -> lift(event.updatedAt),
                  _.updatedBy        -> lift(event.updatedBy)
                )
@@ -189,26 +205,26 @@ private[impl] class PageDbDao(
     } yield Done
   }
 
-  def changeWidgetContentOrder(event: PageEntity.WidgetContentOrderChanged) =
+  def changeWidgetOrder(event: PageEntity.WidgetOrderChanged) =
     for {
       _ <- ctx.run(
              pageSchema
                .filter(_.id == lift(event.id))
                .update(
-                 _.pageContentOrder -> lift(event.contentOrder.toList),
+                 _.pageContentOrder -> lift(event.widgetOrder.toList),
                  _.updatedAt        -> lift(event.updatedAt),
                  _.updatedBy        -> lift(event.updatedBy)
                )
            )
     } yield Done
 
-  def deleteWidgetContent(event: PageEntity.WidgetContentDeleted) =
+  def deleteWidget(event: PageEntity.WidgetDeleted) =
     for {
       _ <- ctx.run(
              pageSchema
                .filter(_.id == lift(event.id))
                .update(
-                 _.pageContentOrder -> lift(event.contentOrder.toList),
+                 _.pageContentOrder -> lift(event.widgetOrder.toList),
                  _.updatedAt        -> lift(event.updatedAt),
                  _.updatedBy        -> lift(event.updatedBy)
                )
@@ -217,7 +233,7 @@ private[impl] class PageDbDao(
              pageWidgetSchema
                .filter(r =>
                  r.pageId == lift(event.id) &&
-                   r.widgetContentId == lift(event.widgetContentId)
+                   r.widgetId == lift(event.widgetId)
                )
                .delete
            )
@@ -316,32 +332,32 @@ private[impl] class PageDbDao(
     withTargets: Boolean
   ): Future[Option[Page]] =
     for {
-      maybeEntity             <- ctx
-                                   .run(pageSchema.filter(_.id == lift(id)))
-                                   .map(_.headOption)
-      maybePageWidgetContents <- if (withContent)
-                                   maybeEntity
-                                     .map(_ => getPageWidgets(id).map(Some(_)))
-                                     .getOrElse(Future.successful(None))
-                                 else Future.successful(None)
-      maybeTargets            <- if (withTargets)
-                                   maybeEntity.map(_ => getPageTargets(id).map(Some(_))).getOrElse(Future.successful(None))
-                                 else Future.successful(None)
+      maybeEntity      <- ctx
+                            .run(pageSchema.filter(_.id == lift(id)))
+                            .map(_.headOption)
+      maybePageWidgets <- if (withContent)
+                            maybeEntity
+                              .map(_ => getPageWidgets(id).map(Some(_)))
+                              .getOrElse(Future.successful(None))
+                          else Future.successful(None)
+      maybeTargets     <- if (withTargets)
+                            maybeEntity.map(_ => getPageTargets(id).map(Some(_))).getOrElse(Future.successful(None))
+                          else Future.successful(None)
     } yield maybeEntity.map(
       _.toPage(
-        maybePageWidgetContents,
+        maybePageWidgets,
         maybeTargets
       )
     )
 
-  private def getPageWidgets(id: PageId): Future[Map[String, WidgetContent]] =
+  private def getPageWidgets(id: PageId): Future[Map[String, Widget]]   =
     ctx
       .run(
         pageWidgetSchema.filter(r => r.pageId == lift(id))
       )
-      .map(_.map(c => c.widgetContentId -> c.toWidgetContent).toMap)
+      .map(_.map(c => c.widgetId -> c.toWidget).toMap)
 
-  private def getPageTargets(id: PageId): Future[Set[AnnettePrincipal]]      =
+  private def getPageTargets(id: PageId): Future[Set[AnnettePrincipal]] =
     ctx
       .run(pageTargetSchema.filter(_.pageId == lift(id)).map(_.principal))
       .map(_.toSet)
@@ -377,7 +393,7 @@ private[impl] class PageDbDao(
                              page.publicationStatus == PublicationStatus.Published &&
                                page.publicationTimestamp.map(_.compareTo(OffsetDateTime.now) <= 0).getOrElse(true)
                            )
-      metrics           <- getPageMetricsById(publishedPageViews.map(_.id).toSet, payload.directPrincipal)
+      metrics           <- getPageMetricsById(publishedPageViews.map(_.id), payload.directPrincipal)
       metricsMap         = metrics.map(a => a.id -> a).toMap
 
     } yield publishedPageViews
@@ -424,17 +440,17 @@ private[impl] class PageDbDao(
 
   // ***************************** metrics *****************************
 
-  def getPageMetricsById(ids: Set[PageId], principal: AnnettePrincipal): Future[Seq[PageMetric]] =
+  def getPageMetricsById(ids: Seq[PageId], principal: AnnettePrincipal): Future[Seq[Metric]] =
     Source(ids)
       .mapAsync(1)(id => getPageMetricById(id, principal))
       .runWith(Sink.seq)
 
-  def getPageMetricById(id: PageId, principal: AnnettePrincipal): Future[PageMetric] =
+  def getPageMetricById(id: PageId, principal: AnnettePrincipal): Future[Metric] =
     for {
       views     <- getPageViewsCountById(id)
       likes     <- getPageLikesCountById(id)
       likedByMe <- getPageLikedByMeById(id, principal)
-    } yield PageMetric(id, views, likes, likedByMe)
+    } yield Metric(id, views, likes, likedByMe)
 
   private def getPageViewsCountById(id: PageId): Future[Int] =
     for {

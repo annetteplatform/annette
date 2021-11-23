@@ -19,6 +19,15 @@ package biz.lobachev.annette.cms.gateway.pages
 import akka.stream.Materializer
 import biz.lobachev.annette.api_gateway_core.authentication.{AuthenticatedAction, CookieAuthenticatedAction}
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
+import biz.lobachev.annette.cms.api.common.article.{
+  PublishPayload,
+  UnpublishPayload,
+  UpdateAuthorPayload,
+  UpdatePublicationTimestampPayload,
+  UpdateTitlePayload
+}
+import biz.lobachev.annette.cms.api.common.{AssignTargetPrincipalPayload, DeletePayload, UnassignTargetPrincipalPayload}
+import biz.lobachev.annette.cms.api.content.{ChangeWidgetOrderPayload, DeleteWidgetPayload, UpdateWidgetPayload}
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.cms.api.files.{FileTypes, RemoveFilePayload, StoreFilePayload}
 import biz.lobachev.annette.cms.api.{CmsService, CmsStorage}
@@ -66,7 +75,7 @@ class CmsPageController @Inject() (
     authenticated.async(parse.json[UpdatePageTitlePayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_PAGES) {
         val payload = request.body
-          .into[UpdatePageTitlePayload]
+          .into[UpdateTitlePayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -79,7 +88,7 @@ class CmsPageController @Inject() (
     authenticated.async(parse.json[UpdatePageAuthorPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_PAGES) {
         val payload = request.body
-          .into[UpdatePageAuthorPayload]
+          .into[UpdateAuthorPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -88,41 +97,41 @@ class CmsPageController @Inject() (
       }
     }
 
-  def updatePageWidgetContent =
-    authenticated.async(parse.json[UpdatePageWidgetContentPayloadDto]) { implicit request =>
+  def updatePageWidget =
+    authenticated.async(parse.json[UpdateWidgetPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_PAGES) {
         val payload = request.body
-          .into[UpdatePageWidgetContentPayload]
+          .into[UpdateWidgetPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
-          updated <- cmsService.updatePageWidgetContent(payload)
+          updated <- cmsService.updatePageWidget(payload)
         } yield Ok(Json.toJson(updated))
       }
     }
 
-  def changePageWidgetContentOrder =
-    authenticated.async(parse.json[ChangePageWidgetContentOrderPayloadDto]) { implicit request =>
+  def changePageWidgetOrder =
+    authenticated.async(parse.json[ChangeWidgetOrderPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_PAGES) {
         val payload = request.body
-          .into[ChangePageWidgetContentOrderPayload]
+          .into[ChangeWidgetOrderPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
-          updated <- cmsService.changePageWidgetContentOrder(payload)
+          updated <- cmsService.changePageWidgetOrder(payload)
         } yield Ok(Json.toJson(updated))
       }
     }
 
-  def deletePageWidgetContent =
-    authenticated.async(parse.json[DeletePageWidgetContentPayloadDto]) { implicit request =>
+  def deletePageWidget =
+    authenticated.async(parse.json[DeleteWidgetPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_PAGES) {
         val payload = request.body
-          .into[DeletePageWidgetContentPayload]
+          .into[DeleteWidgetPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
-          updated <- cmsService.deletePageWidgetContent(payload)
+          updated <- cmsService.deletePageWidget(payload)
         } yield Ok(Json.toJson(updated))
       }
     }
@@ -131,7 +140,7 @@ class CmsPageController @Inject() (
     authenticated.async(parse.json[UpdatePagePublicationTimestampPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_PAGES) {
         val payload = request.body
-          .into[UpdatePagePublicationTimestampPayload]
+          .into[UpdatePublicationTimestampPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -143,7 +152,7 @@ class CmsPageController @Inject() (
   def publishPage(id: String) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_PAGES) {
-        val payload = PublishPagePayload(id, request.subject.principals.head)
+        val payload = PublishPayload(id, request.subject.principals.head)
         for {
           updated <- cmsService.publishPage(payload)
         } yield Ok(Json.toJson(updated))
@@ -153,7 +162,7 @@ class CmsPageController @Inject() (
   def unpublishPage(id: String) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_PAGES) {
-        val payload = UnpublishPagePayload(id, request.subject.principals.head)
+        val payload = UnpublishPayload(id, request.subject.principals.head)
         for {
           updated <- cmsService.unpublishPage(payload)
         } yield Ok(Json.toJson(updated))
@@ -164,7 +173,7 @@ class CmsPageController @Inject() (
     authenticated.async(parse.json[AssignPageTargetPrincipalPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_PAGES) {
         val payload = request.body
-          .into[AssignPageTargetPrincipalPayload]
+          .into[AssignTargetPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -177,7 +186,7 @@ class CmsPageController @Inject() (
     authenticated.async(parse.json[UnassignPageTargetPrincipalPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_PAGES) {
         val payload = request.body
-          .into[UnassignPageTargetPrincipalPayload]
+          .into[UnassignTargetPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -190,7 +199,7 @@ class CmsPageController @Inject() (
     authenticated.async(parse.json[DeletePagePayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_PAGES) {
         val payload = request.body
-          .into[DeletePagePayload]
+          .into[DeletePayload]
           .withFieldConst(_.deletedBy, request.subject.principals.head)
           .transform
         for {

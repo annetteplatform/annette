@@ -19,6 +19,16 @@ package biz.lobachev.annette.cms.gateway.pages
 import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.CmsService
+import biz.lobachev.annette.cms.api.common.{
+  ActivatePayload,
+  AssignTargetPrincipalPayload,
+  DeactivatePayload,
+  DeletePayload,
+  UnassignTargetPrincipalPayload,
+  UpdateCategoryIdPayload,
+  UpdateDescriptionPayload,
+  UpdateNamePayload
+}
 import biz.lobachev.annette.cms.api.pages.space._
 import biz.lobachev.annette.cms.gateway.Permissions
 import biz.lobachev.annette.cms.gateway.Permissions.MAINTAIN_ALL_SPACES
@@ -61,7 +71,7 @@ class CmsSpaceController @Inject() (
     authenticated.async(parse.json[UpdateSpaceNamePayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
         val payload = request.body
-          .into[UpdateSpaceNamePayload]
+          .into[UpdateNamePayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -75,7 +85,7 @@ class CmsSpaceController @Inject() (
     authenticated.async(parse.json[UpdateSpaceDescriptionPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
         val payload = request.body
-          .into[UpdateSpaceDescriptionPayload]
+          .into[UpdateDescriptionPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -89,7 +99,7 @@ class CmsSpaceController @Inject() (
     authenticated.async(parse.json[UpdateSpaceCategoryPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
         val payload = request.body
-          .into[UpdateSpaceCategoryPayload]
+          .into[UpdateCategoryIdPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -103,7 +113,7 @@ class CmsSpaceController @Inject() (
     authenticated.async(parse.json[AssignSpaceTargetPrincipalPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
         val payload = request.body
-          .into[AssignSpaceTargetPrincipalPayload]
+          .into[AssignTargetPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -117,7 +127,7 @@ class CmsSpaceController @Inject() (
     authenticated.async(parse.json[UnassignSpaceTargetPrincipalPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
         val payload = request.body
-          .into[UnassignSpaceTargetPrincipalPayload]
+          .into[UnassignTargetPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -131,7 +141,7 @@ class CmsSpaceController @Inject() (
     authenticated.async(parse.json[ActivateSpacePayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
         val payload = request.body
-          .into[ActivateSpacePayload]
+          .into[ActivatePayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -145,7 +155,7 @@ class CmsSpaceController @Inject() (
     authenticated.async(parse.json[DeactivateSpacePayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
         val payload = request.body
-          .into[DeactivateSpacePayload]
+          .into[DeactivatePayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -159,7 +169,7 @@ class CmsSpaceController @Inject() (
     authenticated.async(parse.json[DeleteSpacePayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
         val payload = request.body
-          .into[DeleteSpacePayload]
+          .into[DeletePayload]
           .withFieldConst(_.deletedBy, request.subject.principals.head)
           .transform
         for {

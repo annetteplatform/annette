@@ -16,10 +16,11 @@
 
 package biz.lobachev.annette.cms.impl.pages.page.model
 
-import biz.lobachev.annette.cms.api.pages.page.PublicationStatus.PublicationStatus
+import biz.lobachev.annette.cms.api.common.article.PublicationStatus
+import biz.lobachev.annette.cms.api.content.Content
+import biz.lobachev.annette.cms.api.common.article.PublicationStatus.PublicationStatus
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.cms.api.pages.space.SpaceId
-import biz.lobachev.annette.cms.impl.content.Content
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 

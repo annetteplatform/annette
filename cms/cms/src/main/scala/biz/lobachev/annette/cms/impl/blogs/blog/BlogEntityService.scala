@@ -20,6 +20,17 @@ import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
 import biz.lobachev.annette.cms.api.blogs.blog.{GetBlogViewsPayload, _}
+import biz.lobachev.annette.cms.api.common.{
+  ActivatePayload,
+  AssignTargetPrincipalPayload,
+  CanAccessToEntityPayload,
+  DeactivatePayload,
+  DeletePayload,
+  UnassignTargetPrincipalPayload,
+  UpdateCategoryIdPayload,
+  UpdateDescriptionPayload,
+  UpdateNamePayload
+}
 import biz.lobachev.annette.cms.impl.blogs.blog.dao.{BlogDbDao, BlogIndexDao}
 import biz.lobachev.annette.core.model.indexing.FindResult
 import io.scalaland.chimney.dsl._
@@ -69,7 +80,7 @@ class BlogEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def updateBlogName(payload: UpdateBlogNamePayload): Future[Done] =
+  def updateBlogName(payload: UpdateNamePayload): Future[Done] =
     refFor(payload.id)
       .ask[BlogEntity.Confirmation](replyTo =>
         payload
@@ -79,7 +90,7 @@ class BlogEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def updateBlogDescription(payload: UpdateBlogDescriptionPayload): Future[Done] =
+  def updateBlogDescription(payload: UpdateDescriptionPayload): Future[Done] =
     refFor(payload.id)
       .ask[BlogEntity.Confirmation](replyTo =>
         payload
@@ -89,7 +100,7 @@ class BlogEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def updateBlogCategoryId(payload: UpdateBlogCategoryPayload): Future[Done] =
+  def updateBlogCategoryId(payload: UpdateCategoryIdPayload): Future[Done] =
     refFor(payload.id)
       .ask[BlogEntity.Confirmation](replyTo =>
         payload
@@ -99,7 +110,7 @@ class BlogEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def assignBlogTargetPrincipal(payload: AssignBlogTargetPrincipalPayload): Future[Done] =
+  def assignBlogTargetPrincipal(payload: AssignTargetPrincipalPayload): Future[Done] =
     refFor(payload.id)
       .ask[BlogEntity.Confirmation](replyTo =>
         payload
@@ -109,7 +120,7 @@ class BlogEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def unassignBlogTargetPrincipal(payload: UnassignBlogTargetPrincipalPayload): Future[Done] =
+  def unassignBlogTargetPrincipal(payload: UnassignTargetPrincipalPayload): Future[Done] =
     refFor(payload.id)
       .ask[BlogEntity.Confirmation](replyTo =>
         payload
@@ -119,7 +130,7 @@ class BlogEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def activateBlog(payload: ActivateBlogPayload): Future[Done] =
+  def activateBlog(payload: ActivatePayload): Future[Done] =
     refFor(payload.id)
       .ask[BlogEntity.Confirmation](replyTo =>
         payload
@@ -129,7 +140,7 @@ class BlogEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def deactivateBlog(payload: DeactivateBlogPayload): Future[Done] =
+  def deactivateBlog(payload: DeactivatePayload): Future[Done] =
     refFor(payload.id)
       .ask[BlogEntity.Confirmation](replyTo =>
         payload
@@ -139,7 +150,7 @@ class BlogEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def deleteBlog(payload: DeleteBlogPayload): Future[Done] =
+  def deleteBlog(payload: DeletePayload): Future[Done] =
     refFor(payload.id)
       .ask[BlogEntity.Confirmation](replyTo =>
         payload
@@ -180,7 +191,7 @@ class BlogEntityService(
   def getBlogViews(payload: GetBlogViewsPayload): Future[Seq[BlogView]] =
     dbDao.getBlogViews(payload.ids, payload.principals)
 
-  def canAccessToBlog(payload: CanAccessToBlogPayload): Future[Boolean] =
+  def canAccessToBlog(payload: CanAccessToEntityPayload): Future[Boolean] =
     dbDao.canAccessToBlog(payload.id, payload.principals)
 
   def findBlogs(query: BlogFindQuery): Future[FindResult] = indexDao.findBlogs(query)

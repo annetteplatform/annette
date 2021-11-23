@@ -18,7 +18,7 @@ package biz.lobachev.annette.cms.gateway.pages.page
 
 import biz.lobachev.annette.cms.api.pages.space.SpaceId
 import biz.lobachev.annette.cms.api.pages.page.PageId
-import biz.lobachev.annette.cms.api.common.SerialContent
+import biz.lobachev.annette.cms.api.content.Content
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
@@ -28,7 +28,7 @@ case class CreatePagePayloadDto(
   parent: Option[PageId] = None,
   authorId: AnnettePrincipal,
   title: String,
-  content: SerialContent
+  content: Content
 )
 
 object CreatePagePayloadDto {

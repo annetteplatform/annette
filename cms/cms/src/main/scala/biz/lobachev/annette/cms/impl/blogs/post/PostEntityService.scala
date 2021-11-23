@@ -20,7 +20,33 @@ import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
 import biz.lobachev.annette.cms.api.blogs.post._
-import biz.lobachev.annette.cms.api.common.Updated
+import biz.lobachev.annette.cms.api.common.article.{
+  GetMetricPayload,
+  GetMetricsPayload,
+  LikePayload,
+  Metric,
+  PublishPayload,
+  UnlikePayload,
+  UnpublishPayload,
+  UpdateAuthorPayload,
+  UpdatePublicationTimestampPayload,
+  UpdateTitlePayload,
+  ViewPayload
+}
+import biz.lobachev.annette.cms.api.common.{
+  AssignTargetPrincipalPayload,
+  CanAccessToEntityPayload,
+  DeletePayload,
+  UnassignTargetPrincipalPayload,
+  Updated
+}
+import biz.lobachev.annette.cms.api.content.{
+  ChangeWidgetOrderPayload,
+  ContentTypes,
+  DeleteWidgetPayload,
+  UpdateContentSettingsPayload,
+  UpdateWidgetPayload
+}
 import biz.lobachev.annette.cms.impl.blogs.post.dao.{PostDbDao, PostIndexDao}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
@@ -56,7 +82,7 @@ class PostEntityService(
       case PostEntity.PostAlreadyExist                   => throw PostAlreadyExist(id)
       case PostEntity.PostNotFound                       => throw PostNotFound(id)
       case PostEntity.PostPublicationDateClearNotAllowed => throw PostPublicationDateClearNotAllowed(id)
-      case PostEntity.WidgetContentNotFound              => throw WidgetContentNotFound(id, maybeId.getOrElse(""))
+      case PostEntity.WidgetNotFound                     => throw WidgetNotFound(id, maybeId.getOrElse(""))
       case _                                             => throw new RuntimeException("Match fail")
     }
 
@@ -89,7 +115,7 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def updatePostAuthor(payload: UpdatePostAuthorPayload): Future[Updated] =
+  def updatePostAuthor(payload: UpdateAuthorPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -99,7 +125,7 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def updatePostTitle(payload: UpdatePostTitlePayload): Future[Updated] =
+  def updatePostTitle(payload: UpdateTitlePayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -109,37 +135,51 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def updateWidgetContent(payload: UpdatePostWidgetContentPayload): Future[Updated] =
+  def updatePostContentSettings(payload: UpdateContentSettingsPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
-          .into[PostEntity.UpdateWidgetContent]
+          .into[PostEntity.UpdateContentSettings]
+          .withFieldComputed(_.contentType, _.contentType.getOrElse(ContentTypes.Post))
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(convertSuccess(_, payload.id, Some(payload.widgetContent.id)))
+      .map(convertSuccess(_, payload.id, None))
 
-  def changeWidgetContentOrder(payload: ChangePostWidgetContentOrderPayload): Future[Updated] =
+  def updateWidget(payload: UpdateWidgetPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
-          .into[PostEntity.ChangeWidgetContentOrder]
+          .into[PostEntity.UpdateWidget]
+          .withFieldComputed(_.contentType, _.contentType.getOrElse(ContentTypes.Post))
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(convertSuccess(_, payload.id, Some(payload.widgetContentId)))
+      .map(convertSuccess(_, payload.id, Some(payload.widget.id)))
 
-  def deleteWidgetContent(payload: DeletePostWidgetContentPayload): Future[Updated] =
+  def changeWidgetOrder(payload: ChangeWidgetOrderPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
-          .into[PostEntity.DeleteWidgetContent]
+          .into[PostEntity.ChangeWidgetOrder]
+          .withFieldComputed(_.contentType, _.contentType.getOrElse(ContentTypes.Post))
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(convertSuccess(_, payload.id, Some(payload.widgetContentId)))
+      .map(convertSuccess(_, payload.id, Some(payload.widgetId)))
 
-  def updatePostPublicationTimestamp(payload: UpdatePostPublicationTimestampPayload): Future[Updated] =
+  def deleteWidget(payload: DeleteWidgetPayload): Future[Updated] =
+    refFor(payload.id)
+      .ask[PostEntity.Confirmation](replyTo =>
+        payload
+          .into[PostEntity.DeleteWidget]
+          .withFieldComputed(_.contentType, _.contentType.getOrElse(ContentTypes.Post))
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
+      .map(convertSuccess(_, payload.id, Some(payload.widgetId)))
+
+  def updatePostPublicationTimestamp(payload: UpdatePublicationTimestampPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -149,7 +189,7 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def publishPost(payload: PublishPostPayload): Future[Updated] =
+  def publishPost(payload: PublishPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -159,7 +199,7 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def unpublishPost(payload: UnpublishPostPayload): Future[Updated] =
+  def unpublishPost(payload: UnpublishPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -169,7 +209,7 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def assignPostTargetPrincipal(payload: AssignPostTargetPrincipalPayload): Future[Updated] =
+  def assignPostTargetPrincipal(payload: AssignTargetPrincipalPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -179,7 +219,7 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def unassignPostTargetPrincipal(payload: UnassignPostTargetPrincipalPayload): Future[Updated] =
+  def unassignPostTargetPrincipal(payload: UnassignTargetPrincipalPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -189,7 +229,7 @@ class PostEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def deletePost(payload: DeletePostPayload): Future[Updated] =
+  def deletePost(payload: DeletePayload): Future[Updated] =
     refFor(payload.id)
       .ask[PostEntity.Confirmation](replyTo =>
         payload
@@ -206,7 +246,7 @@ class PostEntityService(
       )
       .map(convertSuccessPost(_, id))
 
-  def canAccessToPost(payload: CanAccessToPostPayload): Future[Boolean] =
+  def canAccessToPost(payload: CanAccessToEntityPayload): Future[Boolean] =
     dbDao.canAccessToPost(payload.id, payload.principals)
 
   def getPostById(
@@ -249,16 +289,16 @@ class PostEntityService(
 
   def findPosts(query: PostFindQuery): Future[FindResult] = indexDao.findPosts(query)
 
-  def viewPost(payload: ViewPostPayload): Future[Done] = dbDao.viewPost(payload.id, payload.updatedBy)
+  def viewPost(payload: ViewPayload): Future[Done] = dbDao.viewPost(payload.id, payload.updatedBy)
 
-  def likePost(payload: LikePostPayload): Future[Done] = dbDao.likePost(payload.id, payload.updatedBy)
+  def likePost(payload: LikePayload): Future[Done] = dbDao.likePost(payload.id, payload.updatedBy)
 
-  def unlikePost(payload: UnlikePostPayload): Future[Done] = dbDao.unlikePost(payload.id, payload.updatedBy)
+  def unlikePost(payload: UnlikePayload): Future[Done] = dbDao.unlikePost(payload.id, payload.updatedBy)
 
-  def getPostMetricById(payload: GetPostMetricPayload): Future[PostMetric] =
+  def getPostMetricById(payload: GetMetricPayload): Future[Metric] =
     dbDao.getPostMetricById(payload.id, payload.principal)
 
-  def getPostMetricsById(payload: GetPostMetricsPayload): Future[Seq[PostMetric]] =
+  def getPostMetricsById(payload: GetMetricsPayload): Future[Seq[Metric]] =
     dbDao.getPostMetricsById(payload.ids, payload.principal)
 
 }

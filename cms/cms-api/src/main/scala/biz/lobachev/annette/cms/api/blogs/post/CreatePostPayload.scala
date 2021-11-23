@@ -17,7 +17,7 @@
 package biz.lobachev.annette.cms.api.blogs.post
 
 import biz.lobachev.annette.cms.api.blogs.blog.BlogId
-import biz.lobachev.annette.cms.api.common.SerialContent
+import biz.lobachev.annette.cms.api.content.Content
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
@@ -27,8 +27,8 @@ case class CreatePostPayload(
   featured: Boolean,
   authorId: AnnettePrincipal,
   title: String,
-  introContent: SerialContent,
-  content: SerialContent,
+  introContent: Content,
+  content: Content,
   createdBy: AnnettePrincipal
 )
 

@@ -17,7 +17,8 @@
 package biz.lobachev.annette.cms.api.pages.page
 
 import biz.lobachev.annette.cms.api.pages.space.SpaceId
-import biz.lobachev.annette.cms.api.common.SerialContent
+import biz.lobachev.annette.cms.api.common.article.{Metric, PublicationStatus}
+import biz.lobachev.annette.cms.api.content.Content
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
@@ -30,9 +31,9 @@ case class Page(
   title: String,
   publicationStatus: PublicationStatus.PublicationStatus = PublicationStatus.Draft,
   publicationTimestamp: Option[OffsetDateTime] = None,
-  content: Option[SerialContent] = None,
+  content: Option[Content] = None,
   targets: Option[Set[AnnettePrincipal]] = None,
-  metric: Option[PageMetric] = None,
+  metric: Option[Metric] = None,
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
 )

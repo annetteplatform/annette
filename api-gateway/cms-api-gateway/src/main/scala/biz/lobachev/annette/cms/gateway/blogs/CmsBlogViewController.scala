@@ -20,6 +20,7 @@ import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.CmsService
 import biz.lobachev.annette.cms.api.blogs.blog._
+import biz.lobachev.annette.cms.api.common.CanAccessToEntityPayload
 import biz.lobachev.annette.cms.gateway.Permissions
 import biz.lobachev.annette.cms.gateway.blogs.blog._
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
@@ -105,7 +106,7 @@ class CmsBlogViewController @Inject() (
         for {
           canAccessToBlog <- cmsService
                                .canAccessToBlog(
-                                 CanAccessToBlogPayload(
+                                 CanAccessToEntityPayload(
                                    id = blogId,
                                    principals = request.subject.principals.toSet
                                  )

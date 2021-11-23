@@ -16,7 +16,8 @@
 
 package biz.lobachev.annette.cms.impl.blogs.post.dao
 
-import biz.lobachev.annette.cms.api.blogs.post.{ContentTypes, PostFindQuery}
+import biz.lobachev.annette.cms.api.blogs.post.PostFindQuery
+import biz.lobachev.annette.cms.api.content.ContentTypes
 import biz.lobachev.annette.cms.impl.blogs.post.PostEntity
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
@@ -44,8 +45,8 @@ class PostIndexDao(client: ElasticClient)(implicit
       "featured"          -> event.featured,
       "authorId"          -> event.authorId.code,
       "title"             -> event.title,
-      "intro"             -> event.introContent.content.values.map(_.indexData).flatten.mkString("\n"),
-      "content"           -> event.content.content.values.map(_.indexData).flatten.mkString("\n"),
+      "intro"             -> event.introContent.widgets.values.map(_.indexData).flatten.mkString("\n"),
+      "content"           -> event.content.widgets.values.map(_.indexData).flatten.mkString("\n"),
       "publicationStatus" -> "draft",
       "targets"           -> event.targets.map(_.code),
       "updatedBy"         -> event.createdBy.code,
@@ -76,21 +77,21 @@ class PostIndexDao(client: ElasticClient)(implicit
       "updatedBy" -> event.updatedBy.code
     )
 
-  def updatePostWidgetContent(event: PostEntity.PostWidgetContentUpdated) =
+  def updatePostWidget(event: PostEntity.PostWidgetUpdated) =
     updateIndexDoc(
       event.id,
       "updatedAt" -> event.updatedAt,
       "updatedBy" -> event.updatedBy.code
     )
 
-  def changeWidgetContentOrder(event: PostEntity.WidgetContentOrderChanged) =
+  def changeWidgetOrder(event: PostEntity.WidgetOrderChanged) =
     updateIndexDoc(
       event.id,
       "updatedAt" -> event.updatedAt,
       "updatedBy" -> event.updatedBy.code
     )
 
-  def deleteWidgetContent(event: PostEntity.WidgetContentDeleted) =
+  def deleteWidget(event: PostEntity.WidgetDeleted) =
     updateIndexDoc(
       event.id,
       "updatedAt" -> event.updatedAt,

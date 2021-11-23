@@ -16,8 +16,9 @@
 
 package biz.lobachev.annette.cms.gateway.blogs.post
 
-import biz.lobachev.annette.cms.api.blogs.post.{PostId, PublicationStatus}
+import biz.lobachev.annette.cms.api.blogs.post.PostId
 import biz.lobachev.annette.cms.api.blogs.blog.BlogId
+import biz.lobachev.annette.cms.api.common.article.PublicationStatus
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.SortBy
 import play.api.libs.json.{Format, Json}

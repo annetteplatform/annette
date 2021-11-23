@@ -18,8 +18,10 @@ package biz.lobachev.annette.cms.impl.blogs.post.dao
 
 import biz.lobachev.annette.cms.api.blogs.blog.BlogId
 import biz.lobachev.annette.cms.api.blogs.post._
-import biz.lobachev.annette.cms.api.common.WidgetContent
+import biz.lobachev.annette.cms.api.common.article.PublicationStatus
+import biz.lobachev.annette.cms.api.content.{Content, Widget}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import play.api.libs.json.JsValue
 
 import java.time.OffsetDateTime
 
@@ -31,14 +33,16 @@ case class PostRecord(
   title: String,
   publicationStatus: PublicationStatus.PublicationStatus = PublicationStatus.Draft,
   publicationTimestamp: Option[OffsetDateTime] = None,
+  introContentSettings: JsValue,
   introContentOrder: List[String],
+  postContentSettings: JsValue,
   postContentOrder: List[String],
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
 ) {
   def toPost(
-    maybeIntroWidgetContents: Option[Map[String, WidgetContent]],
-    maybePostWidgetContents: Option[Map[String, WidgetContent]],
+    maybeIntroWidgets: Option[Map[String, Widget]],
+    maybePostWidgets: Option[Map[String, Widget]],
     maybeTargets: Option[Set[AnnettePrincipal]]
   ): Post =
     Post(
@@ -49,11 +53,20 @@ case class PostRecord(
       title = title,
       publicationStatus = publicationStatus,
       publicationTimestamp = publicationTimestamp,
-      introContent = maybeIntroWidgetContents.map(introWidgetContents =>
-        introContentOrder.map(c => introWidgetContents.get(c)).flatten
+      introContent = maybeIntroWidgets.map(introWidgets =>
+        Content(
+          introContentSettings,
+          introContentOrder,
+          introWidgets
+        )
       ),
-      content =
-        maybePostWidgetContents.map(postWidgetContents => postContentOrder.map(c => postWidgetContents.get(c)).flatten),
+      content = maybePostWidgets.map(postWidgets =>
+        Content(
+          postContentSettings,
+          postContentOrder,
+          postWidgets
+        )
+      ),
       targets = maybeTargets,
       metric = None,
       updatedBy = updatedBy,

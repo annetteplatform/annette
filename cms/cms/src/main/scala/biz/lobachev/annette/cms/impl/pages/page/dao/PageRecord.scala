@@ -16,10 +16,12 @@
 
 package biz.lobachev.annette.cms.impl.pages.page.dao
 
+import biz.lobachev.annette.cms.api.common.article.PublicationStatus
+import biz.lobachev.annette.cms.api.content.{Content, Widget}
 import biz.lobachev.annette.cms.api.pages.space.SpaceId
 import biz.lobachev.annette.cms.api.pages.page._
-import biz.lobachev.annette.cms.api.common.WidgetContent
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import play.api.libs.json.JsValue
 
 import java.time.OffsetDateTime
 
@@ -30,12 +32,13 @@ case class PageRecord(
   title: String,
   publicationStatus: PublicationStatus.PublicationStatus = PublicationStatus.Draft,
   publicationTimestamp: Option[OffsetDateTime] = None,
+  pageContentSettings: JsValue,
   pageContentOrder: List[String],
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
 ) {
   def toPage(
-    maybePageWidgetContents: Option[Map[String, WidgetContent]],
+    maybePageWidgets: Option[Map[String, Widget]],
     maybeTargets: Option[Set[AnnettePrincipal]]
   ): Page =
     Page(
@@ -45,8 +48,13 @@ case class PageRecord(
       title = title,
       publicationStatus = publicationStatus,
       publicationTimestamp = publicationTimestamp,
-      content =
-        maybePageWidgetContents.map(pageWidgetContents => pageContentOrder.map(c => pageWidgetContents.get(c)).flatten),
+      content = maybePageWidgets.map(pageWidgets =>
+        Content(
+          pageContentSettings,
+          pageContentOrder,
+          pageWidgets
+        )
+      ),
       targets = maybeTargets,
       metric = None,
       updatedBy = updatedBy,

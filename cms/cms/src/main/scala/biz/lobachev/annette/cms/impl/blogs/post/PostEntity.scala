@@ -22,10 +22,10 @@ import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.cms.api.blogs.blog.BlogId
 import biz.lobachev.annette.cms.api.blogs.post._
-import biz.lobachev.annette.cms.api.common.{SerialContent, WidgetContent}
-import ContentTypes.ContentType
+import biz.lobachev.annette.cms.api.common.article.PublicationStatus
+import biz.lobachev.annette.cms.api.content.ContentTypes.ContentType
+import biz.lobachev.annette.cms.api.content.{Content, ContentTypes, Widget}
 import biz.lobachev.annette.cms.impl.blogs.post.model.PostState
-import biz.lobachev.annette.cms.impl.content.Content
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.lightbend.lagom.scaladsl.persistence._
 import io.scalaland.chimney.dsl._
@@ -44,8 +44,8 @@ object PostEntity {
     featured: Boolean,
     authorId: AnnettePrincipal,
     title: String,
-    introContent: SerialContent,
-    content: SerialContent,
+    introContent: Content,
+    content: Content,
     targets: Set[AnnettePrincipal] = Set.empty,
     createdBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
@@ -72,28 +72,36 @@ object PostEntity {
     replyTo: ActorRef[Confirmation]
   ) extends Command
 
-  final case class UpdateWidgetContent(
+  final case class UpdateContentSettings(
+    id: String,
+    contentType: ContentType,
+    settings: JsValue,
+    updatedBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  ) extends Command
+
+  final case class UpdateWidget(
     id: PostId,
     contentType: ContentType,
-    widgetContent: WidgetContent,
+    widget: Widget,
     order: Option[Int] = None,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
 
-  case class ChangeWidgetContentOrder(
+  case class ChangeWidgetOrder(
     id: PostId,
     contentType: ContentType,
-    widgetContentId: String,
+    widgetId: String,
     order: Int,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
 
-  case class DeleteWidgetContent(
+  case class DeleteWidget(
     id: PostId,
     contentType: ContentType,
-    widgetContentId: String,
+    widgetId: String,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
@@ -143,14 +151,14 @@ object PostEntity {
   final case class SuccessPost(post: Post)                                         extends Confirmation
   final case object PostAlreadyExist                                               extends Confirmation
   final case object PostNotFound                                                   extends Confirmation
-  final case object WidgetContentNotFound                                          extends Confirmation
+  final case object WidgetNotFound                                                 extends Confirmation
   final case object PostPublicationDateClearNotAllowed                             extends Confirmation
 
   implicit val confirmationSuccessFormat: Format[Success]                                                            = Json.format
   implicit val confirmationSuccessPostFormat: Format[SuccessPost]                                                    = Json.format
   implicit val confirmationPostAlreadyExistFormat: Format[PostAlreadyExist.type]                                     = Json.format
   implicit val confirmationPostNotFoundFormat: Format[PostNotFound.type]                                             = Json.format
-  implicit val confirmationWidgetContentNotFoundFormat: Format[WidgetContentNotFound.type]                           = Json.format
+  implicit val confirmationWidgetContentNotFoundFormat: Format[WidgetNotFound.type]                                  = Json.format
   implicit val confirmationPostPublicationDateClearNotAllowedFormat: Format[PostPublicationDateClearNotAllowed.type] =
     Json.format
 
@@ -192,27 +200,34 @@ object PostEntity {
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
-  final case class PostWidgetContentUpdated(
-    id: PostId,
+  final case class ContentSettingsUpdated(
+    id: String,
     contentType: ContentType,
-    widgetContent: WidgetContent,
-    contentOrder: Seq[String],
+    settings: JsValue,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
-  case class WidgetContentOrderChanged(
+  final case class PostWidgetUpdated(
     id: PostId,
     contentType: ContentType,
-    widgetContentId: String,
-    contentOrder: Seq[String],
+    widget: Widget,
+    widgetOrder: Seq[String],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
-  case class WidgetContentDeleted(
+  case class WidgetOrderChanged(
     id: PostId,
     contentType: ContentType,
-    widgetContentId: String,
-    contentOrder: Seq[String],
+    widgetId: String,
+    widgetOrder: Seq[String],
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+  case class WidgetDeleted(
+    id: PostId,
+    contentType: ContentType,
+    widgetId: String,
+    widgetOrder: Seq[String],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -262,9 +277,10 @@ object PostEntity {
   implicit val eventPostFeaturedUpdatedFormat: Format[PostFeaturedUpdated]                         = Json.format
   implicit val eventPostAuthorUpdatedFormat: Format[PostAuthorUpdated]                             = Json.format
   implicit val eventPostTitleUpdatedFormat: Format[PostTitleUpdated]                               = Json.format
-  implicit val eventPostWidgetContentUpdatedFormat: Format[PostWidgetContentUpdated]               = Json.format
-  implicit val eventWidgetContentOrderChangedFormat: Format[WidgetContentOrderChanged]             = Json.format
-  implicit val eventWidgetContentDeletedFormat: Format[WidgetContentDeleted]                       = Json.format
+  implicit val eventContentSettingsUpdatedFormat: Format[ContentSettingsUpdated]                   = Json.format
+  implicit val eventPostWidgetUpdatedFormat: Format[PostWidgetUpdated]                             = Json.format
+  implicit val eventWidgetOrderChangedFormat: Format[WidgetOrderChanged]                           = Json.format
+  implicit val eventWidgetDeletedFormat: Format[WidgetDeleted]                                     = Json.format
   implicit val eventPostIndexChangedFormat: Format[PostIndexChanged]                               = Json.format
   implicit val eventPostPublicationTimestampUpdatedFormat: Format[PostPublicationTimestampUpdated] = Json.format
   implicit val eventPostPublishedFormat: Format[PostPublished]                                     = Json.format
@@ -306,9 +322,10 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
       case cmd: UpdatePostFeatured             => updatePostFeatured(cmd)
       case cmd: UpdatePostAuthor               => updatePostAuthor(cmd)
       case cmd: UpdatePostTitle                => updatePostTitle(cmd)
-      case cmd: UpdateWidgetContent            => updatePostWidgetContent(cmd)
-      case cmd: ChangeWidgetContentOrder       => changeWidgetContentOrder(cmd)
-      case cmd: DeleteWidgetContent            => deleteWidgetContent(cmd)
+      case cmd: UpdateContentSettings          => updateContentSettings(cmd)
+      case cmd: UpdateWidget                   => updatePostWidgetContent(cmd)
+      case cmd: ChangeWidgetOrder              => changeWidgetContentOrder(cmd)
+      case cmd: DeleteWidget                   => deleteWidgetContent(cmd)
       case cmd: UpdatePostPublicationTimestamp => updatePostPublicationTimestamp(cmd)
       case cmd: PublishPost                    => publishPost(cmd)
       case cmd: UnpublishPost                  => unpublishPost(cmd)
@@ -323,8 +340,6 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
       case None    =>
         val event = cmd
           .into[PostCreated]
-          .withFieldComputed(_.introContent, c => Content.fromSerialContent(c.introContent))
-          .withFieldComputed(_.content, c => Content.fromSerialContent(c.content))
           .transform
         Effect
           .persist(event)
@@ -332,8 +347,8 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
             SuccessPost(
               postEntity.maybeState.get
                 .into[Post]
-                .withFieldComputed(_.introContent, c => Some(c.introContent.toSerialContent))
-                .withFieldComputed(_.content, c => Some(c.content.toSerialContent))
+                .withFieldComputed(_.introContent, c => Some(c.introContent))
+                .withFieldComputed(_.content, c => Some(c.content))
                 .withFieldComputed(_.targets, c => Some(c.targets))
                 .transform
             )
@@ -371,34 +386,47 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
           .thenReply(cmd.replyTo)(_ => Success(event.updatedBy, event.updatedAt))
     }
 
-  def updatePostWidgetContent(cmd: UpdateWidgetContent): ReplyEffect[Event, PostEntity] =
+  def updateContentSettings(cmd: UpdateContentSettings): ReplyEffect[Event, PostEntity] =
+    maybeState match {
+      case None    => Effect.reply(cmd.replyTo)(PostNotFound)
+      case Some(_) =>
+        val updateEvent = cmd
+          .into[ContentSettingsUpdated]
+          .transform
+        Effect
+          .persist(updateEvent)
+          .thenReply(cmd.replyTo)(_ => Success(updateEvent.updatedBy, updateEvent.updatedAt))
+      case _       => Effect.reply(cmd.replyTo)(WidgetNotFound)
+    }
+
+  def updatePostWidgetContent(cmd: UpdateWidget): ReplyEffect[Event, PostEntity] =
     maybeState match {
       case None        => Effect.reply(cmd.replyTo)(PostNotFound)
       // update
       case Some(state)
-          if (cmd.contentType == ContentTypes.Intro && state.introContent.content.contains(cmd.widgetContent.id)) ||
-            (cmd.contentType == ContentTypes.Post && state.content.content.contains(cmd.widgetContent.id)) =>
+          if (cmd.contentType == ContentTypes.Intro && state.introContent.widgets.contains(cmd.widget.id)) ||
+            (cmd.contentType == ContentTypes.Post && state.content.widgets.contains(cmd.widget.id)) =>
         val contentMap          = cmd.contentType match {
           case ContentTypes.Intro => state.introContent
           case ContentTypes.Post  => state.content
         }
         val updatedContentOrder = cmd.order.map { order =>
-          val newContentOrder = contentMap.contentOrder.filter(_ != cmd.widgetContent.id)
+          val newContentOrder = contentMap.widgetOrder.filter(_ != cmd.widget.id)
           if (order >= 0 && order < newContentOrder.length)
-            (newContentOrder.take(order) :+ cmd.widgetContent.id) ++ newContentOrder.drop(order)
-          else newContentOrder :+ cmd.widgetContent.id
-        }.getOrElse(contentMap.contentOrder)
+            (newContentOrder.take(order) :+ cmd.widget.id) ++ newContentOrder.drop(order)
+          else newContentOrder :+ cmd.widget.id
+        }.getOrElse(contentMap.widgetOrder)
 
         val updateEvent = cmd
-          .into[PostWidgetContentUpdated]
-          .withFieldConst(_.contentOrder, updatedContentOrder)
+          .into[PostWidgetUpdated]
+          .withFieldConst(_.widgetOrder, updatedContentOrder)
           .transform
         val indexData   =
-          if (contentMap.content(cmd.widgetContent.id).indexData != cmd.widgetContent.indexData)
+          if (contentMap.widgets(cmd.widget.id).indexData != cmd.widget.indexData)
             Some(
-              contentMap.content.map {
-                case widgetContentId -> _ if widgetContentId == cmd.widgetContent.id => cmd.widgetContent.indexData
-                case _ -> widgetContent                                              => widgetContent.indexData
+              contentMap.widgets.map {
+                case widgetContentId -> _ if widgetContentId == cmd.widget.id => cmd.widget.indexData
+                case _ -> widgetContent                                       => widgetContent.indexData
               }.flatten.mkString("\n")
             )
           else None
@@ -419,18 +447,18 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
           case ContentTypes.Post  => state.content
         }
         val updatedContentOrder = cmd.order.map { order =>
-          val newContentOrder = contentMap.contentOrder.filter(_ != cmd.widgetContent.id)
+          val newContentOrder = contentMap.widgetOrder.filter(_ != cmd.widget.id)
           if (order >= 0 && order < newContentOrder.length)
-            (newContentOrder.take(order) :+ cmd.widgetContent.id) ++ newContentOrder.drop(order)
-          else newContentOrder :+ cmd.widgetContent.id
-        }.getOrElse(contentMap.contentOrder)
+            (newContentOrder.take(order) :+ cmd.widget.id) ++ newContentOrder.drop(order)
+          else newContentOrder :+ cmd.widget.id
+        }.getOrElse(contentMap.widgetOrder)
         val updateEvent         = cmd
-          .into[PostWidgetContentUpdated]
-          .withFieldConst(_.contentOrder, updatedContentOrder)
+          .into[PostWidgetUpdated]
+          .withFieldConst(_.widgetOrder, updatedContentOrder)
           .transform
         val indexData           =
-          cmd.widgetContent.indexData.map { idx =>
-            (contentMap.content.values.map(_.indexData).flatten.toSeq :+ idx).mkString("\n")
+          cmd.widget.indexData.map { idx =>
+            (contentMap.widgets.values.map(_.indexData).flatten.toSeq :+ idx).mkString("\n")
           }
         val indexEvent          = indexData.map(idx =>
           cmd
@@ -443,59 +471,59 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
           .thenReply(cmd.replyTo)(_ => Success(updateEvent.updatedBy, updateEvent.updatedAt))
     }
 
-  def changeWidgetContentOrder(cmd: ChangeWidgetContentOrder): ReplyEffect[Event, PostEntity] =
+  def changeWidgetContentOrder(cmd: ChangeWidgetOrder): ReplyEffect[Event, PostEntity] =
     maybeState match {
       case None => Effect.reply(cmd.replyTo)(PostNotFound)
       case Some(state)
-          if (cmd.contentType == ContentTypes.Intro && state.introContent.content.contains(cmd.widgetContentId)) ||
-            (cmd.contentType == ContentTypes.Post && state.content.content.contains(cmd.widgetContentId)) =>
+          if (cmd.contentType == ContentTypes.Intro && state.introContent.widgets.contains(cmd.widgetId)) ||
+            (cmd.contentType == ContentTypes.Post && state.content.widgets.contains(cmd.widgetId)) =>
         val (contentMap, contentOrder) = cmd.contentType match {
-          case ContentTypes.Intro => state.introContent -> state.introContent.contentOrder
-          case ContentTypes.Post  => state.content      -> state.content.contentOrder
+          case ContentTypes.Intro => state.introContent -> state.introContent.widgetOrder
+          case ContentTypes.Post  => state.content      -> state.content.widgetOrder
         }
         val newOrder                   =
           if (cmd.order < 0) 0
-          else if (cmd.order > contentMap.contentOrder.length - 1) contentMap.contentOrder.length - 1
+          else if (cmd.order > contentMap.widgetOrder.length - 1) contentMap.widgetOrder.length - 1
           else cmd.order
-        val currentOrder               = contentOrder.indexOf(cmd.widgetContentId)
+        val currentOrder               = contentOrder.indexOf(cmd.widgetId)
         if (currentOrder != newOrder) {
-          val newContentOrder     = contentOrder.filter(_ != cmd.widgetContentId)
+          val newContentOrder     = contentOrder.filter(_ != cmd.widgetId)
           val updatedContentOrder =
             if (newOrder >= 0 && newOrder < newContentOrder.length)
-              (newContentOrder.take(newOrder) :+ cmd.widgetContentId) ++ newContentOrder.drop(newOrder)
-            else newContentOrder :+ cmd.widgetContentId
+              (newContentOrder.take(newOrder) :+ cmd.widgetId) ++ newContentOrder.drop(newOrder)
+            else newContentOrder :+ cmd.widgetId
           val updateEvent         = cmd
-            .into[WidgetContentOrderChanged]
-            .withFieldConst(_.contentOrder, updatedContentOrder)
+            .into[WidgetOrderChanged]
+            .withFieldConst(_.widgetOrder, updatedContentOrder)
             .transform
 
           Effect
             .persist(updateEvent)
             .thenReply(cmd.replyTo)(_ => Success(updateEvent.updatedBy, updateEvent.updatedAt))
         } else Effect.reply(cmd.replyTo)(Success(state.updatedBy, state.updatedAt))
-      case _    => Effect.reply(cmd.replyTo)(WidgetContentNotFound)
+      case _    => Effect.reply(cmd.replyTo)(WidgetNotFound)
 
     }
 
-  def deleteWidgetContent(cmd: DeleteWidgetContent): ReplyEffect[Event, PostEntity] =
+  def deleteWidgetContent(cmd: DeleteWidget): ReplyEffect[Event, PostEntity] =
     maybeState match {
       case None => Effect.reply(cmd.replyTo)(PostNotFound)
       case Some(state)
-          if (cmd.contentType == ContentTypes.Intro && state.introContent.content.contains(cmd.widgetContentId)) ||
-            (cmd.contentType == ContentTypes.Post && state.content.content.contains(cmd.widgetContentId)) =>
+          if (cmd.contentType == ContentTypes.Intro && state.introContent.widgets.contains(cmd.widgetId)) ||
+            (cmd.contentType == ContentTypes.Post && state.content.widgets.contains(cmd.widgetId)) =>
         val contentOrder = cmd.contentType match {
-          case ContentTypes.Intro => state.introContent.contentOrder
-          case ContentTypes.Post  => state.content.contentOrder
+          case ContentTypes.Intro => state.introContent.widgetOrder
+          case ContentTypes.Post  => state.content.widgetOrder
         }
         val updateEvent  = cmd
-          .into[WidgetContentDeleted]
-          .withFieldConst(_.contentOrder, contentOrder.filter(_ != cmd.widgetContentId))
+          .into[WidgetDeleted]
+          .withFieldConst(_.widgetOrder, contentOrder.filter(_ != cmd.widgetId))
           .transform
 
         Effect
           .persist(updateEvent)
           .thenReply(cmd.replyTo)(_ => Success(updateEvent.updatedBy, updateEvent.updatedAt))
-      case _    => Effect.reply(cmd.replyTo)(WidgetContentNotFound)
+      case _    => Effect.reply(cmd.replyTo)(WidgetNotFound)
     }
 
   def updatePostPublicationTimestamp(cmd: UpdatePostPublicationTimestamp): ReplyEffect[Event, PostEntity] =
@@ -577,8 +605,8 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
           SuccessPost(
             state
               .into[Post]
-              .withFieldComputed(_.introContent, c => if (cmd.withIntro) Some(c.introContent.toSerialContent) else None)
-              .withFieldComputed(_.content, c => if (cmd.withContent) Some(c.content.toSerialContent) else None)
+              .withFieldComputed(_.introContent, c => if (cmd.withIntro) Some(c.introContent) else None)
+              .withFieldComputed(_.content, c => if (cmd.withContent) Some(c.content) else None)
               .withFieldComputed(_.targets, c => if (cmd.withTargets) Some(c.targets) else None)
               .transform
           )
@@ -591,9 +619,10 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
       case event: PostFeaturedUpdated             => onPostFeaturedUpdated(event)
       case event: PostAuthorUpdated               => onPostAuthorUpdated(event)
       case event: PostTitleUpdated                => onPostTitleUpdated(event)
-      case event: PostWidgetContentUpdated        => onPostWidgetContentUpdated(event)
-      case event: WidgetContentOrderChanged       => onWidgetContentOrderChanged(event)
-      case event: WidgetContentDeleted            => onWidgetContentDeleted(event)
+      case event: ContentSettingsUpdated          => onContentSettingsUpdated(event)
+      case event: PostWidgetUpdated               => onPostWidgetUpdated(event)
+      case event: WidgetOrderChanged              => onWidgetOrderChanged(event)
+      case event: WidgetDeleted                   => onWidgetDeleted(event)
       case _: PostIndexChanged                    => this
       case event: PostPublicationTimestampUpdated => onPostPublicationTimestampUpdated(event)
       case event: PostPublished                   => onPostPublished(event)
@@ -647,14 +676,13 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
       )
     )
 
-  def onPostWidgetContentUpdated(event: PostWidgetContentUpdated): PostEntity =
+  def onContentSettingsUpdated(event: ContentSettingsUpdated): PostEntity =
     PostEntity(
       maybeState.map {
         case state if event.contentType == ContentTypes.Intro =>
           state.copy(
-            introContent = Content(
-              contentOrder = event.contentOrder,
-              content = state.introContent.content + (event.widgetContent.id -> event.widgetContent)
+            introContent = state.introContent.copy(
+              settings = event.settings
             ),
             updatedBy = event.updatedBy,
             updatedAt = event.updatedAt
@@ -662,9 +690,8 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
 
         case state if event.contentType == ContentTypes.Post  =>
           state.copy(
-            content = Content(
-              contentOrder = event.contentOrder,
-              content = state.content.content + (event.widgetContent.id -> event.widgetContent)
+            content = state.content.copy(
+              settings = event.settings
             ),
             updatedBy = event.updatedBy,
             updatedAt = event.updatedAt
@@ -672,13 +699,38 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
       }
     )
 
-  def onWidgetContentOrderChanged(event: WidgetContentOrderChanged): PostEntity =
+  def onPostWidgetUpdated(event: PostWidgetUpdated): PostEntity =
+    PostEntity(
+      maybeState.map {
+        case state if event.contentType == ContentTypes.Intro =>
+          state.copy(
+            introContent = state.introContent.copy(
+              widgetOrder = event.widgetOrder,
+              widgets = state.introContent.widgets + (event.widget.id -> event.widget)
+            ),
+            updatedBy = event.updatedBy,
+            updatedAt = event.updatedAt
+          )
+
+        case state if event.contentType == ContentTypes.Post  =>
+          state.copy(
+            content = state.content.copy(
+              widgetOrder = event.widgetOrder,
+              widgets = state.content.widgets + (event.widget.id -> event.widget)
+            ),
+            updatedBy = event.updatedBy,
+            updatedAt = event.updatedAt
+          )
+      }
+    )
+
+  def onWidgetOrderChanged(event: WidgetOrderChanged): PostEntity =
     event.contentType match {
       case ContentTypes.Intro =>
         PostEntity(
           maybeState.map { state =>
             state.copy(
-              introContent = state.introContent.copy(contentOrder = event.contentOrder),
+              introContent = state.introContent.copy(widgetOrder = event.widgetOrder),
               updatedBy = event.updatedBy,
               updatedAt = event.updatedAt
             )
@@ -688,7 +740,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
         PostEntity(
           maybeState.map { state =>
             state.copy(
-              content = state.content.copy(contentOrder = event.contentOrder),
+              content = state.content.copy(widgetOrder = event.widgetOrder),
               updatedBy = event.updatedBy,
               updatedAt = event.updatedAt
             )
@@ -696,15 +748,15 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
         )
     }
 
-  def onWidgetContentDeleted(event: WidgetContentDeleted): PostEntity =
+  def onWidgetDeleted(event: WidgetDeleted): PostEntity =
     event.contentType match {
       case ContentTypes.Intro =>
         PostEntity(
           maybeState.map(state =>
             state.copy(
-              introContent = Content(
-                contentOrder = event.contentOrder,
-                content = state.introContent.content - event.widgetContentId
+              introContent = state.introContent.copy(
+                widgetOrder = event.widgetOrder,
+                widgets = state.introContent.widgets - event.widgetId
               ),
               updatedBy = event.updatedBy,
               updatedAt = event.updatedAt
@@ -715,9 +767,9 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
         PostEntity(
           maybeState.map(state =>
             state.copy(
-              content = Content(
-                contentOrder = event.contentOrder,
-                content = state.content.content - event.widgetContentId
+              content = state.content.copy(
+                widgetOrder = event.widgetOrder,
+                widgets = state.content.widgets - event.widgetId
               ),
               updatedBy = event.updatedBy,
               updatedAt = event.updatedAt

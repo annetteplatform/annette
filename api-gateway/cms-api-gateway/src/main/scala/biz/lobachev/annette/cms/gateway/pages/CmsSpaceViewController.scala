@@ -19,6 +19,7 @@ package biz.lobachev.annette.cms.gateway.pages
 import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.CmsService
+import biz.lobachev.annette.cms.api.common.CanAccessToEntityPayload
 import biz.lobachev.annette.cms.api.pages.space._
 import biz.lobachev.annette.cms.gateway.Permissions
 import biz.lobachev.annette.cms.gateway.pages.space._
@@ -105,7 +106,7 @@ class CmsSpaceViewController @Inject() (
         for {
           canAccessToSpace <- cmsService
                                 .canAccessToSpace(
-                                  CanAccessToSpacePayload(
+                                  CanAccessToEntityPayload(
                                     id = spaceId,
                                     principals = request.subject.principals.toSet
                                   )

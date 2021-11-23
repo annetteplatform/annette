@@ -43,7 +43,7 @@ class PageIndexDao(client: ElasticClient)(implicit
       "spaceId"           -> event.spaceId,
       "authorId"          -> event.authorId.code,
       "title"             -> event.title,
-      "content"           -> event.content.content.values.map(_.indexData).flatten.mkString("\n"),
+      "content"           -> event.content.widgets.values.map(_.indexData).flatten.mkString("\n"),
       "publicationStatus" -> "draft",
       "targets"           -> event.targets.map(_.code),
       "updatedBy"         -> event.createdBy.code,
@@ -66,21 +66,21 @@ class PageIndexDao(client: ElasticClient)(implicit
       "updatedBy" -> event.updatedBy.code
     )
 
-  def updatePageWidgetContent(event: PageEntity.PageWidgetContentUpdated) =
+  def updatePageWidget(event: PageEntity.PageWidgetUpdated) =
     updateIndexDoc(
       event.id,
       "updatedAt" -> event.updatedAt,
       "updatedBy" -> event.updatedBy.code
     )
 
-  def changeWidgetContentOrder(event: PageEntity.WidgetContentOrderChanged) =
+  def changeWidgetOrder(event: PageEntity.WidgetOrderChanged) =
     updateIndexDoc(
       event.id,
       "updatedAt" -> event.updatedAt,
       "updatedBy" -> event.updatedBy.code
     )
 
-  def deleteWidgetContent(event: PageEntity.WidgetContentDeleted) =
+  def deleteWidget(event: PageEntity.WidgetDeleted) =
     updateIndexDoc(
       event.id,
       "updatedAt" -> event.updatedAt,

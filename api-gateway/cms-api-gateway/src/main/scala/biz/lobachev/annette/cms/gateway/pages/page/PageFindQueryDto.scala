@@ -16,7 +16,8 @@
 
 package biz.lobachev.annette.cms.gateway.pages.page
 
-import biz.lobachev.annette.cms.api.pages.page.{PageId, PublicationStatus}
+import biz.lobachev.annette.cms.api.common.article.PublicationStatus
+import biz.lobachev.annette.cms.api.pages.page.PageId
 import biz.lobachev.annette.cms.api.pages.space.SpaceId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.SortBy

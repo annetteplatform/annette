@@ -17,7 +17,8 @@
 package biz.lobachev.annette.cms.api.blogs.post
 
 import biz.lobachev.annette.cms.api.blogs.blog.BlogId
-import biz.lobachev.annette.cms.api.common.SerialContent
+import biz.lobachev.annette.cms.api.common.article.{Metric, PublicationStatus}
+import biz.lobachev.annette.cms.api.content.Content
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
@@ -31,10 +32,10 @@ case class Post(
   title: String,
   publicationStatus: PublicationStatus.PublicationStatus = PublicationStatus.Draft,
   publicationTimestamp: Option[OffsetDateTime] = None,
-  introContent: Option[SerialContent] = None,
-  content: Option[SerialContent] = None,
+  introContent: Option[Content] = None,
+  content: Option[Content] = None,
   targets: Option[Set[AnnettePrincipal]] = None,
-  metric: Option[PostMetric] = None,
+  metric: Option[Metric] = None,
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
 )

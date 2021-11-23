@@ -19,10 +19,11 @@ package biz.lobachev.annette.cms.impl.blogs.post.dao
 import akka.Done
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
-import biz.lobachev.annette.cms.api.blogs.post.ContentTypes.ContentType
-import biz.lobachev.annette.cms.api.blogs.post.PublicationStatus.PublicationStatus
+import biz.lobachev.annette.cms.api.content.ContentTypes.ContentType
+import biz.lobachev.annette.cms.api.common.article.PublicationStatus.PublicationStatus
 import biz.lobachev.annette.cms.api.blogs.post._
-import biz.lobachev.annette.cms.api.common.WidgetContent
+import biz.lobachev.annette.cms.api.common.article.{Metric, PublicationStatus}
+import biz.lobachev.annette.cms.api.content.{ContentTypes, Widget}
 import biz.lobachev.annette.cms.impl.blogs.post.PostEntity
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
@@ -79,7 +80,9 @@ private[impl] class PostDbDao(
                .column("title", Text)
                .column("publication_status", Text)
                .column("publication_timestamp", Timestamp)
+               .column("intro_content_settings", Text)
                .column("intro_content_order", List(Text))
+               .column("post_content_settings", Text)
                .column("post_content_order", List(Text))
                .column("updated_at", Timestamp)
                .column("updated_by", Text)
@@ -90,11 +93,11 @@ private[impl] class PostDbDao(
              CassandraTableBuilder("post_widgets")
                .column("post_id", Text)
                .column("content_type", Text)
-               .column("widget_content_id", Text)
+               .column("widget_id", Text)
                .column("widget_type", Text)
                .column("data", Text)
                .column("index_data", Text)
-               .withPrimaryKey("post_id", "content_type", "widget_content_id")
+               .withPrimaryKey("post_id", "content_type", "widget_id")
                .build
            )
       _ <- session.executeCreateTable(
@@ -127,31 +130,33 @@ private[impl] class PostDbDao(
   def createPost(event: PostEntity.PostCreated) = {
     val postRecord = event
       .into[PostRecord]
-      .withFieldComputed(_.introContentOrder, _.introContent.contentOrder.toList)
-      .withFieldComputed(_.postContentOrder, _.content.contentOrder.toList)
+      .withFieldComputed(_.introContentSettings, _.introContent.settings)
+      .withFieldComputed(_.introContentOrder, _.introContent.widgetOrder.toList)
+      .withFieldComputed(_.postContentSettings, _.content.settings)
+      .withFieldComputed(_.postContentOrder, _.content.widgetOrder.toList)
       .withFieldComputed(_.updatedAt, _.createdAt)
       .withFieldComputed(_.updatedBy, _.createdBy)
       .transform
     for {
       _ <- ctx.run(postSchema.insert(lift(postRecord)))
-      _ <- Source(event.introContent.content.values.toSeq)
+      _ <- Source(event.introContent.widgets.values.toSeq)
              .mapAsync(1) { widget =>
                val postWidgetRecord = widget
                  .into[PostWidgetRecord]
                  .withFieldConst(_.postId, event.id)
                  .withFieldConst(_.contentType, ContentTypes.Intro)
-                 .withFieldComputed(_.widgetContentId, _.id)
+                 .withFieldComputed(_.widgetId, _.id)
                  .transform
                ctx.run(postWidgetSchema.insert(lift(postWidgetRecord)))
              }
              .runWith(Sink.ignore)
-      _ <- Source(event.content.content.values.toSeq)
+      _ <- Source(event.content.widgets.values.toSeq)
              .mapAsync(1) { widget =>
                val postWidgetRecord = widget
                  .into[PostWidgetRecord]
                  .withFieldConst(_.postId, event.id)
                  .withFieldConst(_.contentType, ContentTypes.Post)
-                 .withFieldComputed(_.widgetContentId, _.id)
+                 .withFieldComputed(_.widgetId, _.id)
                  .transform
                ctx.run(postWidgetSchema.insert(lift(postWidgetRecord)))
              }
@@ -201,12 +206,38 @@ private[impl] class PostDbDao(
         )
     )
 
-  def updatePostWidgetContent(event: PostEntity.PostWidgetContentUpdated) = {
-    val postWidget = event.widgetContent
+  def updateContentSettings(event: PostEntity.ContentSettingsUpdated) =
+    for {
+      _ <- event.contentType match {
+             case ContentTypes.Intro =>
+               ctx.run(
+                 postSchema
+                   .filter(_.id == lift(event.id))
+                   .update(
+                     _.introContentSettings -> lift(event.settings),
+                     _.updatedAt            -> lift(event.updatedAt),
+                     _.updatedBy            -> lift(event.updatedBy)
+                   )
+               )
+             case ContentTypes.Post  =>
+               ctx.run(
+                 postSchema
+                   .filter(_.id == lift(event.id))
+                   .update(
+                     _.postContentSettings -> lift(event.settings),
+                     _.updatedAt           -> lift(event.updatedAt),
+                     _.updatedBy           -> lift(event.updatedBy)
+                   )
+               )
+           }
+    } yield Done
+
+  def updatePostWidget(event: PostEntity.PostWidgetUpdated) = {
+    val postWidget = event.widget
       .into[PostWidgetRecord]
       .withFieldConst(_.postId, event.id)
       .withFieldConst(_.contentType, event.contentType)
-      .withFieldComputed(_.widgetContentId, _.id)
+      .withFieldComputed(_.widgetId, _.id)
       .transform
     for {
       _ <- event.contentType match {
@@ -215,7 +246,7 @@ private[impl] class PostDbDao(
                  postSchema
                    .filter(_.id == lift(event.id))
                    .update(
-                     _.introContentOrder -> lift(event.contentOrder.toList),
+                     _.introContentOrder -> lift(event.widgetOrder.toList),
                      _.updatedAt         -> lift(event.updatedAt),
                      _.updatedBy         -> lift(event.updatedBy)
                    )
@@ -225,7 +256,7 @@ private[impl] class PostDbDao(
                  postSchema
                    .filter(_.id == lift(event.id))
                    .update(
-                     _.postContentOrder -> lift(event.contentOrder.toList),
+                     _.postContentOrder -> lift(event.widgetOrder.toList),
                      _.updatedAt        -> lift(event.updatedAt),
                      _.updatedBy        -> lift(event.updatedBy)
                    )
@@ -235,7 +266,7 @@ private[impl] class PostDbDao(
     } yield Done
   }
 
-  def changeWidgetContentOrder(event: PostEntity.WidgetContentOrderChanged) =
+  def changeWidgetOrder(event: PostEntity.WidgetOrderChanged) =
     for {
       _ <- event.contentType match {
              case ContentTypes.Intro =>
@@ -243,7 +274,7 @@ private[impl] class PostDbDao(
                  postSchema
                    .filter(_.id == lift(event.id))
                    .update(
-                     _.introContentOrder -> lift(event.contentOrder.toList),
+                     _.introContentOrder -> lift(event.widgetOrder.toList),
                      _.updatedAt         -> lift(event.updatedAt),
                      _.updatedBy         -> lift(event.updatedBy)
                    )
@@ -253,7 +284,7 @@ private[impl] class PostDbDao(
                  postSchema
                    .filter(_.id == lift(event.id))
                    .update(
-                     _.postContentOrder -> lift(event.contentOrder.toList),
+                     _.postContentOrder -> lift(event.widgetOrder.toList),
                      _.updatedAt        -> lift(event.updatedAt),
                      _.updatedBy        -> lift(event.updatedBy)
                    )
@@ -261,7 +292,7 @@ private[impl] class PostDbDao(
            }
     } yield Done
 
-  def deleteWidgetContent(event: PostEntity.WidgetContentDeleted) =
+  def deleteWidget(event: PostEntity.WidgetDeleted) =
     for {
       _ <- event.contentType match {
              case ContentTypes.Intro =>
@@ -269,7 +300,7 @@ private[impl] class PostDbDao(
                  postSchema
                    .filter(_.id == lift(event.id))
                    .update(
-                     _.introContentOrder -> lift(event.contentOrder.toList),
+                     _.introContentOrder -> lift(event.widgetOrder.toList),
                      _.updatedAt         -> lift(event.updatedAt),
                      _.updatedBy         -> lift(event.updatedBy)
                    )
@@ -279,7 +310,7 @@ private[impl] class PostDbDao(
                  postSchema
                    .filter(_.id == lift(event.id))
                    .update(
-                     _.postContentOrder -> lift(event.contentOrder.toList),
+                     _.postContentOrder -> lift(event.widgetOrder.toList),
                      _.updatedAt        -> lift(event.updatedAt),
                      _.updatedBy        -> lift(event.updatedBy)
                    )
@@ -290,7 +321,7 @@ private[impl] class PostDbDao(
                .filter(r =>
                  r.postId == lift(event.id) &&
                    r.contentType == lift(event.contentType) &&
-                   r.widgetContentId == lift(event.widgetContentId)
+                   r.widgetId == lift(event.widgetId)
                )
                .delete
            )
@@ -390,31 +421,31 @@ private[impl] class PostDbDao(
     withTargets: Boolean
   ): Future[Option[Post]] =
     for {
-      maybeEntity              <- ctx
-                                    .run(postSchema.filter(_.id == lift(id)))
-                                    .map(_.headOption)
-      maybeIntroWidgetContents <- if (withIntro)
-                                    maybeEntity
-                                      .map(_ => getWidgetContents(id, ContentTypes.Intro).map(Some(_)))
-                                      .getOrElse(Future.successful(None))
-                                  else Future.successful(None)
-      maybePostWidgetContents  <- if (withContent)
-                                    maybeEntity
-                                      .map(_ => getWidgetContents(id, ContentTypes.Post).map(Some(_)))
-                                      .getOrElse(Future.successful(None))
-                                  else Future.successful(None)
-      maybeTargets             <- if (withTargets)
-                                    maybeEntity.map(_ => getPostTargets(id).map(Some(_))).getOrElse(Future.successful(None))
-                                  else Future.successful(None)
+      maybeEntity       <- ctx
+                             .run(postSchema.filter(_.id == lift(id)))
+                             .map(_.headOption)
+      maybeIntroWidgets <- if (withIntro)
+                             maybeEntity
+                               .map(_ => getWidgets(id, ContentTypes.Intro).map(Some(_)))
+                               .getOrElse(Future.successful(None))
+                           else Future.successful(None)
+      maybePostWidgets  <- if (withContent)
+                             maybeEntity
+                               .map(_ => getWidgets(id, ContentTypes.Post).map(Some(_)))
+                               .getOrElse(Future.successful(None))
+                           else Future.successful(None)
+      maybeTargets      <- if (withTargets)
+                             maybeEntity.map(_ => getPostTargets(id).map(Some(_))).getOrElse(Future.successful(None))
+                           else Future.successful(None)
     } yield maybeEntity.map(
       _.toPost(
-        maybeIntroWidgetContents,
-        maybePostWidgetContents,
+        maybeIntroWidgets,
+        maybePostWidgets,
         maybeTargets
       )
     )
 
-  private def getWidgetContents(id: PostId, contentType: ContentType): Future[Map[String, WidgetContent]] =
+  private def getWidgets(id: PostId, contentType: ContentType): Future[Map[String, Widget]] =
     ctx
       .run(
         postWidgetSchema
@@ -424,16 +455,16 @@ private[impl] class PostDbDao(
           )
           .map(r =>
             (
-              r.widgetContentId, // 1
-              r.widgetType,      // 2
-              r.data             // 3
+              r.widgetId,   // 1
+              r.widgetType, // 2
+              r.data        // 3
             )
           )
       )
       .map(
         _.map(c =>
           c._1 ->
-            WidgetContent(
+            Widget(
               id = c._1,
               widgetType = c._2,
               data = c._3,
@@ -480,7 +511,7 @@ private[impl] class PostDbDao(
                              post.publicationStatus == PublicationStatus.Published &&
                                post.publicationTimestamp.map(_.compareTo(OffsetDateTime.now) <= 0).getOrElse(true)
                            )
-      metrics           <- getPostMetricsById(publishedPostViews.map(_.id).toSet, payload.directPrincipal)
+      metrics           <- getPostMetricsById(publishedPostViews.map(_.id).toSeq, payload.directPrincipal)
       metricsMap         = metrics.map(a => a.id -> a).toMap
 
     } yield publishedPostViews
@@ -527,17 +558,17 @@ private[impl] class PostDbDao(
 
   // ***************************** metrics *****************************
 
-  def getPostMetricsById(ids: Set[PostId], principal: AnnettePrincipal): Future[Seq[PostMetric]] =
+  def getPostMetricsById(ids: Seq[PostId], principal: AnnettePrincipal): Future[Seq[Metric]] =
     Source(ids)
       .mapAsync(1)(id => getPostMetricById(id, principal))
       .runWith(Sink.seq)
 
-  def getPostMetricById(id: PostId, principal: AnnettePrincipal): Future[PostMetric] =
+  def getPostMetricById(id: PostId, principal: AnnettePrincipal): Future[Metric] =
     for {
       views     <- getPostViewsCountById(id)
       likes     <- getPostLikesCountById(id)
       likedByMe <- getPostLikedByMeById(id, principal)
-    } yield PostMetric(id, views, likes, likedByMe)
+    } yield Metric(id, views, likes, likedByMe)
 
   private def getPostViewsCountById(id: PostId): Future[Int] =
     for {

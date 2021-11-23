@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.cms.api.pages.page
 
+import biz.lobachev.annette.cms.api.common.article.PublicationStatus
 import biz.lobachev.annette.cms.api.pages.space.SpaceId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.SortBy

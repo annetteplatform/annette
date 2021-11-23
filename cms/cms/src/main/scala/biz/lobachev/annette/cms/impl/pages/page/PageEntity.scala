@@ -20,11 +20,11 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
-import biz.lobachev.annette.cms.api.pages.space.SpaceId
+import biz.lobachev.annette.cms.api.common.article.PublicationStatus
+import biz.lobachev.annette.cms.api.content.{Content, Widget}
 import biz.lobachev.annette.cms.api.pages.page._
-import biz.lobachev.annette.cms.api.common.{SerialContent, WidgetContent}
+import biz.lobachev.annette.cms.api.pages.space.SpaceId
 import biz.lobachev.annette.cms.impl.pages.page.model.PageState
-import biz.lobachev.annette.cms.impl.content.Content
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.lightbend.lagom.scaladsl.persistence._
 import io.scalaland.chimney.dsl._
@@ -42,7 +42,7 @@ object PageEntity {
     spaceId: SpaceId,
     authorId: AnnettePrincipal,
     title: String,
-    content: SerialContent,
+    content: Content,
     targets: Set[AnnettePrincipal] = Set.empty,
     createdBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
@@ -62,25 +62,32 @@ object PageEntity {
     replyTo: ActorRef[Confirmation]
   ) extends Command
 
-  final case class UpdateWidgetContent(
+  final case class UpdateContentSettings(
+    id: String,
+    settings: JsValue,
+    updatedBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  ) extends Command
+
+  final case class UpdateWidget(
     id: PageId,
-    widgetContent: WidgetContent,
+    widget: Widget,
     order: Option[Int] = None,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
 
-  case class ChangeWidgetContentOrder(
+  case class ChangeWidgetOrder(
     id: PageId,
-    widgetContentId: String,
+    widgetId: String,
     order: Int,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
 
-  case class DeleteWidgetContent(
+  case class DeleteWidget(
     id: PageId,
-    widgetContentId: String,
+    widgetId: String,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
@@ -129,14 +136,14 @@ object PageEntity {
   final case class SuccessPage(page: Page)                                         extends Confirmation
   final case object PageAlreadyExist                                               extends Confirmation
   final case object PageNotFound                                                   extends Confirmation
-  final case object WidgetContentNotFound                                          extends Confirmation
+  final case object WidgetNotFound                                                 extends Confirmation
   final case object PagePublicationDateClearNotAllowed                             extends Confirmation
 
   implicit val confirmationSuccessFormat: Format[Success.type]                                                       = Json.format
   implicit val confirmationSuccessPageFormat: Format[SuccessPage]                                                    = Json.format
   implicit val confirmationPageAlreadyExistFormat: Format[PageAlreadyExist.type]                                     = Json.format
   implicit val confirmationPageNotFoundFormat: Format[PageNotFound.type]                                             = Json.format
-  implicit val confirmationWidgetContentNotFoundFormat: Format[WidgetContentNotFound.type]                           = Json.format
+  implicit val confirmationWidgetNotFoundFormat: Format[WidgetNotFound.type]                                         = Json.format
   implicit val confirmationPagePublicationDateClearNotAllowedFormat: Format[PagePublicationDateClearNotAllowed.type] =
     Json.format
 
@@ -170,24 +177,30 @@ object PageEntity {
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
-  final case class PageWidgetContentUpdated(
-    id: PageId,
-    widgetContent: WidgetContent,
-    contentOrder: Seq[String],
+  final case class ContentSettingsUpdated(
+    id: String,
+    settings: JsValue,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
-  case class WidgetContentOrderChanged(
+  final case class PageWidgetUpdated(
     id: PageId,
-    widgetContentId: String,
-    contentOrder: Seq[String],
+    widget: Widget,
+    widgetOrder: Seq[String],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
-  case class WidgetContentDeleted(
+  case class WidgetOrderChanged(
     id: PageId,
-    widgetContentId: String,
-    contentOrder: Seq[String],
+    widgetId: String,
+    widgetOrder: Seq[String],
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+  case class WidgetDeleted(
+    id: PageId,
+    widgetId: String,
+    widgetOrder: Seq[String],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -235,9 +248,10 @@ object PageEntity {
   implicit val eventPageCreatedFormat: Format[PageCreated]                                         = Json.format
   implicit val eventPageAuthorUpdatedFormat: Format[PageAuthorUpdated]                             = Json.format
   implicit val eventPageTitleUpdatedFormat: Format[PageTitleUpdated]                               = Json.format
-  implicit val eventPageWidgetContentUpdatedFormat: Format[PageWidgetContentUpdated]               = Json.format
-  implicit val eventWidgetContentOrderChangedFormat: Format[WidgetContentOrderChanged]             = Json.format
-  implicit val eventWidgetContentDeletedFormat: Format[WidgetContentDeleted]                       = Json.format
+  implicit val eventContentSettingsUpdatedFormat: Format[ContentSettingsUpdated]                   = Json.format
+  implicit val eventPageWidgetUpdatedFormat: Format[PageWidgetUpdated]                             = Json.format
+  implicit val eventWidgetOrderChangedFormat: Format[WidgetOrderChanged]                           = Json.format
+  implicit val eventWidgetDeletedFormat: Format[WidgetDeleted]                                     = Json.format
   implicit val eventPageIndexChangedFormat: Format[PageIndexChanged]                               = Json.format
   implicit val eventPagePublicationTimestampUpdatedFormat: Format[PagePublicationTimestampUpdated] = Json.format
   implicit val eventPagePublishedFormat: Format[PagePublished]                                     = Json.format
@@ -278,9 +292,10 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
       case cmd: CreatePage                     => createPage(cmd)
       case cmd: UpdatePageAuthor               => updatePageAuthor(cmd)
       case cmd: UpdatePageTitle                => updatePageTitle(cmd)
-      case cmd: UpdateWidgetContent            => updatePageWidgetContent(cmd)
-      case cmd: ChangeWidgetContentOrder       => changeWidgetContentOrder(cmd)
-      case cmd: DeleteWidgetContent            => deleteWidgetContent(cmd)
+      case cmd: UpdateContentSettings          => updateContentSettings(cmd)
+      case cmd: UpdateWidget                   => updatePageWidget(cmd)
+      case cmd: ChangeWidgetOrder              => changeWidgetOrder(cmd)
+      case cmd: DeleteWidget                   => deleteWidget(cmd)
       case cmd: UpdatePagePublicationTimestamp => updatePagePublicationTimestamp(cmd)
       case cmd: PublishPage                    => publishPage(cmd)
       case cmd: UnpublishPage                  => unpublishPage(cmd)
@@ -295,7 +310,6 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
       case None    =>
         val event = cmd
           .into[PageCreated]
-          .withFieldComputed(_.content, c => Content.fromSerialContent(c.content))
           .transform
 
         Effect
@@ -304,7 +318,7 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
             SuccessPage(
               pageEntity.maybeState.get
                 .into[Page]
-                .withFieldComputed(_.content, c => Some(c.content.toSerialContent))
+                .withFieldComputed(_.content, c => Some(c.content))
                 .withFieldComputed(_.targets, c => Some(c.targets))
                 .transform
             )
@@ -332,28 +346,41 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
           .thenReply(cmd.replyTo)(_ => Success(event.updatedBy, event.updatedAt))
     }
 
-  def updatePageWidgetContent(cmd: UpdateWidgetContent): ReplyEffect[Event, PageEntity] =
+  def updateContentSettings(cmd: UpdateContentSettings): ReplyEffect[Event, PageEntity] =
     maybeState match {
-      case None                                                                => Effect.reply(cmd.replyTo)(PageNotFound)
+      case None    => Effect.reply(cmd.replyTo)(PageNotFound)
+      case Some(_) =>
+        val updateEvent = cmd
+          .into[ContentSettingsUpdated]
+          .transform
+        Effect
+          .persist(updateEvent)
+          .thenReply(cmd.replyTo)(_ => Success(updateEvent.updatedBy, updateEvent.updatedAt))
+      case _       => Effect.reply(cmd.replyTo)(WidgetNotFound)
+    }
+
+  def updatePageWidget(cmd: UpdateWidget): ReplyEffect[Event, PageEntity] =
+    maybeState match {
+      case None                                                         => Effect.reply(cmd.replyTo)(PageNotFound)
       // update
-      case Some(state) if state.content.content.contains(cmd.widgetContent.id) =>
+      case Some(state) if state.content.widgets.contains(cmd.widget.id) =>
         val updatedContentOrder = cmd.order.map { order =>
-          val newContentOrder = state.content.contentOrder.filter(_ != cmd.widgetContent.id)
+          val newContentOrder = state.content.widgetOrder.filter(_ != cmd.widget.id)
           if (order >= 0 && order < newContentOrder.length)
-            (newContentOrder.take(order) :+ cmd.widgetContent.id) ++ newContentOrder.drop(order)
-          else newContentOrder :+ cmd.widgetContent.id
-        }.getOrElse(state.content.contentOrder)
+            (newContentOrder.take(order) :+ cmd.widget.id) ++ newContentOrder.drop(order)
+          else newContentOrder :+ cmd.widget.id
+        }.getOrElse(state.content.widgetOrder)
 
         val updateEvent = cmd
-          .into[PageWidgetContentUpdated]
-          .withFieldConst(_.contentOrder, updatedContentOrder)
+          .into[PageWidgetUpdated]
+          .withFieldConst(_.widgetOrder, updatedContentOrder)
           .transform
         val indexData   =
-          if (state.content.content(cmd.widgetContent.id).indexData != cmd.widgetContent.indexData)
+          if (state.content.widgets(cmd.widget.id).indexData != cmd.widget.indexData)
             Some(
-              state.content.content.map {
-                case widgetContentId -> _ if widgetContentId == cmd.widgetContent.id => cmd.widgetContent.indexData
-                case _ -> widgetContent                                              => widgetContent.indexData
+              state.content.widgets.map {
+                case widgetContentId -> _ if widgetContentId == cmd.widget.id => cmd.widget.indexData
+                case _ -> widgetContent                                       => widgetContent.indexData
               }.flatten.mkString("\n")
             )
           else None
@@ -368,20 +395,20 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
           .thenReply(cmd.replyTo)(_ => Success(updateEvent.updatedBy, updateEvent.updatedAt))
 
       // create
-      case Some(state)                                                         =>
+      case Some(state)                                                  =>
         val updatedContentOrder = cmd.order.map { order =>
-          val newContentOrder = state.content.contentOrder.filter(_ != cmd.widgetContent.id)
+          val newContentOrder = state.content.widgetOrder.filter(_ != cmd.widget.id)
           if (order >= 0 && order < newContentOrder.length)
-            (newContentOrder.take(order) :+ cmd.widgetContent.id) ++ newContentOrder.drop(order)
-          else newContentOrder :+ cmd.widgetContent.id
-        }.getOrElse(state.content.contentOrder)
+            (newContentOrder.take(order) :+ cmd.widget.id) ++ newContentOrder.drop(order)
+          else newContentOrder :+ cmd.widget.id
+        }.getOrElse(state.content.widgetOrder)
         val updateEvent         = cmd
-          .into[PageWidgetContentUpdated]
-          .withFieldConst(_.contentOrder, updatedContentOrder)
+          .into[PageWidgetUpdated]
+          .withFieldConst(_.widgetOrder, updatedContentOrder)
           .transform
         val indexData           =
-          cmd.widgetContent.indexData.map { idx =>
-            (state.content.content.values.map(_.indexData).flatten.toSeq :+ idx).mkString("\n")
+          cmd.widget.indexData.map { idx =>
+            (state.content.widgets.values.map(_.indexData).flatten.toSeq :+ idx).mkString("\n")
           }
         val indexEvent          = indexData.map(idx =>
           cmd
@@ -394,51 +421,47 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
           .thenReply(cmd.replyTo)(_ => Success(updateEvent.updatedBy, updateEvent.updatedAt))
     }
 
-  def changeWidgetContentOrder(cmd: ChangeWidgetContentOrder): ReplyEffect[Event, PageEntity] =
+  def changeWidgetOrder(cmd: ChangeWidgetOrder): ReplyEffect[Event, PageEntity] =
     maybeState match {
-      case None                                                               => Effect.reply(cmd.replyTo)(PageNotFound)
-      case Some(state) if state.content.content.contains(cmd.widgetContentId) =>
-//        val (contentMap, contentOrder) = cmd.contentType match {
-//          case ContentTypes.Intro => state.introContent -> state.introContent.contentOrder
-//          case ContentTypes.Page  => state.content      -> state.content.contentOrder
-//        }
+      case None                                                        => Effect.reply(cmd.replyTo)(PageNotFound)
+      case Some(state) if state.content.widgets.contains(cmd.widgetId) =>
         val newOrder     =
           if (cmd.order < 0) 0
-          else if (cmd.order > state.content.contentOrder.length - 1) state.content.contentOrder.length - 1
+          else if (cmd.order > state.content.widgetOrder.length - 1) state.content.widgetOrder.length - 1
           else cmd.order
-        val currentOrder = state.content.contentOrder.indexOf(cmd.widgetContentId)
+        val currentOrder = state.content.widgetOrder.indexOf(cmd.widgetId)
         if (currentOrder != newOrder) {
-          val newContentOrder     = state.content.contentOrder.filter(_ != cmd.widgetContentId)
+          val newContentOrder     = state.content.widgetOrder.filter(_ != cmd.widgetId)
           val updatedContentOrder =
             if (newOrder >= 0 && newOrder < newContentOrder.length)
-              (newContentOrder.take(newOrder) :+ cmd.widgetContentId) ++ newContentOrder.drop(newOrder)
-            else newContentOrder :+ cmd.widgetContentId
+              (newContentOrder.take(newOrder) :+ cmd.widgetId) ++ newContentOrder.drop(newOrder)
+            else newContentOrder :+ cmd.widgetId
           val updateEvent         = cmd
-            .into[WidgetContentOrderChanged]
-            .withFieldConst(_.contentOrder, updatedContentOrder)
+            .into[WidgetOrderChanged]
+            .withFieldConst(_.widgetOrder, updatedContentOrder)
             .transform
 
           Effect
             .persist(updateEvent)
             .thenReply(cmd.replyTo)(_ => Success(updateEvent.updatedBy, updateEvent.updatedAt))
         } else Effect.reply(cmd.replyTo)(Success(state.updatedBy, state.updatedAt))
-      case _                                                                  => Effect.reply(cmd.replyTo)(WidgetContentNotFound)
+      case _                                                           => Effect.reply(cmd.replyTo)(WidgetNotFound)
 
     }
 
-  def deleteWidgetContent(cmd: DeleteWidgetContent): ReplyEffect[Event, PageEntity] =
+  def deleteWidget(cmd: DeleteWidget): ReplyEffect[Event, PageEntity] =
     maybeState match {
-      case None                                                               => Effect.reply(cmd.replyTo)(PageNotFound)
-      case Some(state) if state.content.content.contains(cmd.widgetContentId) =>
+      case None                                                        => Effect.reply(cmd.replyTo)(PageNotFound)
+      case Some(state) if state.content.widgets.contains(cmd.widgetId) =>
         val updateEvent = cmd
-          .into[WidgetContentDeleted]
-          .withFieldConst(_.contentOrder, state.content.contentOrder.filter(_ != cmd.widgetContentId))
+          .into[WidgetDeleted]
+          .withFieldConst(_.widgetOrder, state.content.widgetOrder.filter(_ != cmd.widgetId))
           .transform
 
         Effect
           .persist(updateEvent)
           .thenReply(cmd.replyTo)(_ => Success(updateEvent.updatedBy, updateEvent.updatedAt))
-      case _                                                                  => Effect.reply(cmd.replyTo)(WidgetContentNotFound)
+      case _                                                           => Effect.reply(cmd.replyTo)(WidgetNotFound)
     }
 
   def updatePagePublicationTimestamp(cmd: UpdatePagePublicationTimestamp): ReplyEffect[Event, PageEntity] =
@@ -520,7 +543,7 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
           SuccessPage(
             state
               .into[Page]
-              .withFieldComputed(_.content, c => if (cmd.withContent) Some(c.content.toSerialContent) else None)
+              .withFieldComputed(_.content, c => if (cmd.withContent) Some(c.content) else None)
               .withFieldComputed(_.targets, c => if (cmd.withTargets) Some(c.targets) else None)
               .transform
           )
@@ -532,9 +555,10 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
       case event: PageCreated                     => onPageCreated(event)
       case event: PageAuthorUpdated               => onPageAuthorUpdated(event)
       case event: PageTitleUpdated                => onPageTitleUpdated(event)
-      case event: PageWidgetContentUpdated        => onPageWidgetContentUpdated(event)
-      case event: WidgetContentOrderChanged       => onWidgetContentOrderChanged(event)
-      case event: WidgetContentDeleted            => onWidgetContentDeleted(event)
+      case event: ContentSettingsUpdated          => onContentSettingsUpdated(event)
+      case event: PageWidgetUpdated               => onPageWidgetUpdated(event)
+      case event: WidgetOrderChanged              => onWidgetOrderChanged(event)
+      case event: WidgetDeleted                   => onWidgetDeleted(event)
       case _: PageIndexChanged                    => this
       case event: PagePublicationTimestampUpdated => onPagePublicationTimestampUpdated(event)
       case event: PagePublished                   => onPagePublished(event)
@@ -577,14 +601,13 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
       )
     )
 
-  def onPageWidgetContentUpdated(event: PageWidgetContentUpdated): PageEntity =
+  def onContentSettingsUpdated(event: ContentSettingsUpdated): PageEntity =
     PageEntity(
       maybeState.map {
         case state =>
           state.copy(
-            content = Content(
-              contentOrder = event.contentOrder,
-              content = state.content.content + (event.widgetContent.id -> event.widgetContent)
+            content = state.content.copy(
+              settings = event.settings
             ),
             updatedBy = event.updatedBy,
             updatedAt = event.updatedAt
@@ -592,24 +615,39 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
       }
     )
 
-  def onWidgetContentOrderChanged(event: WidgetContentOrderChanged): PageEntity =
+  def onPageWidgetUpdated(event: PageWidgetUpdated): PageEntity =
+    PageEntity(
+      maybeState.map {
+        case state =>
+          state.copy(
+            content = state.content.copy(
+              widgetOrder = event.widgetOrder,
+              widgets = state.content.widgets + (event.widget.id -> event.widget)
+            ),
+            updatedBy = event.updatedBy,
+            updatedAt = event.updatedAt
+          )
+      }
+    )
+
+  def onWidgetOrderChanged(event: WidgetOrderChanged): PageEntity =
     PageEntity(
       maybeState.map { state =>
         state.copy(
-          content = state.content.copy(contentOrder = event.contentOrder),
+          content = state.content.copy(widgetOrder = event.widgetOrder),
           updatedBy = event.updatedBy,
           updatedAt = event.updatedAt
         )
       }
     )
 
-  def onWidgetContentDeleted(event: WidgetContentDeleted): PageEntity =
+  def onWidgetDeleted(event: WidgetDeleted): PageEntity =
     PageEntity(
       maybeState.map(state =>
         state.copy(
-          content = Content(
-            contentOrder = event.contentOrder,
-            content = state.content.content - event.widgetContentId
+          content = state.content.copy(
+            widgetOrder = event.widgetOrder,
+            widgets = state.content.widgets - event.widgetId
           ),
           updatedBy = event.updatedBy,
           updatedAt = event.updatedAt

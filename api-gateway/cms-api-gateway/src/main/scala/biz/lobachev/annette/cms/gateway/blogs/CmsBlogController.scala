@@ -20,6 +20,16 @@ import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.CmsService
 import biz.lobachev.annette.cms.api.blogs.blog._
+import biz.lobachev.annette.cms.api.common.{
+  ActivatePayload,
+  AssignTargetPrincipalPayload,
+  DeactivatePayload,
+  DeletePayload,
+  UnassignTargetPrincipalPayload,
+  UpdateCategoryIdPayload,
+  UpdateDescriptionPayload,
+  UpdateNamePayload
+}
 import biz.lobachev.annette.cms.gateway.Permissions
 import biz.lobachev.annette.cms.gateway.Permissions.MAINTAIN_ALL_BLOGS
 import biz.lobachev.annette.cms.gateway.blogs.blog._
@@ -61,7 +71,7 @@ class CmsBlogController @Inject() (
     authenticated.async(parse.json[UpdateBlogNamePayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
         val payload = request.body
-          .into[UpdateBlogNamePayload]
+          .into[UpdateNamePayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -75,7 +85,7 @@ class CmsBlogController @Inject() (
     authenticated.async(parse.json[UpdateBlogDescriptionPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
         val payload = request.body
-          .into[UpdateBlogDescriptionPayload]
+          .into[UpdateDescriptionPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -89,7 +99,7 @@ class CmsBlogController @Inject() (
     authenticated.async(parse.json[UpdateBlogCategoryPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
         val payload = request.body
-          .into[UpdateBlogCategoryPayload]
+          .into[UpdateCategoryIdPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -103,7 +113,7 @@ class CmsBlogController @Inject() (
     authenticated.async(parse.json[AssignBlogTargetPrincipalPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
         val payload = request.body
-          .into[AssignBlogTargetPrincipalPayload]
+          .into[AssignTargetPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -117,7 +127,7 @@ class CmsBlogController @Inject() (
     authenticated.async(parse.json[UnassignBlogTargetPrincipalPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
         val payload = request.body
-          .into[UnassignBlogTargetPrincipalPayload]
+          .into[UnassignTargetPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -131,7 +141,7 @@ class CmsBlogController @Inject() (
     authenticated.async(parse.json[ActivateBlogPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
         val payload = request.body
-          .into[ActivateBlogPayload]
+          .into[ActivatePayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -145,7 +155,7 @@ class CmsBlogController @Inject() (
     authenticated.async(parse.json[DeactivateBlogPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
         val payload = request.body
-          .into[DeactivateBlogPayload]
+          .into[DeactivatePayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -159,7 +169,7 @@ class CmsBlogController @Inject() (
     authenticated.async(parse.json[DeleteBlogPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
         val payload = request.body
-          .into[DeleteBlogPayload]
+          .into[DeletePayload]
           .withFieldConst(_.deletedBy, request.subject.principals.head)
           .transform
         for {

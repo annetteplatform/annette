@@ -18,7 +18,14 @@ package biz.lobachev.annette.cms.gateway.pages
 
 import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
-import biz.lobachev.annette.cms.api.CmsService
+import biz.lobachev.annette.cms.api.{common, CmsService}
+import biz.lobachev.annette.cms.api.common.article.{
+  GetMetricPayload,
+  LikePayload,
+  PublicationStatus,
+  UnlikePayload,
+  ViewPayload
+}
 import biz.lobachev.annette.cms.api.pages.space._
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.cms.gateway.Permissions
@@ -112,15 +119,15 @@ class CmsPageViewController @Inject() (
       authorizer.performCheckAny(Permissions.VIEW_SPACES) {
         for {
           canAccess <- cmsService.canAccessToPage(
-                         CanAccessToPagePayload(
+                         common.CanAccessToEntityPayload(
                            id,
                            request.subject.principals.toSet
                          )
                        )
           _         <- if (canAccess)
-                         cmsService.viewPage(ViewPagePayload(id, request.subject.principals.head))
+                         cmsService.viewPage(ViewPayload(id, request.subject.principals.head))
                        else Future.failed(PageNotFound(id))
-          result    <- cmsService.getPageMetricById(GetPageMetricPayload(id, request.subject.principals.head))
+          result    <- cmsService.getPageMetricById(GetMetricPayload(id, request.subject.principals.head))
         } yield Ok(Json.toJson(result))
       }
     }
@@ -130,15 +137,15 @@ class CmsPageViewController @Inject() (
       authorizer.performCheckAny(Permissions.VIEW_SPACES) {
         for {
           canAccess <- cmsService.canAccessToPage(
-                         CanAccessToPagePayload(
+                         common.CanAccessToEntityPayload(
                            id,
                            request.subject.principals.toSet
                          )
                        )
           _         <- if (canAccess)
-                         cmsService.likePage(LikePagePayload(id, request.subject.principals.head))
+                         cmsService.likePage(LikePayload(id, request.subject.principals.head))
                        else Future.failed(PageNotFound(id))
-          result    <- cmsService.getPageMetricById(GetPageMetricPayload(id, request.subject.principals.head))
+          result    <- cmsService.getPageMetricById(GetMetricPayload(id, request.subject.principals.head))
         } yield Ok(Json.toJson(result))
       }
     }
@@ -148,15 +155,15 @@ class CmsPageViewController @Inject() (
       authorizer.performCheckAny(Permissions.VIEW_SPACES) {
         for {
           canAccess <- cmsService.canAccessToPage(
-                         CanAccessToPagePayload(
+                         common.CanAccessToEntityPayload(
                            id,
                            request.subject.principals.toSet
                          )
                        )
           _         <- if (canAccess)
-                         cmsService.unlikePage(UnlikePagePayload(id, request.subject.principals.head))
+                         cmsService.unlikePage(UnlikePayload(id, request.subject.principals.head))
                        else Future.failed(PageNotFound(id))
-          result    <- cmsService.getPageMetricById(GetPageMetricPayload(id, request.subject.principals.head))
+          result    <- cmsService.getPageMetricById(GetMetricPayload(id, request.subject.principals.head))
         } yield Ok(Json.toJson(result))
       }
     }
