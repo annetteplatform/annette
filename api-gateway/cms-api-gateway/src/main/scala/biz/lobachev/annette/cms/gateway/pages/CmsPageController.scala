@@ -27,7 +27,12 @@ import biz.lobachev.annette.cms.api.common.article.{
   UpdateTitlePayload
 }
 import biz.lobachev.annette.cms.api.common.{AssignTargetPrincipalPayload, DeletePayload, UnassignTargetPrincipalPayload}
-import biz.lobachev.annette.cms.api.content.{ChangeWidgetOrderPayload, DeleteWidgetPayload, UpdateWidgetPayload}
+import biz.lobachev.annette.cms.api.content.{
+  ChangeWidgetOrderPayload,
+  DeleteWidgetPayload,
+  UpdateContentSettingsPayload,
+  UpdateWidgetPayload
+}
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.cms.api.files.{FileTypes, RemoveFilePayload, StoreFilePayload}
 import biz.lobachev.annette.cms.api.{CmsService, CmsStorage}
@@ -93,6 +98,20 @@ class CmsPageController @Inject() (
           .transform
         for {
           updated <- cmsService.updatePageAuthor(payload)
+        } yield Ok(Json.toJson(updated))
+      }
+    }
+  updatePageContentSettings
+
+  def updatePageContentSettings =
+    authenticated.async(parse.json[UpdateContentSettingsPayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_PAGES) {
+        val payload = request.body
+          .into[UpdateContentSettingsPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          updated <- cmsService.updatePageContentSettings(payload)
         } yield Ok(Json.toJson(updated))
       }
     }

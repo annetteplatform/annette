@@ -162,6 +162,7 @@ POST    /api/annette/v1/cms/createPost                      biz.lobachev.annette
 POST    /api/annette/v1/cms/updatePostFeatured              biz.lobachev.annette.cms.gateway.blogs.CmsPostController.updatePostFeatured
 POST    /api/annette/v1/cms/updatePostTitle                 biz.lobachev.annette.cms.gateway.blogs.CmsPostController.updatePostTitle
 POST    /api/annette/v1/cms/updatePostAuthor                biz.lobachev.annette.cms.gateway.blogs.CmsPostController.updatePostAuthor
+POST    /api/annette/v1/cms/updatePostContentSettings       biz.lobachev.annette.cms.gateway.blogs.CmsPostController.updatePostContentSettings
 POST    /api/annette/v1/cms/updatePostWidget                biz.lobachev.annette.cms.gateway.blogs.CmsPostController.updatePostWidget
 POST    /api/annette/v1/cms/changePostWidgetOrder           biz.lobachev.annette.cms.gateway.blogs.CmsPostController.changePostWidgetOrder
 POST    /api/annette/v1/cms/deletePostWidget                biz.lobachev.annette.cms.gateway.blogs.CmsPostController.deletePostWidget
@@ -217,6 +218,7 @@ POST    /api/annette/v1/cms/findSpaces                      biz.lobachev.annette
 POST    /api/annette/v1/cms/createPage                      biz.lobachev.annette.cms.gateway.pages.CmsPageController.createPage
 POST    /api/annette/v1/cms/updatePageTitle                 biz.lobachev.annette.cms.gateway.pages.CmsPageController.updatePageTitle
 POST    /api/annette/v1/cms/updatePageAuthor                biz.lobachev.annette.cms.gateway.pages.CmsPageController.updatePageAuthor
+POST    /api/annette/v1/cms/updatePageContentSettings       biz.lobachev.annette.cms.gateway.pages.CmsPageController.updatePageContentSettings
 POST    /api/annette/v1/cms/updatePageWidget                biz.lobachev.annette.cms.gateway.pages.CmsPageController.updatePageWidget
 POST    /api/annette/v1/cms/changePageWidgetOrder           biz.lobachev.annette.cms.gateway.pages.CmsPageController.changePageWidgetOrder
 POST    /api/annette/v1/cms/deletePageWidget                biz.lobachev.annette.cms.gateway.pages.CmsPageController.deletePageWidget
