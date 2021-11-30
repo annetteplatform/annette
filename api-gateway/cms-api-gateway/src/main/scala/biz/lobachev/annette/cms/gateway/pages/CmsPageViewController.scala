@@ -16,18 +16,12 @@
 
 package biz.lobachev.annette.cms.gateway.pages
 
-import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
+import biz.lobachev.annette.api_gateway_core.authentication.MaybeAuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
-import biz.lobachev.annette.cms.api.{common, CmsService}
-import biz.lobachev.annette.cms.api.common.article.{
-  GetMetricPayload,
-  LikePayload,
-  PublicationStatus,
-  UnlikePayload,
-  ViewPayload
-}
-import biz.lobachev.annette.cms.api.pages.space._
+import biz.lobachev.annette.cms.api.common.article._
 import biz.lobachev.annette.cms.api.pages.page._
+import biz.lobachev.annette.cms.api.pages.space._
+import biz.lobachev.annette.cms.api.{common, CmsService}
 import biz.lobachev.annette.cms.gateway.Permissions
 import biz.lobachev.annette.cms.gateway.pages.page._
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
@@ -42,7 +36,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CmsPageViewController @Inject() (
-  authenticated: AuthenticatedAction,
+  maybeAuthenticated: MaybeAuthenticatedAction,
   authorizer: Authorizer,
   cc: ControllerComponents,
   cmsService: CmsService,
@@ -50,7 +44,7 @@ class CmsPageViewController @Inject() (
 ) extends AbstractController(cc) {
 
   def findPageViews: Action[PageViewFindQueryDto] =
-    authenticated.async(parse.json[PageViewFindQueryDto]) { implicit request =>
+    maybeAuthenticated.async(parse.json[PageViewFindQueryDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_SPACES) {
         val payload = request.request.body
         for {
@@ -83,7 +77,7 @@ class CmsPageViewController @Inject() (
     }
 
   def getPageViewsById =
-    authenticated.async(parse.json[Set[PageId]]) { implicit request =>
+    maybeAuthenticated.async(parse.json[Set[PageId]]) { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_SPACES) {
         val ids = request.request.body
         for {
@@ -99,7 +93,7 @@ class CmsPageViewController @Inject() (
     }
 
   def getPageViewById(pageId: PageId) =
-    authenticated.async { implicit request =>
+    maybeAuthenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_SPACES) {
         for {
           result   <- cmsService.getPageViews(
@@ -115,7 +109,7 @@ class CmsPageViewController @Inject() (
     }
 
   def viewPage(id: PageId) =
-    authenticated.async { implicit request =>
+    maybeAuthenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_SPACES) {
         for {
           canAccess <- cmsService.canAccessToPage(
@@ -133,7 +127,7 @@ class CmsPageViewController @Inject() (
     }
 
   def likePage(id: PageId) =
-    authenticated.async { implicit request =>
+    maybeAuthenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_SPACES) {
         for {
           canAccess <- cmsService.canAccessToPage(
@@ -151,7 +145,7 @@ class CmsPageViewController @Inject() (
     }
 
   def unlikePage(id: PageId) =
-    authenticated.async { implicit request =>
+    maybeAuthenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_SPACES) {
         for {
           canAccess <- cmsService.canAccessToPage(

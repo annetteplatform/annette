@@ -19,7 +19,7 @@ package biz.lobachev.annette.cms.gateway.files
 import akka.http.scaladsl.model.DateTime
 import akka.stream.Materializer
 import akka.util.ByteString
-import biz.lobachev.annette.api_gateway_core.authentication.{AuthenticatedRequest, CookieAuthenticatedAction}
+import biz.lobachev.annette.api_gateway_core.authentication.{AuthenticatedRequest, MaybeCookieAuthenticatedAction}
 import biz.lobachev.annette.cms.api.CmsStorage
 import biz.lobachev.annette.cms.api.files.FileTypes
 import biz.lobachev.annette.cms.gateway.s3.CmsS3Helper
@@ -34,9 +34,9 @@ import scala.util.Try
 
 @Singleton
 class CmsFileController @Inject() (
-  cookieAuthenticated: CookieAuthenticatedAction,
+  maybeCookieAuthenticated: MaybeCookieAuthenticatedAction,
   cc: ControllerComponents,
-//  cmsService: CmsService,
+  //  cmsService: CmsService,
   cmsStorage: CmsStorage,
   cmsS3Helper: CmsS3Helper,
   implicit val ec: ExecutionContext,
@@ -44,7 +44,8 @@ class CmsFileController @Inject() (
 ) extends AbstractController(cc) {
 
   def getFile(objectId: String, fileType: String, fileId: String) =
-    cookieAuthenticated.async { request =>
+    maybeCookieAuthenticated.async { request =>
+      // TODO: check access to object
       request.headers.get("Range") match {
         case Some(rangeHeader) => getFileRange(rangeHeader, objectId, fileType, fileId)
         case None              => getFileInternal(request, objectId, fileType, fileId)

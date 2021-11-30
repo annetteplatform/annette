@@ -17,7 +17,7 @@
 package biz.lobachev.annette.api_gateway_core.authentication
 
 import biz.lobachev.annette.core.exception.AnnetteException
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, AnonymousPrincipal}
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.Json
 import play.api.mvc._
@@ -27,7 +27,7 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 @Singleton
-class CookieAuthenticatedAction @Inject() (
+class MaybeCookieAuthenticatedAction @Inject() (
 //  authenticator: DefaultAuthenticator,
   subjectTransformer: SubjectTransformer,
   val parser: BodyParsers.Default,
@@ -38,43 +38,32 @@ class CookieAuthenticatedAction @Inject() (
   def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] = {
     log.info("Request method={}, uri={}", request.method, request.uri)
     val started        = System.currentTimeMillis()
-    var authenticated  = 0L
-    var transformed    = 0L
     val expirationTime = request.session.data.get("exp").flatMap(_.toLongOption)
     val principal      = request.session.data.get("principal").map(AnnettePrincipal.fromCode(_))
     val maybeSubject   =
       if (principal.isDefined && expirationTime.isDefined && System.currentTimeMillis() / 1000L < expirationTime.get)
         Some(Subject(principals = principal.toSeq, Map.empty, None))
-      else None
+      else Some(Subject(Seq(AnonymousPrincipal()), Map.empty, Some(300L)))
     val subjectFuture  = for {
       subject            <-
         maybeSubject
           .map(Future.successful(_))
           .getOrElse(Future.failed(AuthenticationFailedException())) //.getOrElse(authenticator.authenticate(request))
-      _                   = {
-        authenticated = System.currentTimeMillis()
-      }
+
       transformedSubject <- subjectTransformer.transform(subject)
-    } yield {
-      transformed = System.currentTimeMillis()
-      transformedSubject
-    }
+    } yield transformedSubject
 
     subjectFuture.transformWith {
       case Success(subject)   =>
         val result = block(AuthenticatedRequest[A](subject, request))
         result.foreach { res =>
-          val completedPeriod     = System.currentTimeMillis() - started
-          val authenticatedPeriod = authenticated - started
-          val transformedPeriod   = transformed - authenticated
+          val completedPeriod = System.currentTimeMillis() - started
           log.info(
-            "Request completed method={}, uri={}, principal={}, completed={} ms, authenticated={} ms, transformed={} ms, contentLength={}",
+            "Request completed method={}, uri={}, principal={}, completed={} ms, contentLength={}",
             request.method,
             request.uri,
             subject.principals.head.code,
             completedPeriod,
-            authenticatedPeriod,
-            transformedPeriod,
             res.body.contentLength.getOrElse("None")
           )
         }

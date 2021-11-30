@@ -17,7 +17,7 @@
 package biz.lobachev.annette.api_gateway_core.authentication
 
 import biz.lobachev.annette.core.exception.AnnetteException
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.AnonymousPrincipal
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.Json
 import play.api.mvc._
@@ -27,8 +27,8 @@ import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
 @Singleton
-class CookieAuthenticatedAction @Inject() (
-//  authenticator: DefaultAuthenticator,
+class MaybeAuthenticatedAction @Inject() (
+  authenticator: DefaultAuthenticator,
   subjectTransformer: SubjectTransformer,
   val parser: BodyParsers.Default,
   implicit val executionContext: ExecutionContext
@@ -37,61 +37,46 @@ class CookieAuthenticatedAction @Inject() (
 
   def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] = {
     log.info("Request method={}, uri={}", request.method, request.uri)
-    val started        = System.currentTimeMillis()
-    var authenticated  = 0L
-    var transformed    = 0L
-    val expirationTime = request.session.data.get("exp").flatMap(_.toLongOption)
-    val principal      = request.session.data.get("principal").map(AnnettePrincipal.fromCode(_))
-    val maybeSubject   =
-      if (principal.isDefined && expirationTime.isDefined && System.currentTimeMillis() / 1000L < expirationTime.get)
-        Some(Subject(principals = principal.toSeq, Map.empty, None))
-      else None
-    val subjectFuture  = for {
-      subject            <-
-        maybeSubject
-          .map(Future.successful(_))
-          .getOrElse(Future.failed(AuthenticationFailedException())) //.getOrElse(authenticator.authenticate(request))
-      _                   = {
-        authenticated = System.currentTimeMillis()
-      }
+    val started       = System.currentTimeMillis()
+    val subjectFuture = for {
+      subject            <- authenticator.authenticate(request).recover {
+                              case _ => Subject(Seq(AnonymousPrincipal()), Map.empty, Some(300L))
+                            }
       transformedSubject <- subjectTransformer.transform(subject)
-    } yield {
-      transformed = System.currentTimeMillis()
-      transformedSubject
-    }
+    } yield transformedSubject
 
     subjectFuture.transformWith {
       case Success(subject)   =>
         val result = block(AuthenticatedRequest[A](subject, request))
+          .map(result =>
+            subject.expirationTime
+              .map(expirationTime =>
+                result.withSession(
+                  "principal" -> subject.principals.head.code,
+                  "exp"       -> expirationTime.toString
+                )
+              )
+              .getOrElse(result)
+          )
         result.foreach { res =>
-          val completedPeriod     = System.currentTimeMillis() - started
-          val authenticatedPeriod = authenticated - started
-          val transformedPeriod   = transformed - authenticated
+          val completedPeriod = System.currentTimeMillis() - started
           log.info(
-            "Request completed method={}, uri={}, principal={}, completed={} ms, authenticated={} ms, transformed={} ms, contentLength={}",
+            "Request completed method={}, uri={}, principal={}, completed={} ms, contentLength={}",
             request.method,
             request.uri,
             subject.principals.head.code,
             completedPeriod,
-            authenticatedPeriod,
-            transformedPeriod,
             res.body.contentLength.getOrElse("None")
           )
         }
-        result.map(
-          _.withSession(
-            "principal" -> subject.principals.head.code,
-            "exp"       -> (expirationTime.get + 600L).toString
-          )
-        )
+        result
       case Failure(throwable) => notAuthenticated(request, throwable)
     }
-
   }
 
   protected def notAuthenticated[A](request: Request[A], throwable: Throwable): Future[Result] =
     Future.successful {
-      log.warn("Not authenticated method={}, uri={}, th={}", request.method, request.uri, throwable.getMessage)
+      log.warn("Not authenticated method={}, uri={}", request.method, request.uri)
       throwable match {
         case exception: AnnetteException =>
           Results.Unauthorized(Json.toJson(exception.errorMessage))

@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.cms.gateway.blogs
 
-import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
+import biz.lobachev.annette.api_gateway_core.authentication.{MaybeAuthenticatedAction}
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.{common, CmsService}
 import biz.lobachev.annette.cms.api.blogs.blog._
@@ -45,7 +45,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CmsPostViewController @Inject() (
-  authenticated: AuthenticatedAction,
+  maybeAuthenticated: MaybeAuthenticatedAction,
   authorizer: Authorizer,
   cc: ControllerComponents,
   subscriptionService: SubscriptionService,
@@ -56,7 +56,7 @@ class CmsPostViewController @Inject() (
   val blogSubscriptionType = "blog"
 
   def findPostViews: Action[PostViewFindQueryDto] =
-    authenticated.async(parse.json[PostViewFindQueryDto]) { implicit request =>
+    maybeAuthenticated.async(parse.json[PostViewFindQueryDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         val payload = request.request.body
         for {
@@ -92,7 +92,7 @@ class CmsPostViewController @Inject() (
     }
 
   def getPostViewAnnotationsById =
-    authenticated.async(parse.json[Set[PostId]]) { implicit request =>
+    maybeAuthenticated.async(parse.json[Set[PostId]]) { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         val ids = request.request.body
         for {
@@ -109,7 +109,7 @@ class CmsPostViewController @Inject() (
     }
 
   def getPostViewsById =
-    authenticated.async(parse.json[Set[PostId]]) { implicit request =>
+    maybeAuthenticated.async(parse.json[Set[PostId]]) { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         val ids = request.request.body
         for {
@@ -126,7 +126,7 @@ class CmsPostViewController @Inject() (
     }
 
   def getPostViewById(postId: PostId) =
-    authenticated.async { implicit request =>
+    maybeAuthenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         for {
           result   <- cmsService.getPostViews(
@@ -143,7 +143,7 @@ class CmsPostViewController @Inject() (
     }
 
   def viewPost(id: PostId) =
-    authenticated.async { implicit request =>
+    maybeAuthenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         for {
           canAccess <- cmsService.canAccessToPost(
@@ -161,7 +161,7 @@ class CmsPostViewController @Inject() (
     }
 
   def likePost(id: PostId) =
-    authenticated.async { implicit request =>
+    maybeAuthenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         for {
           canAccess <- cmsService.canAccessToPost(
@@ -179,7 +179,7 @@ class CmsPostViewController @Inject() (
     }
 
   def unlikePost(id: PostId) =
-    authenticated.async { implicit request =>
+    maybeAuthenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         for {
           canAccess <- cmsService.canAccessToPost(
