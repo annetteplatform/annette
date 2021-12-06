@@ -511,7 +511,7 @@ private[impl] class PostDbDao(
                              post.publicationStatus == PublicationStatus.Published &&
                                post.publicationTimestamp.map(_.compareTo(OffsetDateTime.now) <= 0).getOrElse(true)
                            )
-      metrics           <- getPostMetricsById(publishedPostViews.map(_.id).toSeq, payload.directPrincipal)
+      metrics           <- getPostMetricsById(publishedPostViews.map(_.id), payload.directPrincipal)
       metricsMap         = metrics.map(a => a.id -> a).toMap
 
     } yield publishedPostViews

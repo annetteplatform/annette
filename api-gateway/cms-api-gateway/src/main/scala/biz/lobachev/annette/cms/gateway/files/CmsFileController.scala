@@ -20,8 +20,9 @@ import akka.http.scaladsl.model.DateTime
 import akka.stream.Materializer
 import akka.util.ByteString
 import biz.lobachev.annette.api_gateway_core.authentication.{AuthenticatedRequest, MaybeCookieAuthenticatedAction}
-import biz.lobachev.annette.cms.api.CmsStorage
+import biz.lobachev.annette.cms.api.common.CanAccessToEntityPayload
 import biz.lobachev.annette.cms.api.files.FileTypes
+import biz.lobachev.annette.cms.api.{CmsService, CmsStorage}
 import biz.lobachev.annette.cms.gateway.s3.CmsS3Helper
 import play.api.http.{ContentTypes, HttpEntity}
 import play.api.mvc._
@@ -36,20 +37,41 @@ import scala.util.Try
 class CmsFileController @Inject() (
   maybeCookieAuthenticated: MaybeCookieAuthenticatedAction,
   cc: ControllerComponents,
-  //  cmsService: CmsService,
+  cmsService: CmsService,
   cmsStorage: CmsStorage,
   cmsS3Helper: CmsS3Helper,
   implicit val ec: ExecutionContext,
   implicit val materializer: Materializer
 ) extends AbstractController(cc) {
 
+  val POST_PREFIX = "post-"
+  val PAGE_PREFIX = "page-"
+
   def getFile(objectId: String, fileType: String, fileId: String) =
     maybeCookieAuthenticated.async { request =>
-      // TODO: check access to object
-      request.headers.get("Range") match {
-        case Some(rangeHeader) => getFileRange(rangeHeader, objectId, fileType, fileId)
-        case None              => getFileInternal(request, objectId, fileType, fileId)
-      }
+      for {
+        canAccess <- if (objectId.startsWith(POST_PREFIX))
+                       cmsService.canAccessToPost(
+                         CanAccessToEntityPayload(
+                           objectId.drop(POST_PREFIX.length),
+                           request.subject.principals.toSet
+                         )
+                       )
+                     else if (objectId.startsWith(PAGE_PREFIX))
+                       cmsService.canAccessToPage(
+                         CanAccessToEntityPayload(
+                           objectId.drop(PAGE_PREFIX.length),
+                           request.subject.principals.toSet
+                         )
+                       )
+                     else Future.successful(false)
+        result    <- if (canAccess)
+                       request.headers.get("Range") match {
+                         case Some(rangeHeader) => getFileRange(rangeHeader, objectId, fileType, fileId)
+                         case None              => getFileInternal(request, objectId, fileType, fileId)
+                       }
+                     else Future.successful(Results.NotFound)
+      } yield result
     }
 
   private def getFileRange(
