@@ -53,6 +53,13 @@ import biz.lobachev.annette.cms.api.content.{
 import biz.lobachev.annette.cms.api.pages.space._
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.cms.api.files.{FileDescriptor, RemoveFilePayload, RemoveFilesPayload, StoreFilePayload}
+import biz.lobachev.annette.cms.api.home_page.{
+  AssignHomePagePayload,
+  HomePage,
+  HomePageFindQuery,
+  HomePageId,
+  UnassignHomePagePayload
+}
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 
@@ -187,5 +194,17 @@ trait CmsService {
   def unlikePage(payload: UnlikePayload): Future[Done]
   def getPageMetricById(payload: GetMetricPayload): Future[Metric]
   def getPageMetricsById(payload: GetMetricsPayload): Future[Seq[Metric]]
+
+  // ************************** CMS Home Page  **************************
+
+  def assignHomePage(payload: AssignHomePagePayload): Future[Done]
+  def unassignHomePage(payload: UnassignHomePagePayload): Future[Done]
+  def getHomePageById(
+    id: HomePageId,
+    fromReadSide: Boolean = true
+  ): Future[HomePage]
+  def getHomePagesById(ids: Set[HomePageId], fromReadSide: Boolean = true): Future[Seq[HomePage]]
+  def getHomePageByPrincipalCodes(applicationId: String, ids: Seq[String]): Future[PageId]
+  def findHomePages(query: HomePageFindQuery): Future[FindResult]
 
 }

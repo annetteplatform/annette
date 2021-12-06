@@ -16,7 +16,6 @@
 
 package biz.lobachev.annette.cms.impl
 
-import akka.util.Timeout
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.cms.api.{common, _}
 import biz.lobachev.annette.cms.api.blogs.blog._
@@ -52,12 +51,20 @@ import biz.lobachev.annette.cms.api.content.{
   UpdateWidgetPayload
 }
 import biz.lobachev.annette.cms.api.files._
+import biz.lobachev.annette.cms.api.home_page.{
+  AssignHomePagePayload,
+  HomePage,
+  HomePageFindQuery,
+  HomePageId,
+  UnassignHomePagePayload
+}
 import biz.lobachev.annette.cms.api.pages.space._
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.cms.impl.blogs.blog._
 import biz.lobachev.annette.cms.impl.blogs.category.BlogCategoryEntityService
 import biz.lobachev.annette.cms.impl.blogs.post._
 import biz.lobachev.annette.cms.impl.files.FileEntityService
+import biz.lobachev.annette.cms.impl.home_pages.HomePageEntityService
 import biz.lobachev.annette.cms.impl.pages.category.SpaceCategoryEntityService
 import biz.lobachev.annette.cms.impl.pages.page.PageEntityService
 import biz.lobachev.annette.cms.impl.pages.space.SpaceEntityService
@@ -67,7 +74,6 @@ import com.lightbend.lagom.scaladsl.api.ServiceCall
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.ExecutionContext
-import scala.concurrent.duration._
 
 class CmsServiceApiImpl(
   blogCategoryEntityService: BlogCategoryEntityService,
@@ -76,12 +82,11 @@ class CmsServiceApiImpl(
   spaceCategoryEntityService: SpaceCategoryEntityService,
   spaceEntityService: SpaceEntityService,
   pageEntityService: PageEntityService,
+  homePageEntityService: HomePageEntityService,
   fileEntityService: FileEntityService
 )(implicit
   ec: ExecutionContext
 ) extends CmsServiceApi {
-
-  implicit val timeout = Timeout(50.seconds)
 
   val log = LoggerFactory.getLogger(this.getClass)
 
@@ -623,4 +628,38 @@ class CmsServiceApiImpl(
       pageEntityService.getPageMetricsById(payload)
     }
 
+  // ************************** CMS Home Page  **************************
+
+  override def assignHomePage: ServiceCall[AssignHomePagePayload, Done] =
+    ServiceCall { payload =>
+      homePageEntityService.assignHomePage(payload)
+    }
+
+  override def unassignHomePage: ServiceCall[UnassignHomePagePayload, Done] =
+    ServiceCall { payload =>
+      homePageEntityService.unassignHomePage(payload)
+    }
+
+  override def getHomePageById(
+    id: HomePageId,
+    fromReadSide: Boolean
+  ): ServiceCall[NotUsed, HomePage] =
+    ServiceCall { _ =>
+      homePageEntityService.getHomePageById(id, fromReadSide)
+    }
+
+  override def getHomePagesById(fromReadSide: Boolean): ServiceCall[Set[HomePageId], Seq[HomePage]] =
+    ServiceCall { ids =>
+      homePageEntityService.getHomePagesById(ids, fromReadSide)
+    }
+
+  override def getHomePageByPrincipalCodes(applicationId: String): ServiceCall[Seq[String], PageId] =
+    ServiceCall { principalCodes =>
+      homePageEntityService.getHomePageByPrincipalCodes(applicationId, principalCodes)
+    }
+
+  override def findHomePages: ServiceCall[HomePageFindQuery, FindResult] =
+    ServiceCall { query =>
+      homePageEntityService.findHomePages(query)
+    }
 }

@@ -51,6 +51,13 @@ import biz.lobachev.annette.cms.api.content.{
   UpdateWidgetPayload
 }
 import biz.lobachev.annette.cms.api.files._
+import biz.lobachev.annette.cms.api.home_page.{
+  AssignHomePagePayload,
+  HomePage,
+  HomePageFindQuery,
+  HomePageId,
+  UnassignHomePagePayload
+}
 import biz.lobachev.annette.cms.api.pages.space._
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
@@ -190,6 +197,20 @@ trait CmsServiceApi extends Service {
   def getPageMetricById: ServiceCall[GetMetricPayload, Metric]
   def getPageMetricsById: ServiceCall[GetMetricsPayload, Seq[Metric]]
 
+  // ************************** CMS Home Page  **************************
+
+  def assignHomePage: ServiceCall[AssignHomePagePayload, Done]
+  def unassignHomePage: ServiceCall[UnassignHomePagePayload, Done]
+  def getHomePageById(
+    id: HomePageId,
+    fromReadSide: Boolean = true
+  ): ServiceCall[NotUsed, HomePage]
+  def getHomePagesById(
+    fromReadSide: Boolean = true
+  ): ServiceCall[Set[HomePageId], Seq[HomePage]]
+  def getHomePageByPrincipalCodes(applicationId: String): ServiceCall[Seq[String], PageId]
+  def findHomePages: ServiceCall[HomePageFindQuery, FindResult]
+
   final override def descriptor = {
     import Service._
     named("cms")
@@ -287,7 +308,14 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/likePage", likePage),
         pathCall("/api/cms/v1/unlikePage", unlikePage),
         pathCall("/api/cms/v1/getPageMetricById", getPageMetricById),
-        pathCall("/api/cms/v1/getPageMetricsById", getPageMetricsById)
+        pathCall("/api/cms/v1/getPageMetricsById", getPageMetricsById),
+        // ************************** CMS Home Page  **************************
+        pathCall("/api/cms/v1/assignHomePage", assignHomePage),
+        pathCall("/api/cms/v1/unassignHomePage", unassignHomePage),
+        pathCall("/api/cms/v1/getHomePageById/:id/:fromReadSide", getHomePageById _),
+        pathCall("/api/cms/v1/getHomePagesById/:fromReadSide", getHomePagesById _),
+        pathCall("/api/cms/v1/getHomePageByPrincipalCodes/:applicationId", getHomePageByPrincipalCodes _),
+        pathCall("/api/cms/v1/findHomePages", findHomePages)
       )
       .withExceptionSerializer(new AnnetteTransportExceptionSerializer())
       .withAutoAcl(true)

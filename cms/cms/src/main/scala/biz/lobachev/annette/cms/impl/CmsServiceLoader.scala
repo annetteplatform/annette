@@ -31,6 +31,14 @@ import biz.lobachev.annette.cms.impl.blogs.category.model.BlogCategorySerializer
 import biz.lobachev.annette.cms.impl.files.dao.FileDbDao
 import biz.lobachev.annette.cms.impl.files.model.FileSerializerRegistry
 import biz.lobachev.annette.cms.impl.files.{FileDbEventProcessor, FileEntity, FileEntityService}
+import biz.lobachev.annette.cms.impl.home_pages.{
+  HomePageDbEventProcessor,
+  HomePageEntity,
+  HomePageEntityService,
+  HomePageIndexEventProcessor
+}
+import biz.lobachev.annette.cms.impl.home_pages.dao.{HomePageDbDao, HomePageIndexDao}
+import biz.lobachev.annette.cms.impl.home_pages.model.HomePageSerializerRegistry
 import biz.lobachev.annette.cms.impl.pages.category.{SpaceCategoryEntity, SpaceCategoryProvider}
 import biz.lobachev.annette.cms.impl.pages.category.model.SpaceCategorySerializerRegistry
 import biz.lobachev.annette.cms.impl.pages.page.{
@@ -191,6 +199,19 @@ trait CmsComponents
       PageEntity(entityContext)
     }
   )
+
+  // ************************** CMS Home Page  **************************
+
+  lazy val wiredHomePageCasRepository     = wire[HomePageDbDao]
+  lazy val wiredHomePageElasticRepository = wire[HomePageIndexDao]
+  readSide.register(wire[HomePageDbEventProcessor])
+  readSide.register(wire[HomePageIndexEventProcessor])
+  lazy val wiredHomePageEntityService     = wire[HomePageEntityService]
+  clusterSharding.init(
+    Entity(HomePageEntity.typeKey) { entityContext =>
+      HomePageEntity(entityContext)
+    }
+  )
 }
 
 abstract class CmsServiceApplication(context: LagomApplicationContext)
@@ -205,5 +226,6 @@ object ServiceSerializerRegistry extends JsonSerializerRegistry {
       PostSerializerRegistry.serializers ++
       SpaceCategorySerializerRegistry.serializers ++
       SpaceSerializerRegistry.serializers ++
-      PageSerializerRegistry.serializers
+      PageSerializerRegistry.serializers ++
+      HomePageSerializerRegistry.serializers
 }

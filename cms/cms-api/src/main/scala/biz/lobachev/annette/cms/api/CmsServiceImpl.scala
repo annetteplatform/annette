@@ -50,6 +50,13 @@ import biz.lobachev.annette.cms.api.content.{
   UpdateWidgetPayload
 }
 import biz.lobachev.annette.cms.api.files._
+import biz.lobachev.annette.cms.api.home_page.{
+  AssignHomePagePayload,
+  HomePage,
+  HomePageFindQuery,
+  HomePageId,
+  UnassignHomePagePayload
+}
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.cms.api.pages.space._
 import biz.lobachev.annette.core.model.category._
@@ -363,5 +370,28 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
 
   override def getPageMetricsById(payload: GetMetricsPayload): Future[Seq[Metric]] =
     api.getPageMetricsById.invoke(payload)
+
+  // ************************** CMS Home Page  **************************
+
+  override def assignHomePage(payload: AssignHomePagePayload): Future[Done] =
+    api.assignHomePage.invoke(payload)
+
+  override def unassignHomePage(payload: UnassignHomePagePayload): Future[Done] =
+    api.unassignHomePage.invoke(payload)
+
+  override def getHomePageById(id: HomePageId, fromReadSide: Boolean = true): Future[HomePage] =
+    api.getHomePageById(id, fromReadSide).invoke()
+
+  override def getHomePagesById(
+    ids: Set[HomePageId],
+    fromReadSide: Boolean = true
+  ): Future[Seq[HomePage]] =
+    api.getHomePagesById(fromReadSide).invoke(ids)
+
+  override def getHomePageByPrincipalCodes(applicationId: String, ids: Seq[String]): Future[PageId] =
+    api.getHomePageByPrincipalCodes(applicationId).invoke(ids)
+
+  override def findHomePages(query: HomePageFindQuery): Future[FindResult] =
+    api.findHomePages.invoke(query)
 
 }
