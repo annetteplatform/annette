@@ -51,7 +51,7 @@ import biz.lobachev.annette.cms.api.content.{
   UpdateWidgetPayload
 }
 import biz.lobachev.annette.cms.api.files._
-import biz.lobachev.annette.cms.api.home_page.{
+import biz.lobachev.annette.cms.api.home_pages.{
   AssignHomePagePayload,
   HomePage,
   HomePageFindQuery,

@@ -18,7 +18,7 @@ package biz.lobachev.annette.cms.impl.home_pages.dao
 
 import akka.Done
 import akka.stream.Materializer
-import biz.lobachev.annette.cms.api.home_page.{HomePage, HomePageId}
+import biz.lobachev.annette.cms.api.home_pages.{HomePage, HomePageId}
 import biz.lobachev.annette.cms.impl.home_pages.HomePageEntity
 import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession

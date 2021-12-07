@@ -53,7 +53,7 @@ import biz.lobachev.annette.cms.api.content.{
 import biz.lobachev.annette.cms.api.pages.space._
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.cms.api.files.{FileDescriptor, RemoveFilePayload, RemoveFilesPayload, StoreFilePayload}
-import biz.lobachev.annette.cms.api.home_page.{
+import biz.lobachev.annette.cms.api.home_pages.{
   AssignHomePagePayload,
   HomePage,
   HomePageFindQuery,

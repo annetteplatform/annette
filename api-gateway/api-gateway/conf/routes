@@ -247,6 +247,12 @@ GET     /api/annette/v1/cms/getPageViewById/:pageId         biz.lobachev.annette
 POST    /api/annette/v1/cms/viewPage/:pageId                biz.lobachev.annette.cms.gateway.pages.CmsPageViewController.viewPage(pageId: String)
 POST    /api/annette/v1/cms/likePage/:pageId                biz.lobachev.annette.cms.gateway.pages.CmsPageViewController.likePage(pageId: String)
 POST    /api/annette/v1/cms/unlikePage/:pageId              biz.lobachev.annette.cms.gateway.pages.CmsPageViewController.unlikePage(pageId: String)
-
 # ************************************** CMS File API **************************************
 GET    /api/annette/v1/cms/file/:objectId/:fileType/:fileId    biz.lobachev.annette.cms.gateway.files.CmsFileController.getFile(objectId: String, fileType: String, fileId: String)
+# ************************************** CMS Home Page **************************************
+POST    /api/annette/v1/cms/assignHomePage                     biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController.assignHomePage
+POST    /api/annette/v1/cms/unassignHomePage                   biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController.unassignHomePage
+GET     /api/annette/v1/cms/getHomePageById/:id/:fromReadSide  biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController.getHomePageById(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/cms/getHomePagesById/:fromReadSide     biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController.getHomePagesById(fromReadSide: Boolean)
+POST    /api/annette/v1/cms/findHomePages                      biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController.findHomePages
+GET     /api/annette/v1/cms/getMyHomePage/:applicationId       biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController.getMyHomePage(applicationId: String)

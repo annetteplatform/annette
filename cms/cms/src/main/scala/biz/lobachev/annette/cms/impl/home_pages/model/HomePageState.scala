@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.cms.impl.home_pages.model
 
-import biz.lobachev.annette.cms.api.home_page.HomePageId
+import biz.lobachev.annette.cms.api.home_pages.HomePageId
 import biz.lobachev.annette.cms.api.pages.page.PageId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}

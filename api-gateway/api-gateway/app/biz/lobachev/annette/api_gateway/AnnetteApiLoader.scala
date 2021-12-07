@@ -32,6 +32,7 @@ import biz.lobachev.annette.authorization.gateway.AuthorizationController
 import biz.lobachev.annette.cms.api.{CmsServiceApi, CmsServiceImpl, CmsStorage}
 import biz.lobachev.annette.cms.gateway.blogs._
 import biz.lobachev.annette.cms.gateway.files.CmsFileController
+import biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController
 import biz.lobachev.annette.cms.gateway.pages._
 import biz.lobachev.annette.cms.gateway.s3.CmsS3Helper
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
@@ -128,6 +129,7 @@ abstract class ServiceGateway(context: Context)
   lazy val cmsPageViewController      = wire[CmsPageViewController]
   lazy val cmsSpaceViewController     = wire[CmsSpaceViewController]
   lazy val cmsPostFileController      = wire[CmsFileController]
+  lazy val cmsHomePageController      = wire[CmsHomePageController]
 
   lazy val authorizationServiceApi = serviceClient.implement[AuthorizationServiceApi]
   lazy val authorizationService    = wire[AuthorizationServiceImpl]

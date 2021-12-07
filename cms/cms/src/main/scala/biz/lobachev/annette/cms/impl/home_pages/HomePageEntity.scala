@@ -20,7 +20,7 @@ import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
-import biz.lobachev.annette.cms.api.home_page.{HomePage, HomePageId}
+import biz.lobachev.annette.cms.api.home_pages.{HomePage, HomePageId}
 import biz.lobachev.annette.cms.api.pages.page.PageId
 import biz.lobachev.annette.cms.impl.home_pages.model.HomePageState
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal

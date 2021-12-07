@@ -37,4 +37,6 @@ object Permissions {
 
   final val MAINTAIN_ALL_PAGES = Permission("annette.cms.page.maintain.all")
 
+  final val MAINTAIN_HOME_PAGES = Permission("annette.cms.homePage.maintain.all")
+
 }

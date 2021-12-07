@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.cms.impl.home_pages.dao
 
-import biz.lobachev.annette.cms.api.home_page.{HomePage, HomePageFindQuery}
+import biz.lobachev.annette.cms.api.home_pages.{HomePage, HomePageFindQuery}
 import biz.lobachev.annette.cms.api.pages.page.PageId
 import biz.lobachev.annette.cms.impl.home_pages.HomePageEntity
 import biz.lobachev.annette.core.model.indexing.FindResult

@@ -19,7 +19,7 @@ package biz.lobachev.annette.cms.impl.home_pages
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
-import biz.lobachev.annette.cms.api.home_page.{
+import biz.lobachev.annette.cms.api.home_pages.{
   AssignHomePagePayload,
   HomePage,
   HomePageFindQuery,

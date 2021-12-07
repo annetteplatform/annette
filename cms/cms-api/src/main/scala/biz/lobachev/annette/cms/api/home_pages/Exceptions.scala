@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.api.home_page
+package biz.lobachev.annette.cms.api.home_pages
 
 import biz.lobachev.annette.core.exception.{AnnetteTransportExceptionCompanion2}
 import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode

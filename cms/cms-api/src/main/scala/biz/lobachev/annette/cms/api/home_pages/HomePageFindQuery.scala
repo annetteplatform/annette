@@ -1,4 +1,4 @@
-package biz.lobachev.annette.cms.api.home_page
+package biz.lobachev.annette.cms.api.home_pages
 
 import biz.lobachev.annette.core.model.indexing.SortBy
 import play.api.libs.json.{Format, Json}

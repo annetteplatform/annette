@@ -101,7 +101,6 @@ class CmsPageController @Inject() (
         } yield Ok(Json.toJson(updated))
       }
     }
-  updatePageContentSettings
 
   def updatePageContentSettings =
     authenticated.async(parse.json[UpdateContentSettingsPayloadDto]) { implicit request =>
