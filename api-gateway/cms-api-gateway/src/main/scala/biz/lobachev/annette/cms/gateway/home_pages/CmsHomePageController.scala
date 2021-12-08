@@ -55,7 +55,7 @@ class CmsHomePageController @Inject() (
           .transform
         for {
           _      <- cmsService.assignHomePage(payload)
-          result <- cmsService.getHomePageById(HomePage.toCompositeId(payload.applicationId, payload.principal))
+          result <- cmsService.getHomePageById(HomePage.toCompositeId(payload.applicationId, payload.principal), false)
         } yield Ok(Json.toJson(result))
       }
     }

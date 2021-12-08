@@ -20,8 +20,7 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
 case class UnassignHomePagePayload(
-  applicationId: String,
-  principal: AnnettePrincipal,
+  id: String,
   updatedBy: AnnettePrincipal
 )
 

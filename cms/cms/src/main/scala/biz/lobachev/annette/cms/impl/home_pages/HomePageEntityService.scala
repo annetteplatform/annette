@@ -90,15 +90,17 @@ class HomePageEntityService(
       )
       .map(convertSuccess(_, payload.applicationId, payload.principal))
 
-  def unassignHomePage(payload: UnassignHomePagePayload): Future[Done] =
-    refFor(payload.applicationId, payload.principal)
+  def unassignHomePage(payload: UnassignHomePagePayload): Future[Done] = {
+    val (applicationId, principal) = HomePage.fromCompositeId(payload.id)
+    refFor(payload.id)
       .ask[HomePageEntity.Confirmation](replyTo =>
         payload
           .into[HomePageEntity.UnassignHomePage]
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
-      .map(convertSuccess(_, payload.applicationId, payload.principal))
+      .map(convertSuccess(_, applicationId, principal))
+  }
 
   private def getHomePage(id: HomePageId): Future[HomePage] =
     refFor(id)

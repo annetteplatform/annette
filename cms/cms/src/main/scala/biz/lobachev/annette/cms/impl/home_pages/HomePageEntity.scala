@@ -46,8 +46,7 @@ object HomePageEntity {
   ) extends Command
 
   final case class UnassignHomePage(
-    applicationId: String,
-    principal: AnnettePrincipal,
+    id: String,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
@@ -81,8 +80,7 @@ object HomePageEntity {
   ) extends Event
 
   final case class HomePageUnassigned(
-    applicationId: String,
-    principal: AnnettePrincipal,
+    id: String,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event

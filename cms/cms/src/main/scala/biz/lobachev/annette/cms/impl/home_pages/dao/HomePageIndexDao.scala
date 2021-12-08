@@ -53,7 +53,7 @@ class HomePageIndexDao(client: ElasticClient)(implicit
   }
 
   def unassignHomePage(event: HomePageEntity.HomePageUnassigned) =
-    deleteIndexDoc(HomePage.toCompositeId(event.applicationId, event.principal))
+    deleteIndexDoc(event.id)
 
   def findHomePages(query: HomePageFindQuery): Future[FindResult] = {
 

@@ -75,7 +75,7 @@ class HomePageDbDao(
     for {
       _ <- ctx.run(
              homePageSchema
-               .filter(_.id == lift(HomePage.toCompositeId(event.applicationId, event.principal)))
+               .filter(_.id == lift(event.id))
                .delete
            )
     } yield Done
