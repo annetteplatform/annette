@@ -19,7 +19,6 @@ package biz.lobachev.annette.api_gateway_core.exception
 import biz.lobachev.annette.core.exception.{AnnetteException, AnnetteTransportException, AnnetteTransportThrowable}
 import biz.lobachev.annette.core.message.ErrorMessage
 import com.lightbend.lagom.scaladsl.api.transport.TransportException
-import net.logstash.logback.argument.StructuredArguments._
 import org.slf4j.LoggerFactory
 import play.api.http.HttpErrorHandler
 import play.api.http.Status.{BAD_REQUEST, FORBIDDEN, NOT_FOUND}
@@ -54,11 +53,11 @@ class ApiGatewayErrorHandler extends HttpErrorHandler {
         val id      = Random.nextInt(1000000).toString
         val message = new ErrorMessage(AnnetteTransportThrowable.ANNETTE_THROWABLE, Map("id" -> id))
         log.error(
-          s"Annette Throwable {} {} {}",
-          keyValue("id", id),
-          keyValue("method", request.method),
-          keyValue("path", request.path),
-          keyValue("exception", ex.getMessage),
+          s"Annette Throwable id={} method={} path={} exception={}",
+          id,
+          request.method,
+          request.path,
+          ex.getMessage,
           ex
         )
         Future.successful(InternalServerError(Json.toJson(message)))
@@ -76,10 +75,11 @@ class ApiGatewayErrorHandler extends HttpErrorHandler {
         val id      = Random.nextInt(1000000).toString
         val message = new ErrorMessage(AnnetteTransportThrowable.ANNETTE_THROWABLE, Map("id" -> id))
         log.error(
-          s"Throwable {} {} {}",
-          keyValue("id", id),
-          keyValue("method", request.method),
-          keyValue("path", request.path),
+          s"Throwable id={} method={} path={} exception={}",
+          id,
+          request.method,
+          request.path,
+          th.getMessage,
           th
         )
         Future.successful(InternalServerError(Json.toJson(message)))

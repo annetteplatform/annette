@@ -43,8 +43,8 @@ private[impl] class PersonDbDao(override val session: CassandraSession)(implicit
 
   import ctx._
 
-  private val personSchema                                                 = quote(querySchema[PersonRecord]("persons"))
-  override val attributesSchema: ctx.Quoted[EntityQuery[AttributesRecord]] = quote(
+  private val personSchema                                             = quote(querySchema[PersonRecord]("persons"))
+  override val attributesSchema: Quoted[EntityQuery[AttributesRecord]] = quote(
     querySchema[AttributesRecord]("attributes")
   )
 

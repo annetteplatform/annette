@@ -34,7 +34,7 @@ trait CassandraQuillDaoWithAttributes extends CassandraQuillDao {
   implicit val materializer: Materializer
   import ctx._
 
-  protected val attributesSchema: ctx.Quoted[EntityQuery[AttributesRecord]]
+  protected val attributesSchema: Quoted[EntityQuery[AttributesRecord]]
 
   def createAttributeTable(tableName: String): Future[Done] = {
     import CassandraTableBuilder.types._

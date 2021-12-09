@@ -17,8 +17,8 @@
 package biz.lobachev.annette.ignition.core.org_structure
 
 import akka.Done
-import akka.stream.Materializer
 import akka.stream.scaladsl.{RestartSource, Sink, Source}
+import akka.stream.{Materializer, RestartSettings}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.ignition.core.FileSourcing
 import biz.lobachev.annette.ignition.core.model.{BatchLoadResult, EntityLoadResult, LoadFailed, LoadOk}
@@ -111,10 +111,12 @@ class OrgStructureLoader(
       .transform
     RestartSource
       .onFailuresWithBackoff(
-        minBackoff = 3.seconds,
-        maxBackoff = 20.seconds,
-        randomFactor = 0.2,
-        maxRestarts = 20
+        RestartSettings(
+          minBackoff = 3.seconds,
+          maxBackoff = 20.seconds,
+          randomFactor = 0.2
+        )
+          .withMaxRestarts(20, 3.seconds)
       ) { () =>
         Source.future(
           orgStructureService

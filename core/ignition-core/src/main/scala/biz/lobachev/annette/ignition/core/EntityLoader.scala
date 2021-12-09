@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.ignition.core
 
+import akka.stream.RestartSettings
 import akka.stream.scaladsl.RestartSource
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.ignition.core.model.BatchLoadResult
@@ -63,10 +64,12 @@ protected trait EntityLoader[A] {
       .mapAsync(1) { item =>
         RestartSource
           .onFailuresWithBackoff(
-            minBackoff = 3.seconds,
-            maxBackoff = 20.seconds,
-            randomFactor = 0.2,
-            maxRestarts = 20
+            RestartSettings(
+              minBackoff = 3.seconds,
+              maxBackoff = 20.seconds,
+              randomFactor = 0.2
+            )
+              .withMaxRestarts(20, 3.seconds)
           ) { () =>
             Source.future(
               loadItem(item, principal)

@@ -48,11 +48,11 @@ private[impl] class HierarchyDbDao(
   println(itemTypeEncoder.toString)
   println(itemTypeDecoder.toString)
 
-  private val itemSchema                                                   = quote(querySchema[ItemRecord]("org_items"))
-  private val personPositionSchema                                         = quote(querySchema[PersonPosition]("person_positions"))
-  private val chiefUnitSchema                                              = quote(querySchema[ChiefUnitRecord]("chief_units"))
-  private val externalIdSchema                                             = quote(querySchema[ExternalIdRecord]("external_ids"))
-  override val attributesSchema: ctx.Quoted[EntityQuery[AttributesRecord]] = quote(
+  private val itemSchema                                               = quote(querySchema[ItemRecord]("org_items"))
+  private val personPositionSchema                                     = quote(querySchema[PersonPosition]("person_positions"))
+  private val chiefUnitSchema                                          = quote(querySchema[ChiefUnitRecord]("chief_units"))
+  private val externalIdSchema                                         = quote(querySchema[ExternalIdRecord]("external_ids"))
+  override val attributesSchema: Quoted[EntityQuery[AttributesRecord]] = quote(
     querySchema[AttributesRecord]("attributes")
   )
 
