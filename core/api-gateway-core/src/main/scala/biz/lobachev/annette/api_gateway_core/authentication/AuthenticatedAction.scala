@@ -17,11 +17,11 @@
 package biz.lobachev.annette.api_gateway_core.authentication
 
 import biz.lobachev.annette.core.exception.AnnetteException
-import javax.inject.{Inject, Singleton}
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.Json
 import play.api.mvc._
 
+import javax.inject.{Inject, Singleton}
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
@@ -35,15 +35,24 @@ class AuthenticatedAction @Inject() (
   final private val log: Logger = LoggerFactory.getLogger(this.getClass)
 
   def invokeBlock[A](request: Request[A], block: AuthenticatedRequest[A] => Future[Result]): Future[Result] = {
-    log.info("Request method={}, uri={}", request.method, request.uri, request.connection.remoteAddressString)
+    log.info("Request method={}, uri={}", request.method, request.uri)
+    val started       = System.currentTimeMillis()
+    var authenticated = 0L
+    var transformed   = 0L
     val subjectFuture = for {
       subject            <- authenticator.authenticate(request)
+      _                   = {
+        authenticated = System.currentTimeMillis()
+      }
       transformedSubject <- subjectTransformer.transform(subject)
-    } yield transformedSubject
+    } yield {
+      transformed = System.currentTimeMillis()
+      transformedSubject
+    }
 
     subjectFuture.transformWith {
       case Success(subject)   =>
-        block(AuthenticatedRequest[A](subject, request))
+        val result = block(AuthenticatedRequest[A](subject, request))
           .map(result =>
             subject.expirationTime
               .map(expirationTime =>
@@ -54,6 +63,22 @@ class AuthenticatedAction @Inject() (
               )
               .getOrElse(result)
           )
+        result.foreach { res =>
+          val completedPeriod     = System.currentTimeMillis() - started
+          val authenticatedPeriod = authenticated - started
+          val transformedPeriod   = transformed - authenticated
+          log.info(
+            "Request completed method={}, uri={}, principal={}, completed={} ms, authenticated={} ms, transformed={} ms, contentLength={}",
+            request.method,
+            request.uri,
+            subject.principals.head.code,
+            completedPeriod,
+            authenticatedPeriod,
+            transformedPeriod,
+            res.body.contentLength.getOrElse("None")
+          )
+        }
+        result
       case Failure(throwable) => notAuthenticated(request, throwable)
     }
   }

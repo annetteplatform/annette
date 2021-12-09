@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.api_gateway_core.api.keycloak
 
-import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
+import biz.lobachev.annette.api_gateway_core.authentication.{AuthenticatedAction, MaybeAuthenticatedAction}
 import biz.lobachev.annette.api_gateway_core.authentication.keycloak.KeycloakConfig
 import biz.lobachev.annette.core.exception.AnnetteException
 import biz.lobachev.annette.core.message.ErrorMessage
@@ -29,6 +29,7 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class KeycloakController @Inject() (
   authenticated: AuthenticatedAction,
+  maybeAuthenticated: MaybeAuthenticatedAction,
   maybeKeycloakConfig: Option[KeycloakConfig],
   cc: ControllerComponents,
   implicit val ec: ExecutionContext
@@ -58,7 +59,7 @@ class KeycloakController @Inject() (
     }
 
   def test =
-    authenticated { request =>
+    maybeAuthenticated { request =>
       val subject = request.subject.toString
       Ok(subject)
     }

@@ -48,11 +48,11 @@ private[impl] class HierarchyDbDao(
   println(itemTypeEncoder.toString)
   println(itemTypeDecoder.toString)
 
-  private val itemSchema                                                   = quote(querySchema[ItemRecord]("org_items"))
-  private val personPositionSchema                                         = quote(querySchema[PersonPosition]("person_positions"))
-  private val chiefUnitSchema                                              = quote(querySchema[ChiefUnitRecord]("chief_units"))
-  private val externalIdSchema                                             = quote(querySchema[ExternalIdRecord]("external_ids"))
-  override val attributesSchema: ctx.Quoted[EntityQuery[AttributesRecord]] = quote(
+  private val itemSchema                                               = quote(querySchema[ItemRecord]("org_items"))
+  private val personPositionSchema                                     = quote(querySchema[PersonPosition]("person_positions"))
+  private val chiefUnitSchema                                          = quote(querySchema[ChiefUnitRecord]("chief_units"))
+  private val externalIdSchema                                         = quote(querySchema[ExternalIdRecord]("external_ids"))
+  override val attributesSchema: Quoted[EntityQuery[AttributesRecord]] = quote(
     querySchema[AttributesRecord]("attributes")
   )
 
@@ -327,26 +327,32 @@ private[impl] class HierarchyDbDao(
                  _.updatedBy  -> lift(event.updatedBy)
                )
            )
-      _ <- event.externalId.map { externalId =>
-             ctx.run(
-               externalIdSchema.insert(
-                 lift(
-                   ExternalIdRecord(
-                     externalId = externalId,
-                     itemId = event.itemId
+      _ <- event.externalId
+             .filter(_.nonEmpty)
+             .map { externalId =>
+               ctx.run(
+                 externalIdSchema.insert(
+                   lift(
+                     ExternalIdRecord(
+                       externalId = externalId,
+                       itemId = event.itemId
+                     )
                    )
                  )
                )
-             )
-           }.getOrElse(Future.successful(Done))
+             }
+             .getOrElse(Future.successful(Done))
 
-      _ <- event.oldExternalId.map { oldExternalId =>
-             ctx.run(
-               externalIdSchema
-                 .filter(r => r.externalId == lift(oldExternalId) && r.itemId == lift(event.itemId))
-                 .delete
-             )
-           }.getOrElse(Future.successful(Done))
+      _ <- event.oldExternalId
+             .filter(_.nonEmpty)
+             .map { oldExternalId =>
+               ctx.run(
+                 externalIdSchema
+                   .filter(r => r.externalId == lift(oldExternalId))
+                   .delete
+               )
+             }
+             .getOrElse(Future.successful(Done))
     } yield Done
 
   def changePositionLimit(event: HierarchyEntity.PositionLimitChanged) =

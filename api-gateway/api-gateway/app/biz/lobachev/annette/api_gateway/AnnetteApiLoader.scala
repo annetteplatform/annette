@@ -17,32 +17,24 @@
 package biz.lobachev.annette.api_gateway
 
 import biz.lobachev.annette.api_gateway_core.api.keycloak.KeycloakController
-import biz.lobachev.annette.api_gateway_core.authentication.{
-  AuthenticatedAction,
-  CookieAuthenticatedAction,
-  DefaultAuthenticator,
-  NoopSubjectTransformer,
-  OrgStructureSubjectTransformer
-}
 import biz.lobachev.annette.api_gateway_core.authentication.basic.{
   BasicAuthConfigProvider,
   ConfigurationBasicAuthenticator
 }
 import biz.lobachev.annette.api_gateway_core.authentication.keycloak.{KeycloakAuthenticator, KeycloakConfigProvider}
+import biz.lobachev.annette.api_gateway_core.authentication._
 import biz.lobachev.annette.api_gateway_core.authorization.{AuthorizationServiceAuthorizer, ConfigurationAuthorizer}
 import biz.lobachev.annette.api_gateway_core.exception.ApiGatewayErrorHandler
 import biz.lobachev.annette.application.api.{ApplicationServiceApi, ApplicationServiceImpl}
 import biz.lobachev.annette.application.gateway.ApplicationController
 import biz.lobachev.annette.authorization.api.{AuthorizationServiceApi, AuthorizationServiceImpl}
 import biz.lobachev.annette.authorization.gateway.AuthorizationController
-import biz.lobachev.annette.cms.api.{CmsServiceApi, CmsServiceImpl}
-import biz.lobachev.annette.cms.gateway.{
-  CmsCategoryController,
-  CmsPostController,
-  CmsPostViewController,
-  CmsSpaceController,
-  CmsSpaceViewController
-}
+import biz.lobachev.annette.cms.api.{CmsServiceApi, CmsServiceImpl, CmsStorage}
+import biz.lobachev.annette.cms.gateway.blogs._
+import biz.lobachev.annette.cms.gateway.files.CmsFileController
+import biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController
+import biz.lobachev.annette.cms.gateway.pages._
+import biz.lobachev.annette.cms.gateway.s3.CmsS3Helper
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.org_structure.api.{OrgStructureServiceApi, OrgStructureServiceImpl}
 import biz.lobachev.annette.org_structure.gateway.OrgStructureController
@@ -101,19 +93,21 @@ abstract class ServiceGateway(context: Context)
   val authorizerConf     = config.getString("annette.authorization.authorizer")
   val enableOrgStructure = config.getBoolean("annette.authorization.enable-org-structure")
 
-  lazy val authorizer                =
+  lazy val authorizer                     =
     if (authorizerConf == "config") wire[ConfigurationAuthorizer]
     else wire[AuthorizationServiceAuthorizer]
-  lazy val subjectTransformer        =
+  lazy val subjectTransformer             =
     if (enableOrgStructure) wire[OrgStructureSubjectTransformer]
     else wire[NoopSubjectTransformer]
-  lazy val authenticatedAction       = wire[AuthenticatedAction]
-  lazy val cookieAuthenticatedAction = wire[CookieAuthenticatedAction]
-  lazy val authenticator             = wire[DefaultAuthenticator]
-  lazy val keycloakConfig            = wireWith(KeycloakConfigProvider.get _)
-  lazy val keycloakAuthenticator     = wire[KeycloakAuthenticator]
-  lazy val basicAuthConfig           = wireWith(BasicAuthConfigProvider.get _)
-  lazy val basicAuthenticator        = wire[ConfigurationBasicAuthenticator]
+  lazy val authenticatedAction            = wire[AuthenticatedAction]
+  lazy val maybeAuthenticatedAction       = wire[MaybeAuthenticatedAction]
+  lazy val cookieAuthenticatedAction      = wire[CookieAuthenticatedAction]
+  lazy val maybeCookieAuthenticatedAction = wire[MaybeCookieAuthenticatedAction]
+  lazy val authenticator                  = wire[DefaultAuthenticator]
+  lazy val keycloakConfig                 = wireWith(KeycloakConfigProvider.get _)
+  lazy val keycloakAuthenticator          = wire[KeycloakAuthenticator]
+  lazy val basicAuthConfig                = wireWith(BasicAuthConfigProvider.get _)
+  lazy val basicAuthenticator             = wire[ConfigurationBasicAuthenticator]
 
   lazy val keycloakController       = wire[KeycloakController]
   lazy val authorizationController  = wire[AuthorizationController]
@@ -121,11 +115,21 @@ abstract class ServiceGateway(context: Context)
   lazy val principalGroupController = wire[PrincipalGroupController]
   lazy val orgStructureController   = wire[OrgStructureController]
   lazy val applicationController    = wire[ApplicationController]
-  lazy val cmsCategoryController    = wire[CmsCategoryController]
-  lazy val cmsSpaceController       = wire[CmsSpaceController]
-  lazy val cmsPostController        = wire[CmsPostController]
-  lazy val cmsPostViewController    = wire[CmsPostViewController]
-  lazy val cmsSpaceViewController   = wire[CmsSpaceViewController]
+
+  lazy val cmsCmsStorage              = wire[CmsStorage]
+  lazy val cmsCmsS3Helper             = wire[CmsS3Helper]
+  lazy val cmsBlogCategoryController  = wire[CmsBlogCategoryController]
+  lazy val cmsBlogController          = wire[CmsBlogController]
+  lazy val cmsPostController          = wire[CmsPostController]
+  lazy val cmsPostViewController      = wire[CmsPostViewController]
+  lazy val cmsBlogViewController      = wire[CmsBlogViewController]
+  lazy val cmsSpaceCategoryController = wire[CmsSpaceCategoryController]
+  lazy val cmsSpaceController         = wire[CmsSpaceController]
+  lazy val cmsPageController          = wire[CmsPageController]
+  lazy val cmsPageViewController      = wire[CmsPageViewController]
+  lazy val cmsSpaceViewController     = wire[CmsSpaceViewController]
+  lazy val cmsPostFileController      = wire[CmsFileController]
+  lazy val cmsHomePageController      = wire[CmsHomePageController]
 
   lazy val authorizationServiceApi = serviceClient.implement[AuthorizationServiceApi]
   lazy val authorizationService    = wire[AuthorizationServiceImpl]

@@ -19,18 +19,44 @@ package biz.lobachev.annette.cms.impl
 import akka.cluster.sharding.typed.scaladsl.Entity
 import akka.stream.Materializer
 import biz.lobachev.annette.cms.api._
-import biz.lobachev.annette.cms.impl.category.{CategoryEntity, CategoryProvider}
-import biz.lobachev.annette.cms.impl.hierarchy.dao.HierarchyDbDao
-import biz.lobachev.annette.cms.impl.hierarchy.model.HierarchySerializerRegistry
-import biz.lobachev.annette.cms.impl.hierarchy.{HierarchyDbEventProcessor, HierarchyEntity, HierarchyEntityService}
-import biz.lobachev.annette.cms.impl.post._
-import biz.lobachev.annette.cms.impl.post.dao.{PostDbDao, PostIndexDao}
-import biz.lobachev.annette.cms.impl.post.model.PostSerializerRegistry
-import biz.lobachev.annette.cms.impl.space._
-import biz.lobachev.annette.cms.impl.space.dao.{SpaceDbDao, SpaceIndexDao}
-import biz.lobachev.annette.cms.impl.space.model.SpaceSerializerRegistry
+import biz.lobachev.annette.cms.impl.blogs.category.{BlogCategoryEntity, BlogCategoryProvider}
+import biz.lobachev.annette.cms.impl.blogs.post._
+import biz.lobachev.annette.cms.impl.blogs.post.dao.{PostDbDao, PostIndexDao}
+import biz.lobachev.annette.cms.impl.blogs.post.model.PostSerializerRegistry
+import biz.lobachev.annette.cms.impl.blogs.blog._
+import biz.lobachev.annette.cms.impl.blogs.blog.dao.{BlogDbDao, BlogIndexDao}
+import biz.lobachev.annette.cms.impl.blogs.blog.model.BlogSerializerRegistry
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
-import biz.lobachev.annette.cms.impl.category.model.CategorySerializerRegistry
+import biz.lobachev.annette.cms.impl.blogs.category.model.BlogCategorySerializerRegistry
+import biz.lobachev.annette.cms.impl.files.dao.FileDbDao
+import biz.lobachev.annette.cms.impl.files.model.FileSerializerRegistry
+import biz.lobachev.annette.cms.impl.files.{FileDbEventProcessor, FileEntity, FileEntityService}
+import biz.lobachev.annette.cms.impl.home_pages.{
+  HomePageDbEventProcessor,
+  HomePageEntity,
+  HomePageEntityService,
+  HomePageIndexEventProcessor
+}
+import biz.lobachev.annette.cms.impl.home_pages.dao.{HomePageDbDao, HomePageIndexDao}
+import biz.lobachev.annette.cms.impl.home_pages.model.HomePageSerializerRegistry
+import biz.lobachev.annette.cms.impl.pages.category.{SpaceCategoryEntity, SpaceCategoryProvider}
+import biz.lobachev.annette.cms.impl.pages.category.model.SpaceCategorySerializerRegistry
+import biz.lobachev.annette.cms.impl.pages.page.{
+  PageDbEventProcessor,
+  PageEntity,
+  PageEntityService,
+  PageIndexEventProcessor
+}
+import biz.lobachev.annette.cms.impl.pages.page.dao.{PageDbDao, PageIndexDao}
+import biz.lobachev.annette.cms.impl.pages.page.model.PageSerializerRegistry
+import biz.lobachev.annette.cms.impl.pages.space.{
+  SpaceDbEventProcessor,
+  SpaceEntity,
+  SpaceEntityService,
+  SpaceIndexEventProcessor
+}
+import biz.lobachev.annette.cms.impl.pages.space.dao.{SpaceDbDao, SpaceIndexDao}
+import biz.lobachev.annette.cms.impl.pages.space.model.SpaceSerializerRegistry
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
 import com.lightbend.lagom.scaladsl.api.LagomConfigComponent
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
@@ -78,21 +104,77 @@ trait CmsComponents
 
   lazy val jsonSerializerRegistry = ServiceSerializerRegistry
 
-  val categoryProvider = new CategoryProvider(
-    typeKeyName = "Category",
-    dbReadSideId = "category-cassandra",
-    configPath = "indexing.category-index",
-    indexReadSideId = "category-indexing"
+  // ************************** CMS Files **************************
+
+  lazy val cmsCmsStorage          = wire[CmsStorage]
+  lazy val wiredFileCasRepository = wire[FileDbDao]
+  readSide.register(wire[FileDbEventProcessor])
+  lazy val wiredFileEntityService = wire[FileEntityService]
+  clusterSharding.init(
+    Entity(FileEntity.typeKey) { entityContext =>
+      FileEntity(entityContext)
+    }
   )
 
-  lazy val categoryElastic       = wireWith(categoryProvider.createIndexDao _)
-  lazy val categoryRepository    = wireWith(categoryProvider.createDbDao _)
-  readSide.register(wireWith(categoryProvider.createDbProcessor _))
-  readSide.register(wireWith(categoryProvider.createIndexProcessor _))
-  lazy val categoryEntityService = wireWith(categoryProvider.createEntityService _)
+  // ************************** CMS Blogs **************************
+
+  val blogCategoryProvider = new BlogCategoryProvider(
+    typeKeyName = "BlogCategory",
+    dbReadSideId = "blog-category-cassandra",
+    configPath = "indexing.blog-category-index",
+    indexReadSideId = "blog-category-indexing"
+  )
+
+  lazy val blogCategoryElastic       = wireWith(blogCategoryProvider.createIndexDao _)
+  lazy val blogCategoryRepository    = wireWith(blogCategoryProvider.createDbDao _)
+  readSide.register(wireWith(blogCategoryProvider.createDbProcessor _))
+  readSide.register(wireWith(blogCategoryProvider.createIndexProcessor _))
+  lazy val blogCategoryEntityService = wireWith(blogCategoryProvider.createEntityService _)
   clusterSharding.init(
-    Entity(categoryProvider.typeKey) { entityContext =>
-      CategoryEntity(entityContext)
+    Entity(blogCategoryProvider.typeKey) { entityContext =>
+      BlogCategoryEntity(entityContext)
+    }
+  )
+
+  lazy val wiredBlogCasRepository     = wire[BlogDbDao]
+  lazy val wiredBlogElasticRepository = wire[BlogIndexDao]
+  readSide.register(wire[BlogDbEventProcessor])
+  readSide.register(wire[BlogIndexEventProcessor])
+  lazy val wiredBlogEntityService     = wire[BlogEntityService]
+  clusterSharding.init(
+    Entity(BlogEntity.typeKey) { entityContext =>
+      BlogEntity(entityContext)
+    }
+  )
+
+  lazy val wiredPostCasRepository     = wire[PostDbDao]
+  lazy val wiredPostElasticRepository = wire[PostIndexDao]
+  readSide.register(wire[PostDbEventProcessor])
+  readSide.register(wire[PostIndexEventProcessor])
+  lazy val wiredPostEntityService     = wire[PostEntityService]
+  clusterSharding.init(
+    Entity(PostEntity.typeKey) { entityContext =>
+      PostEntity(entityContext)
+    }
+  )
+
+  // ************************** CMS Pages **************************
+
+  val spaceCategoryProvider = new SpaceCategoryProvider(
+    typeKeyName = "SpaceCategory",
+    dbReadSideId = "space-category-cassandra",
+    configPath = "indexing.space-category-index",
+    indexReadSideId = "space-category-indexing"
+  )
+
+  lazy val spaceCategoryElastic       = wireWith(spaceCategoryProvider.createIndexDao _)
+  lazy val spaceCategoryRepository    = wireWith(spaceCategoryProvider.createDbDao _)
+  readSide.register(wireWith(spaceCategoryProvider.createDbProcessor _))
+  readSide.register(wireWith(spaceCategoryProvider.createIndexProcessor _))
+  lazy val spaceCategoryEntityService = wireWith(spaceCategoryProvider.createEntityService _)
+  clusterSharding.init(
+    Entity(spaceCategoryProvider.typeKey) { entityContext =>
+      SpaceCategoryEntity(entityContext)
     }
   )
 
@@ -107,23 +189,27 @@ trait CmsComponents
     }
   )
 
-  lazy val wiredHierarchyCasRepository = wire[HierarchyDbDao]
-  readSide.register(wire[HierarchyDbEventProcessor])
-  lazy val wiredHierarchyEntityService = wire[HierarchyEntityService]
+  lazy val wiredPageCasRepository     = wire[PageDbDao]
+  lazy val wiredPageElasticRepository = wire[PageIndexDao]
+  readSide.register(wire[PageDbEventProcessor])
+  readSide.register(wire[PageIndexEventProcessor])
+  lazy val wiredPageEntityService     = wire[PageEntityService]
   clusterSharding.init(
-    Entity(HierarchyEntity.typeKey) { entityContext =>
-      HierarchyEntity(entityContext)
+    Entity(PageEntity.typeKey) { entityContext =>
+      PageEntity(entityContext)
     }
   )
 
-  lazy val wiredPostCasRepository     = wire[PostDbDao]
-  lazy val wiredPostElasticRepository = wire[PostIndexDao]
-  readSide.register(wire[PostDbEventProcessor])
-  readSide.register(wire[PostIndexEventProcessor])
-  lazy val wiredPostEntityService     = wire[PostEntityService]
+  // ************************** CMS Home Page  **************************
+
+  lazy val wiredHomePageCasRepository     = wire[HomePageDbDao]
+  lazy val wiredHomePageElasticRepository = wire[HomePageIndexDao]
+  readSide.register(wire[HomePageDbEventProcessor])
+  readSide.register(wire[HomePageIndexEventProcessor])
+  lazy val wiredHomePageEntityService     = wire[HomePageEntityService]
   clusterSharding.init(
-    Entity(PostEntity.typeKey) { entityContext =>
-      PostEntity(entityContext)
+    Entity(HomePageEntity.typeKey) { entityContext =>
+      HomePageEntity(entityContext)
     }
   )
 }
@@ -134,8 +220,12 @@ abstract class CmsServiceApplication(context: LagomApplicationContext)
 
 object ServiceSerializerRegistry extends JsonSerializerRegistry {
   override def serializers: immutable.Seq[JsonSerializer[_]] =
-    CategorySerializerRegistry.serializers ++
+    FileSerializerRegistry.serializers ++
+      BlogCategorySerializerRegistry.serializers ++
+      BlogSerializerRegistry.serializers ++
+      PostSerializerRegistry.serializers ++
+      SpaceCategorySerializerRegistry.serializers ++
       SpaceSerializerRegistry.serializers ++
-      HierarchySerializerRegistry.serializers ++
-      PostSerializerRegistry.serializers
+      PageSerializerRegistry.serializers ++
+      HomePageSerializerRegistry.serializers
 }

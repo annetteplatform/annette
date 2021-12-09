@@ -16,9 +16,8 @@
 
 package biz.lobachev.annette.ignition.core.cms
 
-import biz.lobachev.annette.cms.api.post.{PostContent, PostId}
-import biz.lobachev.annette.cms.api.space.SpaceId
-import biz.lobachev.annette.cms.api.space.SpaceType.SpaceType
+import biz.lobachev.annette.cms.api.blogs.post.{PostId}
+import biz.lobachev.annette.cms.api.blogs.blog.BlogId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.Json
@@ -30,15 +29,14 @@ case class PersonIgnitionData(
 )
 
 case class SpaceCategoryData(
-  id: SpaceId,
+  id: BlogId,
   name: String
 )
 
 case class SpaceData(
-  id: SpaceId,
+  id: BlogId,
   name: String,
   description: String,
-  spaceType: SpaceType,
   categoryId: CategoryId,
   targets: Set[AnnettePrincipal] = Set.empty
 )
@@ -49,13 +47,13 @@ object SpaceData {
 
 case class PostData(
   id: PostId,
-  spaceId: SpaceId,
+  spaceId: BlogId,
   parent: Option[PostId] = None,
   featured: Boolean,
   authorId: AnnettePrincipal,
-  title: String,
-  introContent: PostContent,
-  content: PostContent
+  title: String
+//  introContent: PostContent,
+//  content: PostContent
 )
 
 object PostData {

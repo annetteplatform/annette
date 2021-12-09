@@ -1,5 +1,7 @@
+queries.sql
 build-local.sh
 run-local.sh
+test-local.sh
 .metals
 .bloop
 .vscode

@@ -3,12 +3,9 @@ import com.typesafe.sbt.packager.docker.DockerChmodType
 import play.sbt.routes.RoutesKeys
 
 scalaVersion := "2.13.3"
-maintainer := "valery@lobachev.biz"
 
 ThisBuild / version := "0.3.0-SNAPSHOT"
 ThisBuild / scalaVersion := "2.13.3"
-
-ThisBuild / maintainer := "valery@lobachev.biz"
 
 ThisBuild / organization := "biz.lobachev.annette"
 ThisBuild / organizationName := "Valery Lobachev"
@@ -47,11 +44,14 @@ ThisBuild / lagomKafkaEnabled := false
 // Use external Cassandra
 ThisBuild / lagomCassandraEnabled := false
 
+ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-java8-compat" % "always"
+
 // Copyright settings
 def annetteSettings: Seq[Setting[_]] =
   Seq(
     organizationName := "Valery Lobachev",
-    startYear := Some(2013)
+    startYear := Some(2013),
+    scalaVersion := "2.13.3"
   )
 
 def confDirSettings: Seq[Setting[_]] =
@@ -114,7 +114,7 @@ lazy val `core` = (project in file("core/core"))
       lagomScaladslServer % Optional,
       lagomScaladslTestKit,
       Dependencies.playJsonExt,
-      Dependencies.logstashEncoder,
+//      Dependencies.logstashEncoder,
       Dependencies.macwire
     ) ++ Dependencies.tests
       ++ Dependencies.elastic
@@ -132,7 +132,7 @@ lazy val `microservice-core` = (project in file("core/microservice-core"))
       Dependencies.chimney,
       Dependencies.pureConfig,
       Dependencies.playJsonExt,
-      Dependencies.logstashEncoder,
+//      Dependencies.logstashEncoder,
       Dependencies.macwire
     ) ++ Dependencies.tests
       ++ Dependencies.elastic
@@ -140,6 +140,7 @@ lazy val `microservice-core` = (project in file("core/microservice-core"))
       ++ Dependencies.quill
   )
   .settings(annetteSettings: _*)
+  //.settings(depSchemes: _*)
   .dependsOn(
     `core`
   )
@@ -198,7 +199,7 @@ lazy val `ignition-core` = (project in file("core/ignition-core"))
       lagomScaladslServer % Optional,
       lagomScaladslTestKit,
       Dependencies.playJsonExt,
-      Dependencies.logstashEncoder,
+//      Dependencies.logstashEncoder,
       Dependencies.macwire
     ) ++ Dependencies.tests
       ++ Dependencies.elastic
@@ -510,7 +511,8 @@ lazy val `cms-api` = (project in file("cms/cms-api"))
       lagomScaladslApi,
       lagomScaladslTestKit,
       Dependencies.chimney
-    ) ++ Dependencies.tests
+    ) ++ Dependencies.tests ++
+      Dependencies.alpakkaS3
   )
   .settings(annetteSettings: _*)
   .dependsOn(`core`)

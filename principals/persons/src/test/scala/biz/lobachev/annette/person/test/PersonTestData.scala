@@ -1,11 +1,11 @@
 package biz.lobachev.annette.person.test
 
 import java.time.OffsetDateTime
-import biz.lobachev.annette.core.model.PersonPrincipal
 import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, PersonPrincipal}
+import biz.lobachev.annette.core.model.category.CategoryId
 import biz.lobachev.annette.core.test.generator.RandomGenerator
-import biz.lobachev.annette.persons.api.category.PersonCategoryId
 import biz.lobachev.annette.persons.api.person._
+import biz.lobachev.annette.persons.impl.person.PersonEntity.{PersonCreated, PersonUpdated}
 import io.scalaland.chimney.dsl._
 
 import scala.util.Random
@@ -16,42 +16,50 @@ trait PersonTestData extends RandomGenerator {
     id: String = generateId,
     firstname: String = generateWord(),
     lastname: String = generateWord(),
-    middlename: Option[String] = Some(generateWord()),
-    categoryId: PersonCategoryId = "PERSON",
-    phone: String = s"+7${Random.nextInt(10)}",
-    email: Option[String] = None,
+    middlename: Option[String] = if (Random.nextBoolean()) Some(generateWord()) else None,
+    categoryId: CategoryId = s"CAT-${Random.nextInt(10)}",
+    phone: Option[String] = if (Random.nextBoolean()) Some(s"+7${Random.nextInt(100000)}") else None,
+    email: Option[String] = if (Random.nextBoolean()) Some(s"user-${Random.nextInt(1000)}@example.com") else None,
+    source: Option[String] = if (Random.nextBoolean()) Some(s"SOURCE-${Random.nextInt(10)}") else None,
+    externalId: Option[String] = if (Random.nextBoolean()) Some(s"ID-${Random.nextInt(10000)}") else None,
     createdBy: AnnettePrincipal = PersonPrincipal(generateWord())
   ) =
     CreatePersonPayload(
       id = id,
-      lastname,
-      firstname,
-      middlename,
-      categoryId,
-      Some(phone),
-      Some(email.getOrElse(s"$firstname.$lastname@${generateWord().toLowerCase}.@${generateWord(2).toLowerCase}")),
-      createdBy
+      lastname = lastname,
+      firstname = firstname,
+      middlename = middlename,
+      categoryId = categoryId,
+      phone = phone,
+      email = email,
+      source = source,
+      externalId = externalId,
+      createdBy = createdBy
     )
 
   def generateUpdatePersonPayload(
     id: String = generateId,
     firstname: String = generateWord(),
     lastname: String = generateWord(),
-    middlename: Option[String] = Some(generateWord()),
-    categoryId: PersonCategoryId = "PERSON",
-    phone: String = s"+7${Random.nextInt(10)}",
-    email: Option[String] = None,
+    middlename: Option[String] = if (Random.nextBoolean()) Some(generateWord()) else None,
+    categoryId: CategoryId = s"CAT-${Random.nextInt(10)}",
+    phone: Option[String] = if (Random.nextBoolean()) Some(s"+7${Random.nextInt(100000)}") else None,
+    email: Option[String] = if (Random.nextBoolean()) Some(s"user-${Random.nextInt(1000)}@example.com") else None,
+    source: Option[String] = if (Random.nextBoolean()) Some(s"SOURCE-${Random.nextInt(10)}") else None,
+    externalId: Option[String] = if (Random.nextBoolean()) Some(s"ID-${Random.nextInt(10000)}") else None,
     updatedBy: AnnettePrincipal = PersonPrincipal(generateWord())
   ) =
     UpdatePersonPayload(
       id = id,
-      lastname,
-      firstname,
-      middlename,
-      categoryId,
-      Some(phone),
-      Some(email.getOrElse(s"$firstname.$lastname@${generateWord().toLowerCase}.@${generateWord(2).toLowerCase}")),
-      updatedBy
+      lastname = lastname,
+      firstname = firstname,
+      middlename = middlename,
+      categoryId = categoryId,
+      phone = phone,
+      email = email,
+      source = source,
+      externalId = externalId,
+      updatedBy = updatedBy
     )
 
   def generateDeletePersonPayload(
@@ -67,6 +75,7 @@ trait PersonTestData extends RandomGenerator {
     payload
       .into[Person]
       .withFieldComputed(_.updatedBy, _.createdBy)
+      .withFieldComputed(_.attributes, _.attributes.getOrElse(Map.empty))
       .withFieldConst(_.updatedAt, createdAt)
       .transform
 
@@ -74,6 +83,21 @@ trait PersonTestData extends RandomGenerator {
     payload
       .into[Person]
       .withFieldComputed(_.updatedBy, _.updatedBy)
+      .withFieldComputed(_.attributes, _.attributes.getOrElse(Map.empty))
       .withFieldConst(_.updatedAt, updatedAt)
+      .transform
+
+  def convertToPersonCreated(payload: CreatePersonPayload, createdAt: OffsetDateTime = OffsetDateTime.now) =
+    payload
+      .into[PersonCreated]
+      .withFieldComputed(_.createdBy, _.createdBy)
+      .withFieldConst(_.createdAt, createdAt)
+      .transform
+
+  def convertToPersonUpdated(payload: UpdatePersonPayload, updateAt: OffsetDateTime = OffsetDateTime.now) =
+    payload
+      .into[PersonUpdated]
+      .withFieldComputed(_.updatedBy, _.updatedBy)
+      .withFieldConst(_.updatedAt, updateAt)
       .transform
 }
