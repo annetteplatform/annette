@@ -29,6 +29,7 @@ case class BlogState(
   name: String,
   description: String,
   categoryId: CategoryId,
+  authors: Set[AnnettePrincipal] = Set.empty,
   targets: Set[AnnettePrincipal] = Set.empty,
   rootPostId: Option[PostId] = None,
   childPosts: Map[PostId, Seq[PostId]] = Map.empty,

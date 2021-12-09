@@ -41,6 +41,7 @@ object SpaceEntity {
     name: String,
     description: String,
     categoryId: CategoryId,
+    authors: Set[AnnettePrincipal] = Set.empty,
     targets: Set[AnnettePrincipal] = Set.empty,
     createdBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
@@ -63,6 +64,20 @@ object SpaceEntity {
   final case class UpdateSpaceCategoryId(
     id: SpaceId,
     categoryId: CategoryId,
+    updatedBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  ) extends Command
+
+  final case class AssignSpaceAuthorPrincipal(
+    id: SpaceId,
+    principal: AnnettePrincipal,
+    updatedBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  ) extends Command
+
+  final case class UnassignSpaceAuthorPrincipal(
+    id: SpaceId,
+    principal: AnnettePrincipal,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
@@ -118,6 +133,7 @@ object SpaceEntity {
     name: String,
     description: String,
     categoryId: CategoryId,
+    authors: Set[AnnettePrincipal] = Set.empty,
     targets: Set[AnnettePrincipal] = Set.empty,
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
@@ -137,6 +153,18 @@ object SpaceEntity {
   final case class SpaceCategoryUpdated(
     id: SpaceId,
     categoryId: CategoryId,
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+  final case class SpaceAuthorPrincipalAssigned(
+    id: SpaceId,
+    principal: AnnettePrincipal,
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+  final case class SpaceAuthorPrincipalUnassigned(
+    id: SpaceId,
+    principal: AnnettePrincipal,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -169,6 +197,8 @@ object SpaceEntity {
   implicit val eventSpaceNameUpdatedFormat: Format[SpaceNameUpdated]                             = Json.format
   implicit val eventSpaceDescriptionUpdatedFormat: Format[SpaceDescriptionUpdated]               = Json.format
   implicit val eventSpaceCategoryUpdatedFormat: Format[SpaceCategoryUpdated]                     = Json.format
+  implicit val eventSpaceAuthorPrincipalAssignedFormat: Format[SpaceAuthorPrincipalAssigned]     = Json.format
+  implicit val eventSpaceAuthorPrincipalUnassignedFormat: Format[SpaceAuthorPrincipalUnassigned] = Json.format
   implicit val eventSpaceTargetPrincipalAssignedFormat: Format[SpaceTargetPrincipalAssigned]     = Json.format
   implicit val eventSpaceTargetPrincipalUnassignedFormat: Format[SpaceTargetPrincipalUnassigned] = Json.format
   implicit val eventSpaceActivatedFormat: Format[SpaceActivated]                                 = Json.format
@@ -208,6 +238,8 @@ final case class SpaceEntity(maybeState: Option[SpaceState] = None) {
       case cmd: UpdateSpaceName              => updateSpaceName(cmd)
       case cmd: UpdateSpaceDescription       => updateSpaceDescription(cmd)
       case cmd: UpdateSpaceCategoryId        => updateSpaceCategory(cmd)
+      case cmd: AssignSpaceAuthorPrincipal   => assignSpaceAuthorPrincipal(cmd)
+      case cmd: UnassignSpaceAuthorPrincipal => unassignSpaceAuthorPrincipal(cmd)
       case cmd: AssignSpaceTargetPrincipal   => assignSpaceTargetPrincipal(cmd)
       case cmd: UnassignSpaceTargetPrincipal => unassignSpaceTargetPrincipal(cmd)
       case cmd: ActivateSpace                => activateSpace(cmd)
@@ -252,6 +284,28 @@ final case class SpaceEntity(maybeState: Option[SpaceState] = None) {
       case None    => Effect.reply(cmd.replyTo)(SpaceNotFound)
       case Some(_) =>
         val event = cmd.transformInto[SpaceCategoryUpdated]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
+
+  def assignSpaceAuthorPrincipal(cmd: AssignSpaceAuthorPrincipal): ReplyEffect[Event, SpaceEntity] =
+    maybeState match {
+      case None                                                 => Effect.reply(cmd.replyTo)(SpaceNotFound)
+      case Some(state) if state.authors.contains(cmd.principal) => Effect.reply(cmd.replyTo)(Success)
+      case Some(_)                                              =>
+        val event = cmd.transformInto[SpaceAuthorPrincipalAssigned]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
+
+  def unassignSpaceAuthorPrincipal(cmd: UnassignSpaceAuthorPrincipal): ReplyEffect[Event, SpaceEntity] =
+    maybeState match {
+      case None                                                  => Effect.reply(cmd.replyTo)(SpaceNotFound)
+      case Some(state) if !state.authors.contains(cmd.principal) => Effect.reply(cmd.replyTo)(Success)
+      case Some(_)                                               =>
+        val event = cmd.transformInto[SpaceAuthorPrincipalUnassigned]
         Effect
           .persist(event)
           .thenReply(cmd.replyTo)(_ => Success)
@@ -323,6 +377,8 @@ final case class SpaceEntity(maybeState: Option[SpaceState] = None) {
       case event: SpaceNameUpdated               => onSpaceNameUpdated(event)
       case event: SpaceDescriptionUpdated        => onSpaceDescriptionUpdated(event)
       case event: SpaceCategoryUpdated           => onSpaceCategoryUpdated(event)
+      case event: SpaceAuthorPrincipalAssigned   => onSpaceAuthorPrincipalAssigned(event)
+      case event: SpaceAuthorPrincipalUnassigned => onSpaceAuthorPrincipalUnassigned(event)
       case event: SpaceTargetPrincipalAssigned   => onSpaceTargetPrincipalAssigned(event)
       case event: SpaceTargetPrincipalUnassigned => onSpaceTargetPrincipalUnassigned(event)
       case event: SpaceActivated                 => onSpaceActivated(event)
@@ -369,6 +425,28 @@ final case class SpaceEntity(maybeState: Option[SpaceState] = None) {
       maybeState.map(
         _.copy(
           categoryId = event.categoryId,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
+
+  def onSpaceAuthorPrincipalAssigned(event: SpaceAuthorPrincipalAssigned): SpaceEntity =
+    SpaceEntity(
+      maybeState.map(state =>
+        state.copy(
+          authors = state.authors + event.principal,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
+
+  def onSpaceAuthorPrincipalUnassigned(event: SpaceAuthorPrincipalUnassigned): SpaceEntity =
+    SpaceEntity(
+      maybeState.map(state =>
+        state.copy(
+          authors = state.authors - event.principal,
           updatedBy = event.updatedBy,
           updatedAt = event.updatedAt
         )

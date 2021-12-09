@@ -16,12 +16,11 @@
 
 package biz.lobachev.annette.cms.api.common
 
-import biz.lobachev.annette.cms.api.pages.space.SpaceId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
 case class CanAccessToEntityPayload(
-  id: SpaceId,
+  id: String,
   principals: Set[AnnettePrincipal]
 )
 

@@ -31,7 +31,7 @@ case class BlogRecord(
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
 ) {
-  def toBlogView = BlogView(id, name, description, categoryId, active, updatedBy, updatedAt)
+  def toBlogView = BlogView(id, name, description, categoryId, active, Set.empty, updatedBy, updatedAt)
 
-  def toBlog = Blog(id, name, description, categoryId, Set.empty, active, updatedBy, updatedAt)
+  def toBlog = Blog(id, name, description, categoryId, Set.empty, Set.empty, active, updatedBy, updatedAt)
 }

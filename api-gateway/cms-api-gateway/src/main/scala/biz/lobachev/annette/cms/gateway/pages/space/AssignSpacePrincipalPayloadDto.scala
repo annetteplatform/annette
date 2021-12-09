@@ -18,18 +18,13 @@ package biz.lobachev.annette.cms.gateway.pages.space
 
 import biz.lobachev.annette.cms.api.pages.space.SpaceId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.{Format, Json}
 
-case class CreateSpacePayloadDto(
+case class AssignSpacePrincipalPayloadDto(
   id: SpaceId,
-  name: String,
-  description: String,
-  categoryId: CategoryId,
-  authors: Set[AnnettePrincipal] = Set.empty,
-  targets: Set[AnnettePrincipal] = Set.empty
+  principal: AnnettePrincipal
 )
 
-object CreateSpacePayloadDto {
-  implicit val format: Format[CreateSpacePayloadDto] = Json.format
+object AssignSpacePrincipalPayloadDto {
+  implicit val format: Format[AssignSpacePrincipalPayloadDto] = Json.format
 }

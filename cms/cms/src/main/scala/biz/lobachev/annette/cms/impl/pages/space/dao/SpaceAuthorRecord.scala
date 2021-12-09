@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.api.common
+package biz.lobachev.annette.cms.impl.pages.space.dao
 
+import biz.lobachev.annette.cms.api.pages.space.SpaceId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import play.api.libs.json.{Format, Json}
 
-case class UnassignTargetPrincipalPayload(
-  id: String,
-  principal: AnnettePrincipal,
-  updatedBy: AnnettePrincipal
-)
-
-object UnassignTargetPrincipalPayload {
-  implicit val format: Format[UnassignTargetPrincipalPayload] = Json.format
-}
+case class SpaceAuthorRecord(
+  spaceId: SpaceId,
+  principal: AnnettePrincipal
+) {}

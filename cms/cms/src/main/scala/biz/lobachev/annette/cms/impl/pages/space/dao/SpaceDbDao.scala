@@ -40,13 +40,16 @@ class SpaceDbDao(
 
   private val spaceSchema       = quote(querySchema[SpaceRecord]("spaces"))
   private val spaceTargetSchema = quote(querySchema[SpaceTargetRecord]("space_targets"))
+  private val spaceAuthorSchema = quote(querySchema[SpaceAuthorRecord]("space_authors"))
 
   private implicit val insertSpaceMeta       = insertMeta[SpaceRecord]()
   private implicit val updateSpaceMeta       = updateMeta[SpaceRecord](_.id)
   private implicit val insertSpaceTargetMeta = insertMeta[SpaceTargetRecord]()
+  private implicit val insertSpaceAuthorMeta = insertMeta[SpaceAuthorRecord]()
   println(insertSpaceMeta.toString)
   println(updateSpaceMeta.toString)
   println(insertSpaceTargetMeta.toString)
+  println(insertSpaceAuthorMeta.toString)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
@@ -60,6 +63,13 @@ class SpaceDbDao(
                .column("active", Boolean)
                .column("updated_at", Timestamp)
                .column("updated_by", Text)
+               .build
+           )
+      _ <- session.executeCreateTable(
+             CassandraTableBuilder("space_authors")
+               .column("space_id", Text)
+               .column("principal", Text)
+               .withPrimaryKey("space_id", "principal")
                .build
            )
       _ <- session.executeCreateTable(
@@ -81,6 +91,15 @@ class SpaceDbDao(
       .transform
     for {
       _ <- ctx.run(spaceSchema.insert(lift(spaceRecord)))
+      _ <- Source(event.authors)
+             .mapAsync(1) { author =>
+               val spaceAuthorRecord = SpaceAuthorRecord(
+                 spaceId = event.id,
+                 principal = author
+               )
+               ctx.run(spaceAuthorSchema.insert(lift(spaceAuthorRecord)))
+             }
+             .runWith(Sink.ignore)
       _ <- Source(event.targets)
              .mapAsync(1) { target =>
                val spaceTargetRecord = SpaceTargetRecord(
@@ -125,6 +144,48 @@ class SpaceDbDao(
           _.updatedBy  -> lift(event.updatedBy)
         )
     )
+
+  def assignSpaceAuthorPrincipal(event: SpaceEntity.SpaceAuthorPrincipalAssigned) =
+    for {
+      _ <- ctx.run(
+             spaceAuthorSchema.insert(
+               lift(
+                 SpaceAuthorRecord(
+                   event.id,
+                   event.principal
+                 )
+               )
+             )
+           )
+      _ <- ctx.run(
+             spaceSchema
+               .filter(_.id == lift(event.id))
+               .update(
+                 _.updatedAt -> lift(event.updatedAt),
+                 _.updatedBy -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
+
+  def unassignSpaceAuthorPrincipal(event: SpaceEntity.SpaceAuthorPrincipalUnassigned) =
+    for {
+      _ <- ctx.run(
+             spaceAuthorSchema
+               .filter(r =>
+                 r.spaceId == lift(event.id) &&
+                   r.principal == lift(event.principal)
+               )
+               .delete
+           )
+      _ <- ctx.run(
+             spaceSchema
+               .filter(_.id == lift(event.id))
+               .update(
+                 _.updatedAt -> lift(event.updatedAt),
+                 _.updatedBy -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
   def assignSpaceTargetPrincipal(event: SpaceEntity.SpaceTargetPrincipalAssigned) =
     for {
@@ -193,6 +254,7 @@ class SpaceDbDao(
   def deleteSpace(event: SpaceEntity.SpaceDeleted) =
     for {
       _ <- ctx.run(spaceSchema.filter(_.id == lift(event.id)).delete)
+      _ <- ctx.run(spaceAuthorSchema.filter(_.spaceId == lift(event.id)).delete)
       _ <- ctx.run(spaceTargetSchema.filter(_.spaceId == lift(event.id)).delete)
     } yield Done
 
@@ -201,20 +263,35 @@ class SpaceDbDao(
       maybeSpaceRecord <- ctx
                             .run(spaceSchema.filter(_.id == lift(id)))
                             .map(_.headOption)
-      principals       <- ctx
+      authors          <- ctx
+                            .run(spaceAuthorSchema.filter(_.spaceId == lift(id)).map(_.principal))
+      targets          <- ctx
                             .run(spaceTargetSchema.filter(_.spaceId == lift(id)).map(_.principal))
-    } yield maybeSpaceRecord.map(_.toSpace.copy(targets = principals.toSet))
+    } yield maybeSpaceRecord.map(
+      _.toSpace.copy(
+        authors = authors.toSet,
+        targets = targets.toSet
+      )
+    )
 
   def getSpacesById(ids: Set[SpaceId]): Future[Seq[Space]] =
     for {
-      spaces     <- ctx
-                      .run(spaceSchema.filter(b => liftQuery(ids).contains(b.id)))
-                      .map(_.map(_.toSpace))
-      principals <- ctx
-                      .run(spaceTargetSchema.filter(b => liftQuery(ids).contains(b.spaceId)))
-                      .map(_.groupMap(_.spaceId)(_.principal))
+      spaces  <- ctx
+                   .run(spaceSchema.filter(b => liftQuery(ids).contains(b.id)))
+                   .map(_.map(_.toSpace))
+      authors <- ctx
+                   .run(spaceAuthorSchema.filter(b => liftQuery(ids).contains(b.spaceId)))
+                   .map(_.groupMap(_.spaceId)(_.principal))
+      targets <- ctx
+                   .run(spaceTargetSchema.filter(b => liftQuery(ids).contains(b.spaceId)))
+                   .map(_.groupMap(_.spaceId)(_.principal))
     } yield spaces
-      .map(space => space.copy(targets = principals.get(space.id).map(_.toSet).getOrElse(Set.empty)))
+      .map(space =>
+        space.copy(
+          authors = authors.get(space.id).map(_.toSet).getOrElse(Set.empty),
+          targets = targets.get(space.id).map(_.toSet).getOrElse(Set.empty)
+        )
+      )
 
   def getSpaceViews(ids: Set[SpaceId], principals: Set[AnnettePrincipal]): Future[Seq[SpaceView]] =
     for {
@@ -231,7 +308,28 @@ class SpaceDbDao(
       spaceViews <- ctx
                       .run(spaceSchema.filter(b => liftQuery(spaceIds).contains(b.id)))
                       .map(_.map(_.toSpaceView))
+      authors    <- ctx
+                      .run(spaceAuthorSchema.filter(b => liftQuery(spaceIds).contains(b.spaceId)))
+                      .map(_.groupMap(_.spaceId)(_.principal))
     } yield spaceViews
+      .map(space =>
+        space.copy(
+          authors = authors.get(space.id).map(_.toSet).getOrElse(Set.empty)
+        )
+      )
+
+  def canEditSpacePages(id: SpaceId, principals: Set[AnnettePrincipal]): Future[Boolean] =
+    for {
+      maybeCount <- ctx
+                      .run(
+                        spaceAuthorSchema
+                          .filter(b =>
+                            b.spaceId == lift(id) &&
+                              liftQuery(principals).contains(b.principal)
+                          )
+                          .size
+                      )
+    } yield maybeCount.map(_ > 0).getOrElse(false)
 
   def canAccessToSpace(id: SpaceId, principals: Set[AnnettePrincipal]): Future[Boolean] =
     for {

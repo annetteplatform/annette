@@ -22,10 +22,10 @@ import biz.lobachev.annette.cms.api.CmsService
 import biz.lobachev.annette.cms.api.blogs.blog._
 import biz.lobachev.annette.cms.api.common.{
   ActivatePayload,
-  AssignTargetPrincipalPayload,
+  AssignPrincipalPayload,
   DeactivatePayload,
   DeletePayload,
-  UnassignTargetPrincipalPayload,
+  UnassignPrincipalPayload,
   UpdateCategoryIdPayload,
   UpdateDescriptionPayload,
   UpdateNamePayload
@@ -109,11 +109,39 @@ class CmsBlogController @Inject() (
       }
     }
 
-  def assignBlogTargetPrincipal =
-    authenticated.async(parse.json[AssignBlogTargetPrincipalPayloadDto]) { implicit request =>
+  def assignBlogAuthorPrincipal =
+    authenticated.async(parse.json[AssignBlogPrincipalPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
         val payload = request.body
-          .into[AssignTargetPrincipalPayload]
+          .into[AssignPrincipalPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _    <- cmsService.assignBlogAuthorPrincipal(payload)
+          blog <- cmsService.getBlogById(payload.id, false)
+        } yield Ok(Json.toJson(blog))
+      }
+    }
+
+  def unassignBlogAuthorPrincipal =
+    authenticated.async(parse.json[UnassignBlogPrincipalPayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
+        val payload = request.body
+          .into[UnassignPrincipalPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _    <- cmsService.unassignBlogAuthorPrincipal(payload)
+          blog <- cmsService.getBlogById(payload.id, false)
+        } yield Ok(Json.toJson(blog))
+      }
+    }
+
+  def assignBlogTargetPrincipal =
+    authenticated.async(parse.json[AssignBlogPrincipalPayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
+        val payload = request.body
+          .into[AssignPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -124,10 +152,10 @@ class CmsBlogController @Inject() (
     }
 
   def unassignBlogTargetPrincipal =
-    authenticated.async(parse.json[UnassignBlogTargetPrincipalPayloadDto]) { implicit request =>
+    authenticated.async(parse.json[UnassignBlogPrincipalPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
         val payload = request.body
-          .into[UnassignTargetPrincipalPayload]
+          .into[UnassignPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {

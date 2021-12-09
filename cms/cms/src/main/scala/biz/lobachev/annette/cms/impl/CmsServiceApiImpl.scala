@@ -35,11 +35,11 @@ import biz.lobachev.annette.cms.api.common.article.{
 import biz.lobachev.annette.cms.api.common.{
   article,
   ActivatePayload,
-  AssignTargetPrincipalPayload,
+  AssignPrincipalPayload,
   CanAccessToEntityPayload,
   DeactivatePayload,
   DeletePayload,
-  UnassignTargetPrincipalPayload,
+  UnassignPrincipalPayload,
   UpdateDescriptionPayload,
   UpdateNamePayload,
   Updated
@@ -166,12 +166,22 @@ class CmsServiceApiImpl(
       blogEntityService.updateBlogCategoryId(payload)
     }
 
-  override def assignBlogTargetPrincipal: ServiceCall[AssignTargetPrincipalPayload, Done] =
+  override def assignBlogAuthorPrincipal: ServiceCall[AssignPrincipalPayload, Done] =
+    ServiceCall { payload =>
+      blogEntityService.assignBlogAuthorPrincipal(payload)
+    }
+
+  override def unassignBlogAuthorPrincipal: ServiceCall[UnassignPrincipalPayload, Done] =
+    ServiceCall { payload =>
+      blogEntityService.unassignBlogAuthorPrincipal(payload)
+    }
+
+  override def assignBlogTargetPrincipal: ServiceCall[AssignPrincipalPayload, Done] =
     ServiceCall { payload =>
       blogEntityService.assignBlogTargetPrincipal(payload)
     }
 
-  override def unassignBlogTargetPrincipal: ServiceCall[UnassignTargetPrincipalPayload, Done] =
+  override def unassignBlogTargetPrincipal: ServiceCall[UnassignPrincipalPayload, Done] =
     ServiceCall { payload =>
       blogEntityService.unassignBlogTargetPrincipal(payload)
     }
@@ -207,7 +217,11 @@ class CmsServiceApiImpl(
       blogEntityService.getBlogViews(payload)
     }
 
-  override def canAccessToBlog: ServiceCall[CanAccessToEntityPayload, Boolean] =
+  override def canEditBlogPosts: ServiceCall[CanAccessToEntityPayload, Boolean] =
+    ServiceCall { payload =>
+      blogEntityService.canEditBlogPosts(payload)
+    }
+  override def canAccessToBlog: ServiceCall[CanAccessToEntityPayload, Boolean]  =
     ServiceCall { payload =>
       blogEntityService.canAccessToBlog(payload)
     }
@@ -278,12 +292,12 @@ class CmsServiceApiImpl(
       postEntityService.unpublishPost(payload)
     }
 
-  override def assignPostTargetPrincipal: ServiceCall[AssignTargetPrincipalPayload, Updated] =
+  override def assignPostTargetPrincipal: ServiceCall[AssignPrincipalPayload, Updated] =
     ServiceCall { payload =>
       postEntityService.assignPostTargetPrincipal(payload)
     }
 
-  override def unassignPostTargetPrincipal: ServiceCall[UnassignTargetPrincipalPayload, Updated] =
+  override def unassignPostTargetPrincipal: ServiceCall[UnassignPrincipalPayload, Updated] =
     ServiceCall { payload =>
       postEntityService.unassignPostTargetPrincipal(payload)
     }
@@ -428,12 +442,22 @@ class CmsServiceApiImpl(
       spaceEntityService.updateSpaceCategoryId(payload)
     }
 
-  override def assignSpaceTargetPrincipal: ServiceCall[AssignTargetPrincipalPayload, Done] =
+  override def assignSpaceAuthorPrincipal: ServiceCall[AssignPrincipalPayload, Done] =
+    ServiceCall { payload =>
+      spaceEntityService.assignSpaceAuthorPrincipal(payload)
+    }
+
+  override def unassignSpaceAuthorPrincipal: ServiceCall[UnassignPrincipalPayload, Done] =
+    ServiceCall { payload =>
+      spaceEntityService.unassignSpaceAuthorPrincipal(payload)
+    }
+
+  override def assignSpaceTargetPrincipal: ServiceCall[AssignPrincipalPayload, Done] =
     ServiceCall { payload =>
       spaceEntityService.assignSpaceTargetPrincipal(payload)
     }
 
-  override def unassignSpaceTargetPrincipal: ServiceCall[UnassignTargetPrincipalPayload, Done] =
+  override def unassignSpaceTargetPrincipal: ServiceCall[UnassignPrincipalPayload, Done] =
     ServiceCall { payload =>
       spaceEntityService.unassignSpaceTargetPrincipal(payload)
     }
@@ -467,6 +491,11 @@ class CmsServiceApiImpl(
   override def getSpaceViews: ServiceCall[GetSpaceViewsPayload, Seq[SpaceView]] =
     ServiceCall { payload =>
       spaceEntityService.getSpaceViews(payload)
+    }
+
+  override def canEditSpacePages: ServiceCall[CanAccessToEntityPayload, Boolean] =
+    ServiceCall { payload =>
+      spaceEntityService.canEditSpacePages(payload)
     }
 
   override def canAccessToSpace: ServiceCall[CanAccessToEntityPayload, Boolean] =
@@ -536,12 +565,12 @@ class CmsServiceApiImpl(
       pageEntityService.unpublishPage(payload)
     }
 
-  override def assignPageTargetPrincipal: ServiceCall[AssignTargetPrincipalPayload, Updated] =
+  override def assignPageTargetPrincipal: ServiceCall[AssignPrincipalPayload, Updated] =
     ServiceCall { payload =>
       pageEntityService.assignPageTargetPrincipal(payload)
     }
 
-  override def unassignPageTargetPrincipal: ServiceCall[UnassignTargetPrincipalPayload, Updated] =
+  override def unassignPageTargetPrincipal: ServiceCall[UnassignPrincipalPayload, Updated] =
     ServiceCall { payload =>
       pageEntityService.unassignPageTargetPrincipal(payload)
     }
@@ -662,4 +691,5 @@ class CmsServiceApiImpl(
     ServiceCall { query =>
       homePageEntityService.findHomePages(query)
     }
+
 }

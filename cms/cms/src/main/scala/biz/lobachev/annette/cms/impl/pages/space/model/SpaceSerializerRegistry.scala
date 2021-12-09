@@ -39,6 +39,8 @@ object SpaceSerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[SpaceEntity.SpaceNameUpdated],
       JsonSerializer[SpaceEntity.SpaceDescriptionUpdated],
       JsonSerializer[SpaceEntity.SpaceCategoryUpdated],
+      JsonSerializer[SpaceEntity.SpaceAuthorPrincipalAssigned],
+      JsonSerializer[SpaceEntity.SpaceAuthorPrincipalUnassigned],
       JsonSerializer[SpaceEntity.SpaceTargetPrincipalAssigned],
       JsonSerializer[SpaceEntity.SpaceTargetPrincipalUnassigned],
       JsonSerializer[SpaceEntity.SpaceActivated],

@@ -33,10 +33,10 @@ import biz.lobachev.annette.cms.api.common.article.{
   ViewPayload
 }
 import biz.lobachev.annette.cms.api.common.{
-  AssignTargetPrincipalPayload,
+  AssignPrincipalPayload,
   CanAccessToEntityPayload,
   DeletePayload,
-  UnassignTargetPrincipalPayload,
+  UnassignPrincipalPayload,
   Updated
 }
 import biz.lobachev.annette.cms.api.content.{
@@ -194,7 +194,7 @@ class PageEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def assignPageTargetPrincipal(payload: AssignTargetPrincipalPayload): Future[Updated] =
+  def assignPageTargetPrincipal(payload: AssignPrincipalPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PageEntity.Confirmation](replyTo =>
         payload
@@ -204,7 +204,7 @@ class PageEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def unassignPageTargetPrincipal(payload: UnassignTargetPrincipalPayload): Future[Updated] =
+  def unassignPageTargetPrincipal(payload: UnassignPrincipalPayload): Future[Updated] =
     refFor(payload.id)
       .ask[PageEntity.Confirmation](replyTo =>
         payload

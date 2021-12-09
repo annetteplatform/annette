@@ -38,6 +38,8 @@ private[impl] class BlogIndexEventProcessor(
       .setEventHandler[BlogEntity.BlogNameUpdated](handle(indexDao.updateBlogName))
       .setEventHandler[BlogEntity.BlogDescriptionUpdated](handle(indexDao.updateBlogDescription))
       .setEventHandler[BlogEntity.BlogCategoryUpdated](handle(indexDao.updateBlogCategory))
+      .setEventHandler[BlogEntity.BlogAuthorPrincipalAssigned](handle(indexDao.assignBlogAuthorPrincipal))
+      .setEventHandler[BlogEntity.BlogAuthorPrincipalUnassigned](handle(indexDao.unassignBlogAuthorPrincipal))
       .setEventHandler[BlogEntity.BlogTargetPrincipalAssigned](handle(indexDao.assignBlogTargetPrincipal))
       .setEventHandler[BlogEntity.BlogTargetPrincipalUnassigned](handle(indexDao.unassignBlogTargetPrincipal))
       .setEventHandler[BlogEntity.BlogActivated](handle(indexDao.activateBlog))

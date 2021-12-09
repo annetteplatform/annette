@@ -25,6 +25,7 @@ case class CreateSpacePayload(
   name: String,
   description: String,
   categoryId: CategoryId,
+  authors: Set[AnnettePrincipal] = Set.empty,
   targets: Set[AnnettePrincipal] = Set.empty,
   createdBy: AnnettePrincipal
 )

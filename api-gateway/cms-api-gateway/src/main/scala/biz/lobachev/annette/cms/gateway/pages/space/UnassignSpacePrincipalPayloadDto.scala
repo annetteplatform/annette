@@ -20,11 +20,11 @@ import biz.lobachev.annette.cms.api.pages.space.SpaceId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
-case class UnassignSpaceTargetPrincipalPayloadDto(
+case class UnassignSpacePrincipalPayloadDto(
   id: SpaceId,
   principal: AnnettePrincipal
 )
 
-object UnassignSpaceTargetPrincipalPayloadDto {
-  implicit val format: Format[UnassignSpaceTargetPrincipalPayloadDto] = Json.format
+object UnassignSpacePrincipalPayloadDto {
+  implicit val format: Format[UnassignSpacePrincipalPayloadDto] = Json.format
 }

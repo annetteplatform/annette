@@ -19,12 +19,12 @@ package biz.lobachev.annette.cms.api.common
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
-case class AssignTargetPrincipalPayload(
+case class AssignPrincipalPayload(
   id: String,
   principal: AnnettePrincipal,
   updatedBy: AnnettePrincipal
 )
 
-object AssignTargetPrincipalPayload {
-  implicit val format: Format[AssignTargetPrincipalPayload] = Json.format
+object AssignPrincipalPayload {
+  implicit val format: Format[AssignPrincipalPayload] = Json.format
 }

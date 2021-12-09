@@ -38,6 +38,8 @@ private[impl] class SpaceIndexEventProcessor(
       .setEventHandler[SpaceEntity.SpaceNameUpdated](handle(indexDao.updateSpaceName))
       .setEventHandler[SpaceEntity.SpaceDescriptionUpdated](handle(indexDao.updateSpaceDescription))
       .setEventHandler[SpaceEntity.SpaceCategoryUpdated](handle(indexDao.updateSpaceCategory))
+      .setEventHandler[SpaceEntity.SpaceAuthorPrincipalAssigned](handle(indexDao.assignSpaceAuthorPrincipal))
+      .setEventHandler[SpaceEntity.SpaceAuthorPrincipalUnassigned](handle(indexDao.unassignSpaceAuthorPrincipal))
       .setEventHandler[SpaceEntity.SpaceTargetPrincipalAssigned](handle(indexDao.assignSpaceTargetPrincipal))
       .setEventHandler[SpaceEntity.SpaceTargetPrincipalUnassigned](handle(indexDao.unassignSpaceTargetPrincipal))
       .setEventHandler[SpaceEntity.SpaceActivated](handle(indexDao.activateSpace))

@@ -34,11 +34,11 @@ import biz.lobachev.annette.cms.api.common.article.{
 import biz.lobachev.annette.cms.api.common.{
   article,
   ActivatePayload,
-  AssignTargetPrincipalPayload,
+  AssignPrincipalPayload,
   CanAccessToEntityPayload,
   DeactivatePayload,
   DeletePayload,
-  UnassignTargetPrincipalPayload,
+  UnassignPrincipalPayload,
   UpdateCategoryIdPayload,
   UpdateDescriptionPayload,
   UpdateNamePayload,
@@ -87,14 +87,17 @@ trait CmsServiceApi extends Service {
   def updateBlogName: ServiceCall[UpdateNamePayload, Done]
   def updateBlogDescription: ServiceCall[UpdateDescriptionPayload, Done]
   def updateBlogCategoryId: ServiceCall[common.UpdateCategoryIdPayload, Done]
-  def assignBlogTargetPrincipal: ServiceCall[AssignTargetPrincipalPayload, Done]
-  def unassignBlogTargetPrincipal: ServiceCall[UnassignTargetPrincipalPayload, Done]
+  def assignBlogAuthorPrincipal: ServiceCall[AssignPrincipalPayload, Done]
+  def unassignBlogAuthorPrincipal: ServiceCall[UnassignPrincipalPayload, Done]
+  def assignBlogTargetPrincipal: ServiceCall[AssignPrincipalPayload, Done]
+  def unassignBlogTargetPrincipal: ServiceCall[UnassignPrincipalPayload, Done]
   def activateBlog: ServiceCall[ActivatePayload, Done]
   def deactivateBlog: ServiceCall[DeactivatePayload, Done]
   def deleteBlog: ServiceCall[DeletePayload, Done]
   def getBlogById(id: BlogId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Blog]
   def getBlogsById(fromReadSide: Boolean = true): ServiceCall[Set[BlogId], Seq[Blog]]
   def getBlogViews: ServiceCall[GetBlogViewsPayload, Seq[BlogView]]
+  def canEditBlogPosts: ServiceCall[CanAccessToEntityPayload, Boolean]
   def canAccessToBlog: ServiceCall[CanAccessToEntityPayload, Boolean]
   def findBlogs: ServiceCall[BlogFindQuery, FindResult]
 
@@ -109,8 +112,8 @@ trait CmsServiceApi extends Service {
   def updatePostPublicationTimestamp: ServiceCall[UpdatePublicationTimestampPayload, Updated]
   def publishPost: ServiceCall[PublishPayload, Updated]
   def unpublishPost: ServiceCall[UnpublishPayload, Updated]
-  def assignPostTargetPrincipal: ServiceCall[AssignTargetPrincipalPayload, Updated]
-  def unassignPostTargetPrincipal: ServiceCall[UnassignTargetPrincipalPayload, Updated]
+  def assignPostTargetPrincipal: ServiceCall[AssignPrincipalPayload, Updated]
+  def unassignPostTargetPrincipal: ServiceCall[UnassignPrincipalPayload, Updated]
   def deletePost: ServiceCall[DeletePayload, Updated]
   def getPostById(
     id: PostId,
@@ -150,14 +153,17 @@ trait CmsServiceApi extends Service {
   def updateSpaceName: ServiceCall[UpdateNamePayload, Done]
   def updateSpaceDescription: ServiceCall[UpdateDescriptionPayload, Done]
   def updateSpaceCategoryId: ServiceCall[UpdateCategoryIdPayload, Done]
-  def assignSpaceTargetPrincipal: ServiceCall[AssignTargetPrincipalPayload, Done]
-  def unassignSpaceTargetPrincipal: ServiceCall[UnassignTargetPrincipalPayload, Done]
+  def assignSpaceAuthorPrincipal: ServiceCall[AssignPrincipalPayload, Done]
+  def unassignSpaceAuthorPrincipal: ServiceCall[UnassignPrincipalPayload, Done]
+  def assignSpaceTargetPrincipal: ServiceCall[AssignPrincipalPayload, Done]
+  def unassignSpaceTargetPrincipal: ServiceCall[UnassignPrincipalPayload, Done]
   def activateSpace: ServiceCall[ActivatePayload, Done]
   def deactivateSpace: ServiceCall[DeactivatePayload, Done]
   def deleteSpace: ServiceCall[DeletePayload, Done]
   def getSpaceById(id: SpaceId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Space]
   def getSpacesById(fromReadSide: Boolean = true): ServiceCall[Set[SpaceId], Seq[Space]]
   def getSpaceViews: ServiceCall[GetSpaceViewsPayload, Seq[SpaceView]]
+  def canEditSpacePages: ServiceCall[CanAccessToEntityPayload, Boolean]
   def canAccessToSpace: ServiceCall[CanAccessToEntityPayload, Boolean]
   def findSpaces: ServiceCall[SpaceFindQuery, FindResult]
 
@@ -171,8 +177,8 @@ trait CmsServiceApi extends Service {
   def updatePagePublicationTimestamp: ServiceCall[UpdatePublicationTimestampPayload, Updated]
   def publishPage: ServiceCall[PublishPayload, Updated]
   def unpublishPage: ServiceCall[UnpublishPayload, Updated]
-  def assignPageTargetPrincipal: ServiceCall[AssignTargetPrincipalPayload, Updated]
-  def unassignPageTargetPrincipal: ServiceCall[UnassignTargetPrincipalPayload, Updated]
+  def assignPageTargetPrincipal: ServiceCall[AssignPrincipalPayload, Updated]
+  def unassignPageTargetPrincipal: ServiceCall[UnassignPrincipalPayload, Updated]
   def deletePage: ServiceCall[DeletePayload, Updated]
   def getPageById(
     id: PageId,
@@ -231,6 +237,8 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/updateBlogName", updateBlogName),
         pathCall("/api/cms/v1/updateBlogDescription", updateBlogDescription),
         pathCall("/api/cms/v1/updateBlogCategoryId", updateBlogCategoryId),
+        pathCall("/api/cms/v1/assignBlogAuthorPrincipal", assignBlogAuthorPrincipal),
+        pathCall("/api/cms/v1/unassignBlogAuthorPrincipal", unassignBlogAuthorPrincipal),
         pathCall("/api/cms/v1/assignBlogTargetPrincipal", assignBlogTargetPrincipal),
         pathCall("/api/cms/v1/unassignBlogTargetPrincipal", unassignBlogTargetPrincipal),
         pathCall("/api/cms/v1/activateBlog", activateBlog),
@@ -239,6 +247,7 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/getBlogById/:id/:fromReadSide", getBlogById _),
         pathCall("/api/cms/v1/getBlogsById/:fromReadSide", getBlogsById _),
         pathCall("/api/cms/v1/getBlogViews", getBlogViews),
+        pathCall("/api/cms/v1/canEditBlogPosts", canEditBlogPosts),
         pathCall("/api/cms/v1/canAccessToBlog", canAccessToBlog),
         pathCall("/api/cms/v1/findBlogs", findBlogs),
         pathCall("/api/cms/v1/createPost", createPost),
@@ -276,6 +285,8 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/updateSpaceName", updateSpaceName),
         pathCall("/api/cms/v1/updateSpaceDescription", updateSpaceDescription),
         pathCall("/api/cms/v1/updateSpaceCategoryId", updateSpaceCategoryId),
+        pathCall("/api/cms/v1/assignSpaceAuthorPrincipal", assignSpaceAuthorPrincipal),
+        pathCall("/api/cms/v1/unassignSpaceAuthorPrincipal", unassignSpaceAuthorPrincipal),
         pathCall("/api/cms/v1/assignSpaceTargetPrincipal", assignSpaceTargetPrincipal),
         pathCall("/api/cms/v1/unassignSpaceTargetPrincipal", unassignSpaceTargetPrincipal),
         pathCall("/api/cms/v1/activateSpace", activateSpace),
@@ -284,6 +295,7 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/getSpaceById/:id/:fromReadSide", getSpaceById _),
         pathCall("/api/cms/v1/getSpacesById/:fromReadSide", getSpacesById _),
         pathCall("/api/cms/v1/getSpaceViews", getSpaceViews),
+        pathCall("/api/cms/v1/canEditSpacePages", canEditSpacePages),
         pathCall("/api/cms/v1/canAccessToSpace", canAccessToSpace),
         pathCall("/api/cms/v1/findSpaces", findSpaces),
         pathCall("/api/cms/v1/createPage", createPage),

@@ -39,6 +39,8 @@ object BlogSerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[BlogEntity.BlogNameUpdated],
       JsonSerializer[BlogEntity.BlogDescriptionUpdated],
       JsonSerializer[BlogEntity.BlogCategoryUpdated],
+      JsonSerializer[BlogEntity.BlogAuthorPrincipalAssigned],
+      JsonSerializer[BlogEntity.BlogAuthorPrincipalUnassigned],
       JsonSerializer[BlogEntity.BlogTargetPrincipalAssigned],
       JsonSerializer[BlogEntity.BlogTargetPrincipalUnassigned],
       JsonSerializer[BlogEntity.BlogActivated],

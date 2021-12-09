@@ -14,17 +14,12 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway.blogs.blog
+package biz.lobachev.annette.cms.impl.blogs.blog.dao
 
 import biz.lobachev.annette.cms.api.blogs.blog.BlogId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import play.api.libs.json.{Format, Json}
 
-case class UnassignBlogTargetPrincipalPayloadDto(
-  id: BlogId,
+case class BlogAuthorRecord(
+  blogId: BlogId,
   principal: AnnettePrincipal
-)
-
-object UnassignBlogTargetPrincipalPayloadDto {
-  implicit val format: Format[UnassignBlogTargetPrincipalPayloadDto] = Json.format
-}
+) {}

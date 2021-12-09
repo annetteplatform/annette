@@ -21,11 +21,11 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
 import biz.lobachev.annette.cms.api.common.{
   ActivatePayload,
-  AssignTargetPrincipalPayload,
+  AssignPrincipalPayload,
   CanAccessToEntityPayload,
   DeactivatePayload,
   DeletePayload,
-  UnassignTargetPrincipalPayload,
+  UnassignPrincipalPayload,
   UpdateCategoryIdPayload,
   UpdateDescriptionPayload,
   UpdateNamePayload
@@ -110,7 +110,27 @@ class SpaceEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def assignSpaceTargetPrincipal(payload: AssignTargetPrincipalPayload): Future[Done] =
+  def assignSpaceAuthorPrincipal(payload: AssignPrincipalPayload): Future[Done] =
+    refFor(payload.id)
+      .ask[SpaceEntity.Confirmation](replyTo =>
+        payload
+          .into[SpaceEntity.AssignSpaceAuthorPrincipal]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
+      .map(convertSuccess(_, payload.id))
+
+  def unassignSpaceAuthorPrincipal(payload: UnassignPrincipalPayload): Future[Done] =
+    refFor(payload.id)
+      .ask[SpaceEntity.Confirmation](replyTo =>
+        payload
+          .into[SpaceEntity.UnassignSpaceAuthorPrincipal]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
+      .map(convertSuccess(_, payload.id))
+
+  def assignSpaceTargetPrincipal(payload: AssignPrincipalPayload): Future[Done] =
     refFor(payload.id)
       .ask[SpaceEntity.Confirmation](replyTo =>
         payload
@@ -120,7 +140,7 @@ class SpaceEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def unassignSpaceTargetPrincipal(payload: UnassignTargetPrincipalPayload): Future[Done] =
+  def unassignSpaceTargetPrincipal(payload: UnassignPrincipalPayload): Future[Done] =
     refFor(payload.id)
       .ask[SpaceEntity.Confirmation](replyTo =>
         payload
@@ -190,6 +210,9 @@ class SpaceEntityService(
 
   def getSpaceViews(payload: GetSpaceViewsPayload): Future[Seq[SpaceView]] =
     dbDao.getSpaceViews(payload.ids, payload.principals)
+
+  def canEditSpacePages(payload: CanAccessToEntityPayload): Future[Boolean] =
+    dbDao.canEditSpacePages(payload.id, payload.principals)
 
   def canAccessToSpace(payload: CanAccessToEntityPayload): Future[Boolean] =
     dbDao.canAccessToSpace(payload.id, payload.principals)

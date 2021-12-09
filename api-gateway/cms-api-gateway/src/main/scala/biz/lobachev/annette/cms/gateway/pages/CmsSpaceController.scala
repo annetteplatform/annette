@@ -21,10 +21,10 @@ import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.CmsService
 import biz.lobachev.annette.cms.api.common.{
   ActivatePayload,
-  AssignTargetPrincipalPayload,
+  AssignPrincipalPayload,
   DeactivatePayload,
   DeletePayload,
-  UnassignTargetPrincipalPayload,
+  UnassignPrincipalPayload,
   UpdateCategoryIdPayload,
   UpdateDescriptionPayload,
   UpdateNamePayload
@@ -109,11 +109,39 @@ class CmsSpaceController @Inject() (
       }
     }
 
-  def assignSpaceTargetPrincipal =
-    authenticated.async(parse.json[AssignSpaceTargetPrincipalPayloadDto]) { implicit request =>
+  def assignSpaceAuthorPrincipal =
+    authenticated.async(parse.json[AssignSpacePrincipalPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
         val payload = request.body
-          .into[AssignTargetPrincipalPayload]
+          .into[AssignPrincipalPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _     <- cmsService.assignSpaceAuthorPrincipal(payload)
+          space <- cmsService.getSpaceById(payload.id, false)
+        } yield Ok(Json.toJson(space))
+      }
+    }
+
+  def unassignSpaceAuthorPrincipal =
+    authenticated.async(parse.json[UnassignSpacePrincipalPayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+        val payload = request.body
+          .into[UnassignPrincipalPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
+        for {
+          _     <- cmsService.unassignSpaceAuthorPrincipal(payload)
+          space <- cmsService.getSpaceById(payload.id, false)
+        } yield Ok(Json.toJson(space))
+      }
+    }
+
+  def assignSpaceTargetPrincipal =
+    authenticated.async(parse.json[AssignSpacePrincipalPayloadDto]) { implicit request =>
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+        val payload = request.body
+          .into[AssignPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -124,10 +152,10 @@ class CmsSpaceController @Inject() (
     }
 
   def unassignSpaceTargetPrincipal =
-    authenticated.async(parse.json[UnassignSpaceTargetPrincipalPayloadDto]) { implicit request =>
+    authenticated.async(parse.json[UnassignSpacePrincipalPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
         val payload = request.body
-          .into[UnassignTargetPrincipalPayload]
+          .into[UnassignPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {

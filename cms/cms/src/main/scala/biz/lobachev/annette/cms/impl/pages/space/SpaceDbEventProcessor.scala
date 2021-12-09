@@ -38,6 +38,8 @@ private[impl] class SpaceDbEventProcessor(
       .setEventHandler[SpaceEntity.SpaceNameUpdated](handle(dbDao.updateSpaceName))
       .setEventHandler[SpaceEntity.SpaceDescriptionUpdated](handle(dbDao.updateSpaceDescription))
       .setEventHandler[SpaceEntity.SpaceCategoryUpdated](handle(dbDao.updateSpaceCategory))
+      .setEventHandler[SpaceEntity.SpaceAuthorPrincipalAssigned](handle(dbDao.assignSpaceAuthorPrincipal))
+      .setEventHandler[SpaceEntity.SpaceAuthorPrincipalUnassigned](handle(dbDao.unassignSpaceAuthorPrincipal))
       .setEventHandler[SpaceEntity.SpaceTargetPrincipalAssigned](handle(dbDao.assignSpaceTargetPrincipal))
       .setEventHandler[SpaceEntity.SpaceTargetPrincipalUnassigned](handle(dbDao.unassignSpaceTargetPrincipal))
       .setEventHandler[SpaceEntity.SpaceActivated](handle(dbDao.activateSpace))

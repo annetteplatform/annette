@@ -27,6 +27,7 @@ case class Blog(
   name: String,
   description: String,
   categoryId: CategoryId,
+  authors: Set[AnnettePrincipal] = Set.empty,
   targets: Set[AnnettePrincipal] = Set.empty,
   active: Boolean,
   updatedBy: AnnettePrincipal,

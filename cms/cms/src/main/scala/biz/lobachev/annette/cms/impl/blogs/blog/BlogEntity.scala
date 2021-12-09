@@ -41,6 +41,7 @@ object BlogEntity {
     name: String,
     description: String,
     categoryId: CategoryId,
+    authors: Set[AnnettePrincipal] = Set.empty,
     targets: Set[AnnettePrincipal] = Set.empty,
     createdBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
@@ -63,6 +64,20 @@ object BlogEntity {
   final case class UpdateBlogCategoryId(
     id: BlogId,
     categoryId: CategoryId,
+    updatedBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  ) extends Command
+
+  final case class AssignBlogAuthorPrincipal(
+    id: BlogId,
+    principal: AnnettePrincipal,
+    updatedBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  ) extends Command
+
+  final case class UnassignBlogAuthorPrincipal(
+    id: BlogId,
+    principal: AnnettePrincipal,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
@@ -117,6 +132,7 @@ object BlogEntity {
     name: String,
     description: String,
     categoryId: CategoryId,
+    authors: Set[AnnettePrincipal] = Set.empty,
     targets: Set[AnnettePrincipal] = Set.empty,
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
@@ -136,6 +152,18 @@ object BlogEntity {
   final case class BlogCategoryUpdated(
     id: BlogId,
     categoryId: CategoryId,
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+  final case class BlogAuthorPrincipalAssigned(
+    id: BlogId,
+    principal: AnnettePrincipal,
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+  final case class BlogAuthorPrincipalUnassigned(
+    id: BlogId,
+    principal: AnnettePrincipal,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -168,6 +196,8 @@ object BlogEntity {
   implicit val eventBlogNameUpdatedFormat: Format[BlogNameUpdated]                             = Json.format
   implicit val eventBlogDescriptionUpdatedFormat: Format[BlogDescriptionUpdated]               = Json.format
   implicit val eventBlogCategoryUpdatedFormat: Format[BlogCategoryUpdated]                     = Json.format
+  implicit val eventBlogAuthorPrincipalAssignedFormat: Format[BlogAuthorPrincipalAssigned]     = Json.format
+  implicit val eventBlogAuthorPrincipalUnassignedFormat: Format[BlogAuthorPrincipalUnassigned] = Json.format
   implicit val eventBlogTargetPrincipalAssignedFormat: Format[BlogTargetPrincipalAssigned]     = Json.format
   implicit val eventBlogTargetPrincipalUnassignedFormat: Format[BlogTargetPrincipalUnassigned] = Json.format
   implicit val eventBlogActivatedFormat: Format[BlogActivated]                                 = Json.format
@@ -207,6 +237,8 @@ final case class BlogEntity(maybeState: Option[BlogState] = None) {
       case cmd: UpdateBlogName              => updateBlogName(cmd)
       case cmd: UpdateBlogDescription       => updateBlogDescription(cmd)
       case cmd: UpdateBlogCategoryId        => updateBlogCategory(cmd)
+      case cmd: AssignBlogAuthorPrincipal   => assignBlogAuthorPrincipal(cmd)
+      case cmd: UnassignBlogAuthorPrincipal => unassignBlogAuthorPrincipal(cmd)
       case cmd: AssignBlogTargetPrincipal   => assignBlogTargetPrincipal(cmd)
       case cmd: UnassignBlogTargetPrincipal => unassignBlogTargetPrincipal(cmd)
       case cmd: ActivateBlog                => activateBlog(cmd)
@@ -256,7 +288,28 @@ final case class BlogEntity(maybeState: Option[BlogState] = None) {
           .thenReply(cmd.replyTo)(_ => Success)
     }
 
-  def assignBlogTargetPrincipal(cmd: AssignBlogTargetPrincipal): ReplyEffect[Event, BlogEntity] =
+  def assignBlogAuthorPrincipal(cmd: AssignBlogAuthorPrincipal): ReplyEffect[Event, BlogEntity] =
+    maybeState match {
+      case None                                                 => Effect.reply(cmd.replyTo)(BlogNotFound)
+      case Some(state) if state.authors.contains(cmd.principal) => Effect.reply(cmd.replyTo)(Success)
+      case Some(_)                                              =>
+        val event = cmd.transformInto[BlogAuthorPrincipalAssigned]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
+
+  def unassignBlogAuthorPrincipal(cmd: UnassignBlogAuthorPrincipal): ReplyEffect[Event, BlogEntity] =
+    maybeState match {
+      case None                                                  => Effect.reply(cmd.replyTo)(BlogNotFound)
+      case Some(state) if !state.authors.contains(cmd.principal) => Effect.reply(cmd.replyTo)(Success)
+      case Some(_)                                               =>
+        val event = cmd.transformInto[BlogAuthorPrincipalUnassigned]
+        Effect
+          .persist(event)
+          .thenReply(cmd.replyTo)(_ => Success)
+    }
+  def assignBlogTargetPrincipal(cmd: AssignBlogTargetPrincipal): ReplyEffect[Event, BlogEntity]     =
     maybeState match {
       case None                                                 => Effect.reply(cmd.replyTo)(BlogNotFound)
       case Some(state) if state.targets.contains(cmd.principal) => Effect.reply(cmd.replyTo)(Success)
@@ -322,6 +375,8 @@ final case class BlogEntity(maybeState: Option[BlogState] = None) {
       case event: BlogNameUpdated               => onBlogNameUpdated(event)
       case event: BlogDescriptionUpdated        => onBlogDescriptionUpdated(event)
       case event: BlogCategoryUpdated           => onBlogCategoryUpdated(event)
+      case event: BlogAuthorPrincipalAssigned   => onBlogAuthorPrincipalAssigned(event)
+      case event: BlogAuthorPrincipalUnassigned => onBlogAuthorPrincipalUnassigned(event)
       case event: BlogTargetPrincipalAssigned   => onBlogTargetPrincipalAssigned(event)
       case event: BlogTargetPrincipalUnassigned => onBlogTargetPrincipalUnassigned(event)
       case event: BlogActivated                 => onBlogActivated(event)
@@ -368,6 +423,28 @@ final case class BlogEntity(maybeState: Option[BlogState] = None) {
       maybeState.map(
         _.copy(
           categoryId = event.categoryId,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
+
+  def onBlogAuthorPrincipalAssigned(event: BlogAuthorPrincipalAssigned): BlogEntity =
+    BlogEntity(
+      maybeState.map(state =>
+        state.copy(
+          authors = state.authors + event.principal,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
+
+  def onBlogAuthorPrincipalUnassigned(event: BlogAuthorPrincipalUnassigned): BlogEntity =
+    BlogEntity(
+      maybeState.map(state =>
+        state.copy(
+          authors = state.authors - event.principal,
           updatedBy = event.updatedBy,
           updatedAt = event.updatedAt
         )

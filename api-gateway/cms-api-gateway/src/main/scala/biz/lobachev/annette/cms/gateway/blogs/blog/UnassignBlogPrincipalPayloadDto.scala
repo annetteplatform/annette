@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway.pages.space
+package biz.lobachev.annette.cms.gateway.blogs.blog
 
-import biz.lobachev.annette.cms.api.pages.space.SpaceId
+import biz.lobachev.annette.cms.api.blogs.blog.BlogId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
-case class AssignSpaceTargetPrincipalPayloadDto(
-  id: SpaceId,
+case class UnassignBlogPrincipalPayloadDto(
+  id: BlogId,
   principal: AnnettePrincipal
 )
 
-object AssignSpaceTargetPrincipalPayloadDto {
-  implicit val format: Format[AssignSpaceTargetPrincipalPayloadDto] = Json.format
+object UnassignBlogPrincipalPayloadDto {
+  implicit val format: Format[UnassignBlogPrincipalPayloadDto] = Json.format
 }

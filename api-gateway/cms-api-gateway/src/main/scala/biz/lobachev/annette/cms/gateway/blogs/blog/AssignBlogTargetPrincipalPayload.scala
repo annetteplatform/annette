@@ -20,11 +20,11 @@ import biz.lobachev.annette.cms.api.blogs.blog.BlogId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
-case class AssignBlogTargetPrincipalPayloadDto(
+case class AssignBlogPrincipalPayloadDto(
   id: BlogId,
   principal: AnnettePrincipal
 )
 
-object AssignBlogTargetPrincipalPayloadDto {
-  implicit val format: Format[AssignBlogTargetPrincipalPayloadDto] = Json.format
+object AssignBlogPrincipalPayloadDto {
+  implicit val format: Format[AssignBlogPrincipalPayloadDto] = Json.format
 }

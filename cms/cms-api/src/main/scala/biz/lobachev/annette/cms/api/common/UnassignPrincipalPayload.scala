@@ -14,22 +14,17 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.cms.gateway.pages.space
+package biz.lobachev.annette.cms.api.common
 
-import biz.lobachev.annette.cms.api.pages.space.SpaceId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.{Format, Json}
 
-case class CreateSpacePayloadDto(
-  id: SpaceId,
-  name: String,
-  description: String,
-  categoryId: CategoryId,
-  authors: Set[AnnettePrincipal] = Set.empty,
-  targets: Set[AnnettePrincipal] = Set.empty
+case class UnassignPrincipalPayload(
+  id: String,
+  principal: AnnettePrincipal,
+  updatedBy: AnnettePrincipal
 )
 
-object CreateSpacePayloadDto {
-  implicit val format: Format[CreateSpacePayloadDto] = Json.format
+object UnassignPrincipalPayload {
+  implicit val format: Format[UnassignPrincipalPayload] = Json.format
 }

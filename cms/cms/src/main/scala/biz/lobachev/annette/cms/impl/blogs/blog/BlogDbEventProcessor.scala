@@ -38,6 +38,8 @@ private[impl] class BlogDbEventProcessor(
       .setEventHandler[BlogEntity.BlogNameUpdated](handle(dbDao.updateBlogName))
       .setEventHandler[BlogEntity.BlogDescriptionUpdated](handle(dbDao.updateBlogDescription))
       .setEventHandler[BlogEntity.BlogCategoryUpdated](handle(dbDao.updateBlogCategory))
+      .setEventHandler[BlogEntity.BlogAuthorPrincipalAssigned](handle(dbDao.assignBlogAuthorPrincipal))
+      .setEventHandler[BlogEntity.BlogAuthorPrincipalUnassigned](handle(dbDao.unassignBlogAuthorPrincipal))
       .setEventHandler[BlogEntity.BlogTargetPrincipalAssigned](handle(dbDao.assignBlogTargetPrincipal))
       .setEventHandler[BlogEntity.BlogTargetPrincipalUnassigned](handle(dbDao.unassignBlogTargetPrincipal))
       .setEventHandler[BlogEntity.BlogActivated](handle(dbDao.activateBlog))

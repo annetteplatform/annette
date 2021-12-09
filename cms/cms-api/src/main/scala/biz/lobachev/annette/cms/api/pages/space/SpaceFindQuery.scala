@@ -27,6 +27,7 @@ case class SpaceFindQuery(
   filter: Option[String] = None,
   spaceIds: Option[Set[SpaceId]] = None,
   categories: Option[Set[CategoryId]] = None,
+  authors: Option[Set[AnnettePrincipal]] = None,
   targets: Option[Set[AnnettePrincipal]] = None,
   active: Option[Boolean] = None,
   sortBy: Option[Seq[SortBy]] = None

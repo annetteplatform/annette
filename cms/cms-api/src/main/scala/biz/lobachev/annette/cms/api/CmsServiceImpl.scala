@@ -34,11 +34,12 @@ import biz.lobachev.annette.cms.api.common.article.{
 import biz.lobachev.annette.cms.api.common.{
   article,
   ActivatePayload,
-  AssignTargetPrincipalPayload,
+  AssignPrincipalPayload,
   CanAccessToEntityPayload,
   DeactivatePayload,
   DeletePayload,
-  UnassignTargetPrincipalPayload,
+  UnassignPrincipalPayload,
+  UpdateCategoryIdPayload,
   UpdateDescriptionPayload,
   UpdateNamePayload,
   Updated
@@ -112,10 +113,16 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def updateBlogCategoryId(payload: common.UpdateCategoryIdPayload): Future[Done] =
     api.updateBlogCategoryId.invoke(payload)
 
-  override def assignBlogTargetPrincipal(payload: AssignTargetPrincipalPayload): Future[Done] =
+  override def assignBlogAuthorPrincipal(payload: AssignPrincipalPayload): Future[Done] =
+    api.assignBlogAuthorPrincipal.invoke(payload)
+
+  override def unassignBlogAuthorPrincipal(payload: UnassignPrincipalPayload): Future[Done] =
+    api.unassignBlogAuthorPrincipal.invoke(payload)
+
+  override def assignBlogTargetPrincipal(payload: AssignPrincipalPayload): Future[Done] =
     api.assignBlogTargetPrincipal.invoke(payload)
 
-  override def unassignBlogTargetPrincipal(payload: UnassignTargetPrincipalPayload): Future[Done] =
+  override def unassignBlogTargetPrincipal(payload: UnassignPrincipalPayload): Future[Done] =
     api.unassignBlogTargetPrincipal.invoke(payload)
 
   override def activateBlog(payload: ActivatePayload): Future[Done] =
@@ -137,6 +144,9 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
     payload: GetBlogViewsPayload
   ): Future[Seq[BlogView]] =
     api.getBlogViews.invoke(payload)
+
+  override def canEditBlogPosts(payload: CanAccessToEntityPayload): Future[Boolean] =
+    api.canEditBlogPosts.invoke(payload)
 
   override def canAccessToBlog(payload: CanAccessToEntityPayload): Future[Boolean] =
     api.canAccessToBlog.invoke(payload)
@@ -177,10 +187,10 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def unpublishPost(payload: UnpublishPayload): Future[Updated] =
     api.unpublishPost.invoke(payload)
 
-  override def assignPostTargetPrincipal(payload: AssignTargetPrincipalPayload): Future[Updated] =
+  override def assignPostTargetPrincipal(payload: AssignPrincipalPayload): Future[Updated] =
     api.assignPostTargetPrincipal.invoke(payload)
 
-  override def unassignPostTargetPrincipal(payload: UnassignTargetPrincipalPayload): Future[Updated] =
+  override def unassignPostTargetPrincipal(payload: UnassignPrincipalPayload): Future[Updated] =
     api.unassignPostTargetPrincipal.invoke(payload)
 
   override def deletePost(payload: DeletePayload): Future[Updated] =
@@ -257,13 +267,19 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def updateSpaceDescription(payload: UpdateDescriptionPayload): Future[Done] =
     api.updateSpaceDescription.invoke(payload)
 
-  override def updateSpaceCategoryId(payload: common.UpdateCategoryIdPayload): Future[Done] =
+  override def updateSpaceCategoryId(payload: UpdateCategoryIdPayload): Future[Done] =
     api.updateSpaceCategoryId.invoke(payload)
 
-  override def assignSpaceTargetPrincipal(payload: AssignTargetPrincipalPayload): Future[Done] =
+  override def assignSpaceAuthorPrincipal(payload: AssignPrincipalPayload): Future[Done] =
+    api.assignSpaceAuthorPrincipal.invoke(payload)
+
+  override def unassignSpaceAuthorPrincipal(payload: UnassignPrincipalPayload): Future[Done] =
+    api.unassignSpaceAuthorPrincipal.invoke(payload)
+
+  override def assignSpaceTargetPrincipal(payload: AssignPrincipalPayload): Future[Done] =
     api.assignSpaceTargetPrincipal.invoke(payload)
 
-  override def unassignSpaceTargetPrincipal(payload: UnassignTargetPrincipalPayload): Future[Done] =
+  override def unassignSpaceTargetPrincipal(payload: UnassignPrincipalPayload): Future[Done] =
     api.unassignSpaceTargetPrincipal.invoke(payload)
 
   override def activateSpace(payload: ActivatePayload): Future[Done] =
@@ -285,6 +301,9 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
     payload: GetSpaceViewsPayload
   ): Future[Seq[SpaceView]] =
     api.getSpaceViews.invoke(payload)
+
+  override def canEditSpacePages(payload: CanAccessToEntityPayload): Future[Boolean] =
+    api.canEditSpacePages.invoke(payload)
 
   override def canAccessToSpace(payload: CanAccessToEntityPayload): Future[Boolean] =
     api.canAccessToSpace.invoke(payload)
@@ -322,10 +341,10 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def unpublishPage(payload: UnpublishPayload): Future[Updated] =
     api.unpublishPage.invoke(payload)
 
-  override def assignPageTargetPrincipal(payload: AssignTargetPrincipalPayload): Future[Updated] =
+  override def assignPageTargetPrincipal(payload: AssignPrincipalPayload): Future[Updated] =
     api.assignPageTargetPrincipal.invoke(payload)
 
-  override def unassignPageTargetPrincipal(payload: UnassignTargetPrincipalPayload): Future[Updated] =
+  override def unassignPageTargetPrincipal(payload: UnassignPrincipalPayload): Future[Updated] =
     api.unassignPageTargetPrincipal.invoke(payload)
 
   override def deletePage(payload: DeletePayload): Future[Updated] =

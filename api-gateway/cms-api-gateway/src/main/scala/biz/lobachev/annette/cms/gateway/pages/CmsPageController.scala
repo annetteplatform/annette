@@ -26,7 +26,7 @@ import biz.lobachev.annette.cms.api.common.article.{
   UpdatePublicationTimestampPayload,
   UpdateTitlePayload
 }
-import biz.lobachev.annette.cms.api.common.{AssignTargetPrincipalPayload, DeletePayload, UnassignTargetPrincipalPayload}
+import biz.lobachev.annette.cms.api.common.{AssignPrincipalPayload, DeletePayload, UnassignPrincipalPayload}
 import biz.lobachev.annette.cms.api.content.{
   ChangeWidgetOrderPayload,
   DeleteWidgetPayload,
@@ -191,7 +191,7 @@ class CmsPageController @Inject() (
     authenticated.async(parse.json[AssignPageTargetPrincipalPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_PAGES) {
         val payload = request.body
-          .into[AssignTargetPrincipalPayload]
+          .into[AssignPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {
@@ -204,7 +204,7 @@ class CmsPageController @Inject() (
     authenticated.async(parse.json[UnassignPageTargetPrincipalPayloadDto]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_ALL_PAGES) {
         val payload = request.body
-          .into[UnassignTargetPrincipalPayload]
+          .into[UnassignPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
           .transform
         for {

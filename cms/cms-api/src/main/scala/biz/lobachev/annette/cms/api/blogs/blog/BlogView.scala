@@ -28,6 +28,7 @@ case class BlogView(
   description: String,
   categoryId: CategoryId,
   active: Boolean,
+  authors: Set[AnnettePrincipal] = Set.empty,
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
 )

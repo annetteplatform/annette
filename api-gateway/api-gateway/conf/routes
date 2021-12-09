@@ -149,6 +149,8 @@ POST    /api/annette/v1/cms/createBlog                     biz.lobachev.annette.
 POST    /api/annette/v1/cms/updateBlogName                 biz.lobachev.annette.cms.gateway.blogs.CmsBlogController.updateBlogName
 POST    /api/annette/v1/cms/updateBlogDescription          biz.lobachev.annette.cms.gateway.blogs.CmsBlogController.updateBlogDescription
 POST    /api/annette/v1/cms/updateBlogCategory             biz.lobachev.annette.cms.gateway.blogs.CmsBlogController.updateBlogCategoryId
+POST    /api/annette/v1/cms/assignBlogAuthorPrincipal      biz.lobachev.annette.cms.gateway.blogs.CmsBlogController.assignBlogAuthorPrincipal
+POST    /api/annette/v1/cms/unassignBlogAuthorPrincipal    biz.lobachev.annette.cms.gateway.blogs.CmsBlogController.unassignBlogAuthorPrincipal
 POST    /api/annette/v1/cms/assignBlogTargetPrincipal      biz.lobachev.annette.cms.gateway.blogs.CmsBlogController.assignBlogTargetPrincipal
 POST    /api/annette/v1/cms/unassignBlogTargetPrincipal    biz.lobachev.annette.cms.gateway.blogs.CmsBlogController.unassignBlogTargetPrincipal
 POST    /api/annette/v1/cms/activateBlog                   biz.lobachev.annette.cms.gateway.blogs.CmsBlogController.activateBlog
@@ -206,6 +208,8 @@ POST    /api/annette/v1/cms/createSpace                     biz.lobachev.annette
 POST    /api/annette/v1/cms/updateSpaceName                 biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.updateSpaceName
 POST    /api/annette/v1/cms/updateSpaceDescription          biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.updateSpaceDescription
 POST    /api/annette/v1/cms/updateSpaceCategory             biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.updateSpaceCategoryId
+POST    /api/annette/v1/cms/assignSpaceAuthorPrincipal      biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.assignSpaceAuthorPrincipal
+POST    /api/annette/v1/cms/unassignSpaceAuthorPrincipal    biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.unassignSpaceAuthorPrincipal
 POST    /api/annette/v1/cms/assignSpaceTargetPrincipal      biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.assignSpaceTargetPrincipal
 POST    /api/annette/v1/cms/unassignSpaceTargetPrincipal    biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.unassignSpaceTargetPrincipal
 POST    /api/annette/v1/cms/activateSpace                   biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.activateSpace

@@ -30,6 +30,7 @@ case class SpaceViewDto(
   categoryId: CategoryId,
   active: Boolean,
   subscriptions: Set[AnnettePrincipal],
+  authors: Set[AnnettePrincipal] = Set.empty,
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
 )

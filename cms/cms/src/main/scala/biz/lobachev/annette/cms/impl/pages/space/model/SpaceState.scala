@@ -17,7 +17,6 @@
 package biz.lobachev.annette.cms.impl.pages.space.model
 
 import biz.lobachev.annette.cms.api.pages.space.SpaceId
-import biz.lobachev.annette.cms.api.pages.page.PageId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.{Format, Json}
@@ -29,10 +28,8 @@ case class SpaceState(
   name: String,
   description: String,
   categoryId: CategoryId,
+  authors: Set[AnnettePrincipal] = Set.empty,
   targets: Set[AnnettePrincipal] = Set.empty,
-  rootPageId: Option[PageId] = None,
-  childPages: Map[PageId, Seq[PageId]] = Map.empty,
-  parentPage: Map[PageId, PageId] = Map.empty,
   active: Boolean,
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now

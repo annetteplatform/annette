@@ -19,18 +19,8 @@ package biz.lobachev.annette.cms.impl.blogs.blog
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.util.Timeout
-import biz.lobachev.annette.cms.api.blogs.blog.{GetBlogViewsPayload, _}
-import biz.lobachev.annette.cms.api.common.{
-  ActivatePayload,
-  AssignTargetPrincipalPayload,
-  CanAccessToEntityPayload,
-  DeactivatePayload,
-  DeletePayload,
-  UnassignTargetPrincipalPayload,
-  UpdateCategoryIdPayload,
-  UpdateDescriptionPayload,
-  UpdateNamePayload
-}
+import biz.lobachev.annette.cms.api.blogs.blog._
+import biz.lobachev.annette.cms.api.common._
 import biz.lobachev.annette.cms.impl.blogs.blog.dao.{BlogDbDao, BlogIndexDao}
 import biz.lobachev.annette.core.model.indexing.FindResult
 import io.scalaland.chimney.dsl._
@@ -110,7 +100,27 @@ class BlogEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def assignBlogTargetPrincipal(payload: AssignTargetPrincipalPayload): Future[Done] =
+  def assignBlogAuthorPrincipal(payload: AssignPrincipalPayload): Future[Done] =
+    refFor(payload.id)
+      .ask[BlogEntity.Confirmation](replyTo =>
+        payload
+          .into[BlogEntity.AssignBlogAuthorPrincipal]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
+      .map(convertSuccess(_, payload.id))
+
+  def unassignBlogAuthorPrincipal(payload: UnassignPrincipalPayload): Future[Done] =
+    refFor(payload.id)
+      .ask[BlogEntity.Confirmation](replyTo =>
+        payload
+          .into[BlogEntity.UnassignBlogAuthorPrincipal]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
+      .map(convertSuccess(_, payload.id))
+
+  def assignBlogTargetPrincipal(payload: AssignPrincipalPayload): Future[Done] =
     refFor(payload.id)
       .ask[BlogEntity.Confirmation](replyTo =>
         payload
@@ -120,7 +130,7 @@ class BlogEntityService(
       )
       .map(convertSuccess(_, payload.id))
 
-  def unassignBlogTargetPrincipal(payload: UnassignTargetPrincipalPayload): Future[Done] =
+  def unassignBlogTargetPrincipal(payload: UnassignPrincipalPayload): Future[Done] =
     refFor(payload.id)
       .ask[BlogEntity.Confirmation](replyTo =>
         payload
@@ -190,6 +200,9 @@ class BlogEntityService(
 
   def getBlogViews(payload: GetBlogViewsPayload): Future[Seq[BlogView]] =
     dbDao.getBlogViews(payload.ids, payload.principals)
+
+  def canEditBlogPosts(payload: CanAccessToEntityPayload): Future[Boolean] =
+    dbDao.canEditBlogPosts(payload.id, payload.principals)
 
   def canAccessToBlog(payload: CanAccessToEntityPayload): Future[Boolean] =
     dbDao.canAccessToBlog(payload.id, payload.principals)

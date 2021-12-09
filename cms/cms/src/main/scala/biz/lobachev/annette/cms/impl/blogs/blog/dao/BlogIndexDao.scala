@@ -43,6 +43,7 @@ class BlogIndexDao(client: ElasticClient)(implicit
       "name"        -> event.name,
       "description" -> event.description,
       "categoryId"  -> event.categoryId,
+      "authors"     -> event.authors.map(_.code),
       "targets"     -> event.targets.map(_.code),
       "active"      -> true,
       "updatedBy"   -> event.createdBy.code,
@@ -72,6 +73,50 @@ class BlogIndexDao(client: ElasticClient)(implicit
       "updatedAt"  -> event.updatedAt,
       "updatedBy"  -> event.updatedBy.code
     )
+
+  def assignBlogAuthorPrincipal(event: BlogEntity.BlogAuthorPrincipalAssigned) = {
+    val authorsField = alias2FieldName("authors")
+    for {
+      _ <- client.execute {
+             updateById(indexName, event.id)
+               .script(s"""ctx._source.${authorsField}.add("${event.principal.code}")""")
+               .refresh(RefreshPolicy.Immediate)
+           }.map(processResponse)
+
+      _ <- client.execute {
+             updateById(indexName, event.id)
+               .doc(
+                 alias2FieldName("updatedAt") -> event.updatedAt,
+                 alias2FieldName("updatedBy") -> event.updatedBy.code
+               )
+               .refresh(RefreshPolicy.Immediate)
+           }
+             .map(processResponse)
+    } yield ()
+  }
+
+  def unassignBlogAuthorPrincipal(event: BlogEntity.BlogAuthorPrincipalUnassigned) = {
+    val authorsField = alias2FieldName("authors")
+    for {
+      _ <- client.execute {
+             updateById(indexName, event.id)
+               .script(
+                 s"""if (ctx._source.${authorsField}.contains("${event.principal.code}")) { ctx._source.${authorsField}.remove(ctx._source.${authorsField}.indexOf("${event.principal.code}")) }"""
+               )
+               .refresh(RefreshPolicy.Immediate)
+           }
+             .map(processResponse)
+      _ <- client.execute {
+             updateById(indexName, event.id)
+               .doc(
+                 alias2FieldName("updatedAt") -> event.updatedAt,
+                 alias2FieldName("updatedBy") -> event.updatedBy.code
+               )
+               .refresh(RefreshPolicy.Immediate)
+           }
+             .map(processResponse)
+    } yield ()
+  }
 
   def assignBlogTargetPrincipal(event: BlogEntity.BlogTargetPrincipalAssigned) = {
     val targetsField = alias2FieldName("targets")
@@ -148,6 +193,9 @@ class BlogIndexDao(client: ElasticClient)(implicit
     val categoryQuery = query.categories
       .map(categories => termsSetQuery(alias2FieldName("categoryId"), categories, script("1")))
       .toSeq
+    val authorsQuery  = query.authors
+      .map(authors => termsSetQuery(alias2FieldName("authors"), authors.map(_.code), script("1")))
+      .toSeq
     val targetsQuery  = query.targets
       .map(targets => termsSetQuery(alias2FieldName("targets"), targets.map(_.code), script("1")))
       .toSeq
@@ -156,7 +204,7 @@ class BlogIndexDao(client: ElasticClient)(implicit
     val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
 
     val searchRequest = search(indexName)
-      .bool(must(filterQuery ++ blogIdsQuery ++ categoryQuery ++ targetsQuery ++ activeQuery))
+      .bool(must(filterQuery ++ blogIdsQuery ++ categoryQuery ++ authorsQuery ++ targetsQuery ++ activeQuery))
       .from(query.offset)
       .size(query.size)
       .sortBy(sortBy)
