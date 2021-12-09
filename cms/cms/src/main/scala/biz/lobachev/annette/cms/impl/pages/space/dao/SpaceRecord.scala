@@ -28,7 +28,6 @@ case class SpaceRecord(
   description: String,
   categoryId: CategoryId,
   active: Boolean,
-  authors: Set[AnnettePrincipal] = Set.empty,
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
 ) {
