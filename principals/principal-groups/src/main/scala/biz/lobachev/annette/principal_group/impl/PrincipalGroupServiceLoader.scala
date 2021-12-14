@@ -26,6 +26,7 @@ import biz.lobachev.annette.principal_group.impl.group._
 import biz.lobachev.annette.principal_group.impl.group.dao.{PrincipalGroupDbDao, PrincipalGroupIndexDao}
 import biz.lobachev.annette.principal_group.impl.group.model.GroupSerializerRegistry
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaClientComponents
+import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
@@ -57,7 +58,8 @@ abstract class PrincipalGroupServiceApplication(context: LagomApplicationContext
     extends LagomApplication(context)
     with CassandraPersistenceComponents
     with LagomKafkaClientComponents
-    with AhcWSComponents {
+    with AhcWSComponents
+    with ClusterComponents {
 
   lazy val jsonSerializerRegistry = PrincipalGroupRepositorySerializerRegistry
 

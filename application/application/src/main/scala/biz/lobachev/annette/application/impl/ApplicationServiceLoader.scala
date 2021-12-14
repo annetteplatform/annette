@@ -72,7 +72,8 @@ trait ApplicationComponents
     extends LagomServerComponents
     with CassandraPersistenceComponents
     with LagomConfigComponent
-    with AhcWSComponents {
+    with AhcWSComponents
+    with ClusterComponents {
 
   implicit def executionContext: ExecutionContext
   def environment: Environment

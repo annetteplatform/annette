@@ -10,12 +10,12 @@ object Dependencies {
     val elastic4s               = "7.8.1"
     val playJsonExt             = "0.42.0"
     val jwtPlayJson             = "9.0.2"
-    val akkaKubernetesDiscovery = "1.1.1"
+    val akkaKubernetesDiscovery = "1.0.10"
     val chimney                 = "0.6.1"
     val pureConfig              = "0.17.1"
     val quill                   = "3.10.0"
     val alpakkaS3               = "3.0.4"
-    val akkaHttp                = "10.2.0"
+//    val akkaHttp                = "10.2.0"
   }
 
   val macwire = "com.softwaremill.macwire" %% "macros" % Version.macwire % "provided"
@@ -56,8 +56,8 @@ object Dependencies {
   val alpakkaS3: Seq[ModuleID] = Seq(
     "com.lightbend.akka" %% "akka-stream-alpakka-s3" % Version.alpakkaS3,
     "com.typesafe.akka"  %% "akka-stream"            % LagomVersion.akka,
-    "com.typesafe.akka"  %% "akka-http"              % Version.akkaHttp,
-    "com.typesafe.akka"  %% "akka-http-xml"          % Version.akkaHttp
+    "com.typesafe.akka"  %% "akka-http"              % LagomVersion.akkaHttp,
+    "com.typesafe.akka"  %% "akka-http-xml"          % LagomVersion.akkaHttp
   )
 
 }

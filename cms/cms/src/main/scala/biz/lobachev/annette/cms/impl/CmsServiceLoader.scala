@@ -59,6 +59,7 @@ import biz.lobachev.annette.cms.impl.pages.space.dao.{SpaceDbDao, SpaceIndexDao}
 import biz.lobachev.annette.cms.impl.pages.space.model.SpaceSerializerRegistry
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
 import com.lightbend.lagom.scaladsl.api.LagomConfigComponent
+import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
@@ -91,7 +92,8 @@ trait CmsComponents
     extends LagomServerComponents
     with CassandraPersistenceComponents
     with LagomConfigComponent
-    with AhcWSComponents {
+    with AhcWSComponents
+    with ClusterComponents {
 
   implicit def executionContext: ExecutionContext
   def environment: Environment

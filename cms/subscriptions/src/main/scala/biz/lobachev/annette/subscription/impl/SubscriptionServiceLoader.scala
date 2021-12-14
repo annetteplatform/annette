@@ -32,6 +32,7 @@ import biz.lobachev.annette.subscription.impl.subscription._
 import biz.lobachev.annette.subscription.impl.subscription.dao.{SubscriptionDbDao, SubscriptionIndexDao}
 import biz.lobachev.annette.subscription.impl.subscription.model.SubscriptionSerializerRegistry
 import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaClientComponents
+import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
@@ -63,7 +64,8 @@ abstract class SubscriptionServiceApplication(context: LagomApplicationContext)
     extends LagomApplication(context)
     with CassandraPersistenceComponents
     with LagomKafkaClientComponents
-    with AhcWSComponents {
+    with AhcWSComponents
+    with ClusterComponents {
 
   lazy val jsonSerializerRegistry = SubscriptionRepositorySerializerRegistry
 
