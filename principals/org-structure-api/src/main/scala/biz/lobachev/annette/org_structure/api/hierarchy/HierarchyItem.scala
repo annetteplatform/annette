@@ -23,8 +23,16 @@ import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
+import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
 import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes(
+  Array(
+    new JsonSubTypes.Type(value = classOf[HierarchyPosition], name = "HierarchyPosition"),
+    new JsonSubTypes.Type(value = classOf[HierarchyUnit], name = "HierarchyUnit")
+  )
+)
 sealed trait HierarchyItem {
   val id: CompositeOrgItemId
   val parentId: CompositeOrgItemId

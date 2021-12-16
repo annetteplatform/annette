@@ -18,6 +18,7 @@ package biz.lobachev.annette.org_structure.api.hierarchy
 
 import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
+import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
 import play.api.libs.json._
 
 case class OrganizationTree(
@@ -29,6 +30,13 @@ object OrganizationTree {
   implicit val format: Format[OrganizationTree] = Json.format
 }
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes(
+  Array(
+    new JsonSubTypes.Type(value = classOf[UnitTreeItem], name = "UnitTreeItem"),
+    new JsonSubTypes.Type(value = classOf[PositionTreeItem], name = "PositionTreeItem")
+  )
+)
 sealed trait OrgTreeItem {
   val id: CompositeOrgItemId
 }

@@ -18,11 +18,26 @@ package biz.lobachev.annette.core.attribute
 
 import biz.lobachev.annette.core.model.translation.Caption
 import biz.lobachev.annette.core.utils.Encase
+import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
 import play.api.libs.json.{Json, JsonConfiguration, JsonNaming}
 
 import java.time.{LocalDate, LocalTime, OffsetDateTime}
 import scala.util.Try
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes(
+  Array(
+    new JsonSubTypes.Type(value = classOf[StringAttributeMetadata], name = "string"),
+    new JsonSubTypes.Type(value = classOf[BooleanAttributeMetadata], name = "boolean"),
+    new JsonSubTypes.Type(value = classOf[IntAttributeMetadata], name = "int"),
+    new JsonSubTypes.Type(value = classOf[DoubleAttributeMetadata], name = "double"),
+    new JsonSubTypes.Type(value = classOf[DecimalAttributeMetadata], name = "decimal"),
+    new JsonSubTypes.Type(value = classOf[LocalDateAttributeMetadata], name = "localDate"),
+    new JsonSubTypes.Type(value = classOf[LocalTimeAttributeMetadata], name = "localTime"),
+    new JsonSubTypes.Type(value = classOf[OffsetDatetimeAttributeMetadata], name = "offsetDatetime"),
+    new JsonSubTypes.Type(value = classOf[JsonAttributeMetadata], name = "json")
+  )
+)
 sealed trait AttributeMetadata {
   val name: String
   val caption: Caption

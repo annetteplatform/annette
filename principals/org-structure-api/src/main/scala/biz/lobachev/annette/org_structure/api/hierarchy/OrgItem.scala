@@ -23,8 +23,16 @@ import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
+import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
 import play.api.libs.json.{Json, JsonConfiguration, JsonNaming}
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes(
+  Array(
+    new JsonSubTypes.Type(value = classOf[OrgUnit], name = "unit"),
+    new JsonSubTypes.Type(value = classOf[OrgPosition], name = "position")
+  )
+)
 sealed trait OrgItem {
   val orgId: CompositeOrgItemId
   val parentId: CompositeOrgItemId
