@@ -24,6 +24,7 @@ import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegi
 object RoleSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
+      // state
       JsonSerializer[RoleState],
       JsonSerializer[AuthRoleFindQuery],
       JsonSerializer[AuthRole],
@@ -35,11 +36,13 @@ object RoleSerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[DeleteRolePayload],
       JsonSerializer[UpdateRolePayload],
       JsonSerializer[CreateRolePayload],
+      // responses
       JsonSerializer[RoleEntity.SuccessRole],
       JsonSerializer[RoleEntity.SuccessPrincipals],
       JsonSerializer[RoleEntity.Success.type],
       JsonSerializer[RoleEntity.RoleAlreadyExist.type],
       JsonSerializer[RoleEntity.RoleNotFound.type],
+      // events
       JsonSerializer[RoleEntity.RoleCreated],
       JsonSerializer[RoleEntity.RoleUpdated],
       JsonSerializer[RoleEntity.RoleDeleted],

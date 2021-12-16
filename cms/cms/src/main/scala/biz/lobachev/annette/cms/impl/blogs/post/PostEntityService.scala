@@ -48,6 +48,7 @@ import biz.lobachev.annette.cms.api.content.{
   UpdateWidgetPayload
 }
 import biz.lobachev.annette.cms.impl.blogs.post.dao.{PostDbDao, PostIndexDao}
+import biz.lobachev.annette.cms.impl.content.{ContentInt, WidgetInt}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
 import io.scalaland.chimney.dsl._
@@ -88,10 +89,10 @@ class PostEntityService(
 
   private def convertSuccessPost(confirmation: PostEntity.Confirmation, id: PostId): Post =
     confirmation match {
-      case PostEntity.SuccessPost(post) => post
-      case PostEntity.PostAlreadyExist  => throw PostAlreadyExist(id)
-      case PostEntity.PostNotFound      => throw PostNotFound(id)
-      case _                            => throw new RuntimeException("Match fail")
+      case PostEntity.SuccessPost(postInt) => postInt.toPost
+      case PostEntity.PostAlreadyExist     => throw PostAlreadyExist(id)
+      case PostEntity.PostNotFound         => throw PostNotFound(id)
+      case _                               => throw new RuntimeException("Match fail")
     }
 
   def createPost(payload: CreatePostPayload, targets: Set[AnnettePrincipal]): Future[Post] =
@@ -99,6 +100,8 @@ class PostEntityService(
       .ask[PostEntity.Confirmation](replyTo =>
         payload
           .into[PostEntity.CreatePost]
+          .withFieldComputed(_.content, c => ContentInt.fromContent(c.content))
+          .withFieldComputed(_.introContent, c => ContentInt.fromContent(c.introContent))
           .withFieldConst(_.targets, targets)
           .withFieldConst(_.replyTo, replyTo)
           .transform
@@ -140,6 +143,7 @@ class PostEntityService(
       .ask[PostEntity.Confirmation](replyTo =>
         payload
           .into[PostEntity.UpdateContentSettings]
+          .withFieldComputed(_.settings, _.settings.toString())
           .withFieldComputed(_.contentType, _.contentType.getOrElse(ContentTypes.Post))
           .withFieldConst(_.replyTo, replyTo)
           .transform
@@ -151,6 +155,7 @@ class PostEntityService(
       .ask[PostEntity.Confirmation](replyTo =>
         payload
           .into[PostEntity.UpdateWidget]
+          .withFieldComputed(_.widget, c => WidgetInt.fromWidget(c.widget))
           .withFieldComputed(_.contentType, _.contentType.getOrElse(ContentTypes.Post))
           .withFieldConst(_.replyTo, replyTo)
           .transform
@@ -278,8 +283,8 @@ class PostEntityService(
           refFor(id)
             .ask[PostEntity.Confirmation](PostEntity.GetPost(id, withIntro, withContent, withTargets, _))
             .map {
-              case PostEntity.SuccessPost(post) => Some(post)
-              case _                            => None
+              case PostEntity.SuccessPost(postInt) => Some(postInt.toPost)
+              case _                               => None
             }
         }
         .map(_.flatten.toSeq)

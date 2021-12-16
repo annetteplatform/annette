@@ -22,7 +22,13 @@ import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegi
 object FileSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
+      // state
       JsonSerializer[FileState],
+      // responses
+      JsonSerializer[FileEntity.Success.type],
+      JsonSerializer[FileEntity.SuccessFile],
+      JsonSerializer[FileEntity.FileNotFound.type],
+      // events
       JsonSerializer[FileEntity.FileStored],
       JsonSerializer[FileEntity.FileRemoved]
     )

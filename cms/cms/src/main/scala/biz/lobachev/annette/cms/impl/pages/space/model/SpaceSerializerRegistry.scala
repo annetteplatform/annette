@@ -26,15 +26,18 @@ import java.time.OffsetDateTime
 object SpaceSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
+      // state
       JsonSerializer[SpaceState],
       JsonSerializer[SpaceView],
       JsonSerializer[Space],
       JsonSerializer[OffsetDateTime],
       JsonSerializer[AnnettePrincipal],
+      // responses
       JsonSerializer[SpaceEntity.Success.type],
       JsonSerializer[SpaceEntity.SuccessSpace],
       JsonSerializer[SpaceEntity.SpaceAlreadyExist.type],
       JsonSerializer[SpaceEntity.SpaceNotFound.type],
+      // events
       JsonSerializer[SpaceEntity.SpaceCreated],
       JsonSerializer[SpaceEntity.SpaceNameUpdated],
       JsonSerializer[SpaceEntity.SpaceDescriptionUpdated],

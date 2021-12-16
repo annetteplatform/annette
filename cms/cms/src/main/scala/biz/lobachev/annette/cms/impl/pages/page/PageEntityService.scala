@@ -46,6 +46,7 @@ import biz.lobachev.annette.cms.api.content.{
   UpdateWidgetPayload
 }
 import biz.lobachev.annette.cms.api.pages.page._
+import biz.lobachev.annette.cms.impl.content.{ContentInt, WidgetInt}
 import biz.lobachev.annette.cms.impl.pages.page.dao.{PageDbDao, PageIndexDao}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
@@ -87,10 +88,10 @@ class PageEntityService(
 
   private def convertSuccessPage(confirmation: PageEntity.Confirmation, id: PageId): Page =
     confirmation match {
-      case PageEntity.SuccessPage(page) => page
-      case PageEntity.PageAlreadyExist  => throw PageAlreadyExist(id)
-      case PageEntity.PageNotFound      => throw PageNotFound(id)
-      case _                            => throw new RuntimeException("Match fail")
+      case PageEntity.SuccessPage(pageInt) => pageInt.toPage
+      case PageEntity.PageAlreadyExist     => throw PageAlreadyExist(id)
+      case PageEntity.PageNotFound         => throw PageNotFound(id)
+      case _                               => throw new RuntimeException("Match fail")
     }
 
   def createPage(payload: CreatePagePayload, targets: Set[AnnettePrincipal]): Future[Page] =
@@ -98,6 +99,7 @@ class PageEntityService(
       .ask[PageEntity.Confirmation](replyTo =>
         payload
           .into[PageEntity.CreatePage]
+          .withFieldComputed(_.content, c => ContentInt.fromContent(c.content))
           .withFieldConst(_.targets, targets)
           .withFieldConst(_.replyTo, replyTo)
           .transform
@@ -129,6 +131,7 @@ class PageEntityService(
       .ask[PageEntity.Confirmation](replyTo =>
         payload
           .into[PageEntity.UpdateContentSettings]
+          .withFieldComputed(_.settings, _.settings.toString())
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
@@ -139,6 +142,7 @@ class PageEntityService(
       .ask[PageEntity.Confirmation](replyTo =>
         payload
           .into[PageEntity.UpdateWidget]
+          .withFieldComputed(_.widget, c => WidgetInt.fromWidget(c.widget))
           .withFieldConst(_.replyTo, replyTo)
           .transform
       )
@@ -261,8 +265,8 @@ class PageEntityService(
           refFor(id)
             .ask[PageEntity.Confirmation](PageEntity.GetPage(id, withContent, withTargets, _))
             .map {
-              case PageEntity.SuccessPage(page) => Some(page)
-              case _                            => None
+              case PageEntity.SuccessPage(pageInt) => Some(pageInt.toPage)
+              case _                               => None
             }
         }
         .map(_.flatten.toSeq)

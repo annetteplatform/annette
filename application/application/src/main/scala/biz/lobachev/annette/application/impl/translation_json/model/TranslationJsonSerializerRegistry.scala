@@ -23,13 +23,17 @@ import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegi
 object TranslationJsonSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
+      // state
       JsonSerializer[TranslationJsonState],
       JsonSerializer[TranslationJson],
       JsonSerializer[AnnettePrincipal],
       JsonSerializer[DeleteTranslationJsonPayload],
       JsonSerializer[UpdateTranslationJsonPayload],
+      // responses
       JsonSerializer[TranslationJsonEntity.Success.type],
       JsonSerializer[TranslationJsonEntity.SuccessTranslationJson],
+      JsonSerializer[TranslationJsonEntity.TranslationNotFound.type],
+      // events
       JsonSerializer[TranslationJsonEntity.TranslationJsonUpdated],
       JsonSerializer[TranslationJsonEntity.TranslationJsonDeleted]
     )

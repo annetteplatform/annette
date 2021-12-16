@@ -33,6 +33,7 @@ object BlogSerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[AnnettePrincipal],
       JsonSerializer[BlogEntity.Success.type],
       JsonSerializer[BlogEntity.SuccessBlog],
+      JsonSerializer[BlogEntity.SuccessTargets],
       JsonSerializer[BlogEntity.BlogAlreadyExist.type],
       JsonSerializer[BlogEntity.BlogNotFound.type],
       JsonSerializer[BlogEntity.BlogCreated],

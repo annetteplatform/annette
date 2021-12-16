@@ -24,6 +24,7 @@ import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegi
 object AssignmentSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
+      // state
       JsonSerializer[AssignmentState],
       JsonSerializer[FindAssignmentsQuery],
       JsonSerializer[FindPermissions],
@@ -35,7 +36,9 @@ object AssignmentSerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[AnnettePrincipal],
       JsonSerializer[UnassignPermissionPayload],
       JsonSerializer[AssignPermissionPayload],
+      // responses
       JsonSerializer[AssignmentEntity.Success.type],
+      // events
       JsonSerializer[AssignmentEntity.PermissionAssigned],
       JsonSerializer[AssignmentEntity.PermissionUnassigned]
     )

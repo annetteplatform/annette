@@ -23,9 +23,10 @@ import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffec
 import biz.lobachev.annette.cms.api.blogs.blog.BlogId
 import biz.lobachev.annette.cms.api.blogs.post._
 import biz.lobachev.annette.cms.api.common.article.PublicationStatus
+import biz.lobachev.annette.cms.api.content.ContentTypes
 import biz.lobachev.annette.cms.api.content.ContentTypes.ContentType
-import biz.lobachev.annette.cms.api.content.{Content, ContentTypes, Widget}
-import biz.lobachev.annette.cms.impl.blogs.post.model.PostState
+import biz.lobachev.annette.cms.impl.blogs.post.model.{PostInt, PostState}
+import biz.lobachev.annette.cms.impl.content.{ContentInt, WidgetInt}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.lightbend.lagom.scaladsl.persistence._
 import io.scalaland.chimney.dsl._
@@ -44,8 +45,8 @@ object PostEntity {
     featured: Boolean,
     authorId: AnnettePrincipal,
     title: String,
-    introContent: Content,
-    content: Content,
+    introContent: ContentInt,
+    content: ContentInt,
     targets: Set[AnnettePrincipal] = Set.empty,
     createdBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
@@ -75,7 +76,7 @@ object PostEntity {
   final case class UpdateContentSettings(
     id: String,
     contentType: ContentType,
-    settings: JsValue,
+    settings: String,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
@@ -83,7 +84,7 @@ object PostEntity {
   final case class UpdateWidget(
     id: PostId,
     contentType: ContentType,
-    widget: Widget,
+    widget: WidgetInt,
     order: Option[Int] = None,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
@@ -148,7 +149,7 @@ object PostEntity {
 
   sealed trait Confirmation
   final case class Success(updatedBy: AnnettePrincipal, updatedAt: OffsetDateTime) extends Confirmation
-  final case class SuccessPost(post: Post)                                         extends Confirmation
+  final case class SuccessPost(post: PostInt)                                      extends Confirmation
   final case object PostAlreadyExist                                               extends Confirmation
   final case object PostNotFound                                                   extends Confirmation
   final case object WidgetNotFound                                                 extends Confirmation
@@ -176,8 +177,8 @@ object PostEntity {
     featured: Boolean,
     authorId: AnnettePrincipal,
     title: String,
-    introContent: Content,
-    content: Content,
+    introContent: ContentInt,
+    content: ContentInt,
     targets: Set[AnnettePrincipal] = Set.empty,
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
@@ -203,14 +204,14 @@ object PostEntity {
   final case class ContentSettingsUpdated(
     id: String,
     contentType: ContentType,
-    settings: JsValue,
+    settings: String,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
   final case class PostWidgetUpdated(
     id: PostId,
     contentType: ContentType,
-    widget: Widget,
+    widget: WidgetInt,
     widgetOrder: Seq[String],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
@@ -346,7 +347,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
           .thenReply(cmd.replyTo)(postEntity =>
             SuccessPost(
               postEntity.maybeState.get
-                .into[Post]
+                .into[PostInt]
                 .withFieldComputed(_.introContent, c => Some(c.introContent))
                 .withFieldComputed(_.content, c => Some(c.content))
                 .withFieldComputed(_.targets, c => Some(c.targets))
@@ -604,7 +605,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
         Effect.reply(cmd.replyTo)(
           SuccessPost(
             state
-              .into[Post]
+              .into[PostInt]
               .withFieldComputed(_.introContent, c => if (cmd.withIntro) Some(c.introContent) else None)
               .withFieldComputed(_.content, c => if (cmd.withContent) Some(c.content) else None)
               .withFieldComputed(_.targets, c => if (cmd.withTargets) Some(c.targets) else None)

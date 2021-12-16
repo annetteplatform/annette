@@ -9,3 +9,5 @@ addSbtPlugin("com.github.sbt" % "sbt-native-packager" % "1.9.7")
 
 // Compiler options
 addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.1.16")
+
+addDependencyTreePlugin

@@ -98,5 +98,29 @@
         "id": "annette.principalGroup.category.maintain.all"
       }
     ]
+  },
+  {
+    "id": "cms-view-role",
+    "name": "CMS View",
+    "description": "",
+    "permissions": [
+      {
+        "id": "annette.cms.blog.view"
+      },
+      {
+        "id": "annette.cms.space.view"
+      }
+    ]
+  },
+
+  {
+    "id": "anonymous-space-view-role",
+    "name": "Anonymous space view role",
+    "description": "",
+    "permissions": [
+      {
+        "id": "annette.cms.space.view"
+      }
+    ]
   }
 ]

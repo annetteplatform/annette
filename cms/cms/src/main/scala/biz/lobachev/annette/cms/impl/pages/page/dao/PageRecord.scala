@@ -21,7 +21,7 @@ import biz.lobachev.annette.cms.api.content.{Content, Widget}
 import biz.lobachev.annette.cms.api.pages.space.SpaceId
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import play.api.libs.json.JsValue
+import play.api.libs.json.Json
 
 import java.time.OffsetDateTime
 
@@ -32,7 +32,7 @@ case class PageRecord(
   title: String,
   publicationStatus: PublicationStatus.PublicationStatus = PublicationStatus.Draft,
   publicationTimestamp: Option[OffsetDateTime] = None,
-  pageContentSettings: JsValue,
+  pageContentSettings: String,
   pageContentOrder: List[String],
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
@@ -50,7 +50,7 @@ case class PageRecord(
       publicationTimestamp = publicationTimestamp,
       content = maybePageWidgets.map(pageWidgets =>
         Content(
-          pageContentSettings,
+          Json.parse(pageContentSettings),
           pageContentOrder,
           pageWidgets
         )

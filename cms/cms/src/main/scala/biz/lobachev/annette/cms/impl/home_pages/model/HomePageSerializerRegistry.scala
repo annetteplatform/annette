@@ -25,12 +25,15 @@ import java.time.OffsetDateTime
 object HomePageSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
+      // state
       JsonSerializer[HomePageState],
       JsonSerializer[OffsetDateTime],
       JsonSerializer[AnnettePrincipal],
+      // responses
       JsonSerializer[HomePageEntity.Success.type],
       JsonSerializer[HomePageEntity.SuccessHomePage],
       JsonSerializer[HomePageEntity.HomePageNotFound.type],
+      // events
       JsonSerializer[HomePageEntity.HomePageAssigned],
       JsonSerializer[HomePageEntity.HomePageUnassigned]
     )

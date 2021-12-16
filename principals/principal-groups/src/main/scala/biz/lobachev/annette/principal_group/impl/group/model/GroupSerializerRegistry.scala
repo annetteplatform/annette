@@ -15,15 +15,7 @@
  */
 
 package biz.lobachev.annette.principal_group.impl.group.model
-import biz.lobachev.annette.principal_group.impl.group.PrincipalGroupEntity.{
-  PrincipalAssigned,
-  PrincipalGroupCategoryUpdated,
-  PrincipalGroupCreated,
-  PrincipalGroupDeleted,
-  PrincipalGroupDescriptionUpdated,
-  PrincipalGroupNameUpdated,
-  PrincipalUnassigned
-}
+import biz.lobachev.annette.principal_group.impl.group.PrincipalGroupEntity
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
 object GroupSerializerRegistry extends JsonSerializerRegistry {
@@ -31,13 +23,18 @@ object GroupSerializerRegistry extends JsonSerializerRegistry {
     List(
       // state
       JsonSerializer[PrincipalGroupState],
+      // responses
+      JsonSerializer[PrincipalGroupEntity.Success.type],
+      JsonSerializer[PrincipalGroupEntity.SuccessPrincipalGroup],
+      JsonSerializer[PrincipalGroupEntity.NotFound.type],
+      JsonSerializer[PrincipalGroupEntity.AlreadyExist.type],
       // events
-      JsonSerializer[PrincipalGroupCreated],
-      JsonSerializer[PrincipalGroupNameUpdated],
-      JsonSerializer[PrincipalGroupDescriptionUpdated],
-      JsonSerializer[PrincipalGroupCategoryUpdated],
-      JsonSerializer[PrincipalAssigned],
-      JsonSerializer[PrincipalUnassigned],
-      JsonSerializer[PrincipalGroupDeleted]
+      JsonSerializer[PrincipalGroupEntity.PrincipalGroupCreated],
+      JsonSerializer[PrincipalGroupEntity.PrincipalGroupNameUpdated],
+      JsonSerializer[PrincipalGroupEntity.PrincipalGroupDescriptionUpdated],
+      JsonSerializer[PrincipalGroupEntity.PrincipalGroupCategoryUpdated],
+      JsonSerializer[PrincipalGroupEntity.PrincipalAssigned],
+      JsonSerializer[PrincipalGroupEntity.PrincipalUnassigned],
+      JsonSerializer[PrincipalGroupEntity.PrincipalGroupDeleted]
     )
 }

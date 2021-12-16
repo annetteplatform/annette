@@ -29,6 +29,7 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 import io.scalaland.chimney.dsl._
+import play.api.libs.json.Json
 
 import java.time.OffsetDateTime
 import scala.collection.immutable.{Seq, _}
@@ -467,7 +468,7 @@ private[impl] class PostDbDao(
             Widget(
               id = c._1,
               widgetType = c._2,
-              data = c._3,
+              data = Json.parse(c._3),
               indexData = None
             )
         ).toMap

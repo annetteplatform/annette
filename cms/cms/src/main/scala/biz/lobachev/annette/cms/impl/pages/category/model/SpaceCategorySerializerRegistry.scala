@@ -17,7 +17,6 @@
 package biz.lobachev.annette.cms.impl.pages.category.model
 
 import biz.lobachev.annette.core.model.category._
-import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.cms.impl.pages.category.SpaceCategoryEntity._
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
@@ -36,8 +35,6 @@ object SpaceCategorySerializerRegistry extends JsonSerializerRegistry {
       // events
       JsonSerializer[CategoryCreated],
       JsonSerializer[CategoryUpdated],
-      JsonSerializer[CategoryDeleted],
-      JsonSerializer[CategoryFindQuery],
-      JsonSerializer[FindResult]
+      JsonSerializer[CategoryDeleted]
     )
 }

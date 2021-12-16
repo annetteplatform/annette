@@ -13,5 +13,20 @@
     "roleId": "admin-role",
     "principalType": "person",
     "principalId": "P0003"
+  },
+  {
+    "roleId": "cms-view-role",
+    "principalType": "descendant-unit",
+    "principalId": "ANN-RETAIL"
+  },
+  {
+    "roleId": "cms-view-role",
+    "principalType": "descendant-unit",
+    "principalId": "ANSOFT"
+  },
+  {
+    "roleId": "anonymous-space-view-role",
+    "principalType": "person",
+    "principalId": "ANONYMOUS"
   }
 ]

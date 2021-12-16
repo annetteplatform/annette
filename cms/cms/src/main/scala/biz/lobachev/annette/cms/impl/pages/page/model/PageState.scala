@@ -17,10 +17,10 @@
 package biz.lobachev.annette.cms.impl.pages.page.model
 
 import biz.lobachev.annette.cms.api.common.article.PublicationStatus
-import biz.lobachev.annette.cms.api.content.Content
 import biz.lobachev.annette.cms.api.common.article.PublicationStatus.PublicationStatus
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.cms.api.pages.space.SpaceId
+import biz.lobachev.annette.cms.impl.content.ContentInt
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
@@ -31,7 +31,7 @@ case class PageState(
   spaceId: SpaceId,
   authorId: AnnettePrincipal,
   title: String,
-  content: Content,
+  content: ContentInt,
   publicationStatus: PublicationStatus = PublicationStatus.Draft,
   publicationTimestamp: Option[OffsetDateTime] = None,
   targets: Set[AnnettePrincipal] = Set.empty,

@@ -21,10 +21,10 @@ import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.cms.api.common.article.PublicationStatus
-import biz.lobachev.annette.cms.api.content.{Content, Widget}
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.cms.api.pages.space.SpaceId
-import biz.lobachev.annette.cms.impl.pages.page.model.PageState
+import biz.lobachev.annette.cms.impl.content.{ContentInt, WidgetInt}
+import biz.lobachev.annette.cms.impl.pages.page.model.{PageInt, PageState}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.lightbend.lagom.scaladsl.persistence._
 import io.scalaland.chimney.dsl._
@@ -42,7 +42,7 @@ object PageEntity {
     spaceId: SpaceId,
     authorId: AnnettePrincipal,
     title: String,
-    content: Content,
+    content: ContentInt,
     targets: Set[AnnettePrincipal] = Set.empty,
     createdBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
@@ -64,14 +64,14 @@ object PageEntity {
 
   final case class UpdateContentSettings(
     id: String,
-    settings: JsValue,
+    settings: String,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   ) extends Command
 
   final case class UpdateWidget(
     id: PageId,
-    widget: Widget,
+    widget: WidgetInt,
     order: Option[Int] = None,
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
@@ -133,13 +133,13 @@ object PageEntity {
 
   sealed trait Confirmation
   final case class Success(updatedBy: AnnettePrincipal, updatedAt: OffsetDateTime) extends Confirmation
-  final case class SuccessPage(page: Page)                                         extends Confirmation
+  final case class SuccessPage(page: PageInt)                                      extends Confirmation
   final case object PageAlreadyExist                                               extends Confirmation
   final case object PageNotFound                                                   extends Confirmation
   final case object WidgetNotFound                                                 extends Confirmation
   final case object PagePublicationDateClearNotAllowed                             extends Confirmation
 
-  implicit val confirmationSuccessFormat: Format[Success.type]                                                       = Json.format
+  implicit val confirmationSuccessFormat: Format[Success]                                                            = Json.format
   implicit val confirmationSuccessPageFormat: Format[SuccessPage]                                                    = Json.format
   implicit val confirmationPageAlreadyExistFormat: Format[PageAlreadyExist.type]                                     = Json.format
   implicit val confirmationPageNotFoundFormat: Format[PageNotFound.type]                                             = Json.format
@@ -160,7 +160,7 @@ object PageEntity {
     spaceId: SpaceId,
     authorId: AnnettePrincipal,
     title: String,
-    content: Content,
+    content: ContentInt,
     targets: Set[AnnettePrincipal] = Set.empty,
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
@@ -179,13 +179,13 @@ object PageEntity {
   ) extends Event
   final case class ContentSettingsUpdated(
     id: String,
-    settings: JsValue,
+    settings: String,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
   final case class PageWidgetUpdated(
     id: PageId,
-    widget: Widget,
+    widget: WidgetInt,
     widgetOrder: Seq[String],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
@@ -317,7 +317,7 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
           .thenReply(cmd.replyTo)(pageEntity =>
             SuccessPage(
               pageEntity.maybeState.get
-                .into[Page]
+                .into[PageInt]
                 .withFieldComputed(_.content, c => Some(c.content))
                 .withFieldComputed(_.targets, c => Some(c.targets))
                 .transform
@@ -542,7 +542,7 @@ final case class PageEntity(maybeState: Option[PageState] = None) {
         Effect.reply(cmd.replyTo)(
           SuccessPage(
             state
-              .into[Page]
+              .into[PageInt]
               .withFieldComputed(_.content, c => if (cmd.withContent) Some(c.content) else None)
               .withFieldComputed(_.targets, c => if (cmd.withTargets) Some(c.targets) else None)
               .transform

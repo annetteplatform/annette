@@ -20,7 +20,7 @@ import biz.lobachev.annette.cms.api.common.article.PublicationStatus.Publication
 import biz.lobachev.annette.cms.api.blogs.post._
 import biz.lobachev.annette.cms.api.blogs.blog.BlogId
 import biz.lobachev.annette.cms.api.common.article.PublicationStatus
-import biz.lobachev.annette.cms.api.content.Content
+import biz.lobachev.annette.cms.impl.content.ContentInt
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
@@ -32,8 +32,8 @@ case class PostState(
   featured: Boolean,
   authorId: AnnettePrincipal,
   title: String,
-  introContent: Content,
-  content: Content,
+  introContent: ContentInt,
+  content: ContentInt,
   publicationStatus: PublicationStatus = PublicationStatus.Draft,
   publicationTimestamp: Option[OffsetDateTime] = None,
   targets: Set[AnnettePrincipal] = Set.empty,

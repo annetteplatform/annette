@@ -22,7 +22,16 @@ import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegi
 object PageSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
+      // state
       JsonSerializer[PageState],
+      // responses
+      JsonSerializer[PageEntity.Success],
+      JsonSerializer[PageEntity.SuccessPage],
+      JsonSerializer[PageEntity.PageAlreadyExist.type],
+      JsonSerializer[PageEntity.PageNotFound.type],
+      JsonSerializer[PageEntity.WidgetNotFound.type],
+      JsonSerializer[PageEntity.PagePublicationDateClearNotAllowed.type],
+      // events
       JsonSerializer[PageEntity.PageCreated],
       JsonSerializer[PageEntity.PageAuthorUpdated],
       JsonSerializer[PageEntity.PageTitleUpdated],

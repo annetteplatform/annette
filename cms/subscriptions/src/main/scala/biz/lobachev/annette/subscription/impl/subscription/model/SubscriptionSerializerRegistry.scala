@@ -15,7 +15,7 @@
  */
 
 package biz.lobachev.annette.subscription.impl.subscription.model
-import biz.lobachev.annette.subscription.impl.subscription.SubscriptionEntity.{SubscriptionCreated, SubscriptionDeleted}
+import biz.lobachev.annette.subscription.impl.subscription.SubscriptionEntity
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
 object SubscriptionSerializerRegistry extends JsonSerializerRegistry {
@@ -23,8 +23,14 @@ object SubscriptionSerializerRegistry extends JsonSerializerRegistry {
     List(
       // state
       JsonSerializer[SubscriptionState],
+      // responses
+      JsonSerializer[SubscriptionEntity.Confirmation],
+      JsonSerializer[SubscriptionEntity.Success.type],
+      JsonSerializer[SubscriptionEntity.SuccessSubscription],
+      JsonSerializer[SubscriptionEntity.NotFound.type],
+      JsonSerializer[SubscriptionEntity.AlreadyExist.type],
       // events
-      JsonSerializer[SubscriptionCreated],
-      JsonSerializer[SubscriptionDeleted]
+      JsonSerializer[SubscriptionEntity.SubscriptionCreated],
+      JsonSerializer[SubscriptionEntity.SubscriptionDeleted]
     )
 }

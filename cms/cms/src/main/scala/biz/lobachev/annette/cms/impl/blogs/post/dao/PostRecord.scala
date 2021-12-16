@@ -21,7 +21,7 @@ import biz.lobachev.annette.cms.api.blogs.post._
 import biz.lobachev.annette.cms.api.common.article.PublicationStatus
 import biz.lobachev.annette.cms.api.content.{Content, Widget}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import play.api.libs.json.JsValue
+import play.api.libs.json.Json
 
 import java.time.OffsetDateTime
 
@@ -33,9 +33,9 @@ case class PostRecord(
   title: String,
   publicationStatus: PublicationStatus.PublicationStatus = PublicationStatus.Draft,
   publicationTimestamp: Option[OffsetDateTime] = None,
-  introContentSettings: JsValue,
+  introContentSettings: String,
   introContentOrder: List[String],
-  postContentSettings: JsValue,
+  postContentSettings: String,
   postContentOrder: List[String],
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
@@ -55,14 +55,14 @@ case class PostRecord(
       publicationTimestamp = publicationTimestamp,
       introContent = maybeIntroWidgets.map(introWidgets =>
         Content(
-          introContentSettings,
+          Json.parse(introContentSettings),
           introContentOrder,
           introWidgets
         )
       ),
       content = maybePostWidgets.map(postWidgets =>
         Content(
-          postContentSettings,
+          Json.parse(postContentSettings),
           postContentOrder,
           postWidgets
         )
