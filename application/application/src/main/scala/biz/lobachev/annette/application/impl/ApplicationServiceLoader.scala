@@ -38,7 +38,6 @@ import biz.lobachev.annette.application.impl.translation_json.{
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
 import com.lightbend.lagom.scaladsl.api.LagomConfigComponent
-import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
 import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
@@ -133,7 +132,6 @@ trait ApplicationComponents
 abstract class ApplicationServiceApplication(context: LagomApplicationContext)
     extends LagomApplication(context)
     with ApplicationComponents
-    with LagomKafkaComponents
     with ClusterComponents {}
 
 object ApplicationServiceSerializerRegistry extends JsonSerializerRegistry {

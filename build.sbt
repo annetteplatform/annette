@@ -255,7 +255,6 @@ def applicationProject(pr: Project) =
     .settings(
       libraryDependencies ++= Seq(
         lagomScaladslPersistenceCassandra,
-        lagomScaladslKafkaBroker,
         lagomScaladslTestKit,
         Dependencies.macwire,
         Dependencies.chimney
@@ -302,7 +301,6 @@ def authorizationProject(pr: Project) =
     .settings(
       libraryDependencies ++= Seq(
         lagomScaladslPersistenceCassandra,
-        lagomScaladslKafkaBroker,
         lagomScaladslTestKit,
         Dependencies.macwire,
         Dependencies.chimney
@@ -349,7 +347,6 @@ def orgStructureProject(pr: Project) =
     .settings(
       libraryDependencies ++= Seq(
         lagomScaladslPersistenceCassandra,
-        lagomScaladslKafkaBroker,
         lagomScaladslTestKit,
         Dependencies.macwire,
         Dependencies.chimney,

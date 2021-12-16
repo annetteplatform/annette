@@ -34,7 +34,6 @@ import biz.lobachev.annette.org_structure.impl.hierarchy.entity.{HierarchyEntity
 import biz.lobachev.annette.org_structure.impl.role._
 import biz.lobachev.annette.org_structure.impl.role.dao.{OrgRoleDbDao, OrgRoleIndexDao}
 import biz.lobachev.annette.org_structure.impl.role.model.OrgRoleSerializerRegistry
-import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
 import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
@@ -65,7 +64,6 @@ class OrgStructureServiceLoader extends LagomApplicationLoader {
 
 abstract class OrgStructureServiceApplication(context: LagomApplicationContext)
     extends LagomApplication(context)
-    with LagomKafkaComponents
     with CassandraPersistenceComponents
     with AhcWSComponents
     with ClusterComponents {

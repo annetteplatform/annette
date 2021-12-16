@@ -26,7 +26,6 @@ import biz.lobachev.annette.authorization.impl.role.dao.{RoleDbDao, RoleIndexDao
 import biz.lobachev.annette.authorization.impl.role.model.RoleSerializerRegistry
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
-import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaComponents
 import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
@@ -57,7 +56,6 @@ class AuthorizationServiceLoader extends LagomApplicationLoader {
 
 abstract class AuthorizationServiceApplication(context: LagomApplicationContext)
     extends LagomApplication(context)
-    with LagomKafkaComponents
     with CassandraPersistenceComponents
     with AhcWSComponents
     with ClusterComponents {
