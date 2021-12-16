@@ -27,6 +27,7 @@ import biz.lobachev.annette.application.impl.application.dao.{ApplicationDbDao, 
 import biz.lobachev.annette.core.model.indexing.FindResult
 import com.typesafe.config.Config
 import org.slf4j.LoggerFactory
+import io.scalaland.chimney.dsl._
 
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
@@ -70,17 +71,32 @@ class ApplicationEntityService(
 
   def createApplication(payload: CreateApplicationPayload): Future[Done] =
     refFor(payload.id)
-      .ask[ApplicationEntity.Confirmation](ApplicationEntity.CreateApplication(payload, _))
+      .ask[ApplicationEntity.Confirmation] { replyTo =>
+        payload
+          .into[ApplicationEntity.CreateApplication]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      }
       .map(convertSuccess)
 
   def updateApplication(payload: UpdateApplicationPayload): Future[Done] =
     refFor(payload.id)
-      .ask[ApplicationEntity.Confirmation](ApplicationEntity.UpdateApplication(payload, _))
+      .ask[ApplicationEntity.Confirmation] { replyTo =>
+        payload
+          .into[ApplicationEntity.UpdateApplication]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      }
       .map(convertSuccess)
 
   def deleteApplication(payload: DeleteApplicationPayload): Future[Done] =
     refFor(payload.id)
-      .ask[ApplicationEntity.Confirmation](ApplicationEntity.DeleteApplication(payload, _))
+      .ask[ApplicationEntity.Confirmation] { replyTo =>
+        payload
+          .into[ApplicationEntity.DeleteApplication]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      }
       .map(convertSuccess)
 
   def getApplication(id: ApplicationId): Future[Application] =

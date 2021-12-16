@@ -19,12 +19,12 @@ package biz.lobachev.annette.application.impl.translation_json.model
 import java.time.OffsetDateTime
 import biz.lobachev.annette.core.model.{LanguageId, TranslationId}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import play.api.libs.json.{JsObject, Json}
+import play.api.libs.json.{Json}
 
 case class TranslationJsonState(
   translationId: TranslationId,
   languageId: LanguageId,
-  json: JsObject,
+  json: String,
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
 )

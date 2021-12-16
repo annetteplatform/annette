@@ -21,7 +21,7 @@ import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.application.api.translation._
-import biz.lobachev.annette.application.impl.translation_json.model.TranslationJsonState
+import biz.lobachev.annette.application.impl.translation_json.model.{TranslationJsonInt, TranslationJsonState}
 import biz.lobachev.annette.core.model.LanguageId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.lightbend.lagom.scaladsl.persistence._
@@ -36,17 +36,26 @@ object TranslationJsonEntity {
   trait CommandSerializable
   sealed trait Command extends CommandSerializable
 
-  final case class UpdateTranslationJson(payload: UpdateTranslationJsonPayload, replyTo: ActorRef[Confirmation])
-      extends Command
-  final case class DeleteTranslationJson(payload: DeleteTranslationJsonPayload, replyTo: ActorRef[Confirmation])
-      extends Command
+  final case class UpdateTranslationJson(
+    translationId: TranslationId,
+    languageId: LanguageId,
+    json: String,
+    updatedBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  ) extends Command
+  final case class DeleteTranslationJson(
+    translationId: TranslationId,
+    languageId: LanguageId,
+    deletedBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  ) extends Command
   final case class GetTranslationJson(id: TranslationId, languageId: LanguageId, replyTo: ActorRef[Confirmation])
       extends Command
 
   sealed trait Confirmation
-  final case object Success                                                 extends Confirmation
-  final case class SuccessTranslationJson(translationJson: TranslationJson) extends Confirmation
-  final case object TranslationNotFound                                     extends Confirmation
+  final case object Success                                                       extends Confirmation
+  final case class SuccessTranslationJson(translationJsonInt: TranslationJsonInt) extends Confirmation
+  final case object TranslationNotFound                                           extends Confirmation
 
   implicit val confirmationSuccessFormat: Format[Success.type]                          = Json.format
   implicit val confirmationSuccessTranslationJsonFormat: Format[SuccessTranslationJson] = Json.format
@@ -64,7 +73,7 @@ object TranslationJsonEntity {
   final case class TranslationJsonUpdated(
     translationId: TranslationId,
     languageId: LanguageId,
-    json: JsObject,
+    json: String,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -114,7 +123,7 @@ final case class TranslationJsonEntity(maybeState: Option[TranslationJsonState] 
     }
 
   def updateTranslationJson(cmd: UpdateTranslationJson): ReplyEffect[Event, TranslationJsonEntity] = {
-    val event = cmd.payload.transformInto[TranslationJsonUpdated]
+    val event = cmd.transformInto[TranslationJsonUpdated]
     Effect.persist(event).thenReply(cmd.replyTo)(_ => Success)
   }
 
@@ -122,7 +131,7 @@ final case class TranslationJsonEntity(maybeState: Option[TranslationJsonState] 
     maybeState match {
       case None    => Effect.reply(cmd.replyTo)(TranslationNotFound)
       case Some(_) =>
-        val event = Seq(cmd.payload.transformInto[TranslationJsonDeleted])
+        val event = Seq(cmd.transformInto[TranslationJsonDeleted])
         Effect.persist(event).thenReply(cmd.replyTo)(_ => Success)
     }
 
@@ -132,7 +141,7 @@ final case class TranslationJsonEntity(maybeState: Option[TranslationJsonState] 
       case Some(state) =>
         Effect.reply(cmd.replyTo)(
           SuccessTranslationJson(
-            state.transformInto[TranslationJson]
+            state.transformInto[TranslationJsonInt]
           )
         )
     }

@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+import io.scalaland.chimney.dsl._
 
 class LanguageEntityService(
   clusterSharding: ClusterSharding,
@@ -71,17 +72,32 @@ class LanguageEntityService(
 
   def createLanguage(payload: CreateLanguagePayload): Future[Done] =
     refFor(payload.id)
-      .ask[LanguageEntity.Confirmation](LanguageEntity.CreateLanguage(payload, _))
+      .ask[LanguageEntity.Confirmation] { replyTo =>
+        payload
+          .into[LanguageEntity.CreateLanguage]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      }
       .map(convertSuccess)
 
   def updateLanguage(payload: UpdateLanguagePayload): Future[Done] =
     refFor(payload.id)
-      .ask[LanguageEntity.Confirmation](LanguageEntity.UpdateLanguage(payload, _))
+      .ask[LanguageEntity.Confirmation] { replyTo =>
+        payload
+          .into[LanguageEntity.UpdateLanguage]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      }
       .map(convertSuccess)
 
   def deleteLanguage(payload: DeleteLanguagePayload): Future[Done] =
     refFor(payload.id)
-      .ask[LanguageEntity.Confirmation](LanguageEntity.DeleteLanguage(payload, _))
+      .ask[LanguageEntity.Confirmation] { replyTo =>
+        payload
+          .into[LanguageEntity.DeleteLanguage]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      }
       .map(convertSuccess)
 
   def getLanguageById(id: LanguageId, fromReadSide: Boolean = true): Future[Language] =

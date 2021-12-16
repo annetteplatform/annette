@@ -18,8 +18,16 @@ package biz.lobachev.annette.core.model.translation
 
 import biz.lobachev.annette.core.model.TranslationId
 import biz.lobachev.annette.core.utils.Encase
+import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
 import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonSubTypes(
+  Array(
+    new JsonSubTypes.Type(value = classOf[TextCaption], name = "text"),
+    new JsonSubTypes.Type(value = classOf[TranslationCaption], name = "translation")
+  )
+)
 sealed trait Caption {}
 
 final case class TextCaption(

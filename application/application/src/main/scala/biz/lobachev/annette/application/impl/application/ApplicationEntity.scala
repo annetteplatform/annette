@@ -34,11 +34,34 @@ import io.scalaland.chimney.dsl._
 object ApplicationEntity {
 
   trait CommandSerializable
-  sealed trait Command                                                                                   extends CommandSerializable
-  final case class CreateApplication(payload: CreateApplicationPayload, replyTo: ActorRef[Confirmation]) extends Command
-  final case class UpdateApplication(payload: UpdateApplicationPayload, replyTo: ActorRef[Confirmation]) extends Command
-  final case class DeleteApplication(payload: DeleteApplicationPayload, replyTo: ActorRef[Confirmation]) extends Command
-  final case class GetApplication(id: ApplicationId, replyTo: ActorRef[Confirmation])                    extends Command
+  sealed trait Command extends CommandSerializable
+  final case class CreateApplication(
+    id: ApplicationId,
+    name: String,
+    caption: Caption,
+    translations: Set[TranslationId] = Set.empty,
+    serverUrl: String,
+    createdBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  )                    extends Command
+  final case class UpdateApplication(
+    id: ApplicationId,
+    name: String,
+    caption: Caption,
+    translations: Set[TranslationId] = Set.empty,
+    serverUrl: String,
+    updatedBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  )                    extends Command
+  final case class DeleteApplication(
+    id: ApplicationId,
+    deletedBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  )                    extends Command
+  final case class GetApplication(
+    id: ApplicationId,
+    replyTo: ActorRef[Confirmation]
+  )                    extends Command
 
   sealed trait Confirmation
   final case object Success                                     extends Confirmation
@@ -146,7 +169,7 @@ final case class ApplicationEntity(maybeState: Option[ApplicationState] = None) 
     maybeState match {
       case Some(_) => Effect.reply(cmd.replyTo)(ApplicationAlreadyExist)
       case _       =>
-        val event = cmd.payload.transformInto[ApplicationCreated]
+        val event = cmd.transformInto[ApplicationCreated]
         Effect.persist(event).thenReply(cmd.replyTo)(_ => Success)
     }
 
@@ -156,14 +179,14 @@ final case class ApplicationEntity(maybeState: Option[ApplicationState] = None) 
       case Some(state) =>
         val events =
           Seq(
-            if (state.name != cmd.payload.name) Some(cmd.payload.transformInto[ApplicationNameUpdated])
+            if (state.name != cmd.name) Some(cmd.transformInto[ApplicationNameUpdated])
             else None,
-            if (state.caption != cmd.payload.caption) Some(cmd.payload.transformInto[ApplicationCaptionUpdated])
+            if (state.caption != cmd.caption) Some(cmd.transformInto[ApplicationCaptionUpdated])
             else None,
-            if (state.translations != cmd.payload.translations)
-              Some(cmd.payload.transformInto[ApplicationTranslationsUpdated])
+            if (state.translations != cmd.translations)
+              Some(cmd.transformInto[ApplicationTranslationsUpdated])
             else None,
-            if (state.serverUrl != cmd.payload.serverUrl) Some(cmd.payload.transformInto[ApplicationServerUrlUpdated])
+            if (state.serverUrl != cmd.serverUrl) Some(cmd.transformInto[ApplicationServerUrlUpdated])
             else None
           ).flatten
         Effect.persist(events).thenReply(cmd.replyTo)(_ => Success)
@@ -173,7 +196,7 @@ final case class ApplicationEntity(maybeState: Option[ApplicationState] = None) 
     maybeState match {
       case None => Effect.reply(cmd.replyTo)(ApplicationNotFound)
       case _    =>
-        val event = cmd.payload.transformInto[ApplicationDeleted]
+        val event = cmd.transformInto[ApplicationDeleted]
         Effect.persist(event).thenReply(cmd.replyTo)(_ => Success)
     }
 

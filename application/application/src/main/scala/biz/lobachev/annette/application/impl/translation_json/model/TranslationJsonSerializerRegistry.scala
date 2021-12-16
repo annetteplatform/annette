@@ -30,6 +30,7 @@ object TranslationJsonSerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[DeleteTranslationJsonPayload],
       JsonSerializer[UpdateTranslationJsonPayload],
       // responses
+      JsonSerializer[TranslationJsonEntity.Confirmation],
       JsonSerializer[TranslationJsonEntity.Success.type],
       JsonSerializer[TranslationJsonEntity.SuccessTranslationJson],
       JsonSerializer[TranslationJsonEntity.TranslationNotFound.type],

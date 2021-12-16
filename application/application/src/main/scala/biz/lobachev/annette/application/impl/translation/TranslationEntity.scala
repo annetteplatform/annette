@@ -32,11 +32,22 @@ import play.api.libs.json._
 object TranslationEntity {
 
   trait CommandSerializable
-  sealed trait Command                                                                                   extends CommandSerializable
-  final case class CreateTranslation(payload: CreateTranslationPayload, replyTo: ActorRef[Confirmation]) extends Command
-  final case class UpdateTranslation(payload: UpdateTranslationPayload, replyTo: ActorRef[Confirmation]) extends Command
-  final case class DeleteTranslation(payload: DeleteTranslationPayload, replyTo: ActorRef[Confirmation]) extends Command
-  final case class GetTranslation(id: TranslationId, replyTo: ActorRef[Confirmation])                    extends Command
+  sealed trait Command                                                                extends CommandSerializable
+  final case class CreateTranslation(
+    id: TranslationId,
+    name: String,
+    createdBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  )                                                                                   extends Command
+  final case class UpdateTranslation(
+    id: TranslationId,
+    name: String,
+    updatedBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  )                                                                                   extends Command
+  final case class DeleteTranslation(id: TranslationId, deletedBy: AnnettePrincipal, replyTo: ActorRef[Confirmation])
+      extends Command
+  final case class GetTranslation(id: TranslationId, replyTo: ActorRef[Confirmation]) extends Command
 
   sealed trait Confirmation
   final case object Success                                     extends Confirmation
@@ -119,7 +130,7 @@ final case class TranslationEntity(maybeState: Option[TranslationState] = None) 
     maybeState match {
       case Some(_) => Effect.reply(cmd.replyTo)(TranslationAlreadyExist)
       case _       =>
-        val event = cmd.payload.transformInto[TranslationCreated]
+        val event = cmd.transformInto[TranslationCreated]
         Effect.persist(event).thenReply(cmd.replyTo)(_ => Success)
     }
 
@@ -127,7 +138,7 @@ final case class TranslationEntity(maybeState: Option[TranslationState] = None) 
     maybeState match {
       case None => Effect.reply(cmd.replyTo)(TranslationNotFound)
       case _    =>
-        val event = cmd.payload.transformInto[TranslationUpdated]
+        val event = cmd.transformInto[TranslationUpdated]
         Effect.persist(event).thenReply(cmd.replyTo)(_ => Success)
     }
 
@@ -135,7 +146,7 @@ final case class TranslationEntity(maybeState: Option[TranslationState] = None) 
     maybeState match {
       case None    => Effect.reply(cmd.replyTo)(TranslationNotFound)
       case Some(_) =>
-        val event = Seq(cmd.payload.transformInto[TranslationDeleted])
+        val event = Seq(cmd.transformInto[TranslationDeleted])
         Effect.persist(event).thenReply(cmd.replyTo)(_ => Success)
     }
 

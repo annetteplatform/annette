@@ -32,6 +32,7 @@ import scala.collection.immutable.{Map, Seq, Set}
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+import io.scalaland.chimney.dsl._
 
 class TranslationJsonEntityService(
   clusterSharding: ClusterSharding,
@@ -61,19 +62,30 @@ class TranslationJsonEntityService(
 
   private def convertSuccessTranslationJson(confirmation: TranslationJsonEntity.Confirmation): TranslationJson =
     confirmation match {
-      case TranslationJsonEntity.SuccessTranslationJson(translationJson) => translationJson
-      case TranslationJsonEntity.TranslationNotFound                     => throw TranslationNotFound()
-      case _                                                             => throw new RuntimeException("Match fail")
+      case TranslationJsonEntity.SuccessTranslationJson(translationJsonInt) => translationJsonInt.toTranslationJson
+      case TranslationJsonEntity.TranslationNotFound                        => throw TranslationNotFound()
+      case _                                                                => throw new RuntimeException("Match fail")
     }
 
   def updateTranslationJson(payload: UpdateTranslationJsonPayload): Future[Done] =
     refFor(payload.translationId, payload.languageId)
-      .ask[TranslationJsonEntity.Confirmation](TranslationJsonEntity.UpdateTranslationJson(payload, _))
+      .ask[TranslationJsonEntity.Confirmation] { replyTo =>
+        payload
+          .into[TranslationJsonEntity.UpdateTranslationJson]
+          .withFieldComputed(_.json, _.json.toString())
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      }
       .map(convertSuccess)
 
   def deleteTranslationJson(payload: DeleteTranslationJsonPayload): Future[Done] =
     refFor(payload.translationId, payload.languageId)
-      .ask[TranslationJsonEntity.Confirmation](TranslationJsonEntity.DeleteTranslationJson(payload, _))
+      .ask[TranslationJsonEntity.Confirmation] { replyTo =>
+        payload
+          .into[TranslationJsonEntity.DeleteTranslationJson]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      }
       .map(convertSuccess)
 
   def deleteTranslationJsons(payload: DeleteTranslationPayload): Future[Done] =

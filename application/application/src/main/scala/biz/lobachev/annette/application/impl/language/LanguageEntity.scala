@@ -33,11 +33,22 @@ import play.api.libs.json._
 object LanguageEntity {
 
   trait CommandSerializable
-  sealed trait Command                                                                             extends CommandSerializable
-  final case class CreateLanguage(payload: CreateLanguagePayload, replyTo: ActorRef[Confirmation]) extends Command
-  final case class UpdateLanguage(payload: UpdateLanguagePayload, replyTo: ActorRef[Confirmation]) extends Command
-  final case class DeleteLanguage(payload: DeleteLanguagePayload, replyTo: ActorRef[Confirmation]) extends Command
-  final case class GetLanguage(id: LanguageId, replyTo: ActorRef[Confirmation])                    extends Command
+  sealed trait Command                                                          extends CommandSerializable
+  final case class CreateLanguage(
+    id: LanguageId,
+    name: String,
+    createdBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  )                                                                             extends Command
+  final case class UpdateLanguage(
+    id: LanguageId,
+    name: String,
+    updatedBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  )                                                                             extends Command
+  final case class DeleteLanguage(id: LanguageId, deletedBy: AnnettePrincipal, replyTo: ActorRef[Confirmation])
+      extends Command
+  final case class GetLanguage(id: LanguageId, replyTo: ActorRef[Confirmation]) extends Command
 
   sealed trait Confirmation
   final case object Success                            extends Confirmation
@@ -120,7 +131,7 @@ final case class LanguageEntity(maybeState: Option[LanguageState] = None) {
     maybeState match {
       case Some(_) => Effect.reply(cmd.replyTo)(LanguageAlreadyExist)
       case _       =>
-        val event = cmd.payload.transformInto[LanguageCreated]
+        val event = cmd.transformInto[LanguageCreated]
         Effect.persist(event).thenReply(cmd.replyTo)(_ => Success)
     }
 
@@ -128,7 +139,7 @@ final case class LanguageEntity(maybeState: Option[LanguageState] = None) {
     maybeState match {
       case None => Effect.reply(cmd.replyTo)(LanguageNotFound)
       case _    =>
-        val event = cmd.payload.transformInto[LanguageUpdated]
+        val event = cmd.transformInto[LanguageUpdated]
         Effect.persist(event).thenReply(cmd.replyTo)(_ => Success)
     }
 
@@ -136,7 +147,7 @@ final case class LanguageEntity(maybeState: Option[LanguageState] = None) {
     maybeState match {
       case None => Effect.reply(cmd.replyTo)(LanguageNotFound)
       case _    =>
-        val event = cmd.payload.transformInto[LanguageDeleted]
+        val event = cmd.transformInto[LanguageDeleted]
         Effect.persist(event).thenReply(cmd.replyTo)(_ => Success)
     }
 

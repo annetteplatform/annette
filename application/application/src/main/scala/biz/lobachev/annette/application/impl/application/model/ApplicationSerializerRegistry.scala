@@ -16,12 +16,7 @@
 
 package biz.lobachev.annette.application.impl.application.model
 
-import biz.lobachev.annette.application.api.application.{
-  Application,
-  CreateApplicationPayload,
-  DeleteApplicationPayload,
-  UpdateApplicationPayload
-}
+import biz.lobachev.annette.application.api.application.Application
 import biz.lobachev.annette.application.impl.application.ApplicationEntity
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.translation.Caption
@@ -30,17 +25,18 @@ import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegi
 object ApplicationSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
+      // state
       JsonSerializer[ApplicationState],
       JsonSerializer[Application],
       JsonSerializer[AnnettePrincipal],
       JsonSerializer[Caption],
-      JsonSerializer[DeleteApplicationPayload],
-      JsonSerializer[UpdateApplicationPayload],
-      JsonSerializer[CreateApplicationPayload],
+      // responses
+      JsonSerializer[ApplicationEntity.Confirmation],
       JsonSerializer[ApplicationEntity.Success.type],
       JsonSerializer[ApplicationEntity.SuccessApplication],
       JsonSerializer[ApplicationEntity.ApplicationAlreadyExist.type],
       JsonSerializer[ApplicationEntity.ApplicationNotFound.type],
+      // events
       JsonSerializer[ApplicationEntity.ApplicationCreated],
       JsonSerializer[ApplicationEntity.ApplicationNameUpdated],
       JsonSerializer[ApplicationEntity.ApplicationCaptionUpdated],

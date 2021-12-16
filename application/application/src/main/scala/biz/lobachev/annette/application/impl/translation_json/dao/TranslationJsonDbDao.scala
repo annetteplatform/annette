@@ -19,6 +19,7 @@ package biz.lobachev.annette.application.impl.translation_json.dao
 import akka.Done
 import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.application.impl.translation_json.TranslationJsonEntity
+import biz.lobachev.annette.application.impl.translation_json.model.TranslationJsonInt
 import biz.lobachev.annette.core.model.LanguageId
 import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
@@ -34,7 +35,7 @@ private[impl] class TranslationJsonDbDao(
 
   import ctx._
 
-  private val schema = quote(querySchema[TranslationJson]("translation_jsons"))
+  private val schema = quote(querySchema[TranslationJsonInt]("translation_jsons"))
 
   private implicit val jsEncoder        = genericJsonEncoder[JsObject]
   private implicit val jsDecoder        = genericJsonDecoder[JsObject]
@@ -62,7 +63,7 @@ private[impl] class TranslationJsonDbDao(
   }
 
   def updateTranslationJson(event: TranslationJsonEntity.TranslationJsonUpdated) = {
-    val entity = event.transformInto[TranslationJson]
+    val entity = event.transformInto[TranslationJsonInt]
     ctx.run(schema.insert(lift(entity)))
   }
 
@@ -96,7 +97,7 @@ private[impl] class TranslationJsonDbDao(
             e.languageId == lift(languageId)
         )
       )
-      .map(_.headOption)
+      .map(_.headOption.map(_.toTranslationJson))
 
   def getTranslationJsons(ids: Set[TranslationId], languageId: LanguageId): Future[Seq[TranslationJson]] =
     ctx
@@ -106,4 +107,5 @@ private[impl] class TranslationJsonDbDao(
             e.languageId == lift(languageId)
         )
       )
+      .map(_.map(_.toTranslationJson))
 }

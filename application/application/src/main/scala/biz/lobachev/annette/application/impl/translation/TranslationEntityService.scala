@@ -31,6 +31,7 @@ import java.util.concurrent.TimeUnit
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
+import io.scalaland.chimney.dsl._
 
 class TranslationEntityService(
   clusterSharding: ClusterSharding,
@@ -70,17 +71,32 @@ class TranslationEntityService(
 
   def createTranslation(payload: CreateTranslationPayload): Future[Done] =
     refFor(payload.id)
-      .ask[TranslationEntity.Confirmation](TranslationEntity.CreateTranslation(payload, _))
+      .ask[TranslationEntity.Confirmation] { replyTo =>
+        payload
+          .into[TranslationEntity.CreateTranslation]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      }
       .map(convertSuccess)
 
   def updateTranslationName(payload: UpdateTranslationPayload): Future[Done] =
     refFor(payload.id)
-      .ask[TranslationEntity.Confirmation](TranslationEntity.UpdateTranslation(payload, _))
+      .ask[TranslationEntity.Confirmation] { replyTo =>
+        payload
+          .into[TranslationEntity.UpdateTranslation]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      }
       .map(convertSuccess)
 
   def deleteTranslation(payload: DeleteTranslationPayload): Future[Done] =
     refFor(payload.id)
-      .ask[TranslationEntity.Confirmation](TranslationEntity.DeleteTranslation(payload, _))
+      .ask[TranslationEntity.Confirmation] { replyTo =>
+        payload
+          .into[TranslationEntity.DeleteTranslation]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      }
       .map(convertSuccess)
 
   def getTranslationById(id: TranslationId, fromReadSide: Boolean = true): Future[Translation] =

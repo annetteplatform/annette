@@ -15,12 +15,7 @@
  */
 
 package biz.lobachev.annette.application.impl.language.model
-import biz.lobachev.annette.application.api.language.{
-  CreateLanguagePayload,
-  DeleteLanguagePayload,
-  Language,
-  UpdateLanguagePayload
-}
+import biz.lobachev.annette.application.api.language.Language
 import biz.lobachev.annette.application.impl.language.LanguageEntity
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
@@ -28,16 +23,17 @@ import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegi
 object LanguageSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
+      // state
       JsonSerializer[LanguageState],
       JsonSerializer[Language],
       JsonSerializer[AnnettePrincipal],
-      JsonSerializer[DeleteLanguagePayload],
-      JsonSerializer[UpdateLanguagePayload],
-      JsonSerializer[CreateLanguagePayload],
+      // responses
+      JsonSerializer[LanguageEntity.Confirmation],
       JsonSerializer[LanguageEntity.Success.type],
       JsonSerializer[LanguageEntity.SuccessLanguage],
       JsonSerializer[LanguageEntity.LanguageAlreadyExist.type],
       JsonSerializer[LanguageEntity.LanguageNotFound.type],
+      // events
       JsonSerializer[LanguageEntity.LanguageCreated],
       JsonSerializer[LanguageEntity.LanguageUpdated],
       JsonSerializer[LanguageEntity.LanguageDeleted]
