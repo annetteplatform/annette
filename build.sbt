@@ -4,7 +4,7 @@ import play.sbt.routes.RoutesKeys
 
 scalaVersion := "2.13.3"
 
-ThisBuild / version := "0.3.1-SNAPSHOT"
+ThisBuild / version := "0.3.1"
 ThisBuild / scalaVersion := "2.13.3"
 
 ThisBuild / organization := "biz.lobachev.annette"
