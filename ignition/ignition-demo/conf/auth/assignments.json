@@ -28,5 +28,10 @@
     "roleId": "anonymous-space-view-role",
     "principalType": "person",
     "principalId": "ANONYMOUS"
+  },
+  {
+    "roleId": "cms-editor-role",
+    "principalType": "person",
+    "principalId": "P0030"
   }
 ]

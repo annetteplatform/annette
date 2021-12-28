@@ -130,6 +130,7 @@ trait CmsService {
     withTargets: Option[Boolean]
   ): Future[Seq[Post]]
   def getPostViews(payload: GetPostViewsPayload): Future[Seq[Post]]
+  def canEditPost(payload: CanAccessToEntityPayload): Future[Boolean]
   def canAccessToPost(payload: CanAccessToEntityPayload): Future[Boolean]
   def findPosts(query: PostFindQuery): Future[FindResult]
 
@@ -192,6 +193,7 @@ trait CmsService {
     withTargets: Option[Boolean]
   ): Future[Seq[Page]]
   def getPageViews(payload: GetPageViewsPayload): Future[Seq[Page]]
+  def canEditPage(payload: CanAccessToEntityPayload): Future[Boolean]
   def canAccessToPage(payload: CanAccessToEntityPayload): Future[Boolean]
   def findPages(query: PageFindQuery): Future[FindResult]
 

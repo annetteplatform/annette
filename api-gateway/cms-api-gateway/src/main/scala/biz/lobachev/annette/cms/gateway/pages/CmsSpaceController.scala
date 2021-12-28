@@ -16,12 +16,13 @@
 
 package biz.lobachev.annette.cms.gateway.pages
 
-import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
+import biz.lobachev.annette.api_gateway_core.authentication.{AuthenticatedAction, AuthenticatedRequest}
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.CmsService
 import biz.lobachev.annette.cms.api.common.{
   ActivatePayload,
   AssignPrincipalPayload,
+  CanAccessToEntityPayload,
   DeactivatePayload,
   DeletePayload,
   UnassignPrincipalPayload,
@@ -31,14 +32,13 @@ import biz.lobachev.annette.cms.api.common.{
 }
 import biz.lobachev.annette.cms.api.pages.space._
 import biz.lobachev.annette.cms.gateway.Permissions
-import biz.lobachev.annette.cms.gateway.Permissions.MAINTAIN_ALL_SPACES
 import biz.lobachev.annette.cms.gateway.pages.space._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, Action, ControllerComponents}
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CmsSpaceController @Inject() (
@@ -49,13 +49,18 @@ class CmsSpaceController @Inject() (
   implicit val ec: ExecutionContext
 ) extends AbstractController(cc) {
 
-  val spaceSubscriptionType = "space"
+  private def canEditSpace[T](spaceId: SpaceId)(implicit request: AuthenticatedRequest[T]): Future[Boolean] =
+    for {
+      canEditSpace <- cmsService.canEditSpacePages(CanAccessToEntityPayload(spaceId, request.subject.principals.toSet))
+      maintainAll  <- if (canEditSpace) Future.successful(true)
+                      else authorizer.checkAll(Permissions.MAINTAIN_ALL_POSTS)
+    } yield canEditSpace || maintainAll
 
   // ****************************** Spaces ******************************
 
   def createSpace =
     authenticated.async(parse.json[CreateSpacePayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+      authorizer.performCheck(canEditSpace(request.body.id)) {
         val payload = request.body
           .into[CreateSpacePayload]
           .withFieldConst(_.createdBy, request.subject.principals.head)
@@ -69,7 +74,7 @@ class CmsSpaceController @Inject() (
 
   def updateSpaceName =
     authenticated.async(parse.json[UpdateSpaceNamePayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+      authorizer.performCheck(canEditSpace(request.body.id)) {
         val payload = request.body
           .into[UpdateNamePayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -83,7 +88,7 @@ class CmsSpaceController @Inject() (
 
   def updateSpaceDescription =
     authenticated.async(parse.json[UpdateSpaceDescriptionPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+      authorizer.performCheck(canEditSpace(request.body.id)) {
         val payload = request.body
           .into[UpdateDescriptionPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -97,7 +102,7 @@ class CmsSpaceController @Inject() (
 
   def updateSpaceCategoryId =
     authenticated.async(parse.json[UpdateSpaceCategoryPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+      authorizer.performCheck(canEditSpace(request.body.id)) {
         val payload = request.body
           .into[UpdateCategoryIdPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -111,7 +116,7 @@ class CmsSpaceController @Inject() (
 
   def assignSpaceAuthorPrincipal =
     authenticated.async(parse.json[AssignSpacePrincipalPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+      authorizer.performCheck(canEditSpace(request.body.id)) {
         val payload = request.body
           .into[AssignPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -125,7 +130,7 @@ class CmsSpaceController @Inject() (
 
   def unassignSpaceAuthorPrincipal =
     authenticated.async(parse.json[UnassignSpacePrincipalPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+      authorizer.performCheck(canEditSpace(request.body.id)) {
         val payload = request.body
           .into[UnassignPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -139,7 +144,7 @@ class CmsSpaceController @Inject() (
 
   def assignSpaceTargetPrincipal =
     authenticated.async(parse.json[AssignSpacePrincipalPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+      authorizer.performCheck(canEditSpace(request.body.id)) {
         val payload = request.body
           .into[AssignPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -153,7 +158,7 @@ class CmsSpaceController @Inject() (
 
   def unassignSpaceTargetPrincipal =
     authenticated.async(parse.json[UnassignSpacePrincipalPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+      authorizer.performCheck(canEditSpace(request.body.id)) {
         val payload = request.body
           .into[UnassignPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -167,7 +172,7 @@ class CmsSpaceController @Inject() (
 
   def activateSpace =
     authenticated.async(parse.json[ActivateSpacePayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+      authorizer.performCheck(canEditSpace(request.body.id)) {
         val payload = request.body
           .into[ActivatePayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -181,7 +186,7 @@ class CmsSpaceController @Inject() (
 
   def deactivateSpace =
     authenticated.async(parse.json[DeactivateSpacePayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+      authorizer.performCheck(canEditSpace(request.body.id)) {
         val payload = request.body
           .into[DeactivatePayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -195,7 +200,7 @@ class CmsSpaceController @Inject() (
 
   def deleteSpace =
     authenticated.async(parse.json[DeleteSpacePayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+      authorizer.performCheck(canEditSpace(request.body.id)) {
         val payload = request.body
           .into[DeletePayload]
           .withFieldConst(_.deletedBy, request.subject.principals.head)
@@ -208,7 +213,7 @@ class CmsSpaceController @Inject() (
 
   def getSpaceById(id: SpaceId, fromReadSide: Boolean) =
     authenticated.async { implicit request =>
-      authorizer.performCheckAny(MAINTAIN_ALL_SPACES) {
+      authorizer.performCheck(canEditSpace(id)) {
         for {
           space <- cmsService.getSpaceById(id, fromReadSide)
         } yield Ok(Json.toJson(space))
@@ -217,17 +222,25 @@ class CmsSpaceController @Inject() (
 
   def getSpacesById(fromReadSide: Boolean) =
     authenticated.async(parse.json[Set[SpaceId]]) { implicit request =>
-      authorizer.performCheckAny(MAINTAIN_ALL_SPACES) {
-        val ids = request.request.body
+      val filteredSpacesFuture = filterSpaces(request.request.body)
+      authorizer.performCheck(filteredSpacesFuture.map(_.nonEmpty)) {
         for {
-          spaces <- cmsService.getSpacesById(ids, fromReadSide)
+          filteredSpaces <- filteredSpacesFuture
+          spaces         <- cmsService.getSpacesById(filteredSpaces, fromReadSide)
         } yield Ok(Json.toJson(spaces))
       }
     }
 
+  private def filterSpaces[T](ids: Set[SpaceId])(implicit request: AuthenticatedRequest[T]): Future[Set[SpaceId]] =
+    ids
+      .map(id => canEditSpace(id).map(f => id -> f))
+      .foldLeft(Future.successful(Set.empty[SpaceId])) { (acc, a) =>
+        a.flatMap { case id -> f => if (f) acc.map(_ + id) else acc }
+      }
+
   def findSpaces: Action[SpaceFindQueryDto] =
     authenticated.async(parse.json[SpaceFindQueryDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES) {
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_SPACES, Permissions.FIND_ALL_SPACES) {
         val payload = request.request.body
         val query   = payload.transformInto[SpaceFindQuery]
         for {

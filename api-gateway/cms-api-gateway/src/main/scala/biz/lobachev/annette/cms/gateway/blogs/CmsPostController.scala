@@ -17,8 +17,13 @@
 package biz.lobachev.annette.cms.gateway.blogs
 
 import akka.stream.Materializer
-import biz.lobachev.annette.api_gateway_core.authentication.{AuthenticatedAction, CookieAuthenticatedAction}
+import biz.lobachev.annette.api_gateway_core.authentication.{
+  AuthenticatedAction,
+  AuthenticatedRequest,
+  CookieAuthenticatedAction
+}
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
+import biz.lobachev.annette.cms.api.blogs.blog.BlogId
 import biz.lobachev.annette.cms.api.blogs.post._
 import biz.lobachev.annette.cms.api.common.article.{
   PublishPayload,
@@ -27,7 +32,12 @@ import biz.lobachev.annette.cms.api.common.article.{
   UpdatePublicationTimestampPayload,
   UpdateTitlePayload
 }
-import biz.lobachev.annette.cms.api.common.{AssignPrincipalPayload, DeletePayload, UnassignPrincipalPayload}
+import biz.lobachev.annette.cms.api.common.{
+  AssignPrincipalPayload,
+  CanAccessToEntityPayload,
+  DeletePayload,
+  UnassignPrincipalPayload
+}
 import biz.lobachev.annette.cms.api.content.{
   ChangeWidgetOrderPayload,
   DeleteWidgetPayload,
@@ -45,7 +55,7 @@ import play.api.mvc.{AbstractController, Action, ControllerComponents}
 
 import java.util.UUID
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CmsPostController @Inject() (
@@ -59,13 +69,25 @@ class CmsPostController @Inject() (
   implicit val materializer: Materializer
 ) extends AbstractController(cc) {
 
-  val blogSubscriptionType = "blog"
+  private def canEditPostByBlogId[T](blogId: BlogId)(implicit request: AuthenticatedRequest[T]): Future[Boolean] =
+    for {
+      canEditBlog <- cmsService.canEditBlogPosts(CanAccessToEntityPayload(blogId, request.subject.principals.toSet))
+      canEditPost <- if (canEditBlog) Future.successful(true)
+                     else authorizer.checkAll(Permissions.MAINTAIN_ALL_POSTS)
+    } yield canEditBlog || canEditPost
+
+  private def canEditPostByPostId[T](postId: PostId)(implicit request: AuthenticatedRequest[T]): Future[Boolean] =
+    for {
+      canEditBlog <- cmsService.canEditPost(CanAccessToEntityPayload(postId, request.subject.principals.toSet))
+      canEditPost <- if (canEditBlog) Future.successful(true)
+                     else authorizer.checkAll(Permissions.MAINTAIN_ALL_POSTS)
+    } yield canEditBlog || canEditPost
 
   // ****************************** Post ******************************
 
   def createPost =
     authenticated.async(parse.json[CreatePostPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+      authorizer.performCheck(canEditPostByBlogId(request.body.blogId)) {
         val payload = request.body
           .into[CreatePostPayload]
           .withFieldConst(_.createdBy, request.subject.principals.head)
@@ -78,7 +100,7 @@ class CmsPostController @Inject() (
 
   def updatePostTitle =
     authenticated.async(parse.json[UpdatePostTitlePayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+      authorizer.performCheck(canEditPostByPostId(request.body.id)) {
         val payload = request.body
           .into[UpdateTitlePayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -91,7 +113,7 @@ class CmsPostController @Inject() (
 
   def updatePostAuthor =
     authenticated.async(parse.json[UpdatePostAuthorPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+      authorizer.performCheck(canEditPostByPostId(request.body.id)) {
         val payload = request.body
           .into[UpdateAuthorPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -117,7 +139,7 @@ class CmsPostController @Inject() (
 
   def updatePostWidget =
     authenticated.async(parse.json[UpdateWidgetPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+      authorizer.performCheck(canEditPostByPostId(request.body.id)) {
         val payload = request.body
           .into[UpdateWidgetPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -130,7 +152,7 @@ class CmsPostController @Inject() (
 
   def changePostWidgetOrder =
     authenticated.async(parse.json[ChangePostWidgetOrderPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+      authorizer.performCheck(canEditPostByPostId(request.body.id)) {
         val payload = request.body
           .into[ChangeWidgetOrderPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -143,7 +165,7 @@ class CmsPostController @Inject() (
 
   def deletePostWidget =
     authenticated.async(parse.json[DeletePostWidgetPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+      authorizer.performCheck(canEditPostByPostId(request.body.id)) {
         val payload = request.body
           .into[DeleteWidgetPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -156,7 +178,7 @@ class CmsPostController @Inject() (
 
   def updatePostPublicationTimestamp =
     authenticated.async(parse.json[UpdatePostPublicationTimestampPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+      authorizer.performCheck(canEditPostByPostId(request.body.id)) {
         val payload = request.body
           .into[UpdatePublicationTimestampPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -169,7 +191,7 @@ class CmsPostController @Inject() (
 
   def publishPost(id: String) =
     authenticated.async { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+      authorizer.performCheck(canEditPostByPostId(id)) {
         val payload = PublishPayload(id, request.subject.principals.head)
         for {
           updated <- cmsService.publishPost(payload)
@@ -179,7 +201,7 @@ class CmsPostController @Inject() (
 
   def unpublishPost(id: String) =
     authenticated.async { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+      authorizer.performCheck(canEditPostByPostId(id)) {
         val payload = UnpublishPayload(id, request.subject.principals.head)
         for {
           updated <- cmsService.unpublishPost(payload)
@@ -189,7 +211,7 @@ class CmsPostController @Inject() (
 
   def updatePostFeatured =
     authenticated.async(parse.json[UpdatePostFeaturedPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+      authorizer.performCheck(canEditPostByPostId(request.body.id)) {
         val payload = request.body
           .into[UpdatePostFeaturedPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -202,7 +224,7 @@ class CmsPostController @Inject() (
 
   def assignPostTargetPrincipal =
     authenticated.async(parse.json[AssignPostTargetPrincipalPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+      authorizer.performCheck(canEditPostByPostId(request.body.id)) {
         val payload = request.body
           .into[AssignPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -215,7 +237,7 @@ class CmsPostController @Inject() (
 
   def unassignPostTargetPrincipal =
     authenticated.async(parse.json[UnassignPostTargetPrincipalPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+      authorizer.performCheck(canEditPostByPostId(request.body.id)) {
         val payload = request.body
           .into[UnassignPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -228,7 +250,7 @@ class CmsPostController @Inject() (
 
   def deletePost =
     authenticated.async(parse.json[DeletePostPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+      authorizer.performCheck(canEditPostByPostId(request.body.id)) {
         val payload = request.body
           .into[DeletePayload]
           .withFieldConst(_.deletedBy, request.subject.principals.head)
@@ -241,7 +263,7 @@ class CmsPostController @Inject() (
 
   def findPosts: Action[PostFindQueryDto] =
     authenticated.async(parse.json[PostFindQueryDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS, Permissions.FIND_ALL_POSTS) {
         val payload = request.request.body
         for {
           result <- {
@@ -272,13 +294,21 @@ class CmsPostController @Inject() (
     withTargets: Option[Boolean] = None
   ) =
     authenticated.async(parse.json[Set[PostId]]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
-        val ids = request.request.body
+      val filteredPostsFuture = filterPosts(request.request.body)
+      authorizer.performCheck(filteredPostsFuture.map(_.nonEmpty)) {
         for {
-          result <- cmsService.getPostsById(ids, fromReadSide, withIntro, withContent, withTargets)
+          filteredPosts <- filteredPostsFuture
+          result        <- cmsService.getPostsById(filteredPosts, fromReadSide, withIntro, withContent, withTargets)
         } yield Ok(Json.toJson(result))
       }
     }
+
+  private def filterPosts[T](ids: Set[PostId])(implicit request: AuthenticatedRequest[T]): Future[Set[PostId]] =
+    ids
+      .map(id => canEditPostByPostId(id).map(f => id -> f))
+      .foldLeft(Future.successful(Set.empty[PostId])) { (acc, a) =>
+        a.flatMap { case id -> f => if (f) acc.map(_ + id) else acc }
+      }
 
   def getPostById(
     id: PostId,
@@ -288,7 +318,7 @@ class CmsPostController @Inject() (
     withTargets: Option[Boolean] = None
   ) =
     authenticated.async { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+      authorizer.performCheck(canEditPostByPostId(id)) {
         for {
           result <- cmsService.getPostById(id, fromReadSide, withIntro, withContent, withTargets)
         } yield Ok(Json.toJson(result))
@@ -297,7 +327,7 @@ class CmsPostController @Inject() (
 
   def uploadPostFile(postId: String, fileType: String) =
     cookieAuthenticated.async(parse.multipartFormData) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+      authorizer.performCheck(canEditPostByPostId(postId)) {
         val file    = request.body.files.head
         val fileId  = UUID.randomUUID().toString
         val payload = StoreFilePayload(
@@ -317,7 +347,7 @@ class CmsPostController @Inject() (
 
   def removePostFile(postId: String, fileType: String, fileId: String) =
     authenticated.async { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+      authorizer.performCheck(canEditPostByPostId(postId)) {
         for {
           _ <- cmsService.removeFile(
                  RemoveFilePayload(
@@ -333,7 +363,7 @@ class CmsPostController @Inject() (
 
   def getPostFiles(postId: String) =
     authenticated.async { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_POSTS) {
+      authorizer.performCheck(canEditPostByPostId(postId)) {
         for {
           result <- cmsService.getFiles(s"post-$postId")
         } yield Ok(Json.toJson(result))

@@ -4,7 +4,7 @@ import play.sbt.routes.RoutesKeys
 
 scalaVersion := "2.13.3"
 
-ThisBuild / version := "0.3.1"
+ThisBuild / version := "0.3.2-SNAPSHOT"
 ThisBuild / scalaVersion := "2.13.3"
 
 ThisBuild / organization := "biz.lobachev.annette"
@@ -80,7 +80,7 @@ lazy val root = (project in file("."))
     `api-gateway`,
     // initialization application
     `ignition-core`,
-    `demo-ignition`,
+//    `demo-ignition`,
     // API gateways
     `application-api-gateway`,
     `authorization-api-gateway`,
@@ -552,7 +552,7 @@ lazy val `cms-api-gateway` = (project in file("api-gateway/cms-api-gateway"))
     `subscriptions-api`
   )
 
-lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/ignition-demo"))
+//lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/ignition-demo"))
 lazy val `application`      = applicationProject(project in file("application/application"))
 lazy val `authorization`    = authorizationProject(project in file("authorization/authorization"))
 lazy val `org-structure`    = orgStructureProject(project in file("principals/org-structure"))

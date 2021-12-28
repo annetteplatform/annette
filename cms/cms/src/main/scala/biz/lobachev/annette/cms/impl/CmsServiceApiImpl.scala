@@ -353,6 +353,14 @@ class CmsServiceApiImpl(
       postEntityService.getPostViews(payload)
     }
 
+  override def canEditPost: ServiceCall[CanAccessToEntityPayload, Boolean] =
+    ServiceCall { payload =>
+      for {
+        post   <- postEntityService.getPostById(payload.id, false, false, false, false)
+        result <- blogEntityService.canEditBlogPosts(payload.copy(id = post.blogId))
+      } yield result
+    }
+
   override def canAccessToPost: ServiceCall[CanAccessToEntityPayload, Boolean] =
     ServiceCall { payload =>
       postEntityService.canAccessToPost(payload)
@@ -620,6 +628,14 @@ class CmsServiceApiImpl(
   override def getPageViews: ServiceCall[GetPageViewsPayload, Seq[Page]] =
     ServiceCall { payload =>
       pageEntityService.getPageViews(payload)
+    }
+
+  override def canEditPage: ServiceCall[CanAccessToEntityPayload, Boolean] =
+    ServiceCall { payload =>
+      for {
+        page   <- pageEntityService.getPageById(payload.id, false, false, false)
+        result <- spaceEntityService.canEditSpacePages(payload.copy(id = page.spaceId))
+      } yield result
     }
 
   override def canAccessToPage: ServiceCall[CanAccessToEntityPayload, Boolean] =

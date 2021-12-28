@@ -114,6 +114,32 @@
   },
 
   {
+    "id": "cms-editor-role",
+    "name": "CMS Editor",
+    "description": "",
+    "permissions": [
+      {
+        "id": "annette.cms.blog.find.all"
+      },
+      {
+        "id": "annette.cms.post.find.all"
+      },
+      {
+        "id": "annette.cms.space.find.all"
+      },
+      {
+        "id": "annette.cms.page.find.all"
+      },
+      {
+        "id": "annette.person.person.view.all"
+      },
+      {
+        "id": "annette.orgStructure.hierarchy.view.all"
+      }
+    ]
+  },
+
+  {
     "id": "anonymous-space-view-role",
     "name": "Anonymous space view role",
     "description": "",

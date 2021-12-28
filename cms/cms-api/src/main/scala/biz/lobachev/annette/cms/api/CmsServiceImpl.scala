@@ -217,6 +217,9 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def getPostViews(payload: GetPostViewsPayload): Future[Seq[Post]] =
     api.getPostViews.invoke(payload)
 
+  override def canEditPost(payload: CanAccessToEntityPayload): Future[Boolean] =
+    api.canEditPost.invoke(payload)
+
   override def canAccessToPost(payload: CanAccessToEntityPayload): Future[Boolean] =
     api.canAccessToPost.invoke(payload)
 
@@ -368,6 +371,9 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
 
   override def getPageViews(payload: GetPageViewsPayload): Future[Seq[Page]] =
     api.getPageViews.invoke(payload)
+
+  override def canEditPage(payload: CanAccessToEntityPayload): Future[Boolean] =
+    api.canEditPage.invoke(payload)
 
   override def canAccessToPage(payload: CanAccessToEntityPayload): Future[Boolean] =
     api.canAccessToPage.invoke(payload)

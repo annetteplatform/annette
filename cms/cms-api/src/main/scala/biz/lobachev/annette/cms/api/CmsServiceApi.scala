@@ -129,6 +129,7 @@ trait CmsServiceApi extends Service {
     withTargets: Option[Boolean] = None
   ): ServiceCall[Set[PostId], Seq[Post]]
   def getPostViews: ServiceCall[GetPostViewsPayload, Seq[Post]]
+  def canEditPost: ServiceCall[CanAccessToEntityPayload, Boolean]
   def canAccessToPost: ServiceCall[CanAccessToEntityPayload, Boolean]
   def findPosts: ServiceCall[PostFindQuery, FindResult]
 
@@ -192,6 +193,7 @@ trait CmsServiceApi extends Service {
     withTargets: Option[Boolean] = None
   ): ServiceCall[Set[PageId], Seq[Page]]
   def getPageViews: ServiceCall[GetPageViewsPayload, Seq[Page]]
+  def canEditPage: ServiceCall[CanAccessToEntityPayload, Boolean]
   def canAccessToPage: ServiceCall[CanAccessToEntityPayload, Boolean]
   def findPages: ServiceCall[PageFindQuery, FindResult]
 
@@ -267,6 +269,7 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/getPostById/:id/:fromReadSide?withIntro&withContent&withTargets", getPostById _),
         pathCall("/api/cms/v1/getPostsById/:fromReadSide?withIntro&withContent&withTargets", getPostsById _),
         pathCall("/api/cms/v1/getPostViews", getPostViews),
+        pathCall("/api/cms/v1/canEditPost", canEditPost),
         pathCall("/api/cms/v1/canAccessToPost", canAccessToPost),
         pathCall("/api/cms/v1/findPosts", findPosts),
         pathCall("/api/cms/v1/viewPost", viewPost),
@@ -314,6 +317,7 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/getPageById/:id/:fromReadSide?withContent&withTargets", getPageById _),
         pathCall("/api/cms/v1/getPagesById/:fromReadSide?withContent&withTargets", getPagesById _),
         pathCall("/api/cms/v1/getPageViews", getPageViews),
+        pathCall("/api/cms/v1/canEditPage", canEditPage),
         pathCall("/api/cms/v1/canAccessToPage", canAccessToPage),
         pathCall("/api/cms/v1/findPages", findPages),
         pathCall("/api/cms/v1/viewPage", viewPage),

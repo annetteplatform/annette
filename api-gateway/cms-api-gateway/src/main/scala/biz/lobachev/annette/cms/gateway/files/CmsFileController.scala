@@ -65,7 +65,23 @@ class CmsFileController @Inject() (
                          )
                        )
                      else Future.successful(false)
-        result    <- if (canAccess)
+        canEdit   <- if (canAccess) Future.successful(false)
+                     else if (objectId.startsWith(POST_PREFIX))
+                       cmsService.canEditPost(
+                         CanAccessToEntityPayload(
+                           objectId.drop(POST_PREFIX.length),
+                           request.subject.principals.toSet
+                         )
+                       )
+                     else if (objectId.startsWith(PAGE_PREFIX))
+                       cmsService.canEditPage(
+                         CanAccessToEntityPayload(
+                           objectId.drop(PAGE_PREFIX.length),
+                           request.subject.principals.toSet
+                         )
+                       )
+                     else Future.successful(false)
+        result    <- if (canAccess || canEdit)
                        request.headers.get("Range") match {
                          case Some(rangeHeader) => getFileRange(rangeHeader, objectId, fileType, fileId)
                          case None              => getFileInternal(request, objectId, fileType, fileId)

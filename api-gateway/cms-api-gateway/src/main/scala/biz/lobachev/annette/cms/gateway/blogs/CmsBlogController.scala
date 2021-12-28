@@ -16,13 +16,14 @@
 
 package biz.lobachev.annette.cms.gateway.blogs
 
-import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
+import biz.lobachev.annette.api_gateway_core.authentication.{AuthenticatedAction, AuthenticatedRequest}
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.CmsService
 import biz.lobachev.annette.cms.api.blogs.blog._
 import biz.lobachev.annette.cms.api.common.{
   ActivatePayload,
   AssignPrincipalPayload,
+  CanAccessToEntityPayload,
   DeactivatePayload,
   DeletePayload,
   UnassignPrincipalPayload,
@@ -31,14 +32,13 @@ import biz.lobachev.annette.cms.api.common.{
   UpdateNamePayload
 }
 import biz.lobachev.annette.cms.gateway.Permissions
-import biz.lobachev.annette.cms.gateway.Permissions.MAINTAIN_ALL_BLOGS
 import biz.lobachev.annette.cms.gateway.blogs.blog._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, Action, ControllerComponents}
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 @Singleton
 class CmsBlogController @Inject() (
@@ -49,13 +49,18 @@ class CmsBlogController @Inject() (
   implicit val ec: ExecutionContext
 ) extends AbstractController(cc) {
 
-  val blogSubscriptionType = "blog"
+  private def canEditBlog[T](blogId: BlogId)(implicit request: AuthenticatedRequest[T]): Future[Boolean] =
+    for {
+      canEditBlog <- cmsService.canEditBlogPosts(CanAccessToEntityPayload(blogId, request.subject.principals.toSet))
+      maintainAll <- if (canEditBlog) Future.successful(true)
+                     else authorizer.checkAll(Permissions.MAINTAIN_ALL_POSTS)
+    } yield canEditBlog || maintainAll
 
   // ****************************** Blogs ******************************
 
   def createBlog =
     authenticated.async(parse.json[CreateBlogPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
+      authorizer.performCheck(canEditBlog(request.body.id)) {
         val payload = request.body
           .into[CreateBlogPayload]
           .withFieldConst(_.createdBy, request.subject.principals.head)
@@ -69,7 +74,7 @@ class CmsBlogController @Inject() (
 
   def updateBlogName =
     authenticated.async(parse.json[UpdateBlogNamePayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
+      authorizer.performCheck(canEditBlog(request.body.id)) {
         val payload = request.body
           .into[UpdateNamePayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -83,7 +88,7 @@ class CmsBlogController @Inject() (
 
   def updateBlogDescription =
     authenticated.async(parse.json[UpdateBlogDescriptionPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
+      authorizer.performCheck(canEditBlog(request.body.id)) {
         val payload = request.body
           .into[UpdateDescriptionPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -97,7 +102,7 @@ class CmsBlogController @Inject() (
 
   def updateBlogCategoryId =
     authenticated.async(parse.json[UpdateBlogCategoryPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
+      authorizer.performCheck(canEditBlog(request.body.id)) {
         val payload = request.body
           .into[UpdateCategoryIdPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -111,7 +116,7 @@ class CmsBlogController @Inject() (
 
   def assignBlogAuthorPrincipal =
     authenticated.async(parse.json[AssignBlogPrincipalPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
+      authorizer.performCheck(canEditBlog(request.body.id)) {
         val payload = request.body
           .into[AssignPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -125,7 +130,7 @@ class CmsBlogController @Inject() (
 
   def unassignBlogAuthorPrincipal =
     authenticated.async(parse.json[UnassignBlogPrincipalPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
+      authorizer.performCheck(canEditBlog(request.body.id)) {
         val payload = request.body
           .into[UnassignPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -139,7 +144,7 @@ class CmsBlogController @Inject() (
 
   def assignBlogTargetPrincipal =
     authenticated.async(parse.json[AssignBlogPrincipalPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
+      authorizer.performCheck(canEditBlog(request.body.id)) {
         val payload = request.body
           .into[AssignPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -153,7 +158,7 @@ class CmsBlogController @Inject() (
 
   def unassignBlogTargetPrincipal =
     authenticated.async(parse.json[UnassignBlogPrincipalPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
+      authorizer.performCheck(canEditBlog(request.body.id)) {
         val payload = request.body
           .into[UnassignPrincipalPayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -167,7 +172,7 @@ class CmsBlogController @Inject() (
 
   def activateBlog =
     authenticated.async(parse.json[ActivateBlogPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
+      authorizer.performCheck(canEditBlog(request.body.id)) {
         val payload = request.body
           .into[ActivatePayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -181,7 +186,7 @@ class CmsBlogController @Inject() (
 
   def deactivateBlog =
     authenticated.async(parse.json[DeactivateBlogPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
+      authorizer.performCheck(canEditBlog(request.body.id)) {
         val payload = request.body
           .into[DeactivatePayload]
           .withFieldConst(_.updatedBy, request.subject.principals.head)
@@ -195,7 +200,7 @@ class CmsBlogController @Inject() (
 
   def deleteBlog =
     authenticated.async(parse.json[DeleteBlogPayloadDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
+      authorizer.performCheck(canEditBlog(request.body.id)) {
         val payload = request.body
           .into[DeletePayload]
           .withFieldConst(_.deletedBy, request.subject.principals.head)
@@ -208,7 +213,7 @@ class CmsBlogController @Inject() (
 
   def getBlogById(id: BlogId, fromReadSide: Boolean) =
     authenticated.async { implicit request =>
-      authorizer.performCheckAny(MAINTAIN_ALL_BLOGS) {
+      authorizer.performCheck(canEditBlog(id)) {
         for {
           blog <- cmsService.getBlogById(id, fromReadSide)
         } yield Ok(Json.toJson(blog))
@@ -217,17 +222,25 @@ class CmsBlogController @Inject() (
 
   def getBlogsById(fromReadSide: Boolean) =
     authenticated.async(parse.json[Set[BlogId]]) { implicit request =>
-      authorizer.performCheckAny(MAINTAIN_ALL_BLOGS) {
-        val ids = request.request.body
+      val filteredBlogsFuture = filterBlogs(request.request.body)
+      authorizer.performCheck(filteredBlogsFuture.map(_.nonEmpty)) {
         for {
-          blogs <- cmsService.getBlogsById(ids, fromReadSide)
+          filteredBlogs <- filteredBlogsFuture
+          blogs         <- cmsService.getBlogsById(filteredBlogs, fromReadSide)
         } yield Ok(Json.toJson(blogs))
       }
     }
 
+  private def filterBlogs[T](ids: Set[BlogId])(implicit request: AuthenticatedRequest[T]): Future[Set[BlogId]] =
+    ids
+      .map(id => canEditBlog(id).map(f => id -> f))
+      .foldLeft(Future.successful(Set.empty[BlogId])) { (acc, a) =>
+        a.flatMap { case id -> f => if (f) acc.map(_ + id) else acc }
+      }
+
   def findBlogs: Action[BlogFindQueryDto] =
     authenticated.async(parse.json[BlogFindQueryDto]) { implicit request =>
-      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS) {
+      authorizer.performCheckAny(Permissions.MAINTAIN_ALL_BLOGS, Permissions.FIND_ALL_BLOGS) {
         val payload = request.request.body
         val query   = payload.transformInto[BlogFindQuery]
         for {
