@@ -25,6 +25,7 @@ object AssignmentSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
       // state
+      JsonSerializer[AssignmentEntity],
       JsonSerializer[AssignmentState],
       JsonSerializer[FindAssignmentsQuery],
       JsonSerializer[FindPermissions],

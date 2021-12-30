@@ -24,6 +24,7 @@ object TranslationJsonSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
       // state
+      JsonSerializer[TranslationJsonEntity],
       JsonSerializer[TranslationJsonState],
       JsonSerializer[TranslationJson],
       JsonSerializer[AnnettePrincipal],

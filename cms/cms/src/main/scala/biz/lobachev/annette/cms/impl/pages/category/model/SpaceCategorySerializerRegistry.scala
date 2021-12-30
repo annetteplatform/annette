@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.cms.impl.pages.category.model
 
+import biz.lobachev.annette.cms.impl.pages.category.SpaceCategoryEntity
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.cms.impl.pages.category.SpaceCategoryEntity._
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
@@ -25,6 +26,7 @@ object SpaceCategorySerializerRegistry extends JsonSerializerRegistry {
     List(
       // state
       JsonSerializer[Category],
+      JsonSerializer[SpaceCategoryEntity],
       JsonSerializer[SpaceCategoryState],
       // responses
       JsonSerializer[Confirmation],

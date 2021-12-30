@@ -27,6 +27,7 @@ object SpaceSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
       // state
+      JsonSerializer[SpaceEntity],
       JsonSerializer[SpaceState],
       JsonSerializer[SpaceView],
       JsonSerializer[Space],

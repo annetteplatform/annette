@@ -17,6 +17,7 @@
 package biz.lobachev.annette.org_structure.impl.role.model
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.org_structure.api.role._
+import biz.lobachev.annette.org_structure.impl.role.OrgRoleEntity
 import biz.lobachev.annette.org_structure.impl.role.OrgRoleEntity.{
   AlreadyExist,
   Confirmation,
@@ -34,6 +35,7 @@ object OrgRoleSerializerRegistry extends JsonSerializerRegistry {
     List(
       // state
       JsonSerializer[OrgRole],
+      JsonSerializer[OrgRoleEntity],
       JsonSerializer[OrgRoleState],
       JsonSerializer[CreateOrgRolePayload],
       JsonSerializer[UpdateOrgRolePayload],

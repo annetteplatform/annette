@@ -23,6 +23,7 @@ object FileSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
       // state
+      JsonSerializer[FileEntity],
       JsonSerializer[FileState],
       // responses
       JsonSerializer[FileEntity.Success.type],

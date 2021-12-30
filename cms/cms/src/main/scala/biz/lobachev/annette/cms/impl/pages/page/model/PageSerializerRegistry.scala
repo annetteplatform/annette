@@ -23,6 +23,7 @@ object PageSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
       // state
+      JsonSerializer[PageEntity],
       JsonSerializer[PageState],
       // responses
       JsonSerializer[PageEntity.Success],

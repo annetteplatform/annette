@@ -22,6 +22,7 @@ object SubscriptionSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
       // state
+      JsonSerializer[SubscriptionEntity],
       JsonSerializer[SubscriptionState],
       // responses
       JsonSerializer[SubscriptionEntity.Confirmation],

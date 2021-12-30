@@ -1,6 +1,7 @@
 queries.sql
 build-local.sh
 run-local.sh
+run-cm.sh
 test-local.sh
 .metals
 .bloop

@@ -22,6 +22,7 @@ object GroupSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
       // state
+      JsonSerializer[PrincipalGroupEntity],
       JsonSerializer[PrincipalGroupState],
       // responses
       JsonSerializer[PrincipalGroupEntity.Success.type],

@@ -17,6 +17,7 @@
 package biz.lobachev.annette.org_structure.impl.category.model
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.org_structure.api.category._
+import biz.lobachev.annette.org_structure.impl.category.CategoryEntity
 import biz.lobachev.annette.org_structure.impl.category.CategoryEntity.{
   AlreadyExist,
   CategoryCreated,
@@ -34,6 +35,7 @@ object CategorySerializerRegistry extends JsonSerializerRegistry {
     List(
       // state
       JsonSerializer[OrgCategory],
+      JsonSerializer[CategoryEntity],
       JsonSerializer[CategoryState],
       JsonSerializer[CreateCategoryPayload],
       JsonSerializer[UpdateCategoryPayload],

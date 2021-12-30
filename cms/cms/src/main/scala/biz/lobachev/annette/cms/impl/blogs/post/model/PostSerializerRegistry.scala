@@ -23,6 +23,7 @@ object PostSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
       // state
+      JsonSerializer[PostEntity],
       JsonSerializer[PostState],
       // responses
       JsonSerializer[PostEntity.Success],

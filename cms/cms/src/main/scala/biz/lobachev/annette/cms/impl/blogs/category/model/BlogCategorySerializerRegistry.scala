@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.cms.impl.blogs.category.model
 
+import biz.lobachev.annette.cms.impl.blogs.category.BlogCategoryEntity
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.cms.impl.blogs.category.BlogCategoryEntity._
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
@@ -25,6 +26,7 @@ object BlogCategorySerializerRegistry extends JsonSerializerRegistry {
     List(
       // state
       JsonSerializer[Category],
+      JsonSerializer[BlogCategoryEntity],
       JsonSerializer[BlogCategoryState],
       // responses
       JsonSerializer[Confirmation],

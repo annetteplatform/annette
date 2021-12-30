@@ -26,6 +26,7 @@ object ApplicationSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
       // state
+      JsonSerializer[ApplicationEntity],
       JsonSerializer[ApplicationState],
       JsonSerializer[Application],
       JsonSerializer[AnnettePrincipal],

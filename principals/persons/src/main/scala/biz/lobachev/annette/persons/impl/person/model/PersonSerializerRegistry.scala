@@ -17,6 +17,7 @@
 package biz.lobachev.annette.persons.impl.person.model
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.persons.api.person._
+import biz.lobachev.annette.persons.impl.person.PersonEntity
 import biz.lobachev.annette.persons.impl.person.PersonEntity.{
   AlreadyExist,
   Confirmation,
@@ -35,6 +36,7 @@ object PersonSerializerRegistry extends JsonSerializerRegistry {
     List(
       // state
       JsonSerializer[Person],
+      JsonSerializer[PersonEntity],
       JsonSerializer[PersonState],
       JsonSerializer[CreatePersonPayload],
       JsonSerializer[UpdatePersonPayload],

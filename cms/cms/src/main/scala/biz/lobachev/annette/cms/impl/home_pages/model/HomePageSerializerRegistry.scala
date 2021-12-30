@@ -26,6 +26,7 @@ object HomePageSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
       // state
+      JsonSerializer[HomePageEntity],
       JsonSerializer[HomePageState],
       JsonSerializer[OffsetDateTime],
       JsonSerializer[AnnettePrincipal],

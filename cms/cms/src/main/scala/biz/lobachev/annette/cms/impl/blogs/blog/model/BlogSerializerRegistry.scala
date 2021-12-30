@@ -26,6 +26,7 @@ import java.time.OffsetDateTime
 object BlogSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
+      JsonSerializer[BlogEntity],
       JsonSerializer[BlogState],
       JsonSerializer[BlogView],
       JsonSerializer[Blog],

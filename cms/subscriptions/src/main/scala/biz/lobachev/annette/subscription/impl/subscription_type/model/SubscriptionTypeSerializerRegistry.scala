@@ -22,6 +22,7 @@ import biz.lobachev.annette.subscription.api.subscription_type.{
   SubscriptionType,
   UpdateSubscriptionTypePayload
 }
+import biz.lobachev.annette.subscription.impl.subscription_type.SubscriptionTypeEntity
 import biz.lobachev.annette.subscription.impl.subscription_type.SubscriptionTypeEntity._
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
@@ -30,6 +31,7 @@ object SubscriptionTypeSerializerRegistry extends JsonSerializerRegistry {
     List(
       // state
       JsonSerializer[SubscriptionType],
+      JsonSerializer[SubscriptionTypeEntity],
       JsonSerializer[SubscriptionTypeState],
       JsonSerializer[CreateSubscriptionTypePayload],
       JsonSerializer[UpdateSubscriptionTypePayload],

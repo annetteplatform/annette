@@ -25,6 +25,7 @@ object RoleSerializerRegistry extends JsonSerializerRegistry {
   override def serializers =
     List(
       // state
+      JsonSerializer[RoleEntity],
       JsonSerializer[RoleState],
       JsonSerializer[AuthRoleFindQuery],
       JsonSerializer[AuthRole],
