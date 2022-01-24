@@ -15,7 +15,12 @@ object Dependencies {
     val pureConfig              = "0.17.1"
     val quill                   = "3.10.0"
     val alpakkaS3               = "3.0.4"
-//    val akkaHttp                = "10.2.0"
+    val slick                   = "3.3.3"
+    val slick_hikaricp          = "3.3.3"
+    val postgresql              = "42.3.1"
+    val http4s                  = "0.23.7"
+    val cats                    = "2.3.0"
+    val playJson                = "2.8.2"
   }
 
   val macwire = "com.softwaremill.macwire" %% "macros" % Version.macwire % "provided"
@@ -59,5 +64,22 @@ object Dependencies {
     "com.typesafe.akka"  %% "akka-http"              % LagomVersion.akkaHttp,
     "com.typesafe.akka"  %% "akka-http-xml"          % LagomVersion.akkaHttp
   )
+
+  val slick: Seq[ModuleID] = Seq(
+    "com.typesafe.slick" %% "slick"          % Version.slick,
+    "com.typesafe.slick" %% "slick-hikaricp" % Version.slick_hikaricp
+  )
+
+  val postgresql: ModuleID = "org.postgresql" % "postgresql" % Version.postgresql
+
+  val http4s = Seq(
+//    "org.http4s" %% "http4s-dsl"          % Version.http4s,
+//    "org.http4s" %% "http4s-blaze-server" % Version.http4s,
+    "org.http4s" %% "http4s-blaze-client" % Version.http4s
+  )
+
+  val cats = "org.typelevel" %% "cats-core" % Version.cats
+
+  val playJson = "com.typesafe.play" %% "play-json" % Version.playJson
 
 }
