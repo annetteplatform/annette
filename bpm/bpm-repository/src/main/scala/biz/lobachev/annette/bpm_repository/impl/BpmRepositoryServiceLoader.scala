@@ -17,7 +17,10 @@
 package biz.lobachev.annette.bpm_repository.impl
 
 import biz.lobachev.annette.bpm_repository.api.BpmRepositoryServiceApi
-import biz.lobachev.annette.bpm_repository.impl.model.BpmModelService
+import biz.lobachev.annette.bpm_repository.impl.bp.BusinessProcessService
+import biz.lobachev.annette.bpm_repository.impl.db.BpmRepositorySchema
+import biz.lobachev.annette.bpm_repository.impl.model.{BpmModelActions, BpmModelService}
+import biz.lobachev.annette.bpm_repository.impl.schema.{DataSchemaActions, DataSchemaService}
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 //import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
@@ -55,8 +58,20 @@ abstract class BpmRepositoryServiceApplication(context: LagomApplicationContext)
 
   override lazy val lagomServer = serverFor[BpmRepositoryServiceApi](wire[BpmRepositoryServiceApiImpl])
 
-  lazy val bpmRepositoryDBProvider = wire[BpmRepositoryDBProvider]
-  lazy val bpmModelService         = wire[BpmModelService]
+  lazy val database               = DBProvider.databaseFactory("bpm-repository-db")
+  lazy val bpmModelActions        = wire[BpmModelActions]
+  lazy val bpmModelService        = wire[BpmModelService]
+  lazy val dataSchemaActions      = wire[DataSchemaActions]
+  lazy val dataSchemaService      = wire[DataSchemaService]
+  lazy val businessProcessService = wire[BusinessProcessService]
+
+  println()
+  println("************************ BpmRepositorySchema ************************ ")
+  println()
+  println(BpmRepositorySchema.dataDefinition.createStatements.mkString(";\n"))
+  println()
+  println()
+  println()
 }
 
 //object BpmRepositoryRepositorySerializerRegistry extends JsonSerializerRegistry {

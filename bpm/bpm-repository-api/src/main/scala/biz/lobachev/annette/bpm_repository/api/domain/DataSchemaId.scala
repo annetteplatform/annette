@@ -18,10 +18,10 @@ package biz.lobachev.annette.bpm_repository.api.domain
 
 import biz.lobachev.annette.bpm_repository.api.rdb.serializers.WrappedStringSerializer
 
-case class BpmModelId(value: String) extends AnyVal
+case class DataSchemaId(value: String) extends AnyVal
 
-object BpmModelId extends WrappedStringSerializer[BpmModelId] {
-  override def getInstance(value: String): BpmModelId = BpmModelId(value)
-  override def getValue(instance: BpmModelId): String = instance.value
-  override val maxLength: Int                         = 80
+object DataSchemaId extends WrappedStringSerializer[DataSchemaId] {
+  override def getInstance(value: String): DataSchemaId = DataSchemaId(value)
+  override def getValue(instance: DataSchemaId): String = instance.value
+  override val maxLength: Int                           = 80
 }

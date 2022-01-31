@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.bpm_repository.api.domain
+package biz.lobachev.annette.bpm_repository.api.bp
 
-import biz.lobachev.annette.bpm_repository.api.rdb.serializers.WrappedStringSerializer
+import biz.lobachev.annette.bpm_repository.api.domain.BusinessProcessId
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import play.api.libs.json.Json
 
-case class BpmModelId(value: String) extends AnyVal
+case class DeleteBusinessProcessPayload(
+  id: BusinessProcessId,
+  updatedBy: AnnettePrincipal
+)
 
-object BpmModelId extends WrappedStringSerializer[BpmModelId] {
-  override def getInstance(value: String): BpmModelId = BpmModelId(value)
-  override def getValue(instance: BpmModelId): String = instance.value
-  override val maxLength: Int                         = 80
+object DeleteBusinessProcessPayload {
+  implicit val format = Json.format[DeleteBusinessProcessPayload]
 }

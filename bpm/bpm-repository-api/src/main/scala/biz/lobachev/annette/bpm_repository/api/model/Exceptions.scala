@@ -24,19 +24,13 @@ import biz.lobachev.annette.core.exception.{
 }
 import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
 
-object InvalidModel         extends AnnetteTransportExceptionCompanion2 {
+object InvalidModel extends AnnetteTransportExceptionCompanion2 {
   val ErrorCode       = TransportErrorCode.BadRequest
   val MessageCode     = "annette.bpm.invalidModel"
   val Arg1Key: String = "notation"
   val Arg2Key: String = "xml"
 
   def apply(notation: Notation.Notation, xml: String): AnnetteTransportException = InvalidModel(notation.toString, xml)
-}
-object UpdateBpmModelFailed extends AnnetteTransportExceptionCompanion2 {
-  val ErrorCode       = TransportErrorCode.InternalServerError
-  val MessageCode     = "annette.bpm.bpmModel.updateFailed"
-  val Arg1Key: String = "action"
-  val Arg2Key: String = "value"
 }
 
 object BpmModelAlreadyExist extends AnnetteTransportExceptionCompanion1 {

@@ -14,14 +14,10 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.bpm_repository.api.domain
+package biz.lobachev.annette.bpm_repository.impl
 
-import biz.lobachev.annette.bpm_repository.api.rdb.serializers.WrappedStringSerializer
+import slick.jdbc.PostgresProfile.api.Database
 
-case class Code(value: String) extends AnyVal
-
-object Code extends WrappedStringSerializer[Code] {
-  override def getInstance(value: String): Code = Code(value)
-  override def getValue(instance: Code): String = instance.value
-  override val maxLength: Int                   = 40
+object DBProvider {
+  def databaseFactory(configPath: String) = Database.forConfig(configPath)
 }

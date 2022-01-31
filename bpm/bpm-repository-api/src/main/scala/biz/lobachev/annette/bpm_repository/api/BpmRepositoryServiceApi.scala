@@ -17,15 +17,41 @@
 package biz.lobachev.annette.bpm_repository.api
 
 import akka.{Done, NotUsed}
-import biz.lobachev.annette.bpm_repository.api.domain.BpmModelId
+import biz.lobachev.annette.bpm_repository.api.bp.{
+  BusinessProcess,
+  BusinessProcessFindQuery,
+  CreateBusinessProcessPayload,
+  DeleteBusinessProcessPayload,
+  DeleteBusinessProcessVariablePayload,
+  StoreBusinessProcessVariablePayload,
+  UpdateBusinessProcessBmpModelPayload,
+  UpdateBusinessProcessDataSchemaPayload,
+  UpdateBusinessProcessDescriptionPayload,
+  UpdateBusinessProcessNamePayload,
+  UpdateBusinessProcessPayload,
+  UpdateBusinessProcessProcessDefinitionPayload
+}
+import biz.lobachev.annette.bpm_repository.api.domain.{BpmModelId, BusinessProcessId, DataSchemaId}
 import biz.lobachev.annette.bpm_repository.api.model.{
   BpmModel,
   BpmModelFindQuery,
   CreateBpmModelPayload,
+  DeleteBpmModelPayload,
   UpdateBpmModelDescriptionPayload,
   UpdateBpmModelNamePayload,
   UpdateBpmModelPayload,
   UpdateBpmModelXmlPayload
+}
+import biz.lobachev.annette.bpm_repository.api.schema.{
+  CreateDataSchemaPayload,
+  DataSchema,
+  DataSchemaFindQuery,
+  DeleteDataSchemaPayload,
+  DeleteDataSchemaVariablePayload,
+  StoreDataSchemaVariablePayload,
+  UpdateDataSchemaDescriptionPayload,
+  UpdateDataSchemaNamePayload,
+  UpdateDataSchemaPayload
 }
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
 import biz.lobachev.annette.core.model.indexing.FindResult
@@ -38,10 +64,36 @@ trait BpmRepositoryServiceApi extends Service {
   def updateBpmModelName: ServiceCall[UpdateBpmModelNamePayload, BpmModel]
   def updateBpmModelDescription: ServiceCall[UpdateBpmModelDescriptionPayload, BpmModel]
   def updateBpmModelXml: ServiceCall[UpdateBpmModelXmlPayload, BpmModel]
-  def deleteBpmModel(id: String): ServiceCall[NotUsed, Done]
+  def deleteBpmModel: ServiceCall[DeleteBpmModelPayload, Done]
   def getBpmModelById(id: String, withXml: Boolean): ServiceCall[NotUsed, BpmModel]
   def getBpmModelsById(withXml: Boolean): ServiceCall[Seq[BpmModelId], Seq[BpmModel]]
   def findBpmModels: ServiceCall[BpmModelFindQuery, FindResult]
+
+  def createDataSchema: ServiceCall[CreateDataSchemaPayload, DataSchema]
+  def updateDataSchema: ServiceCall[UpdateDataSchemaPayload, DataSchema]
+  def updateDataSchemaName: ServiceCall[UpdateDataSchemaNamePayload, DataSchema]
+  def updateDataSchemaDescription: ServiceCall[UpdateDataSchemaDescriptionPayload, DataSchema]
+  def storeDataSchemaVariable: ServiceCall[StoreDataSchemaVariablePayload, DataSchema]
+  def deleteDataSchemaVariable: ServiceCall[DeleteDataSchemaVariablePayload, DataSchema]
+  def deleteDataSchema: ServiceCall[DeleteDataSchemaPayload, Done]
+  def getDataSchemaById(id: String, withVariables: Boolean): ServiceCall[NotUsed, DataSchema]
+  def getDataSchemasById(withVariables: Boolean): ServiceCall[Seq[DataSchemaId], Seq[DataSchema]]
+  def findDataSchemas: ServiceCall[DataSchemaFindQuery, FindResult]
+
+  def createBusinessProcess: ServiceCall[CreateBusinessProcessPayload, BusinessProcess]
+  def updateBusinessProcess: ServiceCall[UpdateBusinessProcessPayload, BusinessProcess]
+  def updateBusinessProcessName: ServiceCall[UpdateBusinessProcessNamePayload, BusinessProcess]
+  def updateBusinessProcessDescription: ServiceCall[UpdateBusinessProcessDescriptionPayload, BusinessProcess]
+  def updateBusinessProcessBmpModel: ServiceCall[UpdateBusinessProcessBmpModelPayload, BusinessProcess]
+  def updateBusinessProcessDataSchema: ServiceCall[UpdateBusinessProcessDataSchemaPayload, BusinessProcess]
+  def updateBusinessProcessProcessDefinition
+    : ServiceCall[UpdateBusinessProcessProcessDefinitionPayload, BusinessProcess]
+  def storeBusinessProcessVariable: ServiceCall[StoreBusinessProcessVariablePayload, Done]
+  def deleteBusinessProcessVariable: ServiceCall[DeleteBusinessProcessVariablePayload, Done]
+  def deleteBusinessProcess: ServiceCall[DeleteBusinessProcessPayload, Done]
+  def getBusinessProcessById(id: String, withVariables: Boolean): ServiceCall[NotUsed, BusinessProcess]
+  def getBusinessProcessesById(withVariables: Boolean): ServiceCall[Seq[BusinessProcessId], Seq[BusinessProcess]]
+  def findBusinessProcesses: ServiceCall[BusinessProcessFindQuery, FindResult]
 
   final override def descriptor = {
     import Service._
@@ -52,10 +104,36 @@ trait BpmRepositoryServiceApi extends Service {
         pathCall("/api/bpm-repository/v1/updateBpmModelName", updateBpmModelName),
         pathCall("/api/bpm-repository/v1/updateBpmModelDescription", updateBpmModelDescription),
         pathCall("/api/bpm-repository/v1/updateBpmModelXml", updateBpmModelXml),
-        pathCall("/api/bpm-repository/v1/deleteBpmModel", deleteBpmModel _),
+        pathCall("/api/bpm-repository/v1/deleteBpmModel", deleteBpmModel),
         pathCall("/api/bpm-repository/v1/getBpmModelById/:id?withXml", getBpmModelById _),
         pathCall("/api/bpm-repository/v1/getBpmModelsById?withXml", getBpmModelsById _),
-        pathCall("/api/bpm-repository/v1/findBpmModels", findBpmModels)
+        pathCall("/api/bpm-repository/v1/findBpmModels", findBpmModels),
+        pathCall("/api/bpm-repository/v1/createDataSchema", createDataSchema),
+        pathCall("/api/bpm-repository/v1/updateDataSchema", updateDataSchema),
+        pathCall("/api/bpm-repository/v1/updateDataSchemaName", updateDataSchemaName),
+        pathCall("/api/bpm-repository/v1/updateDataSchemaDescription", updateDataSchemaDescription),
+        pathCall("/api/bpm-repository/v1/storeDataSchemaVariable", storeDataSchemaVariable),
+        pathCall("/api/bpm-repository/v1/deleteDataSchemaVariable", deleteDataSchemaVariable),
+        pathCall("/api/bpm-repository/v1/deleteDataSchema", deleteDataSchema),
+        pathCall("/api/bpm-repository/v1/getDataSchemaById/:id?withVariables", getDataSchemaById _),
+        pathCall("/api/bpm-repository/v1/getDataSchemasById?withVariables", getDataSchemasById _),
+        pathCall("/api/bpm-repository/v1/findDataSchemas", findDataSchemas),
+        pathCall("/api/bpm-repository/v1/createBusinessProcess", createBusinessProcess),
+        pathCall("/api/bpm-repository/v1/updateBusinessProcess", updateBusinessProcess),
+        pathCall("/api/bpm-repository/v1/updateBusinessProcessName", updateBusinessProcessName),
+        pathCall("/api/bpm-repository/v1/updateBusinessProcessDescription", updateBusinessProcessDescription),
+        pathCall("/api/bpm-repository/v1/updateBusinessProcessBmpModel", updateBusinessProcessBmpModel),
+        pathCall("/api/bpm-repository/v1/updateBusinessProcessDataSchema", updateBusinessProcessDataSchema),
+        pathCall(
+          "/api/bpm-repository/v1/updateBusinessProcessProcessDefinition",
+          updateBusinessProcessProcessDefinition
+        ),
+        pathCall("/api/bpm-repository/v1/storeBusinessProcessVariable", storeBusinessProcessVariable),
+        pathCall("/api/bpm-repository/v1/deleteBusinessProcessVariable", deleteBusinessProcessVariable),
+        pathCall("/api/bpm-repository/v1/deleteBusinessProcess", deleteBusinessProcess),
+        pathCall("/api/bpm-repository/v1/getBusinessProcessById/:id?withVariables", getBusinessProcessById _),
+        pathCall("/api/bpm-repository/v1/getBusinessProcessesById?withVariables", getBusinessProcessesById _),
+        pathCall("/api/bpm-repository/v1/findBusinessProcesses", findBusinessProcesses)
       )
       .withExceptionSerializer(new AnnetteTransportExceptionSerializer())
       .withAutoAcl(true)

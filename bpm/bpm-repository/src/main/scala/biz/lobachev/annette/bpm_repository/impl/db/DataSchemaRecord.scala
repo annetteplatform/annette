@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.bpm_repository.api.domain
+package biz.lobachev.annette.bpm_repository.impl.db
 
-import biz.lobachev.annette.bpm_repository.api.rdb.serializers.WrappedStringSerializer
+import biz.lobachev.annette.bpm_repository.api.domain.DataSchemaId
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 
-case class BpmModelId(value: String) extends AnyVal
+import java.time.Instant
 
-object BpmModelId extends WrappedStringSerializer[BpmModelId] {
-  override def getInstance(value: String): BpmModelId = BpmModelId(value)
-  override def getValue(instance: BpmModelId): String = instance.value
-  override val maxLength: Int                         = 80
-}
+case class DataSchemaRecord(
+  id: DataSchemaId,
+  name: String,
+  description: String,
+  updatedAt: Instant,
+  updatedBy: AnnettePrincipal
+)

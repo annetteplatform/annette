@@ -14,10 +14,18 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.bpm_repository.impl
+package biz.lobachev.annette.bpm_repository.api.bp
 
-import slick.jdbc.PostgresProfile.api.Database
+import biz.lobachev.annette.core.model.indexing.SortBy
+import play.api.libs.json.Json
 
-class BpmRepositoryDBProvider {
-  val db = Database.forConfig("bpm-repository-db")
+case class BusinessProcessFindQuery(
+  offset: Int = 0,
+  size: Int,
+  filter: Option[String] = None,
+  sortBy: Option[Seq[SortBy]] = None
+)
+
+object BusinessProcessFindQuery {
+  implicit val format = Json.format[BusinessProcessFindQuery]
 }

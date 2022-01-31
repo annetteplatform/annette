@@ -1,6 +1,6 @@
 package biz.lobachev.annette.bpm_repository.test
 
-object BpmRepositoryServiceApiSpecData {
+object BpmRepositoryData {
 
   val bpmnXml =
     """<?xml version="1.0" encoding="UTF-8"?>

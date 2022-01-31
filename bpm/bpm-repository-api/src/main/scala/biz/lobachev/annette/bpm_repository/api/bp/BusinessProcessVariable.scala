@@ -14,14 +14,19 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.bpm_repository.api.domain
+package biz.lobachev.annette.bpm_repository.api.bp
 
-import biz.lobachev.annette.bpm_repository.api.rdb.serializers.WrappedStringSerializer
+import biz.lobachev.annette.bpm_repository.api.domain.{Datatype, VariableName}
+import play.api.libs.json.Json
 
-case class BpmModelId(value: String) extends AnyVal
+case class BusinessProcessVariable(
+  variableName: VariableName,
+  name: String,
+  caption: String,
+  datatype: Datatype.Datatype,
+  defaultValue: String
+)
 
-object BpmModelId extends WrappedStringSerializer[BpmModelId] {
-  override def getInstance(value: String): BpmModelId = BpmModelId(value)
-  override def getValue(instance: BpmModelId): String = instance.value
-  override val maxLength: Int                         = 80
+object BusinessProcessVariable {
+  implicit val format = Json.format[BusinessProcessVariable]
 }

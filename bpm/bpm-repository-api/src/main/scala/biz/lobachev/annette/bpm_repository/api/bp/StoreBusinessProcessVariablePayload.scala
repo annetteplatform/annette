@@ -14,25 +14,23 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.bpm_repository.api.model
+package biz.lobachev.annette.bpm_repository.api.bp
 
-import biz.lobachev.annette.bpm_repository.api.domain.{BpmModelId, Notation}
+import biz.lobachev.annette.bpm_repository.api.domain.{BusinessProcessId, Datatype, VariableName}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
-import java.time.OffsetDateTime
-
-case class BpmModel(
-  id: BpmModelId,
-  code: String,
+case class StoreBusinessProcessVariablePayload(
+  businessProcessId: BusinessProcessId,
+  variableName: VariableName,
+  oldVariableName: Option[VariableName],
   name: String,
-  description: String,
-  notation: Notation.Notation,
-  xml: Option[String] = None,
-  updatedAt: OffsetDateTime = OffsetDateTime.now(),
+  caption: String,
+  datatype: Datatype.Datatype,
+  defaultValue: String,
   updatedBy: AnnettePrincipal
 )
 
-object BpmModel {
-  implicit val format = Json.format[BpmModel]
+object StoreBusinessProcessVariablePayload {
+  implicit val format = Json.format[StoreBusinessProcessVariablePayload]
 }

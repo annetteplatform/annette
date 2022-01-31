@@ -14,20 +14,19 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.bpm_repository.impl.schema
+package biz.lobachev.annette.bpm_repository.api.schema
 
-import biz.lobachev.annette.bpm_repository.api.domain.{BpmModelId, Code, Notation}
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.bpm_repository.api.domain.{Datatype, VariableName}
+import play.api.libs.json.Json
 
-import java.time.{Instant}
-
-case class BpmModelRecord(
-  id: BpmModelId,
-  code: Code,
+case class DataSchemaVariable(
+  variableName: VariableName,
   name: String,
-  description: String,
-  notation: Notation.Notation,
-  xml: String,
-  updatedAt: Instant,
-  updatedBy: AnnettePrincipal
+  caption: String,
+  datatype: Datatype.Datatype,
+  defaultValue: String
 )
+
+object DataSchemaVariable {
+  implicit val format = Json.format[DataSchemaVariable]
+}

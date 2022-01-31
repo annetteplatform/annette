@@ -14,14 +14,20 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.bpm_repository.api.domain
+package biz.lobachev.annette.bpm_repository.api.schema
 
-import biz.lobachev.annette.bpm_repository.api.rdb.serializers.WrappedStringSerializer
+import biz.lobachev.annette.bpm_repository.api.domain.DataSchemaId
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import play.api.libs.json.Json
 
-case class BpmModelId(value: String) extends AnyVal
+case class UpdateDataSchemaPayload(
+  id: DataSchemaId,
+  name: String,
+  description: String,
+  variables: Seq[DataSchemaVariable],
+  updatedBy: AnnettePrincipal
+)
 
-object BpmModelId extends WrappedStringSerializer[BpmModelId] {
-  override def getInstance(value: String): BpmModelId = BpmModelId(value)
-  override def getValue(instance: BpmModelId): String = instance.value
-  override val maxLength: Int                         = 80
+object UpdateDataSchemaPayload {
+  implicit val format = Json.format[UpdateDataSchemaPayload]
 }
