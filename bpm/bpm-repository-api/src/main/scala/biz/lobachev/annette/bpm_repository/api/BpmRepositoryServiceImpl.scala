@@ -23,7 +23,7 @@ import biz.lobachev.annette.bpm_repository.api.bp.{
   DeleteBusinessProcessPayload,
   DeleteBusinessProcessVariablePayload,
   StoreBusinessProcessVariablePayload,
-  UpdateBusinessProcessBmpModelPayload,
+  UpdateBusinessProcessBpmModelPayload,
   UpdateBusinessProcessDataSchemaPayload,
   UpdateBusinessProcessDescriptionPayload,
   UpdateBusinessProcessNamePayload,
@@ -75,10 +75,10 @@ class BpmRepositoryServiceImpl(api: BpmRepositoryServiceApi) extends BpmReposito
   override def deleteBpmModel(payload: DeleteBpmModelPayload): Future[Done] =
     api.deleteBpmModel.invoke(payload)
 
-  override def getBpmModelById(id: String, withXml: Boolean): Future[BpmModel] =
+  override def getBpmModelById(id: String, withXml: Option[Boolean]): Future[BpmModel] =
     api.getBpmModelById(id, withXml).invoke()
 
-  override def getBpmModelsById(ids: Seq[BpmModelId], withXml: Boolean): Future[Seq[BpmModel]] =
+  override def getBpmModelsById(ids: Seq[BpmModelId], withXml: Option[Boolean]): Future[Seq[BpmModel]] =
     api.getBpmModelsById(withXml).invoke(ids)
 
   override def findBpmModels(query: BpmModelFindQuery): Future[FindResult] =
@@ -105,10 +105,10 @@ class BpmRepositoryServiceImpl(api: BpmRepositoryServiceApi) extends BpmReposito
   override def deleteDataSchema(payload: DeleteDataSchemaPayload): Future[Done] =
     api.deleteDataSchema.invoke(payload)
 
-  override def getDataSchemaById(id: String, withVariables: Boolean): Future[DataSchema] =
+  override def getDataSchemaById(id: String, withVariables: Option[Boolean]): Future[DataSchema] =
     api.getDataSchemaById(id, withVariables).invoke()
 
-  override def getDataSchemasById(ids: Seq[DataSchemaId], withVariables: Boolean): Future[Seq[DataSchema]] =
+  override def getDataSchemasById(ids: Seq[DataSchemaId], withVariables: Option[Boolean]): Future[Seq[DataSchema]] =
     api.getDataSchemasById(withVariables).invoke(ids)
 
   override def findDataSchemas(query: DataSchemaFindQuery): Future[FindResult] =
@@ -128,8 +128,8 @@ class BpmRepositoryServiceImpl(api: BpmRepositoryServiceApi) extends BpmReposito
   ): Future[BusinessProcess] =
     api.updateBusinessProcessDescription.invoke(payload)
 
-  override def updateBusinessProcessBmpModel(payload: UpdateBusinessProcessBmpModelPayload): Future[BusinessProcess] =
-    api.updateBusinessProcessBmpModel.invoke(payload)
+  override def updateBusinessProcessBpmModel(payload: UpdateBusinessProcessBpmModelPayload): Future[BusinessProcess] =
+    api.updateBusinessProcessBpmModel.invoke(payload)
 
   override def updateBusinessProcessDataSchema(
     payload: UpdateBusinessProcessDataSchemaPayload
@@ -150,12 +150,12 @@ class BpmRepositoryServiceImpl(api: BpmRepositoryServiceApi) extends BpmReposito
   override def deleteBusinessProcess(payload: DeleteBusinessProcessPayload): Future[Done] =
     api.deleteBusinessProcess.invoke(payload)
 
-  override def getBusinessProcessById(id: String, withVariables: Boolean): Future[BusinessProcess] =
+  override def getBusinessProcessById(id: String, withVariables: Option[Boolean]): Future[BusinessProcess] =
     api.getBusinessProcessById(id, withVariables).invoke()
 
   override def getBusinessProcessesById(
     ids: Seq[BusinessProcessId],
-    withVariables: Boolean
+    withVariables: Option[Boolean]
   ): Future[Seq[BusinessProcess]] =
     api.getBusinessProcessesById(withVariables).invoke(ids)
 

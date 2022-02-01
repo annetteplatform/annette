@@ -86,7 +86,7 @@ class BusinessProcessActions(implicit executionContext: ExecutionContext) extend
       .map(rec => (rec.description, rec.updatedBy, rec.updatedAt))
       .update((payload.description, payload.updatedBy, updatedAt))
 
-  def updateBusinessProcessBmpModelAction(payload: UpdateBusinessProcessBmpModelPayload, updatedAt: Instant) =
+  def updateBusinessProcessBpmModelAction(payload: UpdateBusinessProcessBpmModelPayload, updatedAt: Instant) =
     BpmRepositorySchema.businessProcesses
       .filter(_.id === payload.id)
       .map(rec => (rec.bpmModelId, rec.updatedBy, rec.updatedAt))

@@ -85,6 +85,7 @@ lazy val root = (project in file("."))
     // API gateways
     `application-api-gateway`,
     `authorization-api-gateway`,
+    `bpm-api-gateway`,
     `cms-api-gateway`,
     `org-structure-api-gateway`,
     `persons-api-gateway`,
@@ -190,7 +191,8 @@ lazy val `api-gateway` = (project in file("api-gateway/api-gateway"))
     `org-structure-api-gateway`,
     `persons-api-gateway`,
     `principal-groups-api-gateway`,
-    `cms-api-gateway`
+    `cms-api-gateway`,
+    `bpm-api-gateway`
   )
 
 lazy val `ignition-core` = (project in file("core/ignition-core"))
@@ -373,6 +375,26 @@ def bpmRepositoryProject(pr: Project) =
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
     .dependsOn(`bpm-repository-api`, `microservice-core`)
+
+lazy val `bpm-api-gateway` = (project in file("api-gateway/bpm-api-gateway"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslServer % Optional,
+      ws,
+      Dependencies.macwire,
+      Dependencies.playJsonExt,
+      Dependencies.jwt,
+      Dependencies.pureConfig,
+      Dependencies.chimney
+    ) ++
+      Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(
+    `api-gateway-core`,
+    `bpm-repository-api`,
+    `camunda4s`
+  )
 
 lazy val `cms-api` = (project in file("cms/cms-api"))
   .settings(

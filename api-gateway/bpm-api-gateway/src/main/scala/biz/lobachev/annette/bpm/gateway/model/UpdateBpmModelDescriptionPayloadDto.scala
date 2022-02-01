@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.bpm_repository.api.bp
+package biz.lobachev.annette.bpm.gateway.model
 
-import biz.lobachev.annette.bpm_repository.api.domain.{BpmModelId, BusinessProcessId}
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.bpm_repository.api.domain.BpmModelId
 import play.api.libs.json.Json
 
-case class UpdateBusinessProcessBmpModelPayload(
-  id: BusinessProcessId,
-  bpmModelId: Option[BpmModelId],
-  updatedBy: AnnettePrincipal
+case class UpdateBpmModelDescriptionPayloadDto(
+  id: BpmModelId,
+  description: String
 )
 
-object UpdateBusinessProcessBmpModelPayload {
-  implicit val format = Json.format[UpdateBusinessProcessBmpModelPayload]
+object UpdateBpmModelDescriptionPayloadDto {
+  implicit val format = Json.format[UpdateBpmModelDescriptionPayloadDto]
 }

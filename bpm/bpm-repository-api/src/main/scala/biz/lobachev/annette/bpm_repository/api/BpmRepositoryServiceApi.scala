@@ -24,7 +24,7 @@ import biz.lobachev.annette.bpm_repository.api.bp.{
   DeleteBusinessProcessPayload,
   DeleteBusinessProcessVariablePayload,
   StoreBusinessProcessVariablePayload,
-  UpdateBusinessProcessBmpModelPayload,
+  UpdateBusinessProcessBpmModelPayload,
   UpdateBusinessProcessDataSchemaPayload,
   UpdateBusinessProcessDescriptionPayload,
   UpdateBusinessProcessNamePayload,
@@ -65,8 +65,8 @@ trait BpmRepositoryServiceApi extends Service {
   def updateBpmModelDescription: ServiceCall[UpdateBpmModelDescriptionPayload, BpmModel]
   def updateBpmModelXml: ServiceCall[UpdateBpmModelXmlPayload, BpmModel]
   def deleteBpmModel: ServiceCall[DeleteBpmModelPayload, Done]
-  def getBpmModelById(id: String, withXml: Boolean): ServiceCall[NotUsed, BpmModel]
-  def getBpmModelsById(withXml: Boolean): ServiceCall[Seq[BpmModelId], Seq[BpmModel]]
+  def getBpmModelById(id: String, withXml: Option[Boolean]): ServiceCall[NotUsed, BpmModel]
+  def getBpmModelsById(withXml: Option[Boolean]): ServiceCall[Seq[BpmModelId], Seq[BpmModel]]
   def findBpmModels: ServiceCall[BpmModelFindQuery, FindResult]
 
   def createDataSchema: ServiceCall[CreateDataSchemaPayload, DataSchema]
@@ -76,23 +76,25 @@ trait BpmRepositoryServiceApi extends Service {
   def storeDataSchemaVariable: ServiceCall[StoreDataSchemaVariablePayload, DataSchema]
   def deleteDataSchemaVariable: ServiceCall[DeleteDataSchemaVariablePayload, DataSchema]
   def deleteDataSchema: ServiceCall[DeleteDataSchemaPayload, Done]
-  def getDataSchemaById(id: String, withVariables: Boolean): ServiceCall[NotUsed, DataSchema]
-  def getDataSchemasById(withVariables: Boolean): ServiceCall[Seq[DataSchemaId], Seq[DataSchema]]
+  def getDataSchemaById(id: String, withVariables: Option[Boolean]): ServiceCall[NotUsed, DataSchema]
+  def getDataSchemasById(withVariables: Option[Boolean]): ServiceCall[Seq[DataSchemaId], Seq[DataSchema]]
   def findDataSchemas: ServiceCall[DataSchemaFindQuery, FindResult]
 
   def createBusinessProcess: ServiceCall[CreateBusinessProcessPayload, BusinessProcess]
   def updateBusinessProcess: ServiceCall[UpdateBusinessProcessPayload, BusinessProcess]
   def updateBusinessProcessName: ServiceCall[UpdateBusinessProcessNamePayload, BusinessProcess]
   def updateBusinessProcessDescription: ServiceCall[UpdateBusinessProcessDescriptionPayload, BusinessProcess]
-  def updateBusinessProcessBmpModel: ServiceCall[UpdateBusinessProcessBmpModelPayload, BusinessProcess]
+  def updateBusinessProcessBpmModel: ServiceCall[UpdateBusinessProcessBpmModelPayload, BusinessProcess]
   def updateBusinessProcessDataSchema: ServiceCall[UpdateBusinessProcessDataSchemaPayload, BusinessProcess]
   def updateBusinessProcessProcessDefinition
     : ServiceCall[UpdateBusinessProcessProcessDefinitionPayload, BusinessProcess]
   def storeBusinessProcessVariable: ServiceCall[StoreBusinessProcessVariablePayload, BusinessProcess]
   def deleteBusinessProcessVariable: ServiceCall[DeleteBusinessProcessVariablePayload, BusinessProcess]
   def deleteBusinessProcess: ServiceCall[DeleteBusinessProcessPayload, Done]
-  def getBusinessProcessById(id: String, withVariables: Boolean): ServiceCall[NotUsed, BusinessProcess]
-  def getBusinessProcessesById(withVariables: Boolean): ServiceCall[Seq[BusinessProcessId], Seq[BusinessProcess]]
+  def getBusinessProcessById(id: String, withVariables: Option[Boolean]): ServiceCall[NotUsed, BusinessProcess]
+  def getBusinessProcessesById(
+    withVariables: Option[Boolean]
+  ): ServiceCall[Seq[BusinessProcessId], Seq[BusinessProcess]]
   def findBusinessProcesses: ServiceCall[BusinessProcessFindQuery, FindResult]
 
   final override def descriptor = {
@@ -122,7 +124,7 @@ trait BpmRepositoryServiceApi extends Service {
         pathCall("/api/bpm-repository/v1/updateBusinessProcess", updateBusinessProcess),
         pathCall("/api/bpm-repository/v1/updateBusinessProcessName", updateBusinessProcessName),
         pathCall("/api/bpm-repository/v1/updateBusinessProcessDescription", updateBusinessProcessDescription),
-        pathCall("/api/bpm-repository/v1/updateBusinessProcessBmpModel", updateBusinessProcessBmpModel),
+        pathCall("/api/bpm-repository/v1/updateBusinessProcessBmpModel", updateBusinessProcessBpmModel),
         pathCall("/api/bpm-repository/v1/updateBusinessProcessDataSchema", updateBusinessProcessDataSchema),
         pathCall(
           "/api/bpm-repository/v1/updateBusinessProcessProcessDefinition",

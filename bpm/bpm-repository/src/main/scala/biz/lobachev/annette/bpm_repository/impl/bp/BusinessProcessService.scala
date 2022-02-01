@@ -102,9 +102,9 @@ class BusinessProcessService(db: PostgresDatabase, actions: BusinessProcessActio
     db.run(action.transactionally)
   }
 
-  def updateBusinessProcessBmpModel(payload: UpdateBusinessProcessBmpModelPayload): Future[BusinessProcess] = {
+  def updateBusinessProcessBpmModel(payload: UpdateBusinessProcessBpmModelPayload): Future[BusinessProcess] = {
     val action = for {
-      _   <- actions.updateBusinessProcessBmpModelAction(payload, Instant.now)
+      _   <- actions.updateBusinessProcessBpmModelAction(payload, Instant.now)
       rec <- actions.getBusinessProcessAction(payload.id, true)
     } yield rec
       .getOrElse(throw BusinessProcessNotFound(payload.id.value))

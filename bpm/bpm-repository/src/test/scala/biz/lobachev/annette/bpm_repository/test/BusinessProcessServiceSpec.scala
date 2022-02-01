@@ -664,12 +664,12 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         ),
         updatedBy = PersonPrincipal("P0001")
       )
-      val updatePayload   = UpdateBusinessProcessBmpModelPayload(
+      val updatePayload   = UpdateBusinessProcessBpmModelPayload(
         id = id,
         bpmModelId = Some(bpmModelId),
         updatedBy = PersonPrincipal("P0002")
       )
-      val updatePayload2  = UpdateBusinessProcessBmpModelPayload(
+      val updatePayload2  = UpdateBusinessProcessBpmModelPayload(
         id = id,
         bpmModelId = None,
         updatedBy = PersonPrincipal("P0002")
@@ -677,8 +677,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         _                <- bpmModelService.createBpmModel(bpmModelPayload)
         _                <- businessProcessService.createBusinessProcess(createPayload)
-        businessProcess1 <- businessProcessService.updateBusinessProcessBmpModel(updatePayload)
-        businessProcess2 <- businessProcessService.updateBusinessProcessBmpModel(updatePayload2)
+        businessProcess1 <- businessProcessService.updateBusinessProcessBpmModel(updatePayload)
+        businessProcess2 <- businessProcessService.updateBusinessProcessBpmModel(updatePayload2)
 
       } yield {
         businessProcessService
@@ -716,7 +716,7 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         ),
         updatedBy = PersonPrincipal("P0001")
       )
-      val updatePayload = UpdateBusinessProcessBmpModelPayload(
+      val updatePayload = UpdateBusinessProcessBpmModelPayload(
         id = id,
         bpmModelId = Some(bpmModelId),
         updatedBy = PersonPrincipal("P0002")
@@ -724,7 +724,7 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         _  <- businessProcessService.createBusinessProcess(createPayload)
         ex <- recoverToExceptionIf[AnnetteTransportException](
-                businessProcessService.updateBusinessProcessBmpModel(updatePayload)
+                businessProcessService.updateBusinessProcessBpmModel(updatePayload)
               )
 
       } yield {
