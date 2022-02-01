@@ -1,5 +1,6 @@
 package biz.lobachev.annette.bpm_repository.impl.model
 
+import akka.Done
 import biz.lobachev.annette.bpm_repository.api.domain.BpmModelId
 import biz.lobachev.annette.bpm_repository.api.model._
 import biz.lobachev.annette.bpm_repository.impl.db.{BpmRepositorySchema, BpmRepositorySchemaImplicits}
@@ -29,6 +30,13 @@ class BpmModelActions(implicit executionContext: ExecutionContext) extends BpmRe
       .filter(_.id === payload.id)
       .map(rec => (rec.notation, rec.xml, rec.code, rec.updatedBy, rec.updatedAt))
       .update((payload.notation, payload.xml, code, payload.updatedBy, updatedAt))
+
+  def deleteBpmModelAction(payload: DeleteBpmModelPayload) =
+    for {
+      _ <- BpmRepositorySchema.bpmModels
+             .filter(_.id === payload.id)
+             .delete
+    } yield Done
 
   def getBpmModelByIdWithXmlAction(id: BpmModelId) =
     for {

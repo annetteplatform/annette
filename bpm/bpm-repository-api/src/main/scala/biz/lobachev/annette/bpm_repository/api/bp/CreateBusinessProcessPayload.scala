@@ -24,10 +24,10 @@ case class CreateBusinessProcessPayload(
   id: BusinessProcessId,
   name: String,
   description: String,
-  bpmModelId: Option[BpmModelId],
-  processDefinitionId: Option[ProcessDefinitionId],
-  dataSchemaId: Option[DataSchemaId],
-  variables: Seq[BusinessProcessVariable],
+  bpmModelId: Option[BpmModelId] = None,
+  processDefinitionId: Option[ProcessDefinitionId] = None,
+  dataSchemaId: Option[DataSchemaId] = None,
+  variables: Map[String, BusinessProcessVariable],
   updatedBy: AnnettePrincipal
 )
 

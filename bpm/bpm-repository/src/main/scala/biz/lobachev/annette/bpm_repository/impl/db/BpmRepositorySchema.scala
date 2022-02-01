@@ -109,13 +109,13 @@ object BpmRepositorySchema extends BpmRepositorySchemaImplicits {
       )
     def businessProcessPK                   = primaryKey("business_process_pk", id)
     def businessProcessVariableFKBpmModel   =
-      foreignKey("business_process_variable_fk_bpm_model", bpmModelId, bpmModels)(
+      foreignKey("business_process_fk_bpm_model", bpmModelId, bpmModels)(
         _.id.?,
         onUpdate = ForeignKeyAction.Restrict,
         onDelete = ForeignKeyAction.Restrict
       )
     def businessProcessVariableFKDataSchema =
-      foreignKey("business_process_variable_fk_data_schema", dataSchemaId, dataSchemas)(
+      foreignKey("business_process_fk_data_schema", dataSchemaId, dataSchemas)(
         _.id.?,
         onUpdate = ForeignKeyAction.Restrict,
         onDelete = ForeignKeyAction.Restrict

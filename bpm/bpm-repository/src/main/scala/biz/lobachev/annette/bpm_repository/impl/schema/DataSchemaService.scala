@@ -109,6 +109,16 @@ class DataSchemaService(db: PostgresDatabase, actions: DataSchemaActions)(implic
   def deleteDataSchema(payload: DeleteDataSchemaPayload): Future[Done] = {
     val action = actions.deleteDataSchemaAction(payload)
     db.run(action.transactionally)
+      .transform(
+        res => res,
+        {
+          case e: PSQLException
+              if e.getSQLState == SQLErrorCodes.FOREIGN_KEY_VIOLATION &&
+                e.getMessage.contains("business_process_fk_data_schema") =>
+            DataSchemaHasReference(payload.id.value)
+          case e => e
+        }
+      )
   }
 
   def getDataSchemaById(id: String, withVariables: Boolean): Future[DataSchema] = {

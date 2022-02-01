@@ -141,10 +141,10 @@ class BpmRepositoryServiceImpl(api: BpmRepositoryServiceApi) extends BpmReposito
   ): Future[BusinessProcess] =
     api.updateBusinessProcessProcessDefinition.invoke(payload)
 
-  override def storeBusinessProcessVariable(payload: StoreBusinessProcessVariablePayload): Future[Done] =
+  override def storeBusinessProcessVariable(payload: StoreBusinessProcessVariablePayload): Future[BusinessProcess] =
     api.storeBusinessProcessVariable.invoke(payload)
 
-  override def deleteBusinessProcessVariable(payload: DeleteBusinessProcessVariablePayload): Future[Done] =
+  override def deleteBusinessProcessVariable(payload: DeleteBusinessProcessVariablePayload): Future[BusinessProcess] =
     api.deleteBusinessProcessVariable.invoke(payload)
 
   override def deleteBusinessProcess(payload: DeleteBusinessProcessPayload): Future[Done] =

@@ -167,12 +167,12 @@ class BpmRepositoryServiceApiImpl(
       businessProcessService.updateBusinessProcessProcessDefinition(payload)
     }
 
-  def storeBusinessProcessVariable: ServiceCall[StoreBusinessProcessVariablePayload, Done] =
+  def storeBusinessProcessVariable: ServiceCall[StoreBusinessProcessVariablePayload, BusinessProcess] =
     ServiceCall { payload =>
       businessProcessService.storeBusinessProcessVariable(payload)
     }
 
-  def deleteBusinessProcessVariable: ServiceCall[DeleteBusinessProcessVariablePayload, Done] =
+  def deleteBusinessProcessVariable: ServiceCall[DeleteBusinessProcessVariablePayload, BusinessProcess] =
     ServiceCall { payload =>
       businessProcessService.deleteBusinessProcessVariable(payload)
     }

@@ -1,11 +1,16 @@
 package biz.lobachev.annette.bpm_repository.impl.schema
 
+import biz.lobachev.annette.bpm_repository.api.domain.DataSchemaId
 import biz.lobachev.annette.bpm_repository.api.schema.DataSchemaFindQuery
 import biz.lobachev.annette.bpm_repository.impl.db.{BpmRepositorySchema, BpmRepositorySchemaImplicits, DataSchemaRecord}
 import biz.lobachev.annette.core.model.indexing.SortBy
 import slick.jdbc.PostgresProfile.api._
 
 object DataSchemaQueries extends BpmRepositorySchemaImplicits {
+
+  def getDataSchemaVariables(id: DataSchemaId) =
+    BpmRepositorySchema.dataSchemaVariables
+      .filter(_.dataSchemaId === id)
 
   def getFilteredQuery(query: DataSchemaFindQuery) =
     BpmRepositorySchema.dataSchemas.filter(rec =>

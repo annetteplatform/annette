@@ -1,3 +1,20 @@
+alter table "business_process_variables"
+    drop constraint "business_process_variable_pk";
+drop table if exists "business_process_variables";
+alter table "business_processes"
+    drop constraint "business_process_pk";
+drop table if exists "business_processes";
+alter table "data_schema_variables"
+    drop constraint "data_schema_variable_pk";
+drop table if exists "data_schema_variables";
+alter table "data_schemas"
+    drop constraint "data_schema_pk";
+drop table if exists "data_schemas";
+alter table "bpm_models"
+    drop constraint "bpm_model_pk";
+drop table if exists "bpm_models";
+
+
 create table "bpm_models"
 (
     "id"          VARCHAR(80)  NOT NULL,
@@ -59,8 +76,8 @@ alter table "business_process_variables"
 alter table "data_schema_variables"
     add constraint "data_schema_variable_fk_data_schema" foreign key ("data_schema_id") references "data_schemas" ("id") on update RESTRICT on delete CASCADE;
 alter table "business_processes"
-    add constraint "business_process_variable_fk_bpm_model" foreign key ("bpm_model_id") references "bpm_models" ("id") on update RESTRICT on delete RESTRICT;
+    add constraint "business_process_fk_bpm_model" foreign key ("bpm_model_id") references "bpm_models" ("id") on update RESTRICT on delete RESTRICT;
 alter table "business_processes"
-    add constraint "business_process_variable_fk_data_schema" foreign key ("data_schema_id") references "data_schemas" ("id") on update RESTRICT on delete RESTRICT;
+    add constraint "business_process_fk_data_schema" foreign key ("data_schema_id") references "data_schemas" ("id") on update RESTRICT on delete RESTRICT;
 alter table "business_process_variables"
-    add constraint "business_process_variable_fk_business_process" foreign key ("business_process_id") references "business_processes" ("id") on update RESTRICT on delete CASCADE
+    add constraint "business_process_variable_fk_business_process" foreign key ("business_process_id") references "business_processes" ("id") on update RESTRICT on delete CASCADE;

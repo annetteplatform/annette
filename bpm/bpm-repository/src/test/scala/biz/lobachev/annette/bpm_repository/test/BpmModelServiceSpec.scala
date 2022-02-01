@@ -1,9 +1,15 @@
 package biz.lobachev.annette.bpm_repository.test
 
 import akka.Done
-import biz.lobachev.annette.bpm_repository.api.domain.{BpmModelId, Notation}
+import biz.lobachev.annette.bpm_repository.api.bp.{
+  BusinessProcessVariable,
+  CreateBusinessProcessPayload,
+  DeleteBusinessProcessPayload
+}
+import biz.lobachev.annette.bpm_repository.api.domain.{BpmModelId, BusinessProcessId, Datatype, Notation}
 import biz.lobachev.annette.bpm_repository.api.model.{
   BpmModel,
+  BpmModelHasReference,
   BpmModelNotFound,
   CreateBpmModelPayload,
   DeleteBpmModelPayload,
@@ -13,6 +19,7 @@ import biz.lobachev.annette.bpm_repository.api.model.{
   UpdateBpmModelXmlPayload
 }
 import biz.lobachev.annette.bpm_repository.impl.DBProvider
+import biz.lobachev.annette.bpm_repository.impl.bp.{BusinessProcessActions, BusinessProcessService}
 import biz.lobachev.annette.bpm_repository.impl.model.{BpmModelActions, BpmModelService}
 import biz.lobachev.annette.core.exception.AnnetteTransportException
 import biz.lobachev.annette.core.model.auth.PersonPrincipal
@@ -24,10 +31,12 @@ import java.util.UUID
 import scala.concurrent.ExecutionContext
 
 class BpmModelServiceSpec extends AsyncWordSpecLike with Matchers {
-  implicit val ec     = ExecutionContext.global
-  val db              = DBProvider.databaseFactory("bpm-repository-db-test")
-  val actions         = new BpmModelActions
-  val bpmModelService = new BpmModelService(db, actions)
+  implicit val ec            = ExecutionContext.global
+  val db                     = DBProvider.databaseFactory("bpm-repository-db-test")
+  val actions                = new BpmModelActions
+  val bpmModelService        = new BpmModelService(db, actions)
+  val businessProcessActions = new BusinessProcessActions
+  val businessProcessService = new BusinessProcessService(db, businessProcessActions)
 
   "BpmModelService" should {
 
@@ -243,6 +252,44 @@ class BpmModelServiceSpec extends AsyncWordSpecLike with Matchers {
         bpmModel1 shouldBe targetModel
         done shouldBe Done
         ex shouldBe BpmModelNotFound(id.value)
+      }
+    }
+
+    "delete model with reference" in {
+      val id                     = BpmModelId(UUID.randomUUID().toString)
+      val payload                = CreateBpmModelPayload(
+        id = id,
+        name = "model name",
+        description = "model description",
+        notation = Notation.BPMN,
+        xml = BpmRepositoryData.bpmnXml,
+        updatedBy = PersonPrincipal("P0001")
+      )
+      val businessProcessId      = BusinessProcessId(UUID.randomUUID().toString)
+      val businessProcessPayload = CreateBusinessProcessPayload(
+        id = businessProcessId,
+        name = "business process name",
+        description = "business process description",
+        bpmModelId = Some(id),
+        variables = Map(
+          "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
+          "var4" -> BusinessProcessVariable("var4", "var4", Datatype.Integer, "123"),
+          "var5" -> BusinessProcessVariable("var5", "var5", Datatype.Boolean, "true")
+        ),
+        updatedBy = PersonPrincipal("P0001")
+      )
+      for {
+        _ <- bpmModelService.createBpmModel(payload)
+        _  <- businessProcessService.createBusinessProcess(businessProcessPayload)
+        ex <- recoverToExceptionIf[AnnetteTransportException](
+                bpmModelService.deleteBpmModel(DeleteBpmModelPayload(id, payload.updatedBy))
+              )
+
+      } yield {
+        businessProcessService
+          .deleteBusinessProcess(DeleteBusinessProcessPayload(businessProcessId, PersonPrincipal("P0001")))
+          .andThen(_ => bpmModelService.deleteBpmModel(DeleteBpmModelPayload(id, payload.updatedBy)))
+        ex shouldBe BpmModelHasReference(id.value)
       }
     }
 

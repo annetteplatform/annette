@@ -17,21 +17,16 @@
 package biz.lobachev.annette.bpm_repository.impl
 
 import biz.lobachev.annette.bpm_repository.api.BpmRepositoryServiceApi
-import biz.lobachev.annette.bpm_repository.impl.bp.BusinessProcessService
+import biz.lobachev.annette.bpm_repository.impl.bp.{BusinessProcessActions, BusinessProcessService}
 import biz.lobachev.annette.bpm_repository.impl.db.BpmRepositorySchema
 import biz.lobachev.annette.bpm_repository.impl.model.{BpmModelActions, BpmModelService}
 import biz.lobachev.annette.bpm_repository.impl.schema.{DataSchemaActions, DataSchemaService}
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
-//import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
-//import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
-//import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 import com.lightbend.lagom.scaladsl.server._
 import com.softwaremill.macwire._
 import play.api.LoggerConfigurator
 import play.api.libs.ws.ahc.AhcWSComponents
-
-//import scala.collection.immutable
 
 class BpmRepositoryServiceLoader extends LagomApplicationLoader {
 
@@ -54,8 +49,6 @@ abstract class BpmRepositoryServiceApplication(context: LagomApplicationContext)
     extends LagomApplication(context)
     with AhcWSComponents {
 
-//  lazy val jsonSerializerRegistry = BpmRepositoryRepositorySerializerRegistry
-
   override lazy val lagomServer = serverFor[BpmRepositoryServiceApi](wire[BpmRepositoryServiceApiImpl])
 
   lazy val database               = DBProvider.databaseFactory("bpm-repository-db")
@@ -63,17 +56,16 @@ abstract class BpmRepositoryServiceApplication(context: LagomApplicationContext)
   lazy val bpmModelService        = wire[BpmModelService]
   lazy val dataSchemaActions      = wire[DataSchemaActions]
   lazy val dataSchemaService      = wire[DataSchemaService]
+  lazy val businessProcessActions = wire[BusinessProcessActions]
   lazy val businessProcessService = wire[BusinessProcessService]
 
   println()
   println("************************ BpmRepositorySchema ************************ ")
   println()
+  println(BpmRepositorySchema.dataDefinition.dropIfExistsStatements.mkString(";\n"))
+  println()
+  println()
   println(BpmRepositorySchema.dataDefinition.createStatements.mkString(";\n"))
   println()
   println()
-  println()
 }
-
-//object BpmRepositoryRepositorySerializerRegistry extends JsonSerializerRegistry {
-//  override def serializers: immutable.Seq[JsonSerializer[_]] = Seq.empty
-//}

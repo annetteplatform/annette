@@ -24,7 +24,7 @@ case class CreateDataSchemaPayload(
   id: DataSchemaId,
   name: String,
   description: String,
-  variables: Seq[DataSchemaVariable],
+  variables: Map[String, DataSchemaVariable],
   updatedBy: AnnettePrincipal
 )
 

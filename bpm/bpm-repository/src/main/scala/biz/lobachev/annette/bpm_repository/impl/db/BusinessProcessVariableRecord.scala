@@ -30,14 +30,21 @@ case class BusinessProcessVariableRecord(
 )
 
 object BusinessProcessVariableRecord {
-  def fromBusinessProcessVariable(
-    businessProcessId: BusinessProcessId,
-    v: BusinessProcessVariable
-  ): BusinessProcessVariableRecord      =
-    v.into[BusinessProcessVariableRecord].withFieldConst(_.businessProcessId, businessProcessId).transform
   def fromBusinessProcessVariables(
     businessProcessId: BusinessProcessId,
-    v: Seq[BusinessProcessVariable]
+    vars: Map[String, BusinessProcessVariable]
   ): Seq[BusinessProcessVariableRecord] =
-    v.map(_.into[BusinessProcessVariableRecord].withFieldConst(_.businessProcessId, businessProcessId).transform)
+    vars.map {
+      case k -> v =>
+        v.into[BusinessProcessVariableRecord]
+          .withFieldConst(_.businessProcessId, businessProcessId)
+          .withFieldConst(_.variableName, VariableName(k))
+          .transform
+    }.toSeq
+
+  def toBusinessProcessVariableMap(
+    recs: Seq[BusinessProcessVariableRecord]
+  ): Map[String, BusinessProcessVariable] =
+    recs.map(r => r.variableName.value -> r.transformInto[BusinessProcessVariable]).toMap
+
 }

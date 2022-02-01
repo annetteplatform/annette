@@ -107,15 +107,11 @@ class DataSchemaActions(implicit executionContext: ExecutionContext) extends Bpm
       ds   <- BpmRepositorySchema.dataSchemas
                 .filter(_.id === id)
                 .result
-      vars <- if (ds.nonEmpty && withVariables)
-                BpmRepositorySchema.dataSchemaVariables
-                  .filter(_.dataSchemaId === id)
-                  .result
+      vars <- if (ds.nonEmpty && withVariables) DataSchemaQueries.getDataSchemaVariables(id).result
               else DBIO.successful(Seq.empty)
-
     } yield ds.headOption.map(
       _.into[DataSchema]
-        .withFieldConst(_.variables, vars.map(_.transformInto[DataSchemaVariable]))
+        .withFieldConst(_.variables, DataSchemaVariableRecord.toDataSchemaVariableMap(vars))
         .withFieldComputed(_.updatedAt, _.updatedAt.atOffset(ZoneOffset.UTC))
         .transform
     )
@@ -132,10 +128,12 @@ class DataSchemaActions(implicit executionContext: ExecutionContext) extends Bpm
               else DBIO.successful(Seq.empty)
 
     } yield {
-      val varMap = vars.groupBy(_.dataSchemaId).map { case k -> v => k -> v.map(_.transformInto[DataSchemaVariable]) }
+      val varMap = vars
+        .groupBy(_.dataSchemaId)
+        .map { case k -> v => k -> DataSchemaVariableRecord.toDataSchemaVariableMap(v) }
       ds.map(d =>
         d.into[DataSchema]
-          .withFieldConst(_.variables, varMap.getOrElse(d.id, Seq.empty))
+          .withFieldConst(_.variables, varMap.getOrElse(d.id, Map.empty))
           .withFieldComputed(_.updatedAt, _.updatedAt.atOffset(ZoneOffset.UTC))
           .transform
       )

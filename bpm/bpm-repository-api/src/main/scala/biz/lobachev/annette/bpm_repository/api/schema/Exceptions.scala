@@ -16,14 +16,13 @@
 
 package biz.lobachev.annette.bpm_repository.api.schema
 
-import biz.lobachev.annette.core.exception.{AnnetteTransportExceptionCompanion1, AnnetteTransportExceptionCompanion2}
+import biz.lobachev.annette.core.exception.AnnetteTransportExceptionCompanion1
 import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
 
-object DataSchemaUpdateFailed extends AnnetteTransportExceptionCompanion2 {
+object DataSchemaHasReference extends AnnetteTransportExceptionCompanion1 {
   val ErrorCode       = TransportErrorCode.InternalServerError
-  val MessageCode     = "annette.bpm.dataSchema.updateFailed"
-  val Arg1Key: String = "action"
-  val Arg2Key: String = "value"
+  val MessageCode     = "annette.bpm.dataSchema.hasReference"
+  val Arg1Key: String = "id"
 }
 
 object DataSchemaAlreadyExist extends AnnetteTransportExceptionCompanion1 {

@@ -121,15 +121,19 @@ class BpmModelService(db: PostgresDatabase, actions: BpmModelActions)(implicit
   }
 
   def deleteBpmModel(payload: DeleteBpmModelPayload): Future[Done] = {
-    val action = for {
-      rows <- BpmRepositorySchema.bpmModels
-                .filter(_.id === payload.id)
-                .delete
-    } yield
-      if (rows != 1) throw BpmModelNotFound(payload.id.value)
-      else Done
-    // TODO: check foreign key constraint if model is used in business processes
-    db.run(action)
+    val action = actions.deleteBpmModelAction(payload)
+    db.run(action.transactionally)
+      .transform(
+        res => res,
+        {
+          case e: PSQLException
+              if e.getSQLState == SQLErrorCodes.FOREIGN_KEY_VIOLATION &&
+                e.getMessage.contains("business_process_fk_bpm_model") =>
+            BpmModelHasReference(payload.id.value)
+          case e => e
+        }
+      )
+
   }
 
   def getBpmModelById(id: String, withXml: Boolean): Future[BpmModel] = {

@@ -30,8 +30,21 @@ case class DataSchemaVariableRecord(
 )
 
 object DataSchemaVariableRecord {
-  def fromDataSchemaVariable(dataSchemaId: DataSchemaId, v: DataSchemaVariable): DataSchemaVariableRecord            =
-    v.into[DataSchemaVariableRecord].withFieldConst(_.dataSchemaId, dataSchemaId).transform
-  def fromDataSchemaVariables(dataSchemaId: DataSchemaId, v: Seq[DataSchemaVariable]): Seq[DataSchemaVariableRecord] =
-    v.map(_.into[DataSchemaVariableRecord].withFieldConst(_.dataSchemaId, dataSchemaId).transform)
+  def fromDataSchemaVariables(
+    dataSchemaId: DataSchemaId,
+    vars: Map[String, DataSchemaVariable]
+  ): Seq[DataSchemaVariableRecord] =
+    vars.map {
+      case k -> v =>
+        v.into[DataSchemaVariableRecord]
+          .withFieldConst(_.dataSchemaId, dataSchemaId)
+          .withFieldConst(_.variableName, VariableName(k))
+          .transform
+    }.toSeq
+
+  def toDataSchemaVariableMap(
+    recs: Seq[DataSchemaVariableRecord]
+  ): Map[String, DataSchemaVariable] =
+    recs.map(r => r.variableName.value -> r.transformInto[DataSchemaVariable]).toMap
+
 }

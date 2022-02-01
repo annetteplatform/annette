@@ -44,3 +44,9 @@ object BpmModelNotFound extends AnnetteTransportExceptionCompanion1 {
   val MessageCode     = "annette.bpm.bpmModel.notFound"
   val Arg1Key: String = "id"
 }
+
+object BpmModelHasReference extends AnnetteTransportExceptionCompanion1 {
+  val ErrorCode       = TransportErrorCode.InternalServerError
+  val MessageCode     = "annette.bpm.bpmModel.hasReference"
+  val Arg1Key: String = "id"
+}

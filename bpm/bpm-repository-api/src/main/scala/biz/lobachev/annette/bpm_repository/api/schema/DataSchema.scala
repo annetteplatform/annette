@@ -26,7 +26,7 @@ case class DataSchema(
   id: DataSchemaId,
   name: String,
   description: String,
-  variables: Seq[DataSchemaVariable],
+  variables: Map[String, DataSchemaVariable],
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 )

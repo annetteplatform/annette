@@ -88,8 +88,8 @@ trait BpmRepositoryServiceApi extends Service {
   def updateBusinessProcessDataSchema: ServiceCall[UpdateBusinessProcessDataSchemaPayload, BusinessProcess]
   def updateBusinessProcessProcessDefinition
     : ServiceCall[UpdateBusinessProcessProcessDefinitionPayload, BusinessProcess]
-  def storeBusinessProcessVariable: ServiceCall[StoreBusinessProcessVariablePayload, Done]
-  def deleteBusinessProcessVariable: ServiceCall[DeleteBusinessProcessVariablePayload, Done]
+  def storeBusinessProcessVariable: ServiceCall[StoreBusinessProcessVariablePayload, BusinessProcess]
+  def deleteBusinessProcessVariable: ServiceCall[DeleteBusinessProcessVariablePayload, BusinessProcess]
   def deleteBusinessProcess: ServiceCall[DeleteBusinessProcessPayload, Done]
   def getBusinessProcessById(id: String, withVariables: Boolean): ServiceCall[NotUsed, BusinessProcess]
   def getBusinessProcessesById(withVariables: Boolean): ServiceCall[Seq[BusinessProcessId], Seq[BusinessProcess]]

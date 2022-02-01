@@ -57,8 +57,8 @@ trait BpmRepositoryService {
   def updateBusinessProcessProcessDefinition(
     payload: UpdateBusinessProcessProcessDefinitionPayload
   ): Future[BusinessProcess]
-  def storeBusinessProcessVariable(payload: StoreBusinessProcessVariablePayload): Future[Done]
-  def deleteBusinessProcessVariable(payload: DeleteBusinessProcessVariablePayload): Future[Done]
+  def storeBusinessProcessVariable(payload: StoreBusinessProcessVariablePayload): Future[BusinessProcess]
+  def deleteBusinessProcessVariable(payload: DeleteBusinessProcessVariablePayload): Future[BusinessProcess]
   def deleteBusinessProcess(payload: DeleteBusinessProcessPayload): Future[Done]
   def getBusinessProcessById(id: String, withVariables: Boolean): Future[BusinessProcess]
   def getBusinessProcessesById(ids: Seq[BusinessProcessId], withVariables: Boolean): Future[Seq[BusinessProcess]]

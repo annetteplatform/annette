@@ -23,7 +23,7 @@ import play.api.libs.json.Json
 case class StoreBusinessProcessVariablePayload(
   businessProcessId: BusinessProcessId,
   variableName: VariableName,
-  oldVariableName: Option[VariableName],
+  oldVariableName: Option[VariableName] = None,
   name: String,
   caption: String,
   datatype: Datatype.Datatype,

@@ -16,11 +16,10 @@
 
 package biz.lobachev.annette.bpm_repository.api.bp
 
-import biz.lobachev.annette.bpm_repository.api.domain.{Datatype, VariableName}
+import biz.lobachev.annette.bpm_repository.api.domain.Datatype
 import play.api.libs.json.Json
 
 case class BusinessProcessVariable(
-  variableName: VariableName,
   name: String,
   caption: String,
   datatype: Datatype.Datatype,
