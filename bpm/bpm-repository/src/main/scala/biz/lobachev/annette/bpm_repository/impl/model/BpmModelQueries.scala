@@ -35,7 +35,7 @@ object BpmModelQueries extends BpmRepositorySchemaImplicits {
             (rec.description like s"%$filter%") ||
             (rec.code like s"%$filter%")
         ),
-        query.notations.map(notations => rec.notation.inSet(notations))
+        query.notations.filter(_.nonEmpty).map(notations => rec.notation.inSet(notations))
       ).collect({ case Some(criteria) => criteria }).reduceLeftOption(_ && _).getOrElse(true: Rep[Boolean])
     )
 
