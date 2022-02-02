@@ -30,11 +30,13 @@ object BpmModelQueries extends BpmRepositorySchemaImplicits {
   def getFilteredQuery(query: BpmModelFindQuery) =
     BpmRepositorySchema.bpmModels.filter(rec =>
       List(
-        query.filter.map(filter =>
-          (rec.name like s"%$filter%") ||
-            (rec.description like s"%$filter%") ||
-            (rec.code like s"%$filter%")
-        ),
+        query.filter
+          .filter(_.trim.nonEmpty)
+          .map(filter =>
+            (rec.name like s"%$filter%") ||
+              (rec.description like s"%$filter%") ||
+              (rec.code like s"%$filter%")
+          ),
         query.notations.filter(_.nonEmpty).map(notations => rec.notation.inSet(notations))
       ).collect({ case Some(criteria) => criteria }).reduceLeftOption(_ && _).getOrElse(true: Rep[Boolean])
     )

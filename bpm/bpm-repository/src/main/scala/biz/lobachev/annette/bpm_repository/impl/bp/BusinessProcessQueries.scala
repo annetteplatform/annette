@@ -30,10 +30,12 @@ object BusinessProcessQueries extends BpmRepositorySchemaImplicits {
   def getFilteredQuery(query: BusinessProcessFindQuery) =
     BpmRepositorySchema.businessProcesses.filter(rec =>
       List(
-        query.filter.map(filter =>
-          (rec.name like s"%$filter%") ||
-            (rec.description like s"%$filter%")
-        )
+        query.filter
+          .filter(_.trim.nonEmpty)
+          .map(filter =>
+            (rec.name like s"%$filter%") ||
+              (rec.description like s"%$filter%")
+          )
       ).collect({ case Some(criteria) => criteria }).reduceLeftOption(_ && _).getOrElse(true: Rep[Boolean])
     )
 
