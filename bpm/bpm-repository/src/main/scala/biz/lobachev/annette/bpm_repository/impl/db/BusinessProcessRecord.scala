@@ -25,8 +25,8 @@ case class BusinessProcessRecord(
   id: BusinessProcessId,
   name: String,
   description: String,
+  processDefinitionId: ProcessDefinitionId,
   bpmModelId: Option[BpmModelId],
-  processDefinitionId: Option[ProcessDefinitionId],
   dataSchemaId: Option[DataSchemaId],
   updatedAt: Instant,
   updatedBy: AnnettePrincipal

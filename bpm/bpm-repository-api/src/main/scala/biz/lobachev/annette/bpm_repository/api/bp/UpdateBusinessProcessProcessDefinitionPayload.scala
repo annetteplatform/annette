@@ -22,7 +22,7 @@ import play.api.libs.json.Json
 
 case class UpdateBusinessProcessProcessDefinitionPayload(
   id: BusinessProcessId,
-  processDefinitionId: Option[ProcessDefinitionId],
+  processDefinitionId: ProcessDefinitionId,
   updatedBy: AnnettePrincipal
 )
 

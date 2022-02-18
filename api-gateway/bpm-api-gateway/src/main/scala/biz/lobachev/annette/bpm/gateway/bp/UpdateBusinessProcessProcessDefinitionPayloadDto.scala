@@ -21,7 +21,7 @@ import play.api.libs.json.Json
 
 case class UpdateBusinessProcessProcessDefinitionPayloadDto(
   id: BusinessProcessId,
-  processDefinitionId: Option[ProcessDefinitionId]
+  processDefinitionId: ProcessDefinitionId
 )
 
 object UpdateBusinessProcessProcessDefinitionPayloadDto {

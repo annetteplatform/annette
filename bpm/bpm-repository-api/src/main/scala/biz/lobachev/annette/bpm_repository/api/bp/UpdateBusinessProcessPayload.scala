@@ -24,8 +24,8 @@ case class UpdateBusinessProcessPayload(
   id: BusinessProcessId,
   name: String,
   description: String,
+  processDefinitionId: ProcessDefinitionId,
   bpmModelId: Option[BpmModelId] = None,
-  processDefinitionId: Option[ProcessDefinitionId] = None,
   dataSchemaId: Option[DataSchemaId] = None,
   variables: Map[String, BusinessProcessVariable],
   updatedBy: AnnettePrincipal

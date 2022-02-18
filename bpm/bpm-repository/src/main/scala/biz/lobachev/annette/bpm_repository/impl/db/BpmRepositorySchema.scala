@@ -97,13 +97,13 @@ object BpmRepositorySchema extends BpmRepositorySchemaImplicits {
     def description         = column[String]("description", O.SqlType("TEXT"))
     def bpmModelId          = column[Option[BpmModelId]]("bpm_model_id", O.Length(BpmModelId.maxLength))
     def processDefinitionId =
-      column[Option[ProcessDefinitionId]]("process_definition_id", O.Length(ProcessDefinitionId.maxLength))
+      column[ProcessDefinitionId]("process_definition_id", O.Length(ProcessDefinitionId.maxLength))
     def dataSchemaId        = column[Option[DataSchemaId]]("data_schema_id", O.Length(DataSchemaId.maxLength))
     def updatedAt           = column[Instant]("updated_at", O.SqlType("TIMESTAMP"))
     def updatedBy           = column[AnnettePrincipal]("updated_by", O.SqlType("VARCHAR"), O.Length(100))
 
     def *                                   =
-      (id, name, description, bpmModelId, processDefinitionId, dataSchemaId, updatedAt, updatedBy).<>(
+      (id, name, description, processDefinitionId, bpmModelId, dataSchemaId, updatedAt, updatedBy).<>(
         (BusinessProcessRecord.apply _).tupled,
         BusinessProcessRecord.unapply
       )
