@@ -338,6 +338,7 @@ lazy val `authorization-api-gateway` = (project in file("api-gateway/authorizati
 lazy val `camunda4s` = (project in file("bpm/camunda4s"))
   .settings(
     libraryDependencies ++= Seq(
+      ws,
       Dependencies.macwire,
       Dependencies.chimney,
       Dependencies.playJson

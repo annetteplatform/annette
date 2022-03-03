@@ -1,5 +1,6 @@
 package biz.lobachev.annette.camunda4s.test
 
+import biz.lobachev.annette.camunda4s.models.ProcessDefinition
 import cats.data.EitherT
 import cats.effect.IO
 import cats.effect.unsafe.implicits.{global => catsRuntime}
@@ -17,27 +18,6 @@ import play.api.libs.json.Json
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext.global
 import scala.concurrent.duration.Duration
-
-case class ProcessDefinition(
-  id: String,
-  key: String,
-  category: String,
-  description: Option[String],
-  name: String,
-  version: Int,
-  resource: String,
-  deploymentId: String,
-  diagram: Option[String],
-  suspended: Boolean,
-  tenantId: Option[String],
-  versionTag: Option[String],
-  historyTimeToLive: Option[Int],
-  startableInTasklist: Boolean
-)
-
-object ProcessDefinition {
-  implicit val format = Json.format[ProcessDefinition]
-}
 
 class Camunda4sSpec extends AnyWordSpecLike with Matchers {
 
