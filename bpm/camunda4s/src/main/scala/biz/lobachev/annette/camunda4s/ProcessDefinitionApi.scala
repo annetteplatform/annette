@@ -1,6 +1,8 @@
 package biz.lobachev.annette.camunda4s
 
-import biz.lobachev.annette.camunda4s.models.{GetProcessDefinitionsRequest, ProcessDefinition}
+import biz.lobachev.annette.camunda4s.api.CamundaClient
+import biz.lobachev.annette.camunda4s.api.repository.ProcessDefinition
+import biz.lobachev.annette.camunda4s.impl.repository.GetProcessDefinitionsRequest
 import play.api.libs.json.JsValue
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -10,6 +12,11 @@ class ProcessDefinitionApi(client: CamundaClient)(implicit val ec: ExecutionCont
   def getProcessDefinitions(): Future[Seq[ProcessDefinition]] =
     getProcessDefinitions(GetProcessDefinitionsRequest())
 
+  /**
+   * Queries for process definitions that fulfill given parameters.
+   * @param request request parameters may be the properties of process definitions, such as the name, key or version
+   * @return
+   */
   def getProcessDefinitions(request: GetProcessDefinitionsRequest): Future[Seq[ProcessDefinition]] = {
     val params: Seq[(String, String)] = Seq(
       request.processDefinitionId.map(r => "processDefinitionId" -> r),
@@ -58,4 +65,22 @@ class ProcessDefinitionApi(client: CamundaClient)(implicit val ec: ExecutionCont
                     .get()
     } yield response.body[JsValue].as[Seq[ProcessDefinition]]
   }
+
+  /** Retrieves a process definition by id according to the ProcessDefinition interface in the engine. */
+  def getProcessDefinitionById(id: String): Future[ProcessDefinition] =
+    for {
+      response <- client
+                    .request(s"/process-definition/$id")
+                    .addHttpHeaders("Accept" -> "application/json")
+                    .get()
+    } yield response.body[JsValue].as[ProcessDefinition]
+
+  /** Retrieves a process definition by key according to the ProcessDefinition interface in the engine. */
+  def getProcessDefinitionByKey(key: String): Future[ProcessDefinition] =
+    for {
+      response <- client
+                    .request(s"/process-definition/key/$key")
+                    .addHttpHeaders("Accept" -> "application/json")
+                    .get()
+    } yield response.body[JsValue].as[ProcessDefinition]
 }

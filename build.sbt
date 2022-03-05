@@ -343,10 +343,10 @@ lazy val `camunda4s` = (project in file("bpm/camunda4s"))
       Dependencies.chimney,
       Dependencies.playJson
     ) ++
-      Dependencies.http4s ++
       Dependencies.tests
   )
   .settings(annetteSettings: _*)
+  .dependsOn(`core`)
 
 lazy val `bpm-repository-api` = (project in file("bpm/bpm-repository-api"))
   .settings(

@@ -18,8 +18,6 @@ object Dependencies {
     val slick                   = "3.3.3"
     val slick_hikaricp          = "3.3.3"
     val postgresql              = "42.3.1"
-    val http4s                  = "0.23.7"
-    val cats                    = "2.3.0"
     val playJson                = "2.8.2"
   }
 
@@ -71,14 +69,6 @@ object Dependencies {
   )
 
   val postgresql: ModuleID = "org.postgresql" % "postgresql" % Version.postgresql
-
-  val http4s = Seq(
-//    "org.http4s" %% "http4s-dsl"          % Version.http4s,
-//    "org.http4s" %% "http4s-blaze-server" % Version.http4s,
-    "org.http4s" %% "http4s-blaze-client" % Version.http4s
-  )
-
-  val cats = "org.typelevel" %% "cats-core" % Version.cats
 
   val playJson = "com.typesafe.play" %% "play-json" % Version.playJson
 

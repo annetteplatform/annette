@@ -1,4 +1,4 @@
-package biz.lobachev.annette.camunda4s
+package biz.lobachev.annette.camunda4s.api
 
 import play.api.libs.ws.{WSAuthScheme, WSClient, WSRequest}
 
