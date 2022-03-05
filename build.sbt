@@ -81,7 +81,7 @@ lazy val root = (project in file("."))
     // initialization application
     `ignition-core`,
 //    `demo-ignition`,
-    `camunda4s`,
+    `camunda`,
     // API gateways
     `application-api-gateway`,
     `authorization-api-gateway`,
@@ -335,7 +335,7 @@ lazy val `authorization-api-gateway` = (project in file("api-gateway/authorizati
     `authorization-api`
   )
 
-lazy val `camunda4s` = (project in file("bpm/camunda4s"))
+lazy val `camunda` = (project in file("bpm/camunda"))
   .settings(
     libraryDependencies ++= Seq(
       ws,
@@ -394,7 +394,7 @@ lazy val `bpm-api-gateway` = (project in file("api-gateway/bpm-api-gateway"))
   .dependsOn(
     `api-gateway-core`,
     `bpm-repository-api`,
-    `camunda4s`
+    `camunda`
   )
 
 lazy val `cms-api` = (project in file("cms/cms-api"))
