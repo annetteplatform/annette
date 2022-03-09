@@ -42,3 +42,19 @@ object ProcessDefinitionNotFoundByKey extends AnnetteTransportExceptionCompanion
   val Arg2Key: String = "message"
   val Arg3Key: String = "payload"
 }
+
+object InvalidVariableValue extends AnnetteTransportExceptionCompanion3 {
+  val ErrorCode       = TransportErrorCode.BadRequest
+  val MessageCode     = "annette.bpm.engine.invalidVariableValue"
+  val Arg1Key: String = "type"
+  val Arg2Key: String = "message"
+  val Arg3Key: String = "payload"
+}
+
+object ProcessInstanceNotFound extends AnnetteTransportExceptionCompanion3 {
+  val ErrorCode       = TransportErrorCode.BadRequest
+  val MessageCode     = "annette.bpm.engine.processInstance.notFound"
+  val Arg1Key: String = "id"
+  val Arg2Key: String = "message"
+  val Arg3Key: String = "payload"
+}

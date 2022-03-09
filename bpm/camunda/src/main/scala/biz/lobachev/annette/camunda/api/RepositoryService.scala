@@ -28,7 +28,8 @@ trait RepositoryService {
   def getDeploymentById(id: String): Future[Deployment]
 
   /**
-   * Queries for deployments that fulfill given parameters. Parameters may be the properties of deployments, such as the id or name or a range of the deployment time.
+   * Queries for deployments that fulfill given parameters. Parameters may be the properties of deployments,
+   * such as the id or name or a range of the deployment time.
    */
   def findDeployments(query: DeploymentFindQuery): Future[DeploymentFindResult]
 
