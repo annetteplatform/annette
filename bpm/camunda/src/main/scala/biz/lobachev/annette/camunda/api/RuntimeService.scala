@@ -1,8 +1,10 @@
 package biz.lobachev.annette.camunda.api
 
 import akka.Done
+import biz.lobachev.annette.camunda.api.common.VariableValue
 import biz.lobachev.annette.camunda.api.runtime.{
   DeleteProcessInstancePayload,
+  ModifyProcessVariablePayload,
   ProcessInstance,
   ProcessInstanceFindQuery,
   ProcessInstanceFindResult,
@@ -63,4 +65,48 @@ trait RuntimeService {
    * @return
    */
   def findProcessInstances(query: ProcessInstanceFindQuery): Future[ProcessInstanceFindResult]
+
+  /**
+   * Updates or deletes the variables of a process instance by id. Updates precede deletions.
+   * So, if a variable is updated AND deleted, the deletion overrides the update.
+   * @param id The id of the process instance to set variables for.
+   * @param payload
+   * @return
+   */
+  def modifyProcessVariables(id: String, payload: ModifyProcessVariablePayload): Future[Done]
+
+  /**
+   * Sets a variable of a given process instance by id.
+   * @param id The id of the process instance to set the variable for.
+   * @param varName The name of the variable to set.
+   * @param value Value of the variable to set
+   * @return
+   */
+  def updateProcessVariable(id: String, varName: String, value: VariableValue): Future[Done]
+
+  /**
+   * Deletes a variable of a process instance by id.
+   * @param id The id of the process instance to delete the variable from.
+   * @param varName The name of the variable to delete.
+   * @return
+   */
+  def deleteProcessVariable(id: String, varName: String): Future[Done]
+
+  /**
+   * Retrieves a variable of a given process instance by id.
+   * @param id The id of the process instance to retrieve the variable from.
+   * @param varName The name of the variable to get.
+   * @param deserializeValue Determines whether serializable variable values (typically variables that store
+   *                         custom Java objects) should be deserialized on server side (default true).
+   * @return
+   */
+  def getProcessVariable(id: String, varName: String, deserializeValue: Boolean = false): Future[VariableValue]
+
+  /**
+   * @param id The id of the process instance to retrieve the variables from.
+   * @param deserializeValues Determines whether serializable variable values (typically variables that store
+   *                         custom Java objects) should be deserialized on server side (default false).
+   * @return
+   */
+  def getProcessVariables(id: String, deserializeValues: Boolean = false): Future[Map[String, VariableValue]]
 }

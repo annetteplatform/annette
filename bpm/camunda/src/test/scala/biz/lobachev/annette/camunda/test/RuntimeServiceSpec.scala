@@ -6,6 +6,7 @@ import biz.lobachev.annette.camunda.api._
 import biz.lobachev.annette.camunda.api.common._
 import biz.lobachev.annette.camunda.api.runtime.{
   DeleteProcessInstancePayload,
+  ModifyProcessVariablePayload,
   ProcessInstanceFindQuery,
   StartProcessInstancePayload,
   SubmitStartFormPayload
@@ -40,7 +41,7 @@ class RuntimeServiceSpec extends AsyncWordSpecLike with Matchers {
       "json"         -> JsonValue(
         "{\"id\": \"my-bpmn-model1\",\n  \"name\": \"My bpmn model 111\",\n  \"updatedBy\": {\n    \"principalType\": \"person\",\n    \"principalId\": \"P0002\"\n  }}"
       ),
-      "xml"          -> XmlValue("<name>Valery</name"),
+      "xml"          -> XmlValue("<name>Valery</name>"),
       "testScalaVar" -> ObjectValue(
         "{\n    \"id\": \"val\",\n    \"name\": \"Valery\",\n    \"active\": true,\n    \"intNumber\": 77\n  }",
         ValueInfo(
@@ -51,7 +52,7 @@ class RuntimeServiceSpec extends AsyncWordSpecLike with Matchers {
     )
   )
 
-  "RuntimeService" should {
+  "ProcessInstance" should {
 
     "start process by id" in {
       for {
@@ -147,7 +148,7 @@ class RuntimeServiceSpec extends AsyncWordSpecLike with Matchers {
       }
     }
 
-    "getDeploymentById non-existing" in {
+    "getProcessInstanceById non-existing" in {
       for {
         ex <- recoverToExceptionIf[AnnetteTransportException](service.getProcessInstanceById("none"))
       } yield {
@@ -168,7 +169,126 @@ class RuntimeServiceSpec extends AsyncWordSpecLike with Matchers {
       }
     }
 
-    "findProcessInstances remove created instances" in {
+    "remove created instances" in {
+      val query = ProcessInstanceFindQuery(processDefinitionKey = Some("ReviewInvoice"))
+      for {
+        r1     <- service.findProcessInstances(query)
+        futures = r1.hits.map(r => service.deleteProcessInstance(DeleteProcessInstancePayload(r.id)))
+        _      <- Future.sequence(futures)
+        r3     <- service.findProcessInstances(query)
+      } yield {
+        println(s"total = ${r3.total}")
+        r3.total shouldBe 0
+      }
+    }
+  }
+
+  "ProcessInstanceVariable" should {
+    "modifyProcessVariables" in {
+      val newValue = "newStringValue"
+      for {
+        r1 <- service.startProcessInstanceByKey(
+                "ReviewInvoice",
+                StartProcessInstancePayload(
+                  variables = variables,
+                  withVariablesInReturn = Some(true)
+                )
+              )
+        _  <- service.modifyProcessVariables(
+                r1.id,
+                ModifyProcessVariablePayload(
+                  modifications = Some(
+                    Map(
+                      "str" -> StringValue(newValue)
+                    )
+                  ),
+                  deletions = Some(Seq("bool"))
+                )
+              )
+        r3 <- service.getProcessVariables(r1.id)
+        _  <- service.deleteProcessInstance(DeleteProcessInstancePayload(r1.id))
+      } yield {
+        println(r3)
+        r3("str").asInstanceOf[StringValue].value shouldBe newValue
+        r3.get("bool") shouldBe None
+      }
+    }
+
+    "updateProcessVariable" in {
+      val newValue = "newStringValue"
+      for {
+        r1 <- service.startProcessInstanceByKey(
+                "ReviewInvoice",
+                StartProcessInstancePayload(
+                  variables = variables,
+                  withVariablesInReturn = Some(true)
+                )
+              )
+        _  <- service.updateProcessVariable(
+                id = r1.id,
+                varName = "str",
+                value = StringValue(newValue)
+              )
+        r3 <- service.getProcessVariables(r1.id)
+        _  <- service.deleteProcessInstance(DeleteProcessInstancePayload(r1.id))
+      } yield {
+        println(r3)
+        r3("str").asInstanceOf[StringValue].value shouldBe newValue
+      }
+    }
+
+    "deleteProcessVariable" in {
+      for {
+        r1 <- service.startProcessInstanceByKey(
+                "ReviewInvoice",
+                StartProcessInstancePayload(
+                  variables = variables,
+                  withVariablesInReturn = Some(true)
+                )
+              )
+        _  <- service.deleteProcessVariable(
+                id = r1.id,
+                varName = "bool"
+              )
+        r3 <- service.getProcessVariables(r1.id)
+        _  <- service.deleteProcessInstance(DeleteProcessInstancePayload(r1.id))
+      } yield {
+        println(r3)
+        r3.get("bool") shouldBe None
+      }
+    }
+
+    "getProcessVariable" in {
+      val newValue = "newStringValue"
+      for {
+        r1     <- service.startProcessInstanceByKey(
+                    "ReviewInvoice",
+                    StartProcessInstancePayload(
+                      variables = variables,
+                      withVariablesInReturn = Some(true)
+                    )
+                  )
+        _      <- service.modifyProcessVariables(
+                    r1.id,
+                    ModifyProcessVariablePayload(
+                      modifications = Some(
+                        Map(
+                          "str" -> StringValue(newValue)
+                        )
+                      ),
+                      deletions = Some(Seq("bool"))
+                    )
+                  )
+        strVar <- service.getProcessVariable(r1.id, "str")
+        boolEx <- recoverToExceptionIf[AnnetteTransportException](service.getProcessVariable(r1.id, "bool"))
+        _      <- service.deleteProcessInstance(DeleteProcessInstancePayload(r1.id))
+      } yield {
+        strVar.asInstanceOf[StringValue].value shouldBe newValue
+        boolEx.code shouldBe ProcessInstanceVariableNotFound.MessageCode
+      }
+    }
+
+    "remove created process instances" in {
       val query = ProcessInstanceFindQuery(processDefinitionKey = Some("ReviewInvoice"))
       for {
         r1     <- service.findProcessInstances(query)

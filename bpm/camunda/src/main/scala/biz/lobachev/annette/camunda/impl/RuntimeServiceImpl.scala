@@ -1,8 +1,10 @@
 package biz.lobachev.annette.camunda.impl
 
 import akka.Done
+import biz.lobachev.annette.camunda.api.common.VariableValue
 import biz.lobachev.annette.camunda.api.runtime.{
   DeleteProcessInstancePayload,
+  ModifyProcessVariablePayload,
   ProcessInstance,
   ProcessInstanceFindQuery,
   ProcessInstanceFindResult,
@@ -16,6 +18,7 @@ import biz.lobachev.annette.camunda.api.{
   ProcessDefinitionNotFoundById,
   ProcessDefinitionNotFoundByKey,
   ProcessInstanceNotFound,
+  ProcessInstanceVariableNotFound,
   RuntimeService
 }
 import play.api.libs.json.{JsValue, Json}
@@ -100,7 +103,6 @@ class RuntimeServiceImpl(client: CamundaClient)(implicit val ec: ExecutionContex
   private def processResponseWithId(id: String, response: WSResponse) =
     response.status match {
       case 200 =>
-        println(Json.prettyPrint(response.body[JsValue]))
         response.body[JsValue].as[ProcessInstance]
       // The instance could not be created due to an invalid variable value, for example if the value
       // could not be parsed to an Integer value or the passed variable type is not supported.
@@ -129,7 +131,6 @@ class RuntimeServiceImpl(client: CamundaClient)(implicit val ec: ExecutionContex
   private def processResponseWithKey(key: String, response: WSResponse) =
     response.status match {
       case 200 =>
-        println(Json.prettyPrint(response.body[JsValue]))
         response.body[JsValue].as[ProcessInstance]
       // The instance could not be created due to an invalid variable value, for example if the value
       // could not be parsed to an Integer value or the passed variable type is not supported.
@@ -274,4 +275,172 @@ class RuntimeServiceImpl(client: CamundaClient)(implicit val ec: ExecutionContex
     }
   }
 
+  /**
+   * Updates or deletes the variables of a process instance by id. Updates precede deletions.
+   * So, if a variable is updated AND deleted, the deletion overrides the update.
+   *
+   * @param id The id of the process instance to set variables for.
+   * @param payload
+   * @return
+   */
+  override def modifyProcessVariables(id: String, payload: ModifyProcessVariablePayload): Future[Done] =
+    for {
+      response <- client
+                    .request(s"/process-instance/$id/variables")
+                    .addHttpHeaders("Accept" -> "application/json")
+                    .post(Json.toJson(payload))
+
+    } yield response.status match {
+      case 204 =>
+        Done
+      case 400 =>
+        throw InvalidVariableValue(
+          (response.body[JsValue] \ "type").as[String],
+          (response.body[JsValue] \ "message").as[String],
+          response.body[JsValue].toString
+        )
+      case _   =>
+        val json = response.body[JsValue]
+        throw BPMEngineError(
+          (json \ "type").as[String],
+          (json \ "message").as[String],
+          json.toString
+        )
+    }
+
+  /**
+   * Sets a variable of a given process instance by id.
+   *
+   * @param id      The id of the process instance to set the variable for.
+   * @param varName The name of the variable to set.
+   * @param value   Value of the variable to set
+   * @return
+   */
+  override def updateProcessVariable(id: String, varName: String, value: VariableValue): Future[Done] =
+    for {
+      response <- client
+                    .request(s"/process-instance/$id/variables/$varName")
+                    .addHttpHeaders("Accept" -> "application/json")
+                    .put(Json.toJson(value))
+
+    } yield response.status match {
+      case 204 =>
+        Done
+      case 400 =>
+        throw InvalidVariableValue(
+          (response.body[JsValue] \ "type").as[String],
+          (response.body[JsValue] \ "message").as[String],
+          response.body[JsValue].toString
+        )
+      case _   =>
+        val json = response.body[JsValue]
+        throw BPMEngineError(
+          (json \ "type").as[String],
+          (json \ "message").as[String],
+          json.toString
+        )
+    }
+
+  /**
+   * Deletes a variable of a process instance by id.
+   *
+   * @param id      The id of the process instance to delete the variable from.
+   * @param varName The name of the variable to delete.
+   * @return
+   */
+  override def deleteProcessVariable(id: String, varName: String): Future[Done] =
+    for {
+      response <- client
+                    .request(s"/process-instance/$id/variables/$varName")
+                    .addHttpHeaders("Accept" -> "application/json")
+                    .delete()
+
+    } yield response.status match {
+      case 204 =>
+        Done
+      case _   =>
+        val json = response.body[JsValue]
+        throw BPMEngineError(
+          (json \ "type").as[String],
+          (json \ "message").as[String],
+          json.toString
+        )
+    }
+
+  /**
+   * Retrieves a variable of a given process instance by id.
+   *
+   * @param id               The id of the process instance to retrieve the variable from.
+   * @param varName          The name of the variable to get.
+   * @param deserializeValue Determines whether serializable variable values (typically variables that store
+   *                         custom Java objects) should be deserialized on server side (default true).
+   * @return
+   */
+  override def getProcessVariable(
+    id: String,
+    varName: String,
+    deserializeValue: Boolean = false
+  ): Future[VariableValue] =
+    for {
+      response <- client
+                    .request(s"/process-instance/$id/variables/$varName")
+                    .addHttpHeaders("Accept" -> "application/json")
+                    .withQueryStringParameters("deserializeValue" -> deserializeValue.toString)
+                    .get()
+
+    } yield response.status match {
+      case 200 =>
+        response.body[JsValue].as[VariableValue]
+      case 404 =>
+        val json = response.body[JsValue]
+        throw ProcessInstanceVariableNotFound(
+          id,
+          varName,
+          (json \ "message").as[String],
+          json.toString
+        )
+      case _   =>
+        val json = response.body[JsValue]
+        throw BPMEngineError(
+          (json \ "type").as[String],
+          (json \ "message").as[String],
+          json.toString
+        )
+    }
+
+  /**
+   * @param id               The id of the process instance to retrieve the variables from.
+   * @param deserializeValue Determines whether serializable variable values (typically variables that store
+   *                         custom Java objects) should be deserialized on server side (default true).
+   * @return
+   */
+  override def getProcessVariables(
+    id: String,
+    deserializeValues: Boolean = false
+  ): Future[Map[String, VariableValue]] =
+    for {
+      response <- client
+                    .request(s"/process-instance/$id/variables")
+                    .addHttpHeaders("Accept" -> "application/json")
+                    .withQueryStringParameters("deserializeValues" -> deserializeValues.toString)
+                    .get()
+
+    } yield response.status match {
+      case 200 =>
+        response.body[JsValue].as[Map[String, VariableValue]]
+      case 500 =>
+        val json = response.body[JsValue]
+        throw ProcessInstanceNotFound(
+          id,
+          (json \ "message").as[String],
+          json.toString
+        )
+      case _   =>
+        val json = response.body[JsValue]
+        throw BPMEngineError(
+          (json \ "type").as[String],
+          (json \ "message").as[String],
+          json.toString
+        )
+    }
 }
