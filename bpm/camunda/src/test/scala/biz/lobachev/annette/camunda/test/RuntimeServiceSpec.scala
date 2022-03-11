@@ -141,7 +141,6 @@ class RuntimeServiceSpec extends AsyncWordSpecLike with Matchers {
                 StartProcessInstancePayload()
               )
         r2 <- service.getProcessInstanceById(r1.id)
-//        _  <- service.deleteDeployment(DeleteDeploymentPayload(r1.id))
       } yield {
         println(r2)
         1 shouldBe 1

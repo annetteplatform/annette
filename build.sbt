@@ -341,7 +341,8 @@ lazy val `camunda` = (project in file("bpm/camunda"))
       ws,
       Dependencies.macwire,
       Dependencies.chimney,
-      Dependencies.playJson
+      Dependencies.playJson,
+      Dependencies.playJsonExt
     ) ++
       Dependencies.tests
   )
