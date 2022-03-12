@@ -22,6 +22,7 @@ import biz.lobachev.annette.camunda.api.common.VariableValue
 import biz.lobachev.annette.camunda.api.task.{
   CompleteTaskPayload,
   CreateTaskPayload,
+  ModifyTaskLocalVariablePayload,
   ModifyTaskVariablePayload,
   ResolveTaskPayload,
   Task,
@@ -492,6 +493,168 @@ class TaskServiceImpl(client: CamundaClient)(implicit val ec: ExecutionContext) 
     for {
       response <- client
                     .request(s"/task/$id/variables")
+                    .addHttpHeaders("Accept" -> "application/json")
+                    .withQueryStringParameters("deserializeValues" -> deserializeValues.toString)
+                    .get()
+
+    } yield response.status match {
+      case 200 =>
+        response.body[JsValue].as[Map[String, VariableValue]]
+      case 500 =>
+        val json = response.body[JsValue]
+        throw TaskNotFound(
+          id,
+          (json \ "message").as[String],
+          json.toString
+        )
+      case _   =>
+        val json = response.body[JsValue]
+        throw BPMEngineError(
+          (json \ "type").as[String],
+          (json \ "message").as[String],
+          json.toString
+        )
+    }
+
+  /**
+   * Updates or deletes the variables in the context of a task. Updates precede deletions.
+   * So, if a variable is updated AND deleted, the deletion overrides the update.
+   *
+   * @param id
+   * @param payload
+   * @return
+   */
+  override def modifyTaskLocalVariables(id: String, payload: ModifyTaskLocalVariablePayload): Future[Done] =
+    for {
+      response <- client
+                    .request(s"/task/$id/localVariables")
+                    .addHttpHeaders("Accept" -> "application/json")
+                    .post(Json.toJson(payload))
+
+    } yield response.status match {
+      case 204 =>
+        Done
+      case 400 =>
+        throw InvalidVariableValue(
+          (response.body[JsValue] \ "type").as[String],
+          (response.body[JsValue] \ "message").as[String],
+          response.body[JsValue].toString
+        )
+      case _   =>
+        val json = response.body[JsValue]
+        throw BPMEngineError(
+          (json \ "type").as[String],
+          (json \ "message").as[String],
+          json.toString
+        )
+    }
+
+  /**
+   * Sets a variable in the context of a given task.
+   *
+   * @param id
+   * @param varName
+   * @param value
+   * @return
+   */
+  override def updateTaskLocalVariable(id: String, varName: String, value: VariableValue): Future[Done] =
+    for {
+      response <- client
+                    .request(s"/task/$id/localVariables/$varName")
+                    .addHttpHeaders("Accept" -> "application/json")
+                    .put(Json.toJson(value))
+
+    } yield response.status match {
+      case 204 =>
+        Done
+      case 400 =>
+        throw InvalidVariableValue(
+          (response.body[JsValue] \ "type").as[String],
+          (response.body[JsValue] \ "message").as[String],
+          response.body[JsValue].toString
+        )
+      case _   =>
+        val json = response.body[JsValue]
+        throw BPMEngineError(
+          (json \ "type").as[String],
+          (json \ "message").as[String],
+          json.toString
+        )
+    }
+
+  /**
+   * Removes a local variable from a task by id.
+   *
+   * @param id
+   * @param varName
+   * @return
+   */
+  override def deleteTaskLocalVariable(id: String, varName: String): Future[Done] =
+    for {
+      response <- client
+                    .request(s"/task/$id/localVariables/$varName")
+                    .addHttpHeaders("Accept" -> "application/json")
+                    .delete()
+
+    } yield response.status match {
+      case 204 =>
+        Done
+      case _   =>
+        val json = response.body[JsValue]
+        throw BPMEngineError(
+          (json \ "type").as[String],
+          (json \ "message").as[String],
+          json.toString
+        )
+    }
+
+  /**
+   * Retrieves a variable from the context of a given task by id.
+   *
+   * @param id
+   * @param varName
+   * @param deserializeValue
+   * @return
+   */
+  override def getTaskLocalVariable(id: String, varName: String, deserializeValue: Boolean): Future[VariableValue] =
+    for {
+      response <- client
+                    .request(s"/task/$id/localVariables/$varName")
+                    .addHttpHeaders("Accept" -> "application/json")
+                    .withQueryStringParameters("deserializeValue" -> deserializeValue.toString)
+                    .get()
+
+    } yield response.status match {
+      case 200 =>
+        response.body[JsValue].as[VariableValue]
+      case 404 =>
+        val json = response.body[JsValue]
+        throw TaskVariableNotFound(
+          id,
+          varName,
+          (json \ "message").as[String],
+          json.toString
+        )
+      case _   =>
+        val json = response.body[JsValue]
+        throw BPMEngineError(
+          (json \ "type").as[String],
+          (json \ "message").as[String],
+          json.toString
+        )
+    }
+
+  /**
+   * Retrieves all variables of a given task by id.
+   *
+   * @param id
+   * @param deserializeValues
+   * @return
+   */
+  override def getTaskLocalVariables(id: String, deserializeValues: Boolean): Future[VariableValues] =
+    for {
+      response <- client
+                    .request(s"/task/$id/localVariables")
                     .addHttpHeaders("Accept" -> "application/json")
                     .withQueryStringParameters("deserializeValues" -> deserializeValues.toString)
                     .get()

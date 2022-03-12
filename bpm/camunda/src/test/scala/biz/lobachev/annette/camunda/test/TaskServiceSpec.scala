@@ -4,14 +4,11 @@ import akka.Done
 import akka.actor.ActorSystem
 import biz.lobachev.annette.camunda.api._
 import biz.lobachev.annette.camunda.api.common.{StringValue, VariableValue}
-import biz.lobachev.annette.camunda.api.runtime.{
-  DeleteProcessInstancePayload,
-  ProcessInstanceFindQuery,
-  StartProcessInstancePayload
-}
+import biz.lobachev.annette.camunda.api.runtime.{DeleteProcessInstancePayload, StartProcessInstancePayload}
 import biz.lobachev.annette.camunda.api.task.{
   CompleteTaskPayload,
   CreateTaskPayload,
+  ModifyTaskLocalVariablePayload,
   ModifyTaskVariablePayload,
   TaskFindQuery,
   UpdateTaskPayload
@@ -24,7 +21,6 @@ import play.api.libs.ws.ahc.{AhcWSClient, StandaloneAhcWSClient}
 
 import java.util.UUID
 import scala.concurrent.ExecutionContext.global
-import scala.concurrent.Future
 
 class TaskServiceSpec extends AsyncWordSpecLike with Matchers {
   implicit val system    = ActorSystem()
@@ -320,16 +316,134 @@ class TaskServiceSpec extends AsyncWordSpecLike with Matchers {
       }
     }
 
-    "remove created process instances" in {
-      val query = ProcessInstanceFindQuery(processDefinitionKey = Some("SimpleProcess"))
+  }
+
+  "TaskLocalVariable" should {
+    "modifyTaskLocalVariables" in {
+      val newValue = "newStringValue"
       for {
-        r1     <- runtimeService.findProcessInstances(query)
-        futures = r1.hits.map(r => runtimeService.deleteProcessInstance(DeleteProcessInstancePayload(r.id)))
-        _      <- Future.sequence(futures)
-        r3     <- runtimeService.findProcessInstances(query)
+        r1    <- runtimeService.startProcessInstanceByKey(
+                   "SimpleProcess",
+                   StartProcessInstancePayload(
+                     variables = BpmData.variables,
+                     withVariablesInReturn = Some(true)
+                   )
+                 )
+        r2    <- service.findTasks(
+                   TaskFindQuery(
+                     processInstanceId = Some(r1.id)
+                   )
+                 )
+        taskId = r2.hits.head.id
+        _     <- service.modifyTaskLocalVariables(
+                   taskId,
+                   ModifyTaskLocalVariablePayload(
+                     modifications = Some(
+                       Map(
+                         "str" -> StringValue(newValue)
+                       )
+                     ),
+                     deletions = Some(Seq("bool"))
+                   )
+                 )
+        r3    <- service.getTaskLocalVariables(taskId)
+        _     <- runtimeService.deleteProcessInstance(DeleteProcessInstancePayload(r1.id))
       } yield {
-        println(s"total = ${r3.total}")
-        r3.total shouldBe 0
+        println(r3)
+        r3("str").asInstanceOf[StringValue].value shouldBe newValue
+        r3.get("bool") shouldBe None
+      }
+    }
+
+    "updateTaskLocalVariable" in {
+      val newValue = "newStringValue"
+      for {
+        r1    <- runtimeService.startProcessInstanceByKey(
+                   "SimpleProcess",
+                   StartProcessInstancePayload(
+                     variables = BpmData.variables,
+                     withVariablesInReturn = Some(true)
+                   )
+                 )
+        r2    <- service.findTasks(
+                   TaskFindQuery(
+                     processInstanceId = Some(r1.id)
+                   )
+                 )
+        taskId = r2.hits.head.id
+        _     <- service.updateTaskLocalVariable(
+                   id = taskId,
+                   varName = "str",
+                   value = StringValue(newValue)
+                 )
+        r3    <- service.getTaskLocalVariables(taskId)
+        _     <- runtimeService.deleteProcessInstance(DeleteProcessInstancePayload(r1.id))
+      } yield {
+        println(r3)
+        r3("str").asInstanceOf[StringValue].value shouldBe newValue
+      }
+    }
+
+    "deleteTaskLocalVariable" in {
+      for {
+        r1    <- runtimeService.startProcessInstanceByKey(
+                   "SimpleProcess",
+                   StartProcessInstancePayload(
+                     variables = BpmData.variables,
+                     withVariablesInReturn = Some(true)
+                   )
+                 )
+        r2    <- service.findTasks(
+                   TaskFindQuery(
+                     processInstanceId = Some(r1.id)
+                   )
+                 )
+        taskId = r2.hits.head.id
+        _     <- service.deleteTaskLocalVariable(
+                   id = taskId,
+                   varName = "bool"
+                 )
+        r3    <- service.getTaskLocalVariables(taskId)
+        _     <- runtimeService.deleteProcessInstance(DeleteProcessInstancePayload(r1.id))
+      } yield {
+        println(r3)
+        r3.get("bool") shouldBe None
+      }
+    }
+
+    "getTaskLocalVariable" in {
+      val newValue = "newStringValue"
+      for {
+        r1     <- runtimeService.startProcessInstanceByKey(
+                    "SimpleProcess",
+                    StartProcessInstancePayload(
+                      variables = BpmData.variables,
+                      withVariablesInReturn = Some(true)
+                    )
+                  )
+        r2     <- service.findTasks(
+                    TaskFindQuery(
+                      processInstanceId = Some(r1.id)
+                    )
+                  )
+        taskId  = r2.hits.head.id
+        _      <- service.modifyTaskLocalVariables(
+                    taskId,
+                    ModifyTaskLocalVariablePayload(
+                      modifications = Some(
+                        Map(
+                          "str" -> StringValue(newValue)
+                        )
+                      ),
+                      deletions = Some(Seq("bool"))
+                    )
+                  )
+        strVar <- service.getTaskLocalVariable(taskId, "str")
+        boolEx <- recoverToExceptionIf[AnnetteTransportException](service.getTaskLocalVariable(taskId, "bool"))
+        _      <- runtimeService.deleteProcessInstance(DeleteProcessInstancePayload(r1.id))
+      } yield {
+        strVar.asInstanceOf[StringValue].value shouldBe newValue
+        boolEx.code shouldBe TaskVariableNotFound.MessageCode
       }
     }
   }

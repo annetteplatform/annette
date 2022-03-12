@@ -152,4 +152,47 @@ trait TaskService {
    */
   def getTaskVariables(id: String, deserializeValues: Boolean = false): Future[VariableValues]
 
+  /**
+   * Updates or deletes the variables in the context of a task. Updates precede deletions.
+   * So, if a variable is updated AND deleted, the deletion overrides the update.
+   * @param id
+   * @param payload
+   * @return
+   */
+  def modifyTaskLocalVariables(id: String, payload: ModifyTaskLocalVariablePayload): Future[Done]
+
+  /**
+   * Sets a variable in the context of a given task.
+   * @param id
+   * @param varName
+   * @param value
+   * @return
+   */
+  def updateTaskLocalVariable(id: String, varName: String, value: VariableValue): Future[Done]
+
+  /**
+   * Removes a local variable from a task by id.
+   * @param id
+   * @param varName
+   * @return
+   */
+  def deleteTaskLocalVariable(id: String, varName: String): Future[Done]
+
+  /**
+   * Retrieves a variable from the context of a given task by id.
+   * @param id
+   * @param varName
+   * @param deserializeValue
+   * @return
+   */
+  def getTaskLocalVariable(id: String, varName: String, deserializeValue: Boolean = false): Future[VariableValue]
+
+  /**
+   * Retrieves all variables of a given task by id.
+   * @param id
+   * @param deserializeValues
+   * @return
+   */
+  def getTaskLocalVariables(id: String, deserializeValues: Boolean = false): Future[VariableValues]
+
 }
