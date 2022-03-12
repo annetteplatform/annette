@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.camunda.api.runtime
+package biz.lobachev.annette.camunda.api.task
 
 import biz.lobachev.annette.camunda.api.VariableValues
 import play.api.libs.json.Json
 
-case class StartProcessInstancePayload(
-  variables: Option[VariableValues] = None,
-  businessKey: Option[String] = None,
-  caseInstanceId: Option[String] = None,
-  skipCustomListeners: Option[Boolean] = None,
-  skipIoMappings: Option[Boolean] = None,
-  withVariablesInReturn: Option[Boolean] = None
+case class ModifyTaskVariablePayload(
+  modifications: Option[VariableValues] = None,
+  deletions: Option[Seq[String]] = None
 )
 
-object StartProcessInstancePayload {
-  implicit val format = Json.format[StartProcessInstancePayload]
+object ModifyTaskVariablePayload {
+  implicit val format = Json.format[ModifyTaskVariablePayload]
 }

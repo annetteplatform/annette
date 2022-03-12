@@ -1,6 +1,103 @@
 package biz.lobachev.annette.camunda.test
 
+import biz.lobachev.annette.camunda.api.common.{
+  BooleanValue,
+  DateValue,
+  DoubleValue,
+  IntegerValue,
+  JsonValue,
+  LongValue,
+  ObjectValue,
+  StringValue,
+  ValueInfo,
+  XmlValue
+}
+
 object BpmData {
+
+  val simpleProcess =
+    """<?xml version="1.0" encoding="UTF-8"?>
+      |<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1cphvlk" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0-alpha.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.16.0">
+      |  <bpmn:process id="SimpleProcess" name="Simple Process" isExecutable="true">
+      |    <bpmn:startEvent id="StartEvent_1">
+      |      <bpmn:outgoing>Flow_1gzkp76</bpmn:outgoing>
+      |    </bpmn:startEvent>
+      |    <bpmn:sequenceFlow id="Flow_1gzkp76" sourceRef="StartEvent_1" targetRef="UserTaskActivity" />
+      |    <bpmn:userTask id="UserTaskActivity" name="User Task">
+      |      <bpmn:extensionElements>
+      |        <camunda:inputOutput>
+      |          <camunda:inputParameter name="localStr">${str}</camunda:inputParameter>
+      |          <camunda:outputParameter name="str">${localStr}</camunda:outputParameter>
+      |        </camunda:inputOutput>
+      |      </bpmn:extensionElements>
+      |      <bpmn:incoming>Flow_1gzkp76</bpmn:incoming>
+      |      <bpmn:outgoing>Flow_09nwq2k</bpmn:outgoing>
+      |    </bpmn:userTask>
+      |    <bpmn:sequenceFlow id="Flow_09nwq2k" sourceRef="UserTaskActivity" targetRef="ScriptActivity" />
+      |    <bpmn:scriptTask id="ScriptActivity" name="Script Activity" scriptFormat="JavaScript">
+      |      <bpmn:incoming>Flow_09nwq2k</bpmn:incoming>
+      |      <bpmn:outgoing>Flow_0j53wbb</bpmn:outgoing>
+      |      <bpmn:script>console.log("simple process");
+      |console.log(str)
+      |</bpmn:script>
+      |    </bpmn:scriptTask>
+      |    <bpmn:endEvent id="Event_0bg4v75">
+      |      <bpmn:incoming>Flow_0j53wbb</bpmn:incoming>
+      |    </bpmn:endEvent>
+      |    <bpmn:sequenceFlow id="Flow_0j53wbb" sourceRef="ScriptActivity" targetRef="Event_0bg4v75" />
+      |  </bpmn:process>
+      |  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+      |    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="SimpleProcess">
+      |      <bpmndi:BPMNEdge id="Flow_1gzkp76_di" bpmnElement="Flow_1gzkp76">
+      |        <di:waypoint x="215" y="117" />
+      |        <di:waypoint x="270" y="117" />
+      |      </bpmndi:BPMNEdge>
+      |      <bpmndi:BPMNEdge id="Flow_09nwq2k_di" bpmnElement="Flow_09nwq2k">
+      |        <di:waypoint x="370" y="117" />
+      |        <di:waypoint x="430" y="117" />
+      |      </bpmndi:BPMNEdge>
+      |      <bpmndi:BPMNEdge id="Flow_0j53wbb_di" bpmnElement="Flow_0j53wbb">
+      |        <di:waypoint x="530" y="117" />
+      |        <di:waypoint x="592" y="117" />
+      |      </bpmndi:BPMNEdge>
+      |      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+      |        <dc:Bounds x="179" y="99" width="36" height="36" />
+      |      </bpmndi:BPMNShape>
+      |      <bpmndi:BPMNShape id="Activity_1uejsmr_di" bpmnElement="UserTaskActivity">
+      |        <dc:Bounds x="270" y="77" width="100" height="80" />
+      |      </bpmndi:BPMNShape>
+      |      <bpmndi:BPMNShape id="Activity_18wfkpw_di" bpmnElement="ScriptActivity">
+      |        <dc:Bounds x="430" y="77" width="100" height="80" />
+      |      </bpmndi:BPMNShape>
+      |      <bpmndi:BPMNShape id="Event_0bg4v75_di" bpmnElement="Event_0bg4v75">
+      |        <dc:Bounds x="592" y="99" width="36" height="36" />
+      |      </bpmndi:BPMNShape>
+      |    </bpmndi:BPMNPlane>
+      |  </bpmndi:BPMNDiagram>
+      |</bpmn:definitions>
+      |""".stripMargin
+
+  val variables = Some(
+    Map(
+      "str"          -> StringValue("aStringValue1"),
+      "bool"         -> BooleanValue(true),
+      "long"         -> LongValue(12345678901234L),
+      "int"          -> IntegerValue(1234567),
+      "double"       -> DoubleValue(1234567890.1234),
+      "date"         -> DateValue("1977-03-30T00:00:00.000+0000"),
+      "json"         -> JsonValue(
+        "{\"id\": \"my-bpmn-model1\",\n  \"name\": \"My bpmn model 111\",\n  \"updatedBy\": {\n    \"principalType\": \"person\",\n    \"principalId\": \"P0002\"\n  }}"
+      ),
+      "xml"          -> XmlValue("<name>Valery</name>"),
+      "testScalaVar" -> ObjectValue(
+        "{\n    \"id\": \"val\",\n    \"name\": \"Valery\",\n    \"active\": true,\n    \"intNumber\": 77\n  }",
+        ValueInfo(
+          objectTypeName = Some("camundatest.TestScalaVar"),
+          serializationDataFormat = Some("application/json")
+        )
+      )
+    )
+  )
 
   val bpmnXml =
     """<?xml version="1.0" encoding="UTF-8"?>

@@ -14,20 +14,10 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.camunda.api.runtime
+package biz.lobachev.annette.camunda
 
-import biz.lobachev.annette.camunda.api.VariableValues
-import play.api.libs.json.Json
+import biz.lobachev.annette.camunda.api.common.VariableValue
 
-case class StartProcessInstancePayload(
-  variables: Option[VariableValues] = None,
-  businessKey: Option[String] = None,
-  caseInstanceId: Option[String] = None,
-  skipCustomListeners: Option[Boolean] = None,
-  skipIoMappings: Option[Boolean] = None,
-  withVariablesInReturn: Option[Boolean] = None
-)
-
-object StartProcessInstancePayload {
-  implicit val format = Json.format[StartProcessInstancePayload]
+package object api {
+  type VariableValues = Map[String, VariableValue]
 }

@@ -16,11 +16,11 @@
 
 package biz.lobachev.annette.camunda.api.runtime
 
-import biz.lobachev.annette.camunda.api.common.VariableValue
+import biz.lobachev.annette.camunda.api.VariableValues
 import play.api.libs.json.Json
 
 case class SubmitStartFormPayload(
-  variables: Option[Map[String, VariableValue]] = None,
+  variables: Option[VariableValues] = None,
   businessKey: Option[String] = None
 )
 

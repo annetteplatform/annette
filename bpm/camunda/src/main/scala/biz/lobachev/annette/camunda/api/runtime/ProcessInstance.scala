@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.camunda.api.runtime
 
-import biz.lobachev.annette.camunda.api.common.VariableValue
+import biz.lobachev.annette.camunda.api.VariableValues
 import play.api.libs.json.Json
 
 case class ProcessInstance(
@@ -27,7 +27,7 @@ case class ProcessInstance(
   tenantId: Option[String] = None,
   ended: Boolean,
   suspended: Boolean,
-  variables: Option[Map[String, VariableValue]] = None
+  variables: Option[VariableValues] = None
 )
 
 object ProcessInstance {

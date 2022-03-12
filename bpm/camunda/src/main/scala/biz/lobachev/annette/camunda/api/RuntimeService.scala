@@ -124,5 +124,5 @@ trait RuntimeService {
    *                         custom Java objects) should be deserialized on server side (default false).
    * @return
    */
-  def getProcessVariables(id: String, deserializeValues: Boolean = false): Future[Map[String, VariableValue]]
+  def getProcessVariables(id: String, deserializeValues: Boolean = false): Future[VariableValues]
 }

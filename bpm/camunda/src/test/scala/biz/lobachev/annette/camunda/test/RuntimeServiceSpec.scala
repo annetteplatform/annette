@@ -30,36 +30,14 @@ class RuntimeServiceSpec extends AsyncWordSpecLike with Matchers {
   val camundaClient = new CamundaClient("http://localhost:3090/engine-rest/engine/default", None, wsClient)
   val service       = new RuntimeServiceImpl(camundaClient)
 
-  val variables = Some(
-    Map(
-      "str"          -> StringValue("aStringValue1"),
-      "bool"         -> BooleanValue(true),
-      "long"         -> LongValue(12345678901234L),
-      "int"          -> IntegerValue(1234567),
-      "double"       -> DoubleValue(1234567890.1234),
-      "date"         -> DateValue("1977-03-30T00:00:00.000+0000"),
-      "json"         -> JsonValue(
-        "{\"id\": \"my-bpmn-model1\",\n  \"name\": \"My bpmn model 111\",\n  \"updatedBy\": {\n    \"principalType\": \"person\",\n    \"principalId\": \"P0002\"\n  }}"
-      ),
-      "xml"          -> XmlValue("<name>Valery</name>"),
-      "testScalaVar" -> ObjectValue(
-        "{\n    \"id\": \"val\",\n    \"name\": \"Valery\",\n    \"active\": true,\n    \"intNumber\": 77\n  }",
-        ValueInfo(
-          objectTypeName = Some("camundatest.TestScalaVar"),
-          serializationDataFormat = Some("application/json")
-        )
-      )
-    )
-  )
-
   "ProcessInstance" should {
 
     "start process by id" in {
       for {
         r1 <- service.startProcessInstanceById(
-                "ReviewInvoice:1:574082fe-9623-11ec-a718-0242ac180008",
+                "SimpleProcess:2:ffa27d7e-a1ee-11ec-bea9-0242ac180003",
                 StartProcessInstancePayload(
-                  variables = variables,
+                  variables = BpmData.variables,
                   withVariablesInReturn = Some(true)
                 )
               )
@@ -72,9 +50,9 @@ class RuntimeServiceSpec extends AsyncWordSpecLike with Matchers {
     "start process by key" in {
       for {
         r1 <- service.startProcessInstanceByKey(
-                "ReviewInvoice",
+                "SimpleProcess",
                 StartProcessInstancePayload(
-                  variables = variables,
+                  variables = BpmData.variables,
                   withVariablesInReturn = Some(true)
                 )
               )
@@ -87,9 +65,9 @@ class RuntimeServiceSpec extends AsyncWordSpecLike with Matchers {
     "submit form by id" in {
       for {
         r1 <- service.submitStartFormById(
-                "ReviewInvoice:1:574082fe-9623-11ec-a718-0242ac180008",
+                "SimpleProcess:2:ffa27d7e-a1ee-11ec-bea9-0242ac180003",
                 SubmitStartFormPayload(
-                  variables = variables
+                  variables = BpmData.variables
                 )
               )
       } yield {
@@ -101,9 +79,9 @@ class RuntimeServiceSpec extends AsyncWordSpecLike with Matchers {
     "submit form by key" in {
       for {
         r1 <- service.submitStartFormByKey(
-                "ReviewInvoice",
+                "SimpleProcess",
                 SubmitStartFormPayload(
-                  variables = variables
+                  variables = BpmData.variables
                 )
               )
       } yield {
@@ -115,8 +93,10 @@ class RuntimeServiceSpec extends AsyncWordSpecLike with Matchers {
     "deleteProcessInstance" in {
       for {
         r1 <- service.startProcessInstanceByKey(
-                "ReviewInvoice",
-                StartProcessInstancePayload()
+                "SimpleProcess",
+                StartProcessInstancePayload(
+                  variables = BpmData.variables
+                )
               )
         r2 <- service.deleteProcessInstance(DeleteProcessInstancePayload(r1.id))
         ex <- recoverToExceptionIf[AnnetteTransportException](service.getProcessInstanceById(r1.id))
@@ -137,8 +117,10 @@ class RuntimeServiceSpec extends AsyncWordSpecLike with Matchers {
     "getProcessInstanceById" in {
       for {
         r1 <- service.startProcessInstanceByKey(
-                "ReviewInvoice",
-                StartProcessInstancePayload()
+                "SimpleProcess",
+                StartProcessInstancePayload(
+                  variables = BpmData.variables
+                )
               )
         r2 <- service.getProcessInstanceById(r1.id)
       } yield {
@@ -169,7 +151,7 @@ class RuntimeServiceSpec extends AsyncWordSpecLike with Matchers {
     }
 
     "remove created instances" in {
-      val query = ProcessInstanceFindQuery(processDefinitionKey = Some("ReviewInvoice"))
+      val query = ProcessInstanceFindQuery(processDefinitionKey = Some("SimpleProcess"))
       for {
         r1     <- service.findProcessInstances(query)
         futures = r1.hits.map(r => service.deleteProcessInstance(DeleteProcessInstancePayload(r.id)))
@@ -187,9 +169,9 @@ class RuntimeServiceSpec extends AsyncWordSpecLike with Matchers {
       val newValue = "newStringValue"
       for {
         r1 <- service.startProcessInstanceByKey(
-                "ReviewInvoice",
+                "SimpleProcess",
                 StartProcessInstancePayload(
-                  variables = variables,
+                  variables = BpmData.variables,
                   withVariablesInReturn = Some(true)
                 )
               )
@@ -217,9 +199,9 @@ class RuntimeServiceSpec extends AsyncWordSpecLike with Matchers {
       val newValue = "newStringValue"
       for {
         r1 <- service.startProcessInstanceByKey(
-                "ReviewInvoice",
+                "SimpleProcess",
                 StartProcessInstancePayload(
-                  variables = variables,
+                  variables = BpmData.variables,
                   withVariablesInReturn = Some(true)
                 )
               )
@@ -239,9 +221,9 @@ class RuntimeServiceSpec extends AsyncWordSpecLike with Matchers {
     "deleteProcessVariable" in {
       for {
         r1 <- service.startProcessInstanceByKey(
-                "ReviewInvoice",
+                "SimpleProcess",
                 StartProcessInstancePayload(
-                  variables = variables,
+                  variables = BpmData.variables,
                   withVariablesInReturn = Some(true)
                 )
               )
@@ -261,9 +243,9 @@ class RuntimeServiceSpec extends AsyncWordSpecLike with Matchers {
       val newValue = "newStringValue"
       for {
         r1     <- service.startProcessInstanceByKey(
-                    "ReviewInvoice",
+                    "SimpleProcess",
                     StartProcessInstancePayload(
-                      variables = variables,
+                      variables = BpmData.variables,
                       withVariablesInReturn = Some(true)
                     )
                   )
@@ -288,7 +270,7 @@ class RuntimeServiceSpec extends AsyncWordSpecLike with Matchers {
     }
 
     "remove created process instances" in {
-      val query = ProcessInstanceFindQuery(processDefinitionKey = Some("ReviewInvoice"))
+      val query = ProcessInstanceFindQuery(processDefinitionKey = Some("SimpleProcess"))
       for {
         r1     <- service.findProcessInstances(query)
         futures = r1.hits.map(r => service.deleteProcessInstance(DeleteProcessInstancePayload(r.id)))

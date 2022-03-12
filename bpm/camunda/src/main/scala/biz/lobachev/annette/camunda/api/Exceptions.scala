@@ -91,3 +91,12 @@ object TaskNotFound extends AnnetteTransportExceptionCompanion3 {
   val Arg2Key: String = "message"
   val Arg3Key: String = "payload"
 }
+
+object TaskVariableNotFound extends AnnetteTransportExceptionCompanion4 {
+  val ErrorCode       = TransportErrorCode.BadRequest
+  val MessageCode     = "annette.bpm.engine.taskVariable.notFound"
+  val Arg1Key: String = "id"
+  val Arg2Key: String = "varName"
+  val Arg3Key: String = "message"
+  val Arg4Key: String = "payload"
+}
