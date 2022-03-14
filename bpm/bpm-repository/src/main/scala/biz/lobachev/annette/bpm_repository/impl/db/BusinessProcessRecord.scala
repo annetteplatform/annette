@@ -16,7 +16,13 @@
 
 package biz.lobachev.annette.bpm_repository.impl.db
 
-import biz.lobachev.annette.bpm_repository.api.domain.{BpmModelId, BusinessProcessId, DataSchemaId, ProcessDefinitionId}
+import biz.lobachev.annette.bpm_repository.api.domain.{
+  BpmModelId,
+  BusinessProcessId,
+  DataSchemaId,
+  ProcessDefinition,
+  ProcessDefinitionType
+}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 
 import java.time.Instant
@@ -25,7 +31,8 @@ case class BusinessProcessRecord(
   id: BusinessProcessId,
   name: String,
   description: String,
-  processDefinitionId: ProcessDefinitionId,
+  processDefinitionType: ProcessDefinitionType.ProcessDefinitionType,
+  processDefinition: ProcessDefinition,
   bpmModelId: Option[BpmModelId],
   dataSchemaId: Option[DataSchemaId],
   updatedAt: Instant,

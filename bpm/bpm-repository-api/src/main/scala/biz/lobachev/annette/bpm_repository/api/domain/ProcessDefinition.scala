@@ -18,10 +18,10 @@ package biz.lobachev.annette.bpm_repository.api.domain
 
 import biz.lobachev.annette.bpm_repository.api.rdb.serializers.WrappedStringSerializer
 
-case class ProcessDefinitionId(value: String) extends AnyVal
+case class ProcessDefinition(value: String) extends AnyVal
 
-object ProcessDefinitionId extends WrappedStringSerializer[ProcessDefinitionId] {
-  override def getInstance(value: String): ProcessDefinitionId = ProcessDefinitionId(value)
-  override def getValue(instance: ProcessDefinitionId): String = instance.value
-  override val maxLength: Int                                  = 128
+object ProcessDefinition extends WrappedStringSerializer[ProcessDefinition] {
+  override def getInstance(value: String): ProcessDefinition = ProcessDefinition(value)
+  override def getValue(instance: ProcessDefinition): String = instance.value
+  override val maxLength: Int                                = 128
 }

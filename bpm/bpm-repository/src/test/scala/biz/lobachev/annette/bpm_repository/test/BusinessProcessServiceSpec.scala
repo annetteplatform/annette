@@ -8,7 +8,7 @@ import biz.lobachev.annette.bpm_repository.api.domain.{
   DataSchemaId,
   Datatype,
   Notation,
-  ProcessDefinitionId,
+  ProcessDefinition,
   VariableName
 }
 import biz.lobachev.annette.bpm_repository.api.model.{BpmModelNotFound, CreateBpmModelPayload, DeleteBpmModelPayload}
@@ -749,12 +749,12 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
       )
       val updatePayload  = UpdateBusinessProcessProcessDefinitionPayload(
         id = id,
-        processDefinitionId = Some(ProcessDefinitionId("process definition")),
+        processDefinition = Some(ProcessDefinition("process definition")),
         updatedBy = PersonPrincipal("P0002")
       )
       val updatePayload2 = UpdateBusinessProcessProcessDefinitionPayload(
         id = id,
-        processDefinitionId = None,
+        processDefinition = None,
         updatedBy = PersonPrincipal("P0002")
       )
       for {
@@ -768,7 +768,7 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
           id = id,
           name = "business process name",
           description = "business process description",
-          processDefinitionId = Some(ProcessDefinitionId("process definition")),
+          processDefinition = Some(ProcessDefinition("process definition")),
           variables = Map(
             "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
             "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -778,7 +778,7 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
           updatedAt = businessProcess1.updatedAt
         )
         businessProcess1 shouldBe targetSchema1
-        businessProcess2 shouldBe targetSchema1.copy(processDefinitionId = None, updatedAt = businessProcess2.updatedAt)
+        businessProcess2 shouldBe targetSchema1.copy(processDefinition = None, updatedAt = businessProcess2.updatedAt)
       }
     }
 

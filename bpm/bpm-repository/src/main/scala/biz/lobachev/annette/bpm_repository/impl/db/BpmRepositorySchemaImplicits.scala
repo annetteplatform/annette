@@ -22,7 +22,8 @@ import biz.lobachev.annette.bpm_repository.api.domain.{
   DataSchemaId,
   Datatype,
   Notation,
-  ProcessDefinitionId,
+  ProcessDefinition,
+  ProcessDefinitionType,
   VariableName
 }
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
@@ -32,16 +33,16 @@ import slick.jdbc.PostgresProfile.api._
 
 trait BpmRepositorySchemaImplicits {
   /* WrappedString */
-  implicit val bpmModelIdColumnType: JdbcType[BpmModelId] with BaseTypedType[BpmModelId]                            =
+  implicit val bpmModelIdColumnType: JdbcType[BpmModelId] with BaseTypedType[BpmModelId]                        =
     MappedColumnType.base[BpmModelId, String](_.value, BpmModelId(_))
-  implicit val variableNameIdColumnType: JdbcType[VariableName] with BaseTypedType[VariableName]                    =
+  implicit val variableNameIdColumnType: JdbcType[VariableName] with BaseTypedType[VariableName]                =
     MappedColumnType.base[VariableName, String](_.value, VariableName(_))
-  implicit val dataSchemaIdColumnType: JdbcType[DataSchemaId] with BaseTypedType[DataSchemaId]                      =
+  implicit val dataSchemaIdColumnType: JdbcType[DataSchemaId] with BaseTypedType[DataSchemaId]                  =
     MappedColumnType.base[DataSchemaId, String](_.value, DataSchemaId(_))
-  implicit val businessProcessIdColumnType: JdbcType[BusinessProcessId] with BaseTypedType[BusinessProcessId]       =
+  implicit val businessProcessIdColumnType: JdbcType[BusinessProcessId] with BaseTypedType[BusinessProcessId]   =
     MappedColumnType.base[BusinessProcessId, String](_.value, BusinessProcessId(_))
-  implicit val processDefinitionIdColumnType: JdbcType[ProcessDefinitionId] with BaseTypedType[ProcessDefinitionId] =
-    MappedColumnType.base[ProcessDefinitionId, String](_.value, ProcessDefinitionId(_))
+  implicit val processDefinitionIdColumnType: JdbcType[ProcessDefinition] with BaseTypedType[ProcessDefinition] =
+    MappedColumnType.base[ProcessDefinition, String](_.value, ProcessDefinition(_))
 
   implicit val annettePrincipalColumnType: JdbcType[AnnettePrincipal] with BaseTypedType[AnnettePrincipal] =
     MappedColumnType.base[AnnettePrincipal, String](_.code, AnnettePrincipal.fromCode)
@@ -51,4 +52,10 @@ trait BpmRepositorySchemaImplicits {
     MappedColumnType.base[Notation.Notation, String](Notation.toDBRepresentation, Notation.fromDBRepresentation)
   implicit val datatypeColumnType: JdbcType[Datatype.Datatype] with BaseTypedType[Datatype.Datatype] =
     MappedColumnType.base[Datatype.Datatype, String](Datatype.toDBRepresentation, Datatype.fromDBRepresentation)
+  implicit val processDefinitionTypeColumnType: JdbcType[ProcessDefinitionType.ProcessDefinitionType]
+    with BaseTypedType[ProcessDefinitionType.ProcessDefinitionType]                                  =
+    MappedColumnType.base[ProcessDefinitionType.ProcessDefinitionType, String](
+      ProcessDefinitionType.toDBRepresentation,
+      ProcessDefinitionType.fromDBRepresentation
+    )
 }

@@ -22,7 +22,8 @@ import biz.lobachev.annette.bpm_repository.api.domain.{
   DataSchemaId,
   Datatype,
   Notation,
-  ProcessDefinitionId,
+  ProcessDefinition,
+  ProcessDefinitionType,
   VariableName
 }
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
@@ -92,21 +93,28 @@ object BpmRepositorySchema extends BpmRepositorySchemaImplicits {
   lazy val dataSchemaVariables: TableQuery[DataSchemaVariableTable] = TableQuery[DataSchemaVariableTable]
 
   class BusinessProcessTable(tag: Tag) extends Table[BusinessProcessRecord](tag, "business_processes") {
-    def id                  = column[BusinessProcessId]("id", O.Length(BusinessProcessId.maxLength))
-    def name                = column[String]("name", O.SqlType("VARCHAR"), O.Length(128))
-    def description         = column[String]("description", O.SqlType("TEXT"))
-    def bpmModelId          = column[Option[BpmModelId]]("bpm_model_id", O.Length(BpmModelId.maxLength))
-    def processDefinitionId =
-      column[ProcessDefinitionId]("process_definition_id", O.Length(ProcessDefinitionId.maxLength))
-    def dataSchemaId        = column[Option[DataSchemaId]]("data_schema_id", O.Length(DataSchemaId.maxLength))
-    def updatedAt           = column[Instant]("updated_at", O.SqlType("TIMESTAMP"))
-    def updatedBy           = column[AnnettePrincipal]("updated_by", O.SqlType("VARCHAR"), O.Length(100))
+    def id                    = column[BusinessProcessId]("id", O.Length(BusinessProcessId.maxLength))
+    def name                  = column[String]("name", O.SqlType("VARCHAR"), O.Length(128))
+    def description           = column[String]("description", O.SqlType("TEXT"))
+    def bpmModelId            = column[Option[BpmModelId]]("bpm_model_id", O.Length(BpmModelId.maxLength))
+    def processDefinitionType =
+      column[ProcessDefinitionType.ProcessDefinitionType](
+        "process_definition_type",
+        O.SqlType("VARCHAR"),
+        O.Length(ProcessDefinitionType.maxLength)
+      )
+    def processDefinition     =
+      column[ProcessDefinition]("process_definition", O.Length(ProcessDefinition.maxLength))
+    def dataSchemaId          = column[Option[DataSchemaId]]("data_schema_id", O.Length(DataSchemaId.maxLength))
+    def updatedAt             = column[Instant]("updated_at", O.SqlType("TIMESTAMP"))
+    def updatedBy             = column[AnnettePrincipal]("updated_by", O.SqlType("VARCHAR"), O.Length(100))
 
     def *                                   =
-      (id, name, description, processDefinitionId, bpmModelId, dataSchemaId, updatedAt, updatedBy).<>(
-        (BusinessProcessRecord.apply _).tupled,
-        BusinessProcessRecord.unapply
-      )
+      (id, name, description, processDefinitionType, processDefinition, bpmModelId, dataSchemaId, updatedAt, updatedBy)
+        .<>(
+          (BusinessProcessRecord.apply _).tupled,
+          BusinessProcessRecord.unapply
+        )
     def businessProcessPK                   = primaryKey("business_process_pk", id)
     def businessProcessVariableFKBpmModel   =
       foreignKey("business_process_fk_bpm_model", bpmModelId, bpmModels)(

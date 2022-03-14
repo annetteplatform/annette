@@ -55,7 +55,8 @@ create table "business_processes"
     "name"                  VARCHAR(128) NOT NULL,
     "description"           TEXT         NOT NULL,
     "bpm_model_id"          VARCHAR(80),
-    "process_definition_id" VARCHAR(128),
+    "process_definition_type" VARCHAR(3) NOT NULL ,
+    "process_definition" VARCHAR(128) NOT NULL,
     "data_schema_id"        VARCHAR(80),
     "updated_at"            TIMESTAMP    NOT NULL,
     "updated_by"            VARCHAR(100) NOT NULL

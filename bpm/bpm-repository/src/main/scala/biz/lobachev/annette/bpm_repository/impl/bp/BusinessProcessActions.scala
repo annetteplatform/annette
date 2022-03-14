@@ -118,8 +118,8 @@ class BusinessProcessActions(implicit executionContext: ExecutionContext) extend
   ) =
     BpmRepositorySchema.businessProcesses
       .filter(_.id === payload.id)
-      .map(rec => (rec.processDefinitionId, rec.updatedBy, rec.updatedAt))
-      .update((payload.processDefinitionId, payload.updatedBy, updatedAt))
+      .map(rec => (rec.processDefinitionType, rec.processDefinition, rec.updatedBy, rec.updatedAt))
+      .update((payload.processDefinitionType, payload.processDefinition, payload.updatedBy, updatedAt))
 
   def updateUpdatedAction(id: BusinessProcessId, updatedBy: AnnettePrincipal, updatedAt: Instant) =
     BpmRepositorySchema.businessProcesses

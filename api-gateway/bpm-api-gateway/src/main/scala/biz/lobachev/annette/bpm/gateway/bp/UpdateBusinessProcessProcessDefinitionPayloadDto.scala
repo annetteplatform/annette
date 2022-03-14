@@ -16,12 +16,13 @@
 
 package biz.lobachev.annette.bpm.gateway.bp
 
-import biz.lobachev.annette.bpm_repository.api.domain.{BusinessProcessId, ProcessDefinitionId}
+import biz.lobachev.annette.bpm_repository.api.domain.{BusinessProcessId, ProcessDefinition, ProcessDefinitionType}
 import play.api.libs.json.Json
 
 case class UpdateBusinessProcessProcessDefinitionPayloadDto(
   id: BusinessProcessId,
-  processDefinitionId: ProcessDefinitionId
+  processDefinitionType: ProcessDefinitionType.ProcessDefinitionType,
+  processDefinition: ProcessDefinition
 )
 
 object UpdateBusinessProcessProcessDefinitionPayloadDto {

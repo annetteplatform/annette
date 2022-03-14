@@ -16,7 +16,13 @@
 
 package biz.lobachev.annette.bpm_repository.api.bp
 
-import biz.lobachev.annette.bpm_repository.api.domain.{BpmModelId, BusinessProcessId, DataSchemaId, ProcessDefinitionId}
+import biz.lobachev.annette.bpm_repository.api.domain.{
+  BpmModelId,
+  BusinessProcessId,
+  DataSchemaId,
+  ProcessDefinition,
+  ProcessDefinitionType
+}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
@@ -24,7 +30,8 @@ case class CreateBusinessProcessPayload(
   id: BusinessProcessId,
   name: String,
   description: String,
-  processDefinitionId: ProcessDefinitionId,
+  processDefinitionType: ProcessDefinitionType.ProcessDefinitionType,
+  processDefinition: ProcessDefinition,
   bpmModelId: Option[BpmModelId] = None,
   dataSchemaId: Option[DataSchemaId] = None,
   variables: Map[String, BusinessProcessVariable],
