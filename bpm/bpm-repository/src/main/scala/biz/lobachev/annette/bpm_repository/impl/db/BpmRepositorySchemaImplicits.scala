@@ -33,15 +33,15 @@ import slick.jdbc.PostgresProfile.api._
 
 trait BpmRepositorySchemaImplicits {
   /* WrappedString */
-  implicit val bpmModelIdColumnType: JdbcType[BpmModelId] with BaseTypedType[BpmModelId]                        =
+  implicit val bpmModelIdColumnType: JdbcType[BpmModelId] with BaseTypedType[BpmModelId]                      =
     MappedColumnType.base[BpmModelId, String](_.value, BpmModelId(_))
-  implicit val variableNameIdColumnType: JdbcType[VariableName] with BaseTypedType[VariableName]                =
+  implicit val variableNameIdColumnType: JdbcType[VariableName] with BaseTypedType[VariableName]              =
     MappedColumnType.base[VariableName, String](_.value, VariableName(_))
-  implicit val dataSchemaIdColumnType: JdbcType[DataSchemaId] with BaseTypedType[DataSchemaId]                  =
+  implicit val dataSchemaIdColumnType: JdbcType[DataSchemaId] with BaseTypedType[DataSchemaId]                =
     MappedColumnType.base[DataSchemaId, String](_.value, DataSchemaId(_))
-  implicit val businessProcessIdColumnType: JdbcType[BusinessProcessId] with BaseTypedType[BusinessProcessId]   =
+  implicit val businessProcessIdColumnType: JdbcType[BusinessProcessId] with BaseTypedType[BusinessProcessId] =
     MappedColumnType.base[BusinessProcessId, String](_.value, BusinessProcessId(_))
-  implicit val processDefinitionIdColumnType: JdbcType[ProcessDefinition] with BaseTypedType[ProcessDefinition] =
+  implicit val processDefinitionColumnType: JdbcType[ProcessDefinition] with BaseTypedType[ProcessDefinition] =
     MappedColumnType.base[ProcessDefinition, String](_.value, ProcessDefinition(_))
 
   implicit val annettePrincipalColumnType: JdbcType[AnnettePrincipal] with BaseTypedType[AnnettePrincipal] =
