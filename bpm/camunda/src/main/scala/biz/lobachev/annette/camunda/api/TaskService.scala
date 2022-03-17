@@ -39,6 +39,7 @@ trait TaskService {
 
   /** Retrieves a task by id. */
   def getTask(id: String): Future[Task]
+
   def findTasks(
     query: TaskFindQuery,
     firstResult: Option[Int] = None,

@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.camunda.api.task
+package biz.lobachev.annette.camunda.api.external_task
 
 import play.api.libs.json.Json
 
-case class VariableExpression(
-  name: String,
-  value: String,
-  operator: String
+case class ExternalTaskFindResult(
+  total: Long,
+  hits: Seq[ExternalTask]
 )
 
-object VariableExpression {
-  implicit val format = Json.format[VariableExpression]
+object ExternalTaskFindResult {
+  implicit val format = Json.format[ExternalTaskFindResult]
 }

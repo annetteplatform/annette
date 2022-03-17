@@ -106,7 +106,7 @@ class PersonIndexDao(client: ElasticClient)(implicit
     ).flatten
     val filterQuery            = buildFilterQuery(
       query.filter,
-      Seq("lastname" -> 3.0, "firstname" -> 2.0, "middlename" -> 1.0, "email" -> 3.0, "phone" -> 1.0)
+      Seq("lastname" -> 3.0, "firstname" -> 2.0, "middlename" -> 1.0, "email" -> 3.0, "phone" -> 1.0, "id" -> 1.0)
     )
     val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
     val categoryQuery          =

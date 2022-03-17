@@ -51,15 +51,15 @@ alter table "data_schema_variables"
     add constraint "data_schema_variable_pk" primary key ("data_schema_id", "variable_name");
 create table "business_processes"
 (
-    "id"                    VARCHAR(80)  NOT NULL,
-    "name"                  VARCHAR(128) NOT NULL,
-    "description"           TEXT         NOT NULL,
-    "bpm_model_id"          VARCHAR(80),
-    "process_definition_type" VARCHAR(3) NOT NULL ,
-    "process_definition" VARCHAR(128) NOT NULL,
-    "data_schema_id"        VARCHAR(80),
-    "updated_at"            TIMESTAMP    NOT NULL,
-    "updated_by"            VARCHAR(100) NOT NULL
+    "id"                      VARCHAR(80)  NOT NULL,
+    "name"                    VARCHAR(128) NOT NULL,
+    "description"             TEXT         NOT NULL,
+    "bpm_model_id"            VARCHAR(80),
+    "process_definition_type" VARCHAR(3)   NOT NULL,
+    "process_definition"      VARCHAR(128) NOT NULL,
+    "data_schema_id"          VARCHAR(80),
+    "updated_at"              TIMESTAMP    NOT NULL,
+    "updated_by"              VARCHAR(100) NOT NULL
 );
 alter table "business_processes"
     add constraint "business_process_pk" primary key ("id");

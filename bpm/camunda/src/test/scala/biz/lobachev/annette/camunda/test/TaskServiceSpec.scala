@@ -218,6 +218,7 @@ class TaskServiceSpec extends AsyncWordSpecLike with Matchers {
         r3    <- service.getTaskVariables(taskId)
         _     <- runtimeService.deleteProcessInstance(DeleteProcessInstancePayload(r1.id))
       } yield {
+        println(r1)
         println(r3)
         r3("str").asInstanceOf[StringValue].value shouldBe newValue
         r3.get("bool") shouldBe None
