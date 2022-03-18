@@ -41,7 +41,7 @@ class CookieAuthenticatedAction @Inject() (
     var authenticated  = 0L
     var transformed    = 0L
     val expirationTime = request.session.data.get("exp").flatMap(_.toLongOption)
-    val principal      = request.session.data.get("principal").map(AnnettePrincipal.fromCode(_))
+    val principal      = request.session.data.get("principal").map(AnnettePrincipal.fromCode)
     val maybeSubject   =
       if (principal.isDefined && expirationTime.isDefined && System.currentTimeMillis() / 1000L < expirationTime.get)
         Some(Subject(principals = principal.toSeq, Map.empty, None))
@@ -49,7 +49,7 @@ class CookieAuthenticatedAction @Inject() (
     val subjectFuture  = for {
       subject            <-
         maybeSubject
-          .map(Future.successful(_))
+          .map(Future.successful)
           .getOrElse(Future.failed(AuthenticationFailedException())) //.getOrElse(authenticator.authenticate(request))
       _                   = {
         authenticated = System.currentTimeMillis()

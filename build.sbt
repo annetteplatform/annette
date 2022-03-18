@@ -4,7 +4,7 @@ import play.sbt.routes.RoutesKeys
 
 scalaVersion := "2.13.3"
 
-ThisBuild / version := "0.3.3"
+ThisBuild / version := "0.4.0-SNAPSHOT"
 ThisBuild / scalaVersion := "2.13.3"
 
 ThisBuild / organization := "biz.lobachev.annette"
@@ -80,30 +80,34 @@ lazy val root = (project in file("."))
     `api-gateway`,
     // initialization application
     `ignition-core`,
-    `demo-ignition`,
+//    `demo-ignition`,
+    `camunda`,
     // API gateways
     `application-api-gateway`,
     `authorization-api-gateway`,
+    `bpm-api-gateway`,
+    `cms-api-gateway`,
     `org-structure-api-gateway`,
     `persons-api-gateway`,
-    `cms-api-gateway`,
     `principal-groups-api-gateway`,
     // microservices API
     `application-api`,
     `authorization-api`,
+    `bpm-repository-api`,
+    `cms-api`,
     `org-structure-api`,
     `persons-api`,
     `principal-groups-api`,
     `subscriptions-api`,
-    `cms-api`,
     // microservices
     `application`,
     `authorization`,
+    `bpm-repository`,
+    `cms`,
     `org-structure`,
     `persons`,
     `principal-groups`,
-    `subscriptions`,
-    `cms`
+    `subscriptions`
   )
 
 lazy val `core` = (project in file("core/core"))
@@ -114,7 +118,6 @@ lazy val `core` = (project in file("core/core"))
       lagomScaladslServer % Optional,
       lagomScaladslTestKit,
       Dependencies.playJsonExt,
-//      Dependencies.logstashEncoder,
       Dependencies.macwire
     ) ++ Dependencies.tests
       ++ Dependencies.elastic
@@ -188,7 +191,8 @@ lazy val `api-gateway` = (project in file("api-gateway/api-gateway"))
     `org-structure-api-gateway`,
     `persons-api-gateway`,
     `principal-groups-api-gateway`,
-    `cms-api-gateway`
+    `cms-api-gateway`,
+    `bpm-api-gateway`
   )
 
 lazy val `ignition-core` = (project in file("core/ignition-core"))
@@ -329,6 +333,119 @@ lazy val `authorization-api-gateway` = (project in file("api-gateway/authorizati
   .dependsOn(
     `api-gateway-core`,
     `authorization-api`
+  )
+
+lazy val `camunda` = (project in file("bpm/camunda"))
+  .settings(
+    libraryDependencies ++= Seq(
+      ws,
+      Dependencies.macwire,
+      Dependencies.chimney,
+      Dependencies.playJson,
+      Dependencies.playJsonExt
+    ) ++
+      Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(`core`)
+
+lazy val `bpm-repository-api` = (project in file("bpm/bpm-repository-api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      Dependencies.chimney
+    )
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(`core`)
+
+def bpmRepositoryProject(pr: Project) =
+  pr
+    .enablePlugins(LagomScala)
+    .settings(
+      libraryDependencies ++= Seq(
+        lagomScaladslTestKit,
+        Dependencies.macwire,
+        Dependencies.chimney,
+        Dependencies.postgresql
+      ) ++ Dependencies.tests ++
+        Dependencies.lagomAkkaDiscovery ++
+        Dependencies.slick
+    )
+    .settings(lagomForkedTestSettings: _*)
+    .settings(confDirSettings: _*)
+    .settings(annetteSettings: _*)
+    .settings(dockerSettings: _*)
+    .dependsOn(`bpm-repository-api`, `microservice-core`)
+
+lazy val `bpm-api-gateway` = (project in file("api-gateway/bpm-api-gateway"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslServer % Optional,
+      ws,
+      Dependencies.macwire,
+      Dependencies.playJsonExt,
+      Dependencies.jwt,
+      Dependencies.pureConfig,
+      Dependencies.chimney
+    ) ++
+      Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(
+    `api-gateway-core`,
+    `bpm-repository-api`,
+    `camunda`
+  )
+
+lazy val `cms-api` = (project in file("cms/cms-api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      lagomScaladslTestKit,
+      Dependencies.chimney
+    ) ++ Dependencies.tests ++
+      Dependencies.alpakkaS3
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(`core`)
+
+def cmsProject(pr: Project) =
+  pr
+    .enablePlugins(LagomScala)
+    .settings(
+      libraryDependencies ++= Seq(
+        lagomScaladslPersistenceCassandra,
+        lagomScaladslKafkaClient,
+        lagomScaladslTestKit,
+        Dependencies.macwire,
+        Dependencies.chimney
+      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
+    )
+    .settings(lagomForkedTestSettings: _*)
+    .settings(confDirSettings: _*)
+    .settings(annetteSettings: _*)
+    .settings(dockerSettings: _*)
+    .dependsOn(`cms-api`, `microservice-core`)
+
+lazy val `cms-api-gateway` = (project in file("api-gateway/cms-api-gateway"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslServer % Optional,
+      ws,
+      Dependencies.macwire,
+      Dependencies.playJsonExt,
+      Dependencies.jwt,
+      Dependencies.pureConfig,
+      Dependencies.chimney
+    ) ++
+      Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(
+    `api-gateway-core`,
+    `cms-api`,
+    `subscriptions-api`
   )
 
 lazy val `org-structure-api` = (project in file("principals/org-structure-api"))
@@ -502,61 +619,12 @@ def subscriptionsProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`subscriptions-api`, `microservice-core`)
 
-lazy val `cms-api` = (project in file("cms/cms-api"))
-  .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslApi,
-      lagomScaladslTestKit,
-      Dependencies.chimney
-    ) ++ Dependencies.tests ++
-      Dependencies.alpakkaS3
-  )
-  .settings(annetteSettings: _*)
-  .dependsOn(`core`)
-
-def cmsProject(pr: Project) =
-  pr
-    .enablePlugins(LagomScala)
-    .settings(
-      libraryDependencies ++= Seq(
-        lagomScaladslPersistenceCassandra,
-        lagomScaladslKafkaClient,
-        lagomScaladslTestKit,
-        Dependencies.macwire,
-        Dependencies.chimney
-      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
-    )
-    .settings(lagomForkedTestSettings: _*)
-    .settings(confDirSettings: _*)
-    .settings(annetteSettings: _*)
-    .settings(dockerSettings: _*)
-    .dependsOn(`cms-api`, `microservice-core`)
-
-lazy val `cms-api-gateway` = (project in file("api-gateway/cms-api-gateway"))
-  .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslServer % Optional,
-      ws,
-      Dependencies.macwire,
-      Dependencies.playJsonExt,
-      Dependencies.jwt,
-      Dependencies.pureConfig,
-      Dependencies.chimney
-    ) ++
-      Dependencies.tests
-  )
-  .settings(annetteSettings: _*)
-  .dependsOn(
-    `api-gateway-core`,
-    `cms-api`,
-    `subscriptions-api`
-  )
-
-lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/ignition-demo"))
+//lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/ignition-demo"))
 lazy val `application`      = applicationProject(project in file("application/application"))
 lazy val `authorization`    = authorizationProject(project in file("authorization/authorization"))
+lazy val `bpm-repository`   = bpmRepositoryProject(project in file("bpm/bpm-repository"))
+lazy val `cms`              = cmsProject(project in file("cms/cms"))
 lazy val `org-structure`    = orgStructureProject(project in file("principals/org-structure"))
 lazy val `persons`          = personsProject(project in file("principals/persons"))
 lazy val `principal-groups` = principalGroupsProject(project in file("principals/principal-groups"))
 lazy val `subscriptions`    = subscriptionsProject(project in file("cms/subscriptions"))
-lazy val `cms`              = cmsProject(project in file("cms/cms"))

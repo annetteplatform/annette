@@ -260,3 +260,45 @@ GET     /api/annette/v1/cms/getHomePageById/:id/:fromReadSide  biz.lobachev.anne
 POST    /api/annette/v1/cms/getHomePagesById/:fromReadSide     biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController.getHomePagesById(fromReadSide: Boolean)
 POST    /api/annette/v1/cms/findHomePages                      biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController.findHomePages
 GET     /api/annette/v1/cms/getMyHomePage/:applicationId       biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController.getMyHomePage(applicationId: String)
+
+# ************************************** BPM API **************************************
+# BPM Model
+POST    /api/annette/v1/bpm/createBpmModel      biz.lobachev.annette.bpm.gateway.BpmModelController.createBpmModel
+POST    /api/annette/v1/bpm/updateBpmModel      biz.lobachev.annette.bpm.gateway.BpmModelController.updateBpmModel
+POST    /api/annette/v1/bpm/updateBpmModelName  biz.lobachev.annette.bpm.gateway.BpmModelController.updateBpmModelName
+POST    /api/annette/v1/bpm/updateBpmModelDescription  biz.lobachev.annette.bpm.gateway.BpmModelController.updateBpmModelDescription
+POST    /api/annette/v1/bpm/updateBpmModelXml   biz.lobachev.annette.bpm.gateway.BpmModelController.updateBpmModelXml
+POST    /api/annette/v1/bpm/deleteBpmModel      biz.lobachev.annette.bpm.gateway.BpmModelController.deleteBpmModel
+POST    /api/annette/v1/bpm/findBpmModels       biz.lobachev.annette.bpm.gateway.BpmModelController.findBpmModels
+GET     /api/annette/v1/bpm/getBpmModelById/:id biz.lobachev.annette.bpm.gateway.BpmModelController.getBpmModelById(id: String, withXml: Option[Boolean])
+POST    /api/annette/v1/bpm/getBpmModelsById    biz.lobachev.annette.bpm.gateway.BpmModelController.getBpmModelsById(withXml: Option[Boolean])
+
+# Data Schema
+POST    /api/annette/v1/bpm/createDataSchema      biz.lobachev.annette.bpm.gateway.DataSchemaController.createDataSchema
+POST    /api/annette/v1/bpm/updateDataSchema      biz.lobachev.annette.bpm.gateway.DataSchemaController.updateDataSchema
+POST    /api/annette/v1/bpm/updateDataSchemaName  biz.lobachev.annette.bpm.gateway.DataSchemaController.updateDataSchemaName
+POST    /api/annette/v1/bpm/updateDataSchemaDescription  biz.lobachev.annette.bpm.gateway.DataSchemaController.updateDataSchemaDescription
+POST    /api/annette/v1/bpm/storeDataSchemaVariable   biz.lobachev.annette.bpm.gateway.DataSchemaController.storeDataSchemaVariable
+POST    /api/annette/v1/bpm/deleteDataSchemaVariable  biz.lobachev.annette.bpm.gateway.DataSchemaController.deleteDataSchemaVariable
+POST    /api/annette/v1/bpm/deleteDataSchema      biz.lobachev.annette.bpm.gateway.DataSchemaController.deleteDataSchema
+POST    /api/annette/v1/bpm/findDataSchemas       biz.lobachev.annette.bpm.gateway.DataSchemaController.findDataSchemas
+GET     /api/annette/v1/bpm/getDataSchemaById/:id biz.lobachev.annette.bpm.gateway.DataSchemaController.getDataSchemaById(id: String, withVariables: Option[Boolean])
+POST    /api/annette/v1/bpm/getDataSchemasById    biz.lobachev.annette.bpm.gateway.DataSchemaController.getDataSchemasById(withVariables: Option[Boolean])
+
+# Business Process
+POST    /api/annette/v1/bpm/createBusinessProcess      biz.lobachev.annette.bpm.gateway.BusinessProcessController.createBusinessProcess
+POST    /api/annette/v1/bpm/updateBusinessProcess      biz.lobachev.annette.bpm.gateway.BusinessProcessController.updateBusinessProcess
+POST    /api/annette/v1/bpm/updateBusinessProcessName  biz.lobachev.annette.bpm.gateway.BusinessProcessController.updateBusinessProcessName
+POST    /api/annette/v1/bpm/updateBusinessProcessDescription  biz.lobachev.annette.bpm.gateway.BusinessProcessController.updateBusinessProcessDescription
+POST    /api/annette/v1/bpm/updateBusinessProcessBpmModel     biz.lobachev.annette.bpm.gateway.BusinessProcessController.updateBusinessProcessBpmModel
+POST    /api/annette/v1/bpm/updateBusinessProcessDataSchema   biz.lobachev.annette.bpm.gateway.BusinessProcessController.updateBusinessProcessDataSchema
+POST    /api/annette/v1/bpm/updateBusinessProcessProcessDefinition  biz.lobachev.annette.bpm.gateway.BusinessProcessController.updateBusinessProcessProcessDefinition
+POST    /api/annette/v1/bpm/storeBusinessProcessVariable   biz.lobachev.annette.bpm.gateway.BusinessProcessController.storeBusinessProcessVariable
+POST    /api/annette/v1/bpm/deleteBusinessProcessVariable  biz.lobachev.annette.bpm.gateway.BusinessProcessController.deleteBusinessProcessVariable
+POST    /api/annette/v1/bpm/deleteBusinessProcess      biz.lobachev.annette.bpm.gateway.BusinessProcessController.deleteBusinessProcess
+POST    /api/annette/v1/bpm/findBusinessProcesses       biz.lobachev.annette.bpm.gateway.BusinessProcessController.findBusinessProcesses
+GET     /api/annette/v1/bpm/getBusinessProcessById/:id biz.lobachev.annette.bpm.gateway.BusinessProcessController.getBusinessProcessById(id: String, withVariables: Option[Boolean])
+POST    /api/annette/v1/bpm/getBusinessProcessesById    biz.lobachev.annette.bpm.gateway.BusinessProcessController.getBusinessProcessesById(withVariables: Option[Boolean])
+
+# Camunda repository
+POST    /api/annette/v1/bpm/deployBpmModel      biz.lobachev.annette.bpm.gateway.CamundaRepositoryController.deployBpmModel

@@ -15,7 +15,10 @@ object Dependencies {
     val pureConfig              = "0.17.1"
     val quill                   = "3.10.0"
     val alpakkaS3               = "3.0.4"
-//    val akkaHttp                = "10.2.0"
+    val slick                   = "3.3.3"
+    val slick_hikaricp          = "3.3.3"
+    val postgresql              = "42.3.1"
+    val playJson                = "2.8.2"
   }
 
   val macwire = "com.softwaremill.macwire" %% "macros" % Version.macwire % "provided"
@@ -59,5 +62,14 @@ object Dependencies {
     "com.typesafe.akka"  %% "akka-http"              % LagomVersion.akkaHttp,
     "com.typesafe.akka"  %% "akka-http-xml"          % LagomVersion.akkaHttp
   )
+
+  val slick: Seq[ModuleID] = Seq(
+    "com.typesafe.slick" %% "slick"          % Version.slick,
+    "com.typesafe.slick" %% "slick-hikaricp" % Version.slick_hikaricp
+  )
+
+  val postgresql: ModuleID = "org.postgresql" % "postgresql" % Version.postgresql
+
+  val playJson = "com.typesafe.play" %% "play-json" % Version.playJson
 
 }

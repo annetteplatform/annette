@@ -29,6 +29,20 @@ import biz.lobachev.annette.application.api.{ApplicationServiceApi, ApplicationS
 import biz.lobachev.annette.application.gateway.ApplicationController
 import biz.lobachev.annette.authorization.api.{AuthorizationServiceApi, AuthorizationServiceImpl}
 import biz.lobachev.annette.authorization.gateway.AuthorizationController
+import biz.lobachev.annette.bpm.gateway.{
+  BpmModelController,
+  BusinessProcessController,
+  CamundaRepositoryController,
+  DataSchemaController
+}
+import biz.lobachev.annette.bpm_repository.api.{BpmRepositoryServiceApi, BpmRepositoryServiceImpl}
+import biz.lobachev.annette.camunda.api.CamundaFactory
+import biz.lobachev.annette.camunda.impl.{
+  ExternalTaskServiceImpl,
+  RepositoryServiceImpl,
+  RuntimeServiceImpl,
+  TaskServiceImpl
+}
 import biz.lobachev.annette.cms.api.{CmsServiceApi, CmsServiceImpl, CmsStorage}
 import biz.lobachev.annette.cms.gateway.blogs._
 import biz.lobachev.annette.cms.gateway.files.CmsFileController
@@ -71,8 +85,6 @@ abstract class ServiceGateway(context: Context)
     with LagomServiceClientComponents {
 
   override def httpFilters: Seq[EssentialFilter] = Seq(corsFilter, securityHeadersFilter, gzipFilter)
-
-  //override lazy val httpErrorHandler: JsonErrorHandler = wire[JsonErrorHandler]
 
   override lazy val serviceInfo: ServiceInfo                    = ServiceInfo(
     name = "annette-api-gateway",
@@ -131,6 +143,17 @@ abstract class ServiceGateway(context: Context)
   lazy val cmsPostFileController      = wire[CmsFileController]
   lazy val cmsHomePageController      = wire[CmsHomePageController]
 
+  // BPM
+  lazy val camundaClient               = wireWith(CamundaFactory.createCamundaClient _)
+  lazy val repositoryService           = wire[RepositoryServiceImpl]
+  lazy val runtimeService              = wire[RuntimeServiceImpl]
+  lazy val taskService                 = wire[TaskServiceImpl]
+  lazy val externalTaskService         = wire[ExternalTaskServiceImpl]
+  lazy val bpmModelController          = wire[BpmModelController]
+  lazy val dataSchemaController        = wire[DataSchemaController]
+  lazy val businessProcessController   = wire[BusinessProcessController]
+  lazy val camundaRepositoryController = wire[CamundaRepositoryController]
+
   lazy val authorizationServiceApi = serviceClient.implement[AuthorizationServiceApi]
   lazy val authorizationService    = wire[AuthorizationServiceImpl]
 
@@ -151,6 +174,9 @@ abstract class ServiceGateway(context: Context)
 
   lazy val cmsServiceApi = serviceClient.implement[CmsServiceApi]
   lazy val cmsService    = wire[CmsServiceImpl]
+
+  lazy val bpmRepositoryServiceApi = serviceClient.implement[BpmRepositoryServiceApi]
+  lazy val bpmRepositoryService    = wire[BpmRepositoryServiceImpl]
 
 }
 
