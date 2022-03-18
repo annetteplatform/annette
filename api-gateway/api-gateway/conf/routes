@@ -299,3 +299,6 @@ POST    /api/annette/v1/bpm/deleteBusinessProcess      biz.lobachev.annette.bpm.
 POST    /api/annette/v1/bpm/findBusinessProcesses       biz.lobachev.annette.bpm.gateway.BusinessProcessController.findBusinessProcesses
 GET     /api/annette/v1/bpm/getBusinessProcessById/:id biz.lobachev.annette.bpm.gateway.BusinessProcessController.getBusinessProcessById(id: String, withVariables: Option[Boolean])
 POST    /api/annette/v1/bpm/getBusinessProcessesById    biz.lobachev.annette.bpm.gateway.BusinessProcessController.getBusinessProcessesById(withVariables: Option[Boolean])
+
+# Camunda repository
+POST    /api/annette/v1/bpm/deployBpmModel      biz.lobachev.annette.bpm.gateway.CamundaRepositoryController.deployBpmModel

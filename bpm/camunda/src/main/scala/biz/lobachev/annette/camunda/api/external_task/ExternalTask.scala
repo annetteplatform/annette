@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.camunda.api.external_task
 
-import biz.lobachev.annette.camunda.api.VariableValues
+import biz.lobachev.annette.camunda.api.common.VariableValues
 import play.api.libs.json.Json
 
 case class ExternalTask(

@@ -17,7 +17,7 @@
 package biz.lobachev.annette.camunda.api
 
 import akka.Done
-import biz.lobachev.annette.camunda.api.common.VariableValue
+import biz.lobachev.annette.camunda.api.common.{VariableValue, VariableValues}
 import biz.lobachev.annette.camunda.api.task._
 
 import scala.concurrent.Future

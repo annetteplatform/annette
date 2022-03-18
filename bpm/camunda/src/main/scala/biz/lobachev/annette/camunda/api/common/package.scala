@@ -14,16 +14,8 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.camunda.api.task
+package biz.lobachev.annette.camunda.api
 
-import biz.lobachev.annette.camunda.api.common.VariableValues
-import play.api.libs.json.Json
-
-case class ModifyTaskVariablePayload(
-  modifications: Option[VariableValues] = None,
-  deletions: Option[Seq[String]] = None
-)
-
-object ModifyTaskVariablePayload {
-  implicit val format = Json.format[ModifyTaskVariablePayload]
+package object common {
+  type VariableValues = Map[String, VariableValue]
 }

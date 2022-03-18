@@ -23,6 +23,7 @@ import biz.lobachev.annette.bpm.gateway.model._
 import biz.lobachev.annette.bpm_repository.api.BpmRepositoryService
 import biz.lobachev.annette.bpm_repository.api.domain.BpmModelId
 import biz.lobachev.annette.bpm_repository.api.model._
+import biz.lobachev.annette.camunda.api.RepositoryService
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}
@@ -36,9 +37,12 @@ class BpmModelController @Inject() (
   authorizer: Authorizer,
   cc: ControllerComponents,
   bpmRepositoryService: BpmRepositoryService,
+  camundaRepositoryService: RepositoryService,
   implicit val ec: ExecutionContext,
   implicit val materializer: Materializer
 ) extends AbstractController(cc) {
+
+  println(camundaRepositoryService)
 
   def createBpmModel =
     authenticated.async(parse.json[CreateBpmModelPayloadDto]) { implicit request =>

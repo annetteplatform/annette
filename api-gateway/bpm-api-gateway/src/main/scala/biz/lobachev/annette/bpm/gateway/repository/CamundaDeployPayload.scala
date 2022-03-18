@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.camunda.api.task
+package biz.lobachev.annette.bpm.gateway.repository
 
-import biz.lobachev.annette.camunda.api.common.VariableValues
+import biz.lobachev.annette.bpm_repository.api.domain.BpmModelId
 import play.api.libs.json.Json
 
-case class ModifyTaskVariablePayload(
-  modifications: Option[VariableValues] = None,
-  deletions: Option[Seq[String]] = None
+case class CamundaDeployPayload(
+  bpmModelId: BpmModelId,
+  businessProcess: Option[BusinessProcessPayload] = None
 )
 
-object ModifyTaskVariablePayload {
-  implicit val format = Json.format[ModifyTaskVariablePayload]
+object CamundaDeployPayload {
+  implicit val format = Json.format[CamundaDeployPayload]
 }

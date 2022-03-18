@@ -14,10 +14,19 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.camunda
+package biz.lobachev.annette.camunda.api
 
-import biz.lobachev.annette.camunda.api.common.VariableValue
+import com.typesafe.config.Config
+import play.api.libs.ws.WSClient
 
-package object api {
-  type VariableValues = Map[String, VariableValue]
+import scala.util.Try
+
+object CamundaFactory {
+  def createCamundaClient(config: Config, ws: WSClient) = {
+    val url         = config.getString("camunda.url")
+    val login       = Try(config.getString("camunda.login")).toOption
+    val password    = Try(config.getString("camunda.password")).toOption
+    val credentials = login.map(l => CamundaCredentials(l, password.getOrElse("")))
+    new CamundaClient(url, credentials, ws)
+  }
 }
