@@ -61,33 +61,33 @@ class HierarchyEntityService(
 
   private def convertSuccess(confirmation: HierarchyEntity.Confirmation): Done =
     confirmation match {
-      case HierarchyEntity.Success                    => Done
-      case HierarchyEntity.OrganizationAlreadyExist   => throw OrganizationAlreadyExist()
-      case HierarchyEntity.OrganizationNotFound       => throw OrganizationNotFound()
-      case HierarchyEntity.OrganizationNotEmpty       => throw OrganizationNotEmpty()
-      case HierarchyEntity.UnitNotEmpty               => throw UnitNotEmpty()
-      case HierarchyEntity.ItemNotFound               => throw ItemNotFound()
-      case HierarchyEntity.PositionNotEmpty           => throw PositionNotEmpty()
-      case HierarchyEntity.AlreadyExist               => throw AlreadyExist()
-      case HierarchyEntity.ParentNotFound             => throw ParentNotFound()
-      case HierarchyEntity.ChiefNotFound              => throw ChiefNotFound()
-      case HierarchyEntity.ChiefAlreadyAssigned       => throw ChiefAlreadyAssigned()
-      case HierarchyEntity.ChiefNotAssigned           => throw ChiefNotAssigned()
-      case HierarchyEntity.PositionLimitExceeded      => throw PositionLimitExceeded()
-      case HierarchyEntity.PersonAlreadyAssigned      => throw PersonAlreadyAssigned()
-      case HierarchyEntity.PersonNotAssigned          => throw PersonNotAssigned()
-      case HierarchyEntity.IncorrectOrder             => throw IncorrectOrder()
-      case HierarchyEntity.IncorrectMoveItemArguments => throw IncorrectMoveItemArguments()
-      case HierarchyEntity.IncorrectCategory          => throw IncorrectCategory()
-      case _                                          => throw new RuntimeException("Match fail")
+      case HierarchyEntity.Success                     => Done
+      case HierarchyEntity.OrganizationAlreadyExist    => throw OrganizationAlreadyExist()
+      case HierarchyEntity.OrganizationNotFound(orgId) => throw OrganizationNotFound(orgId)
+      case HierarchyEntity.OrganizationNotEmpty        => throw OrganizationNotEmpty()
+      case HierarchyEntity.UnitNotEmpty                => throw UnitNotEmpty()
+      case HierarchyEntity.ItemNotFound                => throw ItemNotFound()
+      case HierarchyEntity.PositionNotEmpty            => throw PositionNotEmpty()
+      case HierarchyEntity.AlreadyExist                => throw AlreadyExist()
+      case HierarchyEntity.ParentNotFound              => throw ParentNotFound()
+      case HierarchyEntity.ChiefNotFound               => throw ChiefNotFound()
+      case HierarchyEntity.ChiefAlreadyAssigned        => throw ChiefAlreadyAssigned()
+      case HierarchyEntity.ChiefNotAssigned            => throw ChiefNotAssigned()
+      case HierarchyEntity.PositionLimitExceeded       => throw PositionLimitExceeded()
+      case HierarchyEntity.PersonAlreadyAssigned       => throw PersonAlreadyAssigned()
+      case HierarchyEntity.PersonNotAssigned           => throw PersonNotAssigned()
+      case HierarchyEntity.IncorrectOrder              => throw IncorrectOrder()
+      case HierarchyEntity.IncorrectMoveItemArguments  => throw IncorrectMoveItemArguments()
+      case HierarchyEntity.IncorrectCategory           => throw IncorrectCategory()
+      case _                                           => throw new RuntimeException("Match fail")
     }
 
   private def convertSuccessEntityAttributes(confirmation: HierarchyEntity.Confirmation): AttributeValues =
     confirmation match {
-      case HierarchyEntity.SuccessAttributes(values) => values
-      case HierarchyEntity.OrganizationNotFound      => throw OrganizationNotFound()
-      case HierarchyEntity.ItemNotFound              => throw ItemNotFound()
-      case _                                         => throw new RuntimeException("Match fail")
+      case HierarchyEntity.SuccessAttributes(values)   => values
+      case HierarchyEntity.OrganizationNotFound(orgId) => throw OrganizationNotFound(orgId)
+      case HierarchyEntity.ItemNotFound                => throw ItemNotFound()
+      case _                                           => throw new RuntimeException("Match fail")
     }
 
   def createOrganization(payload: CreateOrganizationPayload): Future[Done] =
@@ -267,7 +267,7 @@ class HierarchyEntityService(
       .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrganization(orgId, _))
       .map {
         case HierarchyEntity.SuccessOrganization(organization) => organization
-        case HierarchyEntity.OrganizationNotFound              => throw OrganizationNotFound()
+        case HierarchyEntity.OrganizationNotFound(orgId)       => throw OrganizationNotFound(orgId)
         case _                                                 => throw new RuntimeException("Match fail")
       }
 
@@ -276,7 +276,7 @@ class HierarchyEntityService(
       .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrganizationTree(itemId, _))
       .map {
         case HierarchyEntity.SuccessOrganizationTree(organizationTree) => organizationTree
-        case HierarchyEntity.OrganizationNotFound                      => throw OrganizationNotFound()
+        case HierarchyEntity.OrganizationNotFound(orgId)               => throw OrganizationNotFound(orgId)
         case HierarchyEntity.ItemNotFound                              => throw ItemNotFound()
         case _                                                         => throw new RuntimeException("Match fail")
       }
@@ -285,10 +285,10 @@ class HierarchyEntityService(
     refFor(id)
       .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrgItem(id, withAttributes, _))
       .map {
-        case HierarchyEntity.SuccessOrgItem(orgItem) => orgItem
-        case HierarchyEntity.OrganizationNotFound    => throw OrganizationNotFound()
-        case HierarchyEntity.ItemNotFound            => throw ItemNotFound()
-        case _                                       => throw new RuntimeException("Match fail")
+        case HierarchyEntity.SuccessOrgItem(orgItem)     => orgItem
+        case HierarchyEntity.OrganizationNotFound(orgId) => throw OrganizationNotFound(orgId)
+        case HierarchyEntity.ItemNotFound                => throw ItemNotFound()
+        case _                                           => throw new RuntimeException("Match fail")
       }
 
   def getOrgItemById(

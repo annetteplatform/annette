@@ -40,7 +40,7 @@ object HierarchySerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[HierarchyEntity.SuccessRootPaths],
       JsonSerializer[HierarchyEntity.Success.type],
       JsonSerializer[HierarchyEntity.OrganizationAlreadyExist.type],
-      JsonSerializer[HierarchyEntity.OrganizationNotFound.type],
+      JsonSerializer[HierarchyEntity.OrganizationNotFound],
       JsonSerializer[HierarchyEntity.OrganizationNotEmpty.type],
       JsonSerializer[HierarchyEntity.UnitNotEmpty.type],
       JsonSerializer[HierarchyEntity.ItemNotFound.type],

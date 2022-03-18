@@ -25,71 +25,72 @@ object InvalidCompositeId extends AnnetteTransportExceptionCompanion1 {
   val Arg1Key: String = "id"
 }
 
-object OrganizationAlreadyExist   extends AnnetteTransportExceptionCompanion {
+object OrganizationAlreadyExist   extends AnnetteTransportExceptionCompanion  {
   val ErrorCode   = TransportErrorCode.BadRequest
   val MessageCode = "annette.orgStructureService.hierarchy.organizationAlreadyExist"
 }
-object OrganizationNotFound       extends AnnetteTransportExceptionCompanion {
-  val ErrorCode   = TransportErrorCode.NotFound
-  val MessageCode = "annette.orgStructureService.hierarchy.organizationNotFound"
+object OrganizationNotFound       extends AnnetteTransportExceptionCompanion1 {
+  val ErrorCode                = TransportErrorCode.NotFound
+  val MessageCode              = "annette.orgStructureService.hierarchy.organizationNotFound"
+  override val Arg1Key: String = "orgId"
 }
-object OrganizationNotEmpty       extends AnnetteTransportExceptionCompanion {
+object OrganizationNotEmpty       extends AnnetteTransportExceptionCompanion  {
   val ErrorCode   = TransportErrorCode.BadRequest
   val MessageCode = "annette.orgStructureService.hierarchy.organizationNotEmpty"
 }
-object UnitNotEmpty               extends AnnetteTransportExceptionCompanion {
+object UnitNotEmpty               extends AnnetteTransportExceptionCompanion  {
   val ErrorCode   = TransportErrorCode.BadRequest
   val MessageCode = "annette.orgStructureService.hierarchy.unitNotEmpty"
 }
-object ItemNotFound               extends AnnetteTransportExceptionCompanion {
+object ItemNotFound               extends AnnetteTransportExceptionCompanion  {
   val ErrorCode   = TransportErrorCode.NotFound
   val MessageCode = "annette.orgStructureService.hierarchy.itemNotFound"
 }
-object PositionNotEmpty           extends AnnetteTransportExceptionCompanion {
+object PositionNotEmpty           extends AnnetteTransportExceptionCompanion  {
   val ErrorCode   = TransportErrorCode.BadRequest
   val MessageCode = "annette.orgStructureService.hierarchy.positionNotEmpty"
 }
-object AlreadyExist               extends AnnetteTransportExceptionCompanion {
+object AlreadyExist               extends AnnetteTransportExceptionCompanion  {
   val ErrorCode   = TransportErrorCode.BadRequest
   val MessageCode = "annette.orgStructureService.hierarchy.alreadyExist"
 }
-object ParentNotFound             extends AnnetteTransportExceptionCompanion {
+object ParentNotFound             extends AnnetteTransportExceptionCompanion  {
   val ErrorCode   = TransportErrorCode.NotFound
   val MessageCode = "annette.orgStructureService.hierarchy.parentNotFound"
 }
-object ChiefNotFound              extends AnnetteTransportExceptionCompanion {
+object ChiefNotFound              extends AnnetteTransportExceptionCompanion  {
   val ErrorCode   = TransportErrorCode.NotFound
   val MessageCode = "annette.orgStructureService.hierarchy.chiefNotFound"
 }
-object ChiefAlreadyAssigned       extends AnnetteTransportExceptionCompanion {
+object ChiefAlreadyAssigned       extends AnnetteTransportExceptionCompanion  {
   val ErrorCode   = TransportErrorCode.BadRequest
   val MessageCode = "annette.orgStructureService.hierarchy.chiefAlreadyAssigned"
 }
-object ChiefNotAssigned           extends AnnetteTransportExceptionCompanion {
+object ChiefNotAssigned           extends AnnetteTransportExceptionCompanion  {
   val ErrorCode   = TransportErrorCode.BadRequest
   val MessageCode = "annette.orgStructureService.hierarchy.chiefNotAssigned"
 }
-object PositionLimitExceeded      extends AnnetteTransportExceptionCompanion {
+object PositionLimitExceeded      extends AnnetteTransportExceptionCompanion  {
   val ErrorCode   = TransportErrorCode.BadRequest
   val MessageCode = "annette.orgStructureService.hierarchy.positionLimitExceeded"
 }
-object PersonAlreadyAssigned      extends AnnetteTransportExceptionCompanion {
+object PersonAlreadyAssigned      extends AnnetteTransportExceptionCompanion  {
   val ErrorCode   = TransportErrorCode.BadRequest
   val MessageCode = "annette.orgStructureService.hierarchy.personAlreadyAssigned"
 }
-object PersonNotAssigned          extends AnnetteTransportExceptionCompanion {
+object PersonNotAssigned          extends AnnetteTransportExceptionCompanion  {
   val ErrorCode   = TransportErrorCode.BadRequest
   val MessageCode = "annette.orgStructureService.hierarchy.personNotAssigned"
 }
-object IncorrectOrder             extends AnnetteTransportExceptionCompanion {
+object IncorrectOrder             extends AnnetteTransportExceptionCompanion  {
   val ErrorCode   = TransportErrorCode.BadRequest
   val MessageCode = "annette.orgStructureService.hierarchy.incorrectOrder"
 }
-object IncorrectMoveItemArguments extends AnnetteTransportExceptionCompanion {
+object IncorrectMoveItemArguments extends AnnetteTransportExceptionCompanion  {
   val ErrorCode   = TransportErrorCode.BadRequest
   val MessageCode = "annette.orgStructureService.hierarchy.incorrectMoveItemArguments"
 }
-object IncorrectCategory          extends AnnetteTransportExceptionCompanion {
+object IncorrectCategory          extends AnnetteTransportExceptionCompanion  {
   val ErrorCode   = TransportErrorCode.BadRequest
   val MessageCode = "annette.orgStructureService.hierarchy.invalidCategory"
 }

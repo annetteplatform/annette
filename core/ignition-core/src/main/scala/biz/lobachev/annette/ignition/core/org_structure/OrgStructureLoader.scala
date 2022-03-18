@@ -19,6 +19,7 @@ package biz.lobachev.annette.ignition.core.org_structure
 import akka.Done
 import akka.stream.scaladsl.{RestartSource, Sink, Source}
 import akka.stream.{Materializer, RestartSettings}
+import biz.lobachev.annette.core.attribute.UpdateAttributesPayload
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.ignition.core.FileSourcing
 import biz.lobachev.annette.ignition.core.model.{BatchLoadResult, EntityLoadResult, LoadFailed, LoadOk}
@@ -215,7 +216,7 @@ class OrgStructureLoader(
   ): Future[Unit] = {
     println(removeDisposed)
     log.debug("Merging organization: {} - {}", orgId, org.name)
-    val disposedUnitId   = UUID.randomUUID().toString
+    val disposedUnitId   = s"$orgId:${UUID.randomUUID().toString}"
     val timestamp        = LocalDateTime.now().toString
     val disposedUnitName = s"[DISPOSED $timestamp]"
     for {
@@ -297,7 +298,7 @@ class OrgStructureLoader(
 
   private def getCurrentItem(item: OrgItemIgnitionData) =
     orgStructureService
-      .getOrgItemById(item.id, false)
+      .getOrgItemById(item.id, false, Some("all"))
       .map {
         case currentUnit: OrgUnit if item.isInstanceOf[PositionIgnitionData]     =>
           throw new IllegalArgumentException(
@@ -385,6 +386,24 @@ class OrgStructureLoader(
       _ <- if (currentItem.name != newItem.name)
              orgStructureService.updateName(UpdateNamePayload(newItem.id, newItem.name, updatedBy))
            else Future.successful(())
+      _ <- if (currentItem.source != newItem.source)
+             orgStructureService.updateSource(UpdateSourcePayload(newItem.id, newItem.source, updatedBy))
+           else Future.successful(())
+      _ <- if (currentItem.externalId != newItem.externalId)
+             orgStructureService.updateExternalId(UpdateExternalIdPayload(newItem.id, newItem.externalId, updatedBy))
+           else Future.successful(())
+      _ <- newItem.attributes.map { attrs =>
+             val changedAttributes = attrs.filter {
+               case attrName -> attrValue => currentItem.attributes.get(attrName) != Some(attrValue)
+             }
+             if (changedAttributes.nonEmpty)
+               orgStructureService
+                 .updateOrgItemAttributes(
+                   UpdateAttributesPayload(newItem.id, changedAttributes, updatedBy)
+                 )
+                 .map(_ => ())
+             else Future.successful(())
+           }.getOrElse(Future.successful(()))
 
     } yield ()
 

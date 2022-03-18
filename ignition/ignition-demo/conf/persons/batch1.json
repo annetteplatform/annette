@@ -6,7 +6,15 @@
     "categoryId": "PERSON",
     "gender": "female",
     "email": "kristina.fisher@example.com",
-    "phone": "(754)-566-6120"
+    "phone": "(754)-566-6120",
+    "source":"SAP",
+    "externalId": "SAP-P0001",
+    "attributes": {
+      "birthDate": "1977-03-30",
+      "gender": "F",
+      "isMarried": "true",
+      "salary": "110000"
+    }
   },
   {
     "id": "P0002",
@@ -15,7 +23,15 @@
     "categoryId": "PERSON",
     "gender": "female",
     "email": "leah.martin@example.com",
-    "phone": "(257)-953-6866"
+    "phone": "(257)-953-6866",
+    "source":"SAP",
+    "externalId": "SAP-P0002",
+    "attributes": {
+      "birthDate": "1977-01-30",
+      "gender": "F",
+      "isMarried": "false",
+      "salary": "15000"
+    }
   },
   {
     "id": "P0003",
@@ -24,6 +40,14 @@
     "categoryId": "PERSON",
     "gender": "male",
     "email": "patrick.holland@example.com",
-    "phone": "(369)-562-7084"
+    "phone": "(369)-562-7084",
+    "source": "SAP",
+    "externalId": "SAP-P0003",
+    "attributes": {
+      "birthDate": "1977-08-30",
+      "gender": "M",
+      "isMarried": "",
+      "salary": "17000"
+    }
   }
 ]

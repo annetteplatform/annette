@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.ignition.core.persons
 
+import biz.lobachev.annette.core.attribute.AttributeValues
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.category.CategoryId
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
@@ -38,7 +39,10 @@ case class PersonData(
   middlename: Option[String] = None, // middle name
   categoryId: CategoryId,
   phone: Option[String] = None,      // phone
-  email: Option[String] = None       // email
+  email: Option[String] = None,      // email
+  source: Option[String] = None,
+  externalId: Option[String] = None,
+  attributes: Option[AttributeValues] = None
 )
 
 object PersonData {

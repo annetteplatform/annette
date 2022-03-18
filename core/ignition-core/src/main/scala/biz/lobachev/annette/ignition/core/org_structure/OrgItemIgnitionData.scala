@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.ignition.core.org_structure
 
+import biz.lobachev.annette.core.attribute.AttributeValues
 import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
 import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 
@@ -23,6 +24,9 @@ sealed trait OrgItemIgnitionData {
   val id: String
   val name: String
   val categoryId: OrgCategoryId
+  val source: Option[String]
+  val externalId: Option[String]
+  val attributes: Option[AttributeValues]
 }
 
 case class PositionIgnitionData(
@@ -30,7 +34,10 @@ case class PositionIgnitionData(
   name: String,
   limit: Int = 1,
   categoryId: OrgCategoryId,
-  person: Option[String] = None
+  person: Option[String] = None,
+  source: Option[String] = None,
+  externalId: Option[String] = None,
+  attributes: Option[AttributeValues] = None
 ) extends OrgItemIgnitionData
 
 object PositionIgnitionData {
@@ -42,7 +49,10 @@ case class UnitIgnitionData(
   name: String,
   chief: Option[String] = None,
   children: Seq[OrgItemIgnitionData] = Seq.empty,
-  categoryId: OrgCategoryId
+  categoryId: OrgCategoryId,
+  source: Option[String] = None,
+  externalId: Option[String] = None,
+  attributes: Option[AttributeValues] = None
 ) extends OrgItemIgnitionData
 
 object UnitIgnitionData {

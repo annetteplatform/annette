@@ -202,7 +202,7 @@ object HierarchyEntity {
   final case class SuccessRootPaths(rootPaths: Map[CompositeOrgItemId, Seq[CompositeOrgItemId]]) extends Confirmation
   final case object Success                                                                      extends Confirmation
   final case object OrganizationAlreadyExist                                                     extends Confirmation
-  final case object OrganizationNotFound                                                         extends Confirmation
+  final case class OrganizationNotFound(orgId: CompositeOrgItemId)                               extends Confirmation
   final case object OrganizationNotEmpty                                                         extends Confirmation
   final case object UnitNotEmpty                                                                 extends Confirmation
   final case object PositionNotEmpty                                                             extends Confirmation
@@ -229,7 +229,7 @@ object HierarchyEntity {
   implicit val confirmationSuccessRootPathsFormat: Format[SuccessRootPaths]                          = Json.format
   implicit val confirmationSuccessFormat: Format[Success.type]                                       = Json.format
   implicit val confirmationOrganizationAlreadyExistFormat: Format[OrganizationAlreadyExist.type]     = Json.format
-  implicit val confirmationOrganizationNotFoundFormat: Format[OrganizationNotFound.type]             = Json.format
+  implicit val confirmationOrganizationNotFoundFormat: Format[OrganizationNotFound]                  = Json.format
   implicit val confirmationOrganizationNotEmptyFormat: Format[OrganizationNotEmpty.type]             = Json.format
   implicit val confirmationUnitNotEmptyFormat: Format[UnitNotEmpty.type]                             = Json.format
   implicit val confirmationPositionNotEmptyFormat: Format[PositionNotEmpty.type]                     = Json.format

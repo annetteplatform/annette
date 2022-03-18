@@ -4,6 +4,11 @@
   "type": "U",
   "categoryId": "ORG",
   "chief": "ANSOFT:CEO",
+  "source": "SAP",
+  "externalId": "SAP-ANSOFT",
+  "attributes": {
+    "description": "Annette Software - the leader in coporate software development"
+  },
   "children": [
     {
       "id": "ANSOFT:CEO",
@@ -11,7 +16,13 @@
       "type": "P",
       "categoryId": "POSITION",
       "limit": 1,
-      "person": "P0001"
+      "person": "P0001",
+      "source": "SAP",
+      "externalId": "SAP-ANSOFT:CEO",
+      "attributes": {
+        "description": "CEO - Chief Executive Officer",
+        "positionCategory": "K5"
+      }
     },
     {
       "id": "ANSOFT:CA",
@@ -19,7 +30,13 @@
       "type": "P",
       "categoryId": "POSITION",
       "limit": 1,
-      "person": "P0002"
+      "person": "P0002",
+      "source": "SAP",
+      "externalId": "SAP-ANSOFT:CA",
+      "attributes": {
+        "description": "CA - Chief Accountant",
+        "positionCategory": "K5"
+      }
     },
     {
       "id": "ANSOFT:SM",
