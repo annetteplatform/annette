@@ -4,7 +4,7 @@ import play.sbt.routes.RoutesKeys
 
 scalaVersion := "2.13.3"
 
-ThisBuild / version := "0.4.0-SNAPSHOT"
+ThisBuild / version := "0.4.0"
 ThisBuild / scalaVersion := "2.13.3"
 
 ThisBuild / organization := "biz.lobachev.annette"
@@ -80,7 +80,7 @@ lazy val root = (project in file("."))
     `api-gateway`,
     // initialization application
     `ignition-core`,
-//    `demo-ignition`,
+    `demo-ignition`,
     `camunda`,
     // API gateways
     `application-api-gateway`,
@@ -619,7 +619,7 @@ def subscriptionsProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`subscriptions-api`, `microservice-core`)
 
-//lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/ignition-demo"))
+lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/ignition-demo"))
 lazy val `application`      = applicationProject(project in file("application/application"))
 lazy val `authorization`    = authorizationProject(project in file("authorization/authorization"))
 lazy val `bpm-repository`   = bpmRepositoryProject(project in file("bpm/bpm-repository"))
