@@ -1,3 +1,15 @@
+CREATE USER keycloak;
+ALTER USER keycloak WITH ENCRYPTED password 'keycloak';
+CREATE DATABASE keycloak WITH ENCODING ='UTF8' OWNER = keycloak;
+
+CREATE USER camunda;
+ALTER USER camunda WITH ENCRYPTED password 'camunda';
+CREATE DATABASE camunda WITH ENCODING ='UTF8' OWNER =camunda;
+
+CREATE USER bpm_repository;
+ALTER USER bpm_repository WITH ENCRYPTED password 'bpm_repository';
+CREATE DATABASE dev_bpm_repository WITH ENCODING ='UTF8' OWNER = bpm_repository;
+
 alter table if exists "business_process_variables"
     drop constraint "business_process_variable_pk";
 drop table if exists "business_process_variables";
