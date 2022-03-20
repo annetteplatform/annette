@@ -17,13 +17,13 @@ object BpmData {
 
   val simpleProcess =
     """<?xml version="1.0" encoding="UTF-8"?>
-      |<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1cphvlk" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="5.0.0-alpha.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.16.0">
+      |<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1cphvlk" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.16.0">
       |  <bpmn:process id="SimpleProcess" name="Simple Process" isExecutable="true">
       |    <bpmn:startEvent id="StartEvent_1">
       |      <bpmn:outgoing>Flow_1gzkp76</bpmn:outgoing>
       |    </bpmn:startEvent>
-      |    <bpmn:sequenceFlow id="Flow_1gzkp76" sourceRef="StartEvent_1" targetRef="UserTaskActivity" />
-      |    <bpmn:userTask id="UserTaskActivity" name="User Task">
+      |    <bpmn:sequenceFlow id="Flow_1gzkp76" sourceRef="StartEvent_1" targetRef="UserTaskActivity1" />
+      |    <bpmn:userTask id="UserTaskActivity1" name="User Task 1">
       |      <bpmn:extensionElements>
       |        <camunda:inputOutput>
       |          <camunda:inputParameter name="localStr">${str}</camunda:inputParameter>
@@ -33,51 +33,116 @@ object BpmData {
       |      <bpmn:incoming>Flow_1gzkp76</bpmn:incoming>
       |      <bpmn:outgoing>Flow_09nwq2k</bpmn:outgoing>
       |    </bpmn:userTask>
-      |    <bpmn:sequenceFlow id="Flow_09nwq2k" sourceRef="UserTaskActivity" targetRef="ScriptActivity" />
+      |    <bpmn:sequenceFlow id="Flow_09nwq2k" sourceRef="UserTaskActivity1" targetRef="ScriptActivity" />
       |    <bpmn:scriptTask id="ScriptActivity" name="Script Activity" scriptFormat="JavaScript">
       |      <bpmn:incoming>Flow_09nwq2k</bpmn:incoming>
-      |      <bpmn:outgoing>Flow_0j53wbb</bpmn:outgoing>
+      |      <bpmn:outgoing>Flow_115ctmq</bpmn:outgoing>
       |      <bpmn:script>console.log("simple process");
       |console.log(str)
-      |</bpmn:script>
+      |execution.setVariable("str", str + " - Hello from Script")
+      |execution.setVariable("newStrVar", "hello")
+      |execution.setVariable("newNumVar", 42)
+      |execution.setVariable("newBoolVar", true)</bpmn:script>
       |    </bpmn:scriptTask>
       |    <bpmn:endEvent id="Event_0bg4v75">
-      |      <bpmn:incoming>Flow_0j53wbb</bpmn:incoming>
+      |      <bpmn:incoming>Flow_1h4j2wq</bpmn:incoming>
       |    </bpmn:endEvent>
-      |    <bpmn:sequenceFlow id="Flow_0j53wbb" sourceRef="ScriptActivity" targetRef="Event_0bg4v75" />
+      |    <bpmn:sequenceFlow id="Flow_115ctmq" sourceRef="ScriptActivity" targetRef="UserTaskActivity2" />
+      |    <bpmn:sequenceFlow id="Flow_1h4j2wq" sourceRef="UserTaskActivity2" targetRef="Event_0bg4v75" />
+      |    <bpmn:userTask id="UserTaskActivity2" name="User Task 2">
+      |      <bpmn:incoming>Flow_115ctmq</bpmn:incoming>
+      |      <bpmn:outgoing>Flow_1h4j2wq</bpmn:outgoing>
+      |    </bpmn:userTask>
       |  </bpmn:process>
       |  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
       |    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="SimpleProcess">
-      |      <bpmndi:BPMNEdge id="Flow_1gzkp76_di" bpmnElement="Flow_1gzkp76">
-      |        <di:waypoint x="215" y="117" />
-      |        <di:waypoint x="270" y="117" />
+      |      <bpmndi:BPMNEdge id="Flow_1h4j2wq_di" bpmnElement="Flow_1h4j2wq">
+      |        <di:waypoint x="680" y="117" />
+      |        <di:waypoint x="762" y="117" />
+      |      </bpmndi:BPMNEdge>
+      |      <bpmndi:BPMNEdge id="Flow_115ctmq_di" bpmnElement="Flow_115ctmq">
+      |        <di:waypoint x="530" y="117" />
+      |        <di:waypoint x="580" y="117" />
       |      </bpmndi:BPMNEdge>
       |      <bpmndi:BPMNEdge id="Flow_09nwq2k_di" bpmnElement="Flow_09nwq2k">
       |        <di:waypoint x="370" y="117" />
       |        <di:waypoint x="430" y="117" />
       |      </bpmndi:BPMNEdge>
-      |      <bpmndi:BPMNEdge id="Flow_0j53wbb_di" bpmnElement="Flow_0j53wbb">
-      |        <di:waypoint x="530" y="117" />
-      |        <di:waypoint x="592" y="117" />
+      |      <bpmndi:BPMNEdge id="Flow_1gzkp76_di" bpmnElement="Flow_1gzkp76">
+      |        <di:waypoint x="215" y="117" />
+      |        <di:waypoint x="270" y="117" />
       |      </bpmndi:BPMNEdge>
       |      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
       |        <dc:Bounds x="179" y="99" width="36" height="36" />
       |      </bpmndi:BPMNShape>
-      |      <bpmndi:BPMNShape id="Activity_1uejsmr_di" bpmnElement="UserTaskActivity">
+      |      <bpmndi:BPMNShape id="Activity_1uejsmr_di" bpmnElement="UserTaskActivity1">
       |        <dc:Bounds x="270" y="77" width="100" height="80" />
       |      </bpmndi:BPMNShape>
       |      <bpmndi:BPMNShape id="Activity_18wfkpw_di" bpmnElement="ScriptActivity">
       |        <dc:Bounds x="430" y="77" width="100" height="80" />
       |      </bpmndi:BPMNShape>
       |      <bpmndi:BPMNShape id="Event_0bg4v75_di" bpmnElement="Event_0bg4v75">
-      |        <dc:Bounds x="592" y="99" width="36" height="36" />
+      |        <dc:Bounds x="762" y="99" width="36" height="36" />
+      |      </bpmndi:BPMNShape>
+      |      <bpmndi:BPMNShape id="Activity_0rirely_di" bpmnElement="UserTaskActivity2">
+      |        <dc:Bounds x="580" y="77" width="100" height="80" />
       |      </bpmndi:BPMNShape>
       |    </bpmndi:BPMNPlane>
       |  </bpmndi:BPMNDiagram>
-      |</bpmn:definitions>
-      |""".stripMargin
+      |</bpmn:definitions>""".stripMargin
 
-  val variables = Some(
+  val extTaskProcess =
+    """<?xml version="1.0" encoding="UTF-8"?>
+      |<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_1cphvlk" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.12.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.16.0">
+      |  <bpmn:process id="SimpleProcessExtTask" name="Simple Process with ext. task" isExecutable="true">
+      |    <bpmn:startEvent id="StartEvent_1">
+      |      <bpmn:outgoing>Flow_1gzkp76</bpmn:outgoing>
+      |    </bpmn:startEvent>
+      |    <bpmn:sequenceFlow id="Flow_1gzkp76" sourceRef="StartEvent_1" targetRef="ExternalTask" />
+      |    <bpmn:endEvent id="Event_0bg4v75">
+      |      <bpmn:incoming>Flow_1h4j2wq</bpmn:incoming>
+      |    </bpmn:endEvent>
+      |    <bpmn:sequenceFlow id="Flow_115ctmq" sourceRef="ExternalTask" targetRef="UserTaskActivity2" />
+      |    <bpmn:sequenceFlow id="Flow_1h4j2wq" sourceRef="UserTaskActivity2" targetRef="Event_0bg4v75" />
+      |    <bpmn:userTask id="UserTaskActivity2" name="User Task 2">
+      |      <bpmn:incoming>Flow_115ctmq</bpmn:incoming>
+      |      <bpmn:outgoing>Flow_1h4j2wq</bpmn:outgoing>
+      |    </bpmn:userTask>
+      |    <bpmn:serviceTask id="ExternalTask" name="External Task" camunda:type="external" camunda:topic="TopicA">
+      |      <bpmn:incoming>Flow_1gzkp76</bpmn:incoming>
+      |      <bpmn:outgoing>Flow_115ctmq</bpmn:outgoing>
+      |    </bpmn:serviceTask>
+      |  </bpmn:process>
+      |  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+      |    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="SimpleProcessExtTask">
+      |      <bpmndi:BPMNEdge id="Flow_1h4j2wq_di" bpmnElement="Flow_1h4j2wq">
+      |        <di:waypoint x="500" y="117" />
+      |        <di:waypoint x="582" y="117" />
+      |      </bpmndi:BPMNEdge>
+      |      <bpmndi:BPMNEdge id="Flow_115ctmq_di" bpmnElement="Flow_115ctmq">
+      |        <di:waypoint x="350" y="117" />
+      |        <di:waypoint x="400" y="117" />
+      |      </bpmndi:BPMNEdge>
+      |      <bpmndi:BPMNEdge id="Flow_1gzkp76_di" bpmnElement="Flow_1gzkp76">
+      |        <di:waypoint x="188" y="117" />
+      |        <di:waypoint x="250" y="117" />
+      |      </bpmndi:BPMNEdge>
+      |      <bpmndi:BPMNShape id="Event_0bg4v75_di" bpmnElement="Event_0bg4v75">
+      |        <dc:Bounds x="582" y="99" width="36" height="36" />
+      |      </bpmndi:BPMNShape>
+      |      <bpmndi:BPMNShape id="Activity_0rirely_di" bpmnElement="UserTaskActivity2">
+      |        <dc:Bounds x="400" y="77" width="100" height="80" />
+      |      </bpmndi:BPMNShape>
+      |      <bpmndi:BPMNShape id="Activity_1991dg7_di" bpmnElement="ExternalTask">
+      |        <dc:Bounds x="250" y="77" width="100" height="80" />
+      |      </bpmndi:BPMNShape>
+      |      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+      |        <dc:Bounds x="152" y="99" width="36" height="36" />
+      |      </bpmndi:BPMNShape>
+      |    </bpmndi:BPMNPlane>
+      |  </bpmndi:BPMNDiagram>
+      |</bpmn:definitions>""".stripMargin
+  val variables      = Some(
     Map(
       "str"          -> StringValue("aStringValue1"),
       "bool"         -> BooleanValue(true),

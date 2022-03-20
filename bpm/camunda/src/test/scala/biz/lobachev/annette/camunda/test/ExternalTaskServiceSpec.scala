@@ -3,8 +3,10 @@ package biz.lobachev.annette.camunda.test
 import akka.actor.ActorSystem
 import biz.lobachev.annette.camunda.api._
 import biz.lobachev.annette.camunda.api.external_task.{CompleteExternalTaskPayload, FetchAndLockQuery, TopicQuery}
+import biz.lobachev.annette.camunda.api.repository.CreateDeploymentPayload
 import biz.lobachev.annette.camunda.api.runtime.{DeleteProcessInstancePayload, StartProcessInstancePayload}
-import biz.lobachev.annette.camunda.impl.{ExternalTaskServiceImpl, RuntimeServiceImpl}
+import biz.lobachev.annette.camunda.impl.{ExternalTaskServiceImpl, RepositoryServiceImpl, RuntimeServiceImpl}
+import com.typesafe.config.ConfigFactory
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpecLike
 import play.api.libs.ws.ahc.{AhcWSClient, StandaloneAhcWSClient}
@@ -16,15 +18,27 @@ class ExternalTaskServiceSpec extends AsyncWordSpecLike with Matchers {
   //  implicit val materializer = Materializer.create(actorContext)
   val standaloneWSClient = StandaloneAhcWSClient()
   val wsClient           = new AhcWSClient(standaloneWSClient)
+  val config             = ConfigFactory.load()
   implicit val ec        = global
 
-  val camundaClient  = new CamundaClient("http://localhost:3090/engine-rest/engine/default", None, wsClient)
-  val runtimeService = new RuntimeServiceImpl(camundaClient)
-  val service        = new ExternalTaskServiceImpl(camundaClient)
+  val camundaClient     = CamundaFactory.createCamundaClient(config, wsClient)
+  val service           = new ExternalTaskServiceImpl(camundaClient)
+  val runtimeService    = new RuntimeServiceImpl(camundaClient)
+  val repositoryService = new RepositoryServiceImpl(camundaClient)
 
   "ExternalTaskService" should {
     "fetchAndLock & complete" in {
       for {
+        _     <- repositoryService.createDeployment(
+                   CreateDeploymentPayload(
+                     xml = BpmData.extTaskProcess,
+                     deploymentName = Some("simple-process-ext"),
+                     enableDuplicateFiltering = Some(false),
+                     deployChangedOnly = None,
+                     deploymentSource = Some("annette"),
+                     deploymentActivationTime = None
+                   )
+                 )
         r1    <- runtimeService.startProcessInstanceByKey(
                    "SimpleProcessExtTask",
                    StartProcessInstancePayload(

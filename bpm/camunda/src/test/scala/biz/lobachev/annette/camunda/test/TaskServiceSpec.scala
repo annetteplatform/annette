@@ -15,6 +15,7 @@ import biz.lobachev.annette.camunda.api.task.{
 }
 import biz.lobachev.annette.camunda.impl.{RuntimeServiceImpl, TaskServiceImpl}
 import biz.lobachev.annette.core.exception.AnnetteTransportException
+import com.typesafe.config.ConfigFactory
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpecLike
 import play.api.libs.ws.ahc.{AhcWSClient, StandaloneAhcWSClient}
@@ -27,9 +28,10 @@ class TaskServiceSpec extends AsyncWordSpecLike with Matchers {
   //  implicit val materializer = Materializer.create(actorContext)
   val standaloneWSClient = StandaloneAhcWSClient()
   val wsClient           = new AhcWSClient(standaloneWSClient)
+  val config             = ConfigFactory.load()
   implicit val ec        = global
 
-  val camundaClient  = new CamundaClient("http://localhost:3090/engine-rest/engine/default", None, wsClient)
+  val camundaClient  = CamundaFactory.createCamundaClient(config, wsClient)
   val runtimeService = new RuntimeServiceImpl(camundaClient)
   val service        = new TaskServiceImpl(camundaClient)
 

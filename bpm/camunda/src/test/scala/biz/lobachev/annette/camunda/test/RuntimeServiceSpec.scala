@@ -4,6 +4,7 @@ import akka.Done
 import akka.actor.ActorSystem
 import biz.lobachev.annette.camunda.api._
 import biz.lobachev.annette.camunda.api.common._
+import biz.lobachev.annette.camunda.api.repository.CreateDeploymentPayload
 import biz.lobachev.annette.camunda.api.runtime.{
   DeleteProcessInstancePayload,
   ModifyProcessVariablePayload,
@@ -11,8 +12,9 @@ import biz.lobachev.annette.camunda.api.runtime.{
   StartProcessInstancePayload,
   SubmitStartFormPayload
 }
-import biz.lobachev.annette.camunda.impl.RuntimeServiceImpl
+import biz.lobachev.annette.camunda.impl.{RepositoryServiceImpl, RuntimeServiceImpl}
 import biz.lobachev.annette.core.exception.AnnetteTransportException
+import com.typesafe.config.ConfigFactory
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpecLike
 import play.api.libs.ws.ahc.{AhcWSClient, StandaloneAhcWSClient}
@@ -25,24 +27,37 @@ class RuntimeServiceSpec extends AsyncWordSpecLike with Matchers {
   //  implicit val materializer = Materializer.create(actorContext)
   val standaloneWSClient = StandaloneAhcWSClient()
   val wsClient           = new AhcWSClient(standaloneWSClient)
+  val config             = ConfigFactory.load()
   implicit val ec        = global
 
-  val camundaClient = new CamundaClient("http://localhost:3090/engine-rest/engine/default", None, wsClient)
-  val service       = new RuntimeServiceImpl(camundaClient)
+  val camundaClient     = CamundaFactory.createCamundaClient(config, wsClient)
+  val service           = new RuntimeServiceImpl(camundaClient)
+  val repositoryService = new RepositoryServiceImpl(camundaClient)
 
   "ProcessInstance" should {
 
     "start process by id" in {
       for {
-        r1 <- service.startProcessInstanceById(
-                "SimpleProcess:2:ffa27d7e-a1ee-11ec-bea9-0242ac180003",
+        r1 <- repositoryService.createDeployment(
+                CreateDeploymentPayload(
+                  xml = BpmData.simpleProcess,
+                  deploymentName = Some("simple-process"),
+                  enableDuplicateFiltering = Some(false),
+                  deployChangedOnly = None,
+                  deploymentSource = Some("annette"),
+                  deploymentActivationTime = None
+                )
+              )
+
+        r2 <- service.startProcessInstanceById(
+                r1.deployedProcessDefinitions.get.keys.head,
                 StartProcessInstancePayload(
                   variables = BpmData.variables,
                   withVariablesInReturn = Some(true)
                 )
               )
       } yield {
-        println(r1)
+        println(r2)
         1 shouldBe 1
       }
     }
@@ -64,14 +79,24 @@ class RuntimeServiceSpec extends AsyncWordSpecLike with Matchers {
 
     "submit form by id" in {
       for {
-        r1 <- service.submitStartFormById(
-                "SimpleProcess:2:ffa27d7e-a1ee-11ec-bea9-0242ac180003",
+        r1 <- repositoryService.createDeployment(
+                CreateDeploymentPayload(
+                  xml = BpmData.simpleProcess,
+                  deploymentName = Some("simple-process"),
+                  enableDuplicateFiltering = Some(false),
+                  deployChangedOnly = None,
+                  deploymentSource = Some("annette"),
+                  deploymentActivationTime = None
+                )
+              )
+        r2 <- service.submitStartFormById(
+                r1.deployedProcessDefinitions.get.keys.head,
                 SubmitStartFormPayload(
                   variables = BpmData.variables
                 )
               )
       } yield {
-        println(r1)
+        println(r2)
         1 shouldBe 1
       }
     }

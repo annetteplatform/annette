@@ -2,22 +2,11 @@ package biz.lobachev.annette.camunda.test
 
 import akka.Done
 import akka.actor.ActorSystem
-import biz.lobachev.annette.camunda.api.{
-  CamundaClient,
-  CreateDeploymentError,
-  DeploymentNotFound,
-  ProcessDefinitionNotFoundById,
-  ProcessDefinitionNotFoundByKey
-}
-import biz.lobachev.annette.camunda.api.repository.{
-  CreateDeploymentPayload,
-  DeleteDeploymentPayload,
-  DeleteProcessDefinitionPayload,
-  DeploymentFindQuery,
-  ProcessDefinitionFindQuery
-}
+import biz.lobachev.annette.camunda.api.repository._
+import biz.lobachev.annette.camunda.api._
 import biz.lobachev.annette.camunda.impl.RepositoryServiceImpl
 import biz.lobachev.annette.core.exception.AnnetteTransportException
+import com.typesafe.config.ConfigFactory
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpecLike
 import play.api.libs.ws.ahc.{AhcWSClient, StandaloneAhcWSClient}
@@ -29,9 +18,10 @@ class RepositoryServiceSpec extends AsyncWordSpecLike with Matchers {
   //  implicit val materializer = Materializer.create(actorContext)
   val standaloneWSClient = StandaloneAhcWSClient()
   val wsClient           = new AhcWSClient(standaloneWSClient)
+  val config             = ConfigFactory.load()
   implicit val ec        = global
 
-  val camundaClient = new CamundaClient("http://localhost:3090/engine-rest/engine/default", None, wsClient)
+  val camundaClient = CamundaFactory.createCamundaClient(config, wsClient)
   val service       = new RepositoryServiceImpl(camundaClient)
 
   "RepositoryService" should {
