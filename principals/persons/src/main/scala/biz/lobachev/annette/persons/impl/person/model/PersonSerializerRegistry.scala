@@ -27,6 +27,7 @@ import biz.lobachev.annette.persons.impl.person.PersonEntity.{
   PersonDeleted,
   PersonUpdated,
   Success,
+  SuccessAttributes,
   SuccessPerson
 }
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
@@ -45,6 +46,7 @@ object PersonSerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[Confirmation],
       JsonSerializer[Success.type],
       JsonSerializer[SuccessPerson],
+      JsonSerializer[SuccessAttributes],
       JsonSerializer[NotFound.type],
       JsonSerializer[AlreadyExist.type],
       // events
