@@ -4,7 +4,7 @@ CREATE DATABASE keycloak WITH ENCODING ='UTF8' OWNER = keycloak;
 
 CREATE USER camunda;
 ALTER USER camunda WITH ENCRYPTED password 'camunda';
-CREATE DATABASE camunda WITH ENCODING ='UTF8' OWNER =camunda;
+CREATE DATABASE camunda WITH ENCODING ='UTF8' OWNER = camunda;
 
 CREATE USER bpm_repository;
 ALTER USER bpm_repository WITH ENCRYPTED password 'bpm_repository';

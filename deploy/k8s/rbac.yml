@@ -1,0 +1,28 @@
+---
+#
+# Create a role, `pod-reader`, that can list pods and
+# bind the default service account in the `default` namespace
+# to that role.
+#
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: pod-reader
+rules:
+  - apiGroups: [""] # "" indicates the core API group
+    resources: ["pods"]
+    verbs: ["get", "watch", "list"]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: read-pods
+subjects:
+  # Note the `$K8S_NAMESPACE$` line below. The first default refers to the namespace. The second refers to the service account name.
+  # For instance, `name: system:serviceaccount:annette:default` would refer to the default service account in namespace `annette`
+  - kind: User
+    name: system:serviceaccount:$K8S_NAMESPACE$:default
+roleRef:
+  kind: Role
+  name: pod-reader
+  apiGroup: rbac.authorization.k8s.io
