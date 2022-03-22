@@ -1,0 +1,37 @@
+apiVersion: "apps/v1"
+kind: Deployment
+metadata:
+  name: frontend
+  labels:
+    app: annette-frontend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: annette-frontend
+  template:
+    metadata:
+      labels:
+        app: annette-frontend
+    spec:
+      containers:
+        - name: frontend
+          image: "annetteplatform/annette-frontend:0.4.0"
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: annette-frontend
+spec:
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: annette-frontend
+

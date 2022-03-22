@@ -1,0 +1,701 @@
+
+apiVersion: "apps/v1"
+kind: Deployment
+metadata:
+  name: api-gateway
+spec:
+  selector:
+    matchLabels:
+      app: api-gateway
+  template:
+    metadata:
+      labels:
+        app: api-gateway
+    spec:
+      containers:
+        - name: api-gateway
+          image: "annetteplatform/api-gateway:0.4.1"
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: multi-instance-config
+            - configMapRef:
+                name: keycloak-config
+            - secretRef:
+                name: play-secret
+            - configMapRef:
+                name: cms-minio-config
+            - secretRef:
+                name: minio-secret
+            - configMapRef:
+                name: camunda-client-config
+            - secretRef:
+                name: camunda-client-secret
+          ports:
+            - containerPort: 9000
+              name: http
+            - containerPort: 2552
+              name: remoting
+            - containerPort: 8558
+              name: management
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway
+spec:
+  ports:
+    - name: http
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+    - name: remoting
+      port: 2552
+      protocol: TCP
+      targetPort: 2552
+    - name: management
+      port: 8558
+      protocol: TCP
+      targetPort: 8558
+  selector:
+    app: api-gateway
+---
+apiVersion: "apps/v1"
+kind: Deployment
+metadata:
+  name: application
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: application
+  template:
+    metadata:
+      labels:
+        app: application
+    spec:
+      containers:
+        - name: application
+          image: "annetteplatform/application:0.4.1"
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: multi-instance-config
+            - configMapRef:
+                name: elastic-config
+            - secretRef:
+                name: elastic-secret
+            - configMapRef:
+                name: cassandra-config
+            - secretRef:
+                name: cassandra-secret
+            - secretRef:
+                name: play-secret
+          ports:
+            - containerPort: 9000
+              name: http
+            - containerPort: 2552
+              name: remoting
+            - containerPort: 8558
+              name: management
+          readinessProbe:
+            httpGet:
+              path: "/ready"
+              port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
+          livenessProbe:
+            httpGet:
+              path: "/alive"
+              port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: application
+spec:
+  ports:
+    - name: http
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+    - name: remoting
+      port: 2552
+      protocol: TCP
+      targetPort: 2552
+    - name: management
+      port: 8558
+      protocol: TCP
+      targetPort: 8558
+  selector:
+    app: application
+---
+apiVersion: "apps/v1"
+kind: Deployment
+metadata:
+  name: authorization
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: authorization
+  template:
+    metadata:
+      labels:
+        app: authorization
+    spec:
+      containers:
+        - name: authorization
+          image: "annetteplatform/authorization:0.4.1"
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: multi-instance-config
+            - configMapRef:
+                name: elastic-config
+            - secretRef:
+                name: elastic-secret
+            - configMapRef:
+                name: cassandra-config
+            - secretRef:
+                name: cassandra-secret
+            - secretRef:
+                name: play-secret
+          ports:
+            - containerPort: 9000
+              name: http
+            - containerPort: 2552
+              name: remoting
+            - containerPort: 8558
+              name: management
+          readinessProbe:
+            httpGet:
+              path: "/ready"
+              port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
+          livenessProbe:
+            httpGet:
+              path: "/alive"
+              port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: authorization
+spec:
+  ports:
+    - name: http
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+    - name: remoting
+      port: 2552
+      protocol: TCP
+      targetPort: 2552
+    - name: management
+      port: 8558
+      protocol: TCP
+      targetPort: 8558
+  selector:
+    app: authorization
+---
+apiVersion: "apps/v1"
+kind: Deployment
+metadata:
+  name: subscriptions
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: subscriptions
+  template:
+    metadata:
+      labels:
+        app: subscriptions
+    spec:
+      containers:
+        - name: subscriptions
+          image: "annetteplatform/subscriptions:0.4.1"
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: multi-instance-config
+            - configMapRef:
+                name: elastic-config
+            - secretRef:
+                name: elastic-secret
+            - configMapRef:
+                name: cassandra-config
+            - secretRef:
+                name: cassandra-secret
+            - secretRef:
+                name: play-secret
+          ports:
+            - containerPort: 9000
+              name: http
+            - containerPort: 2552
+              name: remoting
+            - containerPort: 8558
+              name: management
+          readinessProbe:
+            httpGet:
+              path: "/ready"
+              port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
+          livenessProbe:
+            httpGet:
+              path: "/alive"
+              port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: subscriptions
+spec:
+  ports:
+    - name: http
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+    - name: remoting
+      port: 2552
+      protocol: TCP
+      targetPort: 2552
+    - name: management
+      port: 8558
+      protocol: TCP
+      targetPort: 8558
+  selector:
+    app: subscriptions
+---
+apiVersion: "apps/v1"
+kind: Deployment
+metadata:
+  name: principal-groups
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: principal-groups
+  template:
+    metadata:
+      labels:
+        app: principal-groups
+    spec:
+      containers:
+        - name: principal-groups
+          image: "annetteplatform/principal-groups:0.4.1"
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: multi-instance-config
+            - configMapRef:
+                name: elastic-config
+            - secretRef:
+                name: elastic-secret
+            - configMapRef:
+                name: cassandra-config
+            - secretRef:
+                name: cassandra-secret
+            - secretRef:
+                name: play-secret
+          ports:
+            - containerPort: 9000
+              name: http
+            - containerPort: 2552
+              name: remoting
+            - containerPort: 8558
+              name: management
+          readinessProbe:
+            httpGet:
+              path: "/ready"
+              port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
+          livenessProbe:
+            httpGet:
+              path: "/alive"
+              port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: principal-groups
+spec:
+  ports:
+    - name: http
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+    - name: remoting
+      port: 2552
+      protocol: TCP
+      targetPort: 2552
+    - name: management
+      port: 8558
+      protocol: TCP
+      targetPort: 8558
+  selector:
+    app: principal-groups
+---
+apiVersion: "apps/v1"
+kind: Deployment
+metadata:
+  name: persons
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: persons
+  template:
+    metadata:
+      labels:
+        app: persons
+    spec:
+      containers:
+        - name: persons
+          image: "annetteplatform/persons:0.4.1"
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: multi-instance-config
+            - configMapRef:
+                name: elastic-config
+            - secretRef:
+                name: elastic-secret
+            - configMapRef:
+                name: cassandra-config
+            - secretRef:
+                name: cassandra-secret
+            - secretRef:
+                name: play-secret
+          volumeMounts:
+          - name: config-volume
+            mountPath: /opt/docker/conf/application.k8s.conf
+            subPath: application.k8s.conf
+          ports:
+            - containerPort: 9000
+              name: http
+            - containerPort: 2552
+              name: remoting
+            - containerPort: 8558
+              name: management
+          readinessProbe:
+            httpGet:
+              path: "/ready"
+              port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
+          livenessProbe:
+            httpGet:
+              path: "/alive"
+              port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
+      volumes:
+      - name: config-volume
+        configMap:
+          name: persons-k8s-config
+          items:
+            - key: application.k8s.conf
+              path: application.k8s.conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: persons
+spec:
+  ports:
+    - name: http
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+    - name: remoting
+      port: 2552
+      protocol: TCP
+      targetPort: 2552
+    - name: management
+      port: 8558
+      protocol: TCP
+      targetPort: 8558
+  selector:
+    app: persons
+---
+apiVersion: "apps/v1"
+kind: Deployment
+metadata:
+  name: org-structure
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: org-structure
+  template:
+    metadata:
+      labels:
+        app: org-structure
+    spec:
+      containers:
+        - name: org-structure
+          image: "annetteplatform/org-structure:0.4.1"
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: multi-instance-config
+            - configMapRef:
+                name: elastic-config
+            - secretRef:
+                name: elastic-secret
+            - configMapRef:
+                name: cassandra-config
+            - secretRef:
+                name: cassandra-secret
+            - secretRef:
+                name: play-secret
+          volumeMounts:
+          - name: config-volume
+            mountPath: /opt/docker/conf/application.k8s.conf
+            subPath: application.k8s.conf
+          ports:
+            - containerPort: 9000
+              name: http
+            - containerPort: 2552
+              name: remoting
+            - containerPort: 8558
+              name: management
+          readinessProbe:
+            httpGet:
+              path: "/ready"
+              port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
+          livenessProbe:
+            httpGet:
+              path: "/alive"
+              port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
+      volumes:
+      - name: config-volume
+        configMap:
+          name: org-structure-k8s-config
+          items:
+            - key: application.k8s.conf
+              path: application.k8s.conf
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: org-structure
+spec:
+  ports:
+    - name: http
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+    - name: remoting
+      port: 2552
+      protocol: TCP
+      targetPort: 2552
+    - name: management
+      port: 8558
+      protocol: TCP
+      targetPort: 8558
+  selector:
+    app: org-structure
+---
+apiVersion: "apps/v1"
+kind: Deployment
+metadata:
+  name: cms
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: cms
+  template:
+    metadata:
+      labels:
+        app: cms
+    spec:
+      containers:
+        - name: cms
+          image: "annetteplatform/cms:0.4.1"
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: multi-instance-config
+            - configMapRef:
+                name: elastic-config
+            - secretRef:
+                name: elastic-secret
+            - configMapRef:
+                name: cassandra-config
+            - secretRef:
+                name: cassandra-secret
+            - secretRef:
+                name: play-secret
+            - configMapRef:
+                name: cms-minio-config
+            - secretRef:
+                name: minio-secret
+          ports:
+            - containerPort: 9000
+              name: http
+            - containerPort: 2552
+              name: remoting
+            - containerPort: 8558
+              name: management
+          readinessProbe:
+            httpGet:
+              path: "/ready"
+              port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
+          livenessProbe:
+            httpGet:
+              path: "/alive"
+              port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: cms
+spec:
+  ports:
+    - name: http
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+    - name: remoting
+      port: 2552
+      protocol: TCP
+      targetPort: 2552
+    - name: management
+      port: 8558
+      protocol: TCP
+      targetPort: 8558
+  selector:
+    app: cms
+---
+apiVersion: "apps/v1"
+kind: Deployment
+metadata:
+  name: bpm-repository
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: bpm-repository
+  template:
+    metadata:
+      labels:
+        app: bpm-repository
+    spec:
+      containers:
+        - name: bpm-repository
+          image: "annetteplatform/bpm-repository:0.4.1"
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: single-instance-config
+            - configMapRef:
+                name: bpm-repository-config
+            - secretRef:
+                name: bpm-repository-secret
+            - secretRef:
+                name: play-secret
+          ports:
+            - containerPort: 9000
+              name: http
+            - containerPort: 2552
+              name: remoting
+            - containerPort: 8558
+              name: management
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bpm-repository
+spec:
+  ports:
+    - name: http
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+    - name: remoting
+      port: 2552
+      protocol: TCP
+      targetPort: 2552
+    - name: management
+      port: 8558
+      protocol: TCP
+      targetPort: 8558
+  selector:
+    app: bpm-repository
+---
+apiVersion: "apps/v1"
+kind: Deployment
+metadata:
+  name: camunda
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: camunda
+  template:
+    metadata:
+      labels:
+        app: camunda
+    spec:
+      containers:
+        - name: camunda
+          image: "annetteplatform/camunda:7.16.0"
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: camunda-config
+            - secretRef:
+                name: camunda-secret
+          ports:
+            - containerPort: 8080
+              name: http
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: camunda
+spec:
+  ports:
+    - name: http
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: camunda

@@ -1,0 +1,202 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: elastic-config
+data:
+  INDEXING_URL: "https://es-01.domain.com,es-02.domain.com,es-03.domain.com"
+  INDEX_PREFIX: "annette-"
+  INDEXING_ALLOW_INSECURE: "true"
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: cassandra-config
+data:
+  CASSANDRA_URL: "cas-01.domain.com,cas-02.domain.com,cas-03.domain.com"
+  KEYSPACE_PREFIX: "annette_"
+  CASSANDRA_REPLICATION_FACTOR: "3"
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: cms-minio-config
+data:
+  MINIO_URL: "http://minio-01.domain.com:9000"
+  CMS_STORAGE_BUCKET_PREFIX: "annette-"
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: bpm-repository-config
+data:
+  POSTGRES_SERVER: pg-01.domain.com
+  POSTGRES_PREFIX: annette_
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: camunda-client-config
+data:
+  CAMUNDA_URL: "http://camunda:8080/engine-rest/engine/default"
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: camunda-config
+data:
+  DB_DRIVER: org.postgresql.Driver
+  DB_URL: "jdbc:postgresql://pg-01.domain.com:5432/annette_camunda"
+  WAIT_FOR: pg-01.domain.com:5432
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: multi-instance-config
+data:
+  JAVA_OPTS: " -Dlogback.configurationFile=/opt/docker/conf/logback.k8s.xml -Dconfig.file=/opt/docker/conf/application.k8s.conf -Dlagom.circuit-breaker.default.enabled=off"
+  REQUIRED_CONTACT_POINT_NR: "3"
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: single-instance-config
+data:
+  JAVA_OPTS: " -Dlogback.configurationFile=/opt/docker/conf/logback.k8s.xml -Dconfig.file=/opt/docker/conf/application.k8s.conf -Dlagom.circuit-breaker.default.enabled=off -Dlagom.cluster.bootstrap.enabled=false -Dakka.cluster.min-nr-of-members=1 -Dlagom.cluster.join-self=on"
+  REQUIRED_CONTACT_POINT_NR: "1"
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: keycloak-config
+data:
+  KEYCLOAK_REALM: "AnnetteDemo"
+  KEYCLOAK_URL: "https://keycloak.domain.com/auth"
+  KEYCLOAK_SSL_REQUIRED: "external"
+  KEYCLOAK_CLIENT: "annette-console"
+  KEYCLOAK_PUBLIC_CLIENT: "true"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: persons-k8s-config
+data:
+  application.k8s.conf: |
+    include "application.conf"
+    akka.management {
+      cluster.bootstrap {
+        contact-point-discovery {
+          discovery-method = kubernetes-api
+          service-name = "persons"
+          required-contact-point-nr = ${?REQUIRED_CONTACT_POINT_NR}
+        }
+      }
+    }
+    attributes {
+      person-schema {
+        birthDate {
+          # type specifies attribute datatype: string, boolean, int, double, decimal, local-date, local-time,
+          # offset-datetime, json
+          type = local-date
+          # caption-text specifies attribute caption
+          caption-text = Birth Date
+          # caption-code specifies attribute caption code for translation. caption-code has priority over caption-text
+          # caption-code = annette.person.attribute.birthDate
+          # index defines reference to index alias. If index is not defined attribute will not indexed
+          index = birthDate
+          # read-side-persistence specifies attribute with persistence on read-side only. Default value is false
+          # read-side-persistence = false
+        }
+        gender {
+          type = string
+          # subtype defines detailed type information
+          subtype = gender
+          # allowed-values specifies values that can be assigned to attribute
+          allowed-values = [ "M", "F"]
+          caption-text = Gender
+          index = gender
+        }
+        isMarried {
+          type = boolean
+          caption-text = Is Married
+          index = isMarried
+        }
+        salary {
+          type = decimal
+          caption-text = Salary
+          index = salary
+        }
+        education {
+          type = json
+          subtype = education
+          caption-text = Education
+          read-side-persistence = true
+        }
+      }
+    }
+    indexing {
+      person-index {
+        mappings {
+          # Attributes
+          birthDate {
+            type = date
+          }
+          gender {
+            type = keyword
+          }
+          isMarried {
+            type = boolean
+          }
+          salary {
+            type = double
+          }
+        }
+      }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: org-structure-k8s-config
+data:
+  application.k8s.conf: |
+    include "application.conf"
+    akka.management {
+      cluster.bootstrap {
+        contact-point-discovery {
+          discovery-method = kubernetes-api
+          service-name = "org-structure"
+          required-contact-point-nr = ${?REQUIRED_CONTACT_POINT_NR}
+        }
+      }
+    }
+    attributes {
+      org-item-schema {
+        positionCategory {
+          type = string
+          subtype = position-category
+          allowed-values = ["K1", "K2", "K3", "K4", "K5"]
+          caption-text = Position Category
+          index = positionCategory
+        }
+        storeId {
+          type = string
+          subtype = storeId
+          caption-text = Store Id
+          index = storeId
+        }
+        description {
+          type = string
+          caption-text = Description
+          read-side-persistence = true
+        }
+      }
+    }
+    indexing {
+      items-index {
+        mappings {
+          positionCategory {type = keyword}
+          storeId {type = keyword}
+        }
+      }
+    }
+
