@@ -1,0 +1,38 @@
+[
+  {
+    "id": "P0004",
+    "firstname": "Brooklyn",
+    "lastname": "Oliver",
+    "categoryId": "PERSON",
+    "gender": "female",
+    "email": "brooklyn.oliver@example.com",
+    "phone": "(706)-092-5219"
+  },
+  {
+    "id": "P0005",
+    "firstname": "Carrie",
+    "lastname": "Meyer",
+    "categoryId": "PERSON",
+    "gender": "female",
+    "email": "carrie.meyer@example.com",
+    "phone": "(419)-704-9901"
+  },
+  {
+    "id": "P0006",
+    "firstname": "Chester",
+    "lastname": "Ward",
+    "categoryId": "PERSON",
+    "gender": "male",
+    "email": "chester.ward@example.com",
+    "phone": "(827)-838-2001"
+  },
+  {
+    "id": "P0007",
+    "firstname": "Mathew",
+    "lastname": "Cruz",
+    "categoryId": "PERSON",
+    "gender": "male",
+    "email": "mathew.cruz@example.com",
+    "phone": "(405)-626-4762"
+  }
+]

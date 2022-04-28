@@ -1,0 +1,61 @@
+[
+  {
+    "attributeId": "sex",
+    "name": "Sex",
+    "caption": {
+      "text": "Sex",
+      "type": "TextCaption"
+    },
+    "attributeType": {
+      "type": "String"
+    },
+    "index": {
+      "type": "Keyword"
+    }
+  },
+  {
+    "attributeId": "category",
+    "name": "Category",
+    "caption": {
+      "text": "Category",
+      "type": "TextCaption"
+    },
+    "attributeType": {
+      "type": "String"
+    },
+    "index": {
+      "type": "Keyword"
+    }
+  },
+  {
+    "attributeId": "homePhone",
+    "name": "Home phone",
+    "caption": {
+      "text": "Home phone",
+      "type": "TextCaption"
+    },
+    "attributeType": {
+      "type": "String"
+    },
+    "index": {
+      "type": "Text",
+      "fielddata": true,
+      "keyword": false
+    }
+  },
+  {
+    "attributeId": "birthDate",
+    "name": "Birthdate",
+    "caption": {
+      "text": "Birthdate",
+      "type": "TextCaption"
+    },
+    "attributeType": {
+      "type": "LocalDate"
+    },
+    "index": {
+      "type": "LocalDate"
+    }
+
+  }
+]

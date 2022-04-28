@@ -19,6 +19,7 @@ object Dependencies {
     val slick_hikaricp          = "3.3.3"
     val postgresql              = "42.3.1"
     val playJson                = "2.8.2"
+    val slf4j                   = "1.7.36"
   }
 
   val macwire = "com.softwaremill.macwire" %% "macros" % Version.macwire % "provided"
@@ -71,5 +72,10 @@ object Dependencies {
   val postgresql: ModuleID = "org.postgresql" % "postgresql" % Version.postgresql
 
   val playJson = "com.typesafe.play" %% "play-json" % Version.playJson
+
+  val slf4j = Seq(
+    "org.slf4j" % "slf4j-api"    % Version.slf4j,
+    "org.slf4j" % "slf4j-simple" % Version.slf4j
+  )
 
 }
