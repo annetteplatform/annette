@@ -14,11 +14,11 @@ object ConsoleIgnitionApp extends App {
   val personService    = new PersonServiceImpl(personServiceApi, client.executionContext)
   implicit val ec      = client.executionContext
 
-  val future = for {
-    person <- personService.getPersonById("P0001", false, Some("all"))
-  } yield println(s"Hello ${person.firstname} ${person.lastname}")
-
-  Await.result(future, Duration.Inf)
+//  val future = for {
+//    person <- personService.getPersonById("P0001", false, Some("all"))
+//  } yield println(s"Hello ${person.firstname} ${person.lastname}")
+//
+//  Await.result(future, Duration.Inf)
 
   lazy val ignitionModule: IgnitionModule =
     new IgnitionModule(client.serviceClient, client.actorSystem, client.executionContext, client.materializer)

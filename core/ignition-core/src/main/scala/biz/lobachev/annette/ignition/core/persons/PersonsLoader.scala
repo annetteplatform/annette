@@ -46,6 +46,7 @@ class PersonsLoader(
       .withFieldConst(_.createdBy, principal)
       .transform
 
+    println(payload)
     personService
       .createOrUpdatePerson(payload)
       .map { _ =>
