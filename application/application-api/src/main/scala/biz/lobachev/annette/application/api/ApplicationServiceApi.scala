@@ -26,6 +26,8 @@ import biz.lobachev.annette.core.model.indexing.FindResult
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 import play.api.libs.json.JsObject
 
+import scala.concurrent.Future
+
 trait ApplicationServiceApi extends Service {
 
   def createLanguage: ServiceCall[CreateLanguagePayload, Done]
@@ -34,6 +36,7 @@ trait ApplicationServiceApi extends Service {
   def getLanguageById(id: LanguageId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Language]
   def getLanguagesById(fromReadSide: Boolean = true): ServiceCall[Set[LanguageId], Seq[Language]]
   def findLanguages: ServiceCall[FindLanguageQuery, FindResult]
+  def getAllLanguages: ServiceCall[NotUsed, Seq[Language]]
 
   def createTranslation: ServiceCall[CreateTranslationPayload, Done]
   def updateTranslation: ServiceCall[UpdateTranslationPayload, Done]
@@ -66,6 +69,7 @@ trait ApplicationServiceApi extends Service {
         pathCall("/api/application/v1/getLanguageById/:id/:fromReadSide", getLanguageById _),
         pathCall("/api/application/v1/getLanguagesById/:fromReadSide", getLanguagesById _),
         pathCall("/api/application/v1/findLanguages", findLanguages),
+        pathCall("/api/application/v1/getAllLanguages", getAllLanguages),
         pathCall("/api/application/v1/createTranslation", createTranslation),
         pathCall("/api/application/v1/updateTranslation", updateTranslation),
         pathCall("/api/application/v1/deleteTranslation", deleteTranslation),

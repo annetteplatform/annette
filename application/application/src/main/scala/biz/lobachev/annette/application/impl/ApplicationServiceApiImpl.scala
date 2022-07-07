@@ -83,6 +83,11 @@ class ApplicationServiceApiImpl(
       languageEntityService.findLanguages(query)
     }
 
+  def getAllLanguages: ServiceCall[NotUsed, Seq[Language]] =
+    ServiceCall { ids =>
+      languageEntityService.getAllLanguages()
+    }
+
   override def createTranslation: ServiceCall[CreateTranslationPayload, Done] =
     ServiceCall { payload =>
       translationEntityService.createTranslation(payload)

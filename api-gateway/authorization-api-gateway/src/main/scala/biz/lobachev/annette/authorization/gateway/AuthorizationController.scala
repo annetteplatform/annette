@@ -93,23 +93,42 @@ class AuthorizationController @Inject() (
     }
 
   def getRoleById(id: AuthRoleId, fromReadSide: Boolean) =
-    authenticated.async { implicit request =>
-      authorizer.performCheckAny(VIEW_AUTHORIZATION_ROLE, MAINTAIN_AUTHORIZATION_ROLE) {
-        for {
-          role <- authorizationService.getRoleById(id, fromReadSide)
-        } yield Ok(Json.toJson(role))
+    if (fromReadSide)
+      authenticated.async { implicit request =>
+        authorizer.performCheckAny(VIEW_AUTHORIZATION_ROLE) {
+          for {
+            role <- authorizationService.getRoleById(id, fromReadSide)
+          } yield Ok(Json.toJson(role))
+        }
       }
-    }
+    else
+      authenticated.async { implicit request =>
+        authorizer.performCheckAny(MAINTAIN_AUTHORIZATION_ROLE) {
+          for {
+            role <- authorizationService.getRoleById(id, fromReadSide)
+          } yield Ok(Json.toJson(role))
+        }
+      }
 
   def getRolesById(fromReadSide: Boolean) =
-    authenticated.async(parse.json[Set[AuthRoleId]]) { implicit request =>
-      authorizer.performCheckAny(VIEW_AUTHORIZATION_ROLE, MAINTAIN_AUTHORIZATION_ROLE) {
-        val payload = request.body
-        for {
-          roles <- authorizationService.getRolesById(payload, fromReadSide)
-        } yield Ok(Json.toJson(roles))
+    if (fromReadSide)
+      authenticated.async(parse.json[Set[AuthRoleId]]) { implicit request =>
+        authorizer.performCheckAny(VIEW_AUTHORIZATION_ROLE) {
+          val payload = request.body
+          for {
+            roles <- authorizationService.getRolesById(payload, fromReadSide)
+          } yield Ok(Json.toJson(roles))
+        }
       }
-    }
+    else
+      authenticated.async(parse.json[Set[AuthRoleId]]) { implicit request =>
+        authorizer.performCheckAny(MAINTAIN_AUTHORIZATION_ROLE) {
+          val payload = request.body
+          for {
+            roles <- authorizationService.getRolesById(payload, fromReadSide)
+          } yield Ok(Json.toJson(roles))
+        }
+      }
 
   def assignPrincipal =
     authenticated.async(parse.json[RolePrincipalPayload]) { implicit request =>
@@ -138,13 +157,22 @@ class AuthorizationController @Inject() (
     }
 
   def getRolePrincipals(id: AuthRoleId, fromReadSide: Boolean) =
-    authenticated.async { implicit request =>
-      authorizer.performCheckAny(VIEW_ROLE_PRINCIPALS, MAINTAIN_ROLE_PRINCIPALS) {
-        for {
-          principals <- authorizationService.getRolePrincipals(id, fromReadSide)
-        } yield Ok(Json.toJson(principals))
+    if (fromReadSide)
+      authenticated.async { implicit request =>
+        authorizer.performCheckAny(VIEW_ROLE_PRINCIPALS) {
+          for {
+            principals <- authorizationService.getRolePrincipals(id, fromReadSide)
+          } yield Ok(Json.toJson(principals))
+        }
       }
-    }
+    else
+      authenticated.async { implicit request =>
+        authorizer.performCheckAny(MAINTAIN_ROLE_PRINCIPALS) {
+          for {
+            principals <- authorizationService.getRolePrincipals(id, fromReadSide)
+          } yield Ok(Json.toJson(principals))
+        }
+      }
 
   def findAssignments =
     authenticated.async(parse.json[FindAssignmentsQuery]) { implicit request =>

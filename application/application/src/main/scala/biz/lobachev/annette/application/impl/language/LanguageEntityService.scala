@@ -130,4 +130,6 @@ class LanguageEntityService(
   def findLanguages(query: FindLanguageQuery): Future[FindResult] =
     indexDao.findLanguages(query)
 
+  def getAllLanguages(): Future[Seq[Language]] = dbDao.getAllLanguages()
+
 }

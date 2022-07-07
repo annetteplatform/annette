@@ -46,6 +46,9 @@ class ApplicationServiceImpl(api: ApplicationServiceApi) extends ApplicationServ
   def findLanguages(query: FindLanguageQuery): Future[FindResult] =
     api.findLanguages.invoke(query)
 
+  def getAllLanguages(): Future[Seq[Language]] =
+    api.getAllLanguages.invoke()
+
   def createTranslation(payload: CreateTranslationPayload): Future[Done] =
     api.createTranslation.invoke(payload)
 

@@ -13,6 +13,7 @@ POST    /api/annette/v1/application/deleteLanguage     biz.lobachev.annette.appl
 GET     /api/annette/v1/application/getLanguageById/:id/:fromReadSide biz.lobachev.annette.application.gateway.ApplicationController.getLanguageById(id: String, fromReadSide: Boolean)
 POST    /api/annette/v1/application/getLanguagesById/:fromReadSide    biz.lobachev.annette.application.gateway.ApplicationController.getLanguagesById(fromReadSide: Boolean)
 POST    /api/annette/v1/application/findLanguages            biz.lobachev.annette.application.gateway.ApplicationController.findLanguages
+GET     /api/annette/v1/application/getAllLanguages    biz.lobachev.annette.application.gateway.ApplicationController.getAllLanguages
 # Translation
 POST    /api/annette/v1/application/createTranslation        biz.lobachev.annette.application.gateway.ApplicationController.createTranslation
 POST    /api/annette/v1/application/updateTranslation        biz.lobachev.annette.application.gateway.ApplicationController.updateTranslation
@@ -105,6 +106,7 @@ POST    /api/annette/v1/person/getPersonsById/:fromReadSide       biz.lobachev.a
 GET     /api/annette/v1/person/getPersonMetadata       biz.lobachev.annette.person.gateway.PersonController.getPersonMetadata
 GET     /api/annette/v1/person/getPersonAttributes/:id/:fromReadSide  biz.lobachev.annette.person.gateway.PersonController.getPersonAttributes(id: String, fromReadSide: Boolean, attributes: Option[String])
 POST    /api/annette/v1/person/getPersonsAttributes/:fromReadSide     biz.lobachev.annette.person.gateway.PersonController.getPersonsAttributes(fromReadSide: Boolean, attributes: Option[String])
+GET     /api/annette/v1/person/profile                             biz.lobachev.annette.person.gateway.PersonController.profile
 
 # Person Category
 POST    /api/annette/v1/person/createCategory                      biz.lobachev.annette.person.gateway.PersonController.createCategory
@@ -113,7 +115,6 @@ POST    /api/annette/v1/person/deleteCategory                      biz.lobachev.
 GET     /api/annette/v1/person/getCategoryById/:id/:fromReadSide   biz.lobachev.annette.person.gateway.PersonController.getCategoryById(id: String, fromReadSide: Boolean)
 POST    /api/annette/v1/person/getCategoriesById/:fromReadSide     biz.lobachev.annette.person.gateway.PersonController.getCategoriesById(fromReadSide: Boolean)
 POST    /api/annette/v1/person/findCategories                      biz.lobachev.annette.person.gateway.PersonController.findCategories
-GET     /api/annette/v1/person/profile                             biz.lobachev.annette.person.gateway.PersonController.profile
 
 # ************************************** Principal Group API **************************************
 # Principal Group

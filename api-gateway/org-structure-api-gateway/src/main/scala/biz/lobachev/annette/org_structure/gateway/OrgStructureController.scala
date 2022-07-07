@@ -435,23 +435,42 @@ class OrgStructureController @Inject() (
     }
 
   def getOrgRoleById(id: OrgRoleId, fromReadSide: Boolean) =
-    authenticated.async { implicit request =>
-      authorizer.performCheckAny(VIEW_ALL_ORG_ROLES, MAINTAIN_ALL_ORG_ROLES) {
-        for {
-          role <- orgStructureService.getOrgRoleById(id, fromReadSide)
-        } yield Ok(Json.toJson(role))
+    if (fromReadSide)
+      authenticated.async { implicit request =>
+        authorizer.performCheckAny(VIEW_ALL_ORG_ROLES, MAINTAIN_ALL_ORG_ROLES) {
+          for {
+            role <- orgStructureService.getOrgRoleById(id, fromReadSide)
+          } yield Ok(Json.toJson(role))
+        }
       }
-    }
+    else
+      authenticated.async { implicit request =>
+        authorizer.performCheckAny(MAINTAIN_ALL_ORG_ROLES) {
+          for {
+            role <- orgStructureService.getOrgRoleById(id, fromReadSide)
+          } yield Ok(Json.toJson(role))
+        }
+      }
 
   def getOrgRolesById(fromReadSide: Boolean) =
-    authenticated.async(parse.json[Set[OrgRoleId]]) { implicit request =>
-      val ids = request.body
-      authorizer.performCheckAny(VIEW_ALL_ORG_ROLES, MAINTAIN_ALL_ORG_ROLES) {
-        for {
-          roles <- orgStructureService.getOrgRolesById(ids, fromReadSide)
-        } yield Ok(Json.toJson(roles))
+    if (fromReadSide)
+      authenticated.async(parse.json[Set[OrgRoleId]]) { implicit request =>
+        val ids = request.body
+        authorizer.performCheckAny(VIEW_ALL_ORG_ROLES, MAINTAIN_ALL_ORG_ROLES) {
+          for {
+            roles <- orgStructureService.getOrgRolesById(ids, fromReadSide)
+          } yield Ok(Json.toJson(roles))
+        }
       }
-    }
+    else
+      authenticated.async(parse.json[Set[OrgRoleId]]) { implicit request =>
+        val ids = request.body
+        authorizer.performCheckAny(MAINTAIN_ALL_ORG_ROLES) {
+          for {
+            roles <- orgStructureService.getOrgRolesById(ids, fromReadSide)
+          } yield Ok(Json.toJson(roles))
+        }
+      }
 
   def findOrgRoles =
     authenticated.async(parse.json[OrgRoleFindQuery]) { implicit request =>
@@ -507,23 +526,42 @@ class OrgStructureController @Inject() (
     }
 
   def getCategoryById(id: OrgCategoryId, fromReadSide: Boolean) =
-    authenticated.async { implicit request =>
-      authorizer.performCheckAny(VIEW_ALL_ORG_CATEGORIES, MAINTAIN_ALL_ORG_CATEGORIES) {
-        for {
-          role <- orgStructureService.getCategoryById(id, fromReadSide)
-        } yield Ok(Json.toJson(role))
+    if (fromReadSide)
+      authenticated.async { implicit request =>
+        authorizer.performCheckAny(VIEW_ALL_ORG_CATEGORIES, MAINTAIN_ALL_ORG_CATEGORIES) {
+          for {
+            role <- orgStructureService.getCategoryById(id, fromReadSide)
+          } yield Ok(Json.toJson(role))
+        }
       }
-    }
+    else
+      authenticated.async { implicit request =>
+        authorizer.performCheckAny(MAINTAIN_ALL_ORG_CATEGORIES) {
+          for {
+            role <- orgStructureService.getCategoryById(id, fromReadSide)
+          } yield Ok(Json.toJson(role))
+        }
+      }
 
   def getCategoriesById(fromReadSide: Boolean) =
-    authenticated.async(parse.json[Set[OrgCategoryId]]) { implicit request =>
-      val ids = request.body
-      authorizer.performCheckAny(VIEW_ALL_ORG_CATEGORIES, MAINTAIN_ALL_ORG_CATEGORIES) {
-        for {
-          roles <- orgStructureService.getCategoriesById(ids, fromReadSide)
-        } yield Ok(Json.toJson(roles))
+    if (fromReadSide)
+      authenticated.async(parse.json[Set[OrgCategoryId]]) { implicit request =>
+        val ids = request.body
+        authorizer.performCheckAny(VIEW_ALL_ORG_CATEGORIES, MAINTAIN_ALL_ORG_CATEGORIES) {
+          for {
+            roles <- orgStructureService.getCategoriesById(ids, fromReadSide)
+          } yield Ok(Json.toJson(roles))
+        }
       }
-    }
+    else
+      authenticated.async(parse.json[Set[OrgCategoryId]]) { implicit request =>
+        val ids = request.body
+        authorizer.performCheckAny(MAINTAIN_ALL_ORG_CATEGORIES) {
+          for {
+            roles <- orgStructureService.getCategoriesById(ids, fromReadSide)
+          } yield Ok(Json.toJson(roles))
+        }
+      }
 
   def findCategories =
     authenticated.async(parse.json[OrgCategoryFindQuery]) { implicit request =>
