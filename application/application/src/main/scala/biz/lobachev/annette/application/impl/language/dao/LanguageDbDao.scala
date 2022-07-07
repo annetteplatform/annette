@@ -77,4 +77,8 @@ private[impl] class LanguageDbDao(
 
   def getLanguagesById(ids: Set[LanguageId]): Future[Seq[Language]] =
     ctx.run(schema.filter(b => liftQuery(ids).contains(b.id)))
+
+  def getAllLanguages(): Future[Seq[Language]] =
+    ctx.run(schema)
+
 }

@@ -137,6 +137,13 @@ class ApplicationController @Inject() (
       }
     }
 
+  def getAllLanguages =
+    Action.async {
+      for {
+        result <- applicationService.getAllLanguages()
+      } yield Ok(Json.toJson(result))
+    }
+
   def createTranslation =
     authenticated.async(parse.json[CreateTranslationPayloadDto]) { implicit request =>
       val payload = request.body
@@ -306,19 +313,38 @@ class ApplicationController @Inject() (
     }
 
   def getApplicationById(id: ApplicationId, fromReadSide: Boolean = true) =
-    Action.async { _ =>
-      for {
-        result <- applicationService.getApplicationById(id, fromReadSide)
-      } yield Ok(Json.toJson(result))
-    }
+    if (fromReadSide)
+      Action.async { _ =>
+        for {
+          result <- applicationService.getApplicationById(id, fromReadSide)
+        } yield Ok(Json.toJson(result))
+      }
+    else
+      authenticated.async { implicit request =>
+        authorizer.performCheckAny(MAINTAIN_ALL_APPLICATIONS) {
+          for {
+            result <- applicationService.getApplicationById(id, fromReadSide)
+          } yield Ok(Json.toJson(result))
+        }
+      }
 
   def getApplicationsById(fromReadSide: Boolean = true) =
-    Action.async(parse.json[Set[ApplicationId]]) { request =>
-      val ids = request.body
-      for {
-        result <- applicationService.getApplicationsById(ids, fromReadSide)
-      } yield Ok(Json.toJson(result))
-    }
+    if (fromReadSide)
+      Action.async(parse.json[Set[ApplicationId]]) { request =>
+        val ids = request.body
+        for {
+          result <- applicationService.getApplicationsById(ids, fromReadSide)
+        } yield Ok(Json.toJson(result))
+      }
+    else
+      authenticated.async(parse.json[Set[ApplicationId]]) { implicit request =>
+        authorizer.performCheckAny(MAINTAIN_ALL_APPLICATIONS) {
+          val ids = request.body
+          for {
+            result <- applicationService.getApplicationsById(ids, fromReadSide)
+          } yield Ok(Json.toJson(result))
+        }
+      }
 
   def findApplications =
     authenticated.async(parse.json[FindApplicationQuery]) { implicit request =>
