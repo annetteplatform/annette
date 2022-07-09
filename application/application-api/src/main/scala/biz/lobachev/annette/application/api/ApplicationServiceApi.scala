@@ -26,8 +26,6 @@ import biz.lobachev.annette.core.model.indexing.FindResult
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 import play.api.libs.json.JsObject
 
-import scala.concurrent.Future
-
 trait ApplicationServiceApi extends Service {
 
   def createLanguage: ServiceCall[CreateLanguagePayload, Done]

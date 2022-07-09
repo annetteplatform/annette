@@ -92,6 +92,7 @@ lazy val root = (project in file("."))
     `principal-groups-api-gateway`,
     // microservices API
     `application-api`,
+    `service-catalog-api`,
     `authorization-api`,
     `bpm-repository-api`,
     `cms-api`,
@@ -101,6 +102,7 @@ lazy val root = (project in file("."))
     `subscriptions-api`,
     // microservices
     `application`,
+    `service-catalog`,
     `authorization`,
     `bpm-repository`,
     `cms`,
@@ -269,6 +271,33 @@ def applicationProject(pr: Project) =
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
     .dependsOn(`application-api`, `microservice-core`)
+
+lazy val `service-catalog-api` = (project in file("application/service-catalog-api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      lagomScaladslTestKit
+    ) ++ Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(`core`)
+
+def serviceCatalogProject(pr: Project) =
+  pr
+    .enablePlugins(LagomScala)
+    .settings(
+      libraryDependencies ++= Seq(
+        lagomScaladslPersistenceCassandra,
+        lagomScaladslTestKit,
+        Dependencies.macwire,
+        Dependencies.chimney
+      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
+    )
+    .settings(lagomForkedTestSettings: _*)
+    .settings(confDirSettings: _*)
+    .settings(annetteSettings: _*)
+    .settings(dockerSettings: _*)
+    .dependsOn(`service-catalog-api`, `microservice-core`)
 
 lazy val `application-api-gateway` = (project in file("api-gateway/application-api-gateway"))
   .settings(
@@ -621,6 +650,7 @@ def subscriptionsProject(pr: Project) =
 
 lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/ignition-demo"))
 lazy val `application`      = applicationProject(project in file("application/application"))
+lazy val `service-catalog`  = serviceCatalogProject(project in file("application/service-catalog"))
 lazy val `authorization`    = authorizationProject(project in file("authorization/authorization"))
 lazy val `bpm-repository`   = bpmRepositoryProject(project in file("bpm/bpm-repository"))
 lazy val `cms`              = cmsProject(project in file("cms/cms"))
