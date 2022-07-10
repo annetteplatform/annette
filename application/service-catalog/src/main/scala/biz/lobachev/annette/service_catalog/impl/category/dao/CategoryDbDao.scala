@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.impl.category.dao
+package biz.lobachev.annette.service_catalog.impl.category.dao
 
 import akka.Done
 import biz.lobachev.annette.core.model.category.{Category, CategoryId}
 import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
-import biz.lobachev.annette.persons.impl.category.CategoryEntity
+import biz.lobachev.annette.service_catalog.impl.category.CategoryEntity
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 import io.scalaland.chimney.dsl._
 

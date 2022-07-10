@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.impl.category.model
+package biz.lobachev.annette.service_catalog.impl.category.model
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.{Category, CategoryId}

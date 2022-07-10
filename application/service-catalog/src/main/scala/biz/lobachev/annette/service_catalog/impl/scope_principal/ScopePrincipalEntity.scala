@@ -1,50 +1,52 @@
+/*
+ * Copyright 2013 Valery Lobachev
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package biz.lobachev.annette.service_catalog.impl.scope_principal
 
-import java.time.OffsetDateTime
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
-import akka.persistence.typed.scaladsl.{EventSourcedBehavior, ReplyEffect, RetentionCriteria}
-import com.lightbend.lagom.scaladsl.persistence._
-import play.api.libs.json._
-import org.slf4j.LoggerFactory
-import io.scalaland.chimney.dsl._
-
+import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.service_catalog.api.scope_principal._
+import biz.lobachev.annette.service_catalog.api.scope.ScopeId
+import biz.lobachev.annette.service_catalog.api.scope_principal.{
+  AssignScopePrincipalPayload,
+  UnassignScopePrincipalPayload
+}
+import biz.lobachev.annette.service_catalog.impl.scope_principal.model.ScopePrincipalState
+import com.lightbend.lagom.scaladsl.persistence._
+import io.scalaland.chimney.dsl._
+import play.api.libs.json._
 
-object ScopePrincipalEntity  {
+import java.time.OffsetDateTime
+
+object ScopePrincipalEntity {
 
   trait CommandSerializable
   sealed trait Command extends CommandSerializable
-  final case class AssignScopePrincipal(scopeId: ScopeId, principal: String, updatedBy: AnnettePrincipal, replyTo: ActorRef[Confirmation]) extends Command {
-    def apply(payload: AssignScopePrincipalPayload, replyTo: ActorRef[Confirmation]): AssignScopePrincipal =
-      payload
-      .into[AssignScopePrincipal]
-      .withFieldConst(_.replyTo, replyTo)
-      .transform
-  }
-  final case class UnassignScopePrincipal(scopeId: ScopeId, principal: String, updatedBy: AnnettePrincipal, replyTo: ActorRef[Confirmation]) extends Command {
-    def apply(payload: UnassignScopePrincipalPayload, replyTo: ActorRef[Confirmation]): UnassignScopePrincipal =
-      payload
-      .into[UnassignScopePrincipal]
-      .withFieldConst(_.replyTo, replyTo)
-      .transform
-  }
-  final case class GetScopePrincipal(scopeId: ScopeId, principal: String, replyTo: ActorRef[Confirmation]) extends Command {
-    def apply(payload: GetScopePrincipalPayload, replyTo: ActorRef[Confirmation]): GetScopePrincipal =
-      payload
-      .into[GetScopePrincipal]
-      .withFieldConst(_.replyTo, replyTo)
-      .transform
-  }
+  final case class AssignPrincipal(payload: AssignScopePrincipalPayload, replyTo: ActorRef[Confirmation])
+      extends Command
+  final case class UnassignPrincipal(payload: UnassignScopePrincipalPayload, replyTo: ActorRef[Confirmation])
+      extends Command
 
   sealed trait Confirmation
   final case object Success extends Confirmation
-  final case object ScopePrincipalNotFound extends Confirmation
 
   implicit val confirmationSuccessFormat: Format[Success.type] = Json.format
-  implicit val confirmationScopePrincipalNotFoundFormat: Format[ScopePrincipalNotFound.type] = Json.format
+  implicit val confirmationFormat: Format[Confirmation]        = Json.format[Confirmation]
 
   sealed trait Event extends AggregateEvent[Event] {
     override def aggregateTag: AggregateEventTagger[Event] = Event.Tag
@@ -54,25 +56,34 @@ object ScopePrincipalEntity  {
     val Tag: AggregateEventShards[Event] = AggregateEventTag.sharded[Event](numShards = 10)
   }
 
-  final case class ScopePrincipalAssigned(scopeId: ScopeId, principal: String, updatedBy: AnnettePrincipal) extends Event
-  final case class ScopePrincipalUnassigned(scopeId: ScopeId, principal: String, updatedBy: AnnettePrincipal) extends Event
+  final case class ScopePrincipalAssigned(
+    scopeId: ScopeId,
+    principal: AnnettePrincipal,
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+  final case class ScopePrincipalUnassigned(
+    scopeId: ScopeId,
+    principal: AnnettePrincipal,
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
 
-  implicit val eventScopePrincipalAssignedFormat: Format[ScopePrincipalAssigned] = Json.format
-  implicit val eventScopePrincipalUnassignedFormat: Format[ScopePrincipalUnassigned] = Json.format
+  implicit val eventPrincipalAssignedFormat: Format[ScopePrincipalAssigned]     = Json.format
+  implicit val eventPrincipalUnassignedFormat: Format[ScopePrincipalUnassigned] = Json.format
 
   val empty = ScopePrincipalEntity()
 
-  val typeKey: EntityTypeKey[Command] = EntityTypeKey[Command]("ServiceCatalog_ScopePrincipal")
+  val typeKey: EntityTypeKey[Command] = EntityTypeKey[Command]("Authorization_ScopePrincipal")
 
-  def apply(persistenceId: PersistenceId): EventSourcedBehavior[Command, Event, ScopePrincipalEntity] = {
+  def apply(persistenceId: PersistenceId): EventSourcedBehavior[Command, Event, ScopePrincipalEntity] =
     EventSourcedBehavior
       .withEnforcedReplies[Command, Event, ScopePrincipalEntity](
-          persistenceId = persistenceId,
-          emptyState = ScopePrincipalEntity.empty,
-          commandHandler = (entity, cmd) => entity.applyCommand(cmd),
-          eventHandler = (entity, evt) => entity.applyEvent(evt)
+        persistenceId = persistenceId,
+        emptyState = ScopePrincipalEntity.empty,
+        commandHandler = (entity, cmd) => entity.applyCommand(cmd),
+        eventHandler = (entity, evt) => entity.applyEvent(evt)
       )
-  }
 
   def apply(entityContext: EntityContext[Command]): Behavior[Command] =
     apply(PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId))
@@ -81,36 +92,56 @@ object ScopePrincipalEntity  {
 
   implicit val entityFormat: Format[ScopePrincipalEntity] = Json.format
 
+  def scopePrincipalId(
+    scopeId: ScopeId,
+    principal: AnnettePrincipal
+  ): String =
+    // TODO: review scopePrincipal id calculation (replace whitespace with another symbol)
+    s"$scopeId ${principal.code}"
+
 }
 
-final case class  ScopePrincipalEntity(maybeState: Option[ScopePrincipalState] = None ) {
+final case class ScopePrincipalEntity(maybeState: Option[ScopePrincipalState] = None) {
   import ScopePrincipalEntity._
 
-  val log = LoggerFactory.getLogger(this.getClass)
-
-  def applyCommand(cmd: Command): ReplyEffect[Event, ScopePrincipalEntity] = {
+  def applyCommand(cmd: Command): ReplyEffect[Event, ScopePrincipalEntity] =
     cmd match {
-      case cmd: AssignScopePrincipal => assignScopePrincipal(cmd)
-      case cmd: UnassignScopePrincipal => unassignScopePrincipal(cmd)
-      case cmd: GetScopePrincipal => getScopePrincipal(cmd)
+      case cmd: AssignPrincipal   => assignPrincipal(cmd)
+      case cmd: UnassignPrincipal => unassignPrincipal(cmd)
     }
+
+  def assignPrincipal(cmd: AssignPrincipal): ReplyEffect[Event, ScopePrincipalEntity] = {
+    val event = cmd.payload
+      .into[ScopePrincipalAssigned]
+      .transform
+    Effect
+      .persist(event)
+      .thenReply(cmd.replyTo)(_ => Success)
   }
 
-  def assignScopePrincipal(cmd: AssignScopePrincipal): ReplyEffect[Event, ScopePrincipalEntity] = ???
+  def unassignPrincipal(cmd: UnassignPrincipal): ReplyEffect[Event, ScopePrincipalEntity] = {
+    val event = cmd.payload
+      .into[ScopePrincipalUnassigned]
+      .transform
+    Effect
+      .persist(event)
+      .thenReply(cmd.replyTo)(_ => Success)
+  }
 
-  def unassignScopePrincipal(cmd: UnassignScopePrincipal): ReplyEffect[Event, ScopePrincipalEntity] = ???
-
-  def getScopePrincipal(cmd: GetScopePrincipal): ReplyEffect[Event, ScopePrincipalEntity] = ???
-
-  def applyEvent(event: Event): ScopePrincipalEntity = {
+  def applyEvent(event: Event): ScopePrincipalEntity =
     event match {
-      case event: ScopePrincipalAssigned => onScopePrincipalAssigned(event)
-      case event: ScopePrincipalUnassigned => onScopePrincipalUnassigned(event)
+      case event: ScopePrincipalAssigned => onPrincipalAssigned(event)
+      case _: ScopePrincipalUnassigned   => onPrincipalUnassigned()
     }
-  }
 
-  def onScopePrincipalAssigned(event: ScopePrincipalAssigned): ScopePrincipalEntity = ???
+  def onPrincipalAssigned(event: ScopePrincipalAssigned): ScopePrincipalEntity =
+    ScopePrincipalEntity(
+      Some(
+        event.transformInto[ScopePrincipalState]
+      )
+    )
 
-  def onScopePrincipalUnassigned(event: ScopePrincipalUnassigned): ScopePrincipalEntity = ???
+  def onPrincipalUnassigned(): ScopePrincipalEntity =
+    ScopePrincipalEntity(None)
 
 }

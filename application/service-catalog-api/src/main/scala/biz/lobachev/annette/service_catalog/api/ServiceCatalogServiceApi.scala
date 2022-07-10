@@ -28,7 +28,7 @@ trait ServiceCatalogServiceApi extends LagomService {
   def deactivateScope: ServiceCall[DeactivateScopePayload, Done]
   def deleteScope: ServiceCall[DeleteScopePayload, Done]
   def getScopeById(id: ScopeId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Scope]
-  def getScopesById(fromReadSide: Boolean = true): ServiceCall[Seq[ScopeId], Seq[Scope]]
+  def getScopesById(fromReadSide: Boolean = true): ServiceCall[Set[ScopeId], Seq[Scope]]
   def findScopes: ServiceCall[ScopeFindQuery, FindResult]
 
   def assignScopePrincipal: ServiceCall[AssignScopePrincipalPayload, Done]
@@ -41,7 +41,7 @@ trait ServiceCatalogServiceApi extends LagomService {
   def deactivateGroup: ServiceCall[DeactivateGroupPayload, Done]
   def deleteGroup: ServiceCall[DeleteGroupPayload, Done]
   def getGroupById(id: GroupId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Group]
-  def getGroupsById(fromReadSide: Boolean = true): ServiceCall[Seq[GroupId], Seq[Group]]
+  def getGroupsById(fromReadSide: Boolean = true): ServiceCall[Set[GroupId], Seq[Group]]
   def findGroups: ServiceCall[GroupFindQuery, FindResult]
 
   def createService: ServiceCall[CreateServicePayload, Done]
@@ -50,7 +50,7 @@ trait ServiceCatalogServiceApi extends LagomService {
   def deactivateService: ServiceCall[DeactivateServicePayload, Done]
   def deleteService: ServiceCall[DeleteServicePayload, Done]
   def getServiceById(id: ServiceId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Service]
-  def getServicesById(fromReadSide: Boolean = true): ServiceCall[Seq[ServiceId], Seq[Service]]
+  def getServicesById(fromReadSide: Boolean = true): ServiceCall[Set[ServiceId], Seq[Service]]
   def findServices: ServiceCall[ServiceFindQuery, FindResult]
 
   def assignServicePrincipal: ServiceCall[AssignServicePrincipalPayload, Done]

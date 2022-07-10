@@ -12,7 +12,7 @@ case class UpdateGroupPayload(
   icon: Option[String],
   caption: Option[Caption],
   captionDescription: Option[Caption],
-  services: Seq[ServiceId] = Seq.empty,
+  services: Option[Seq[ServiceId]],
   updatedBy: AnnettePrincipal
 )
 

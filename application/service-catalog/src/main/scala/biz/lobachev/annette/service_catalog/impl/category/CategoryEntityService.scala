@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.impl.category
+package biz.lobachev.annette.service_catalog.impl.category
 
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef, EntityTypeKey}
@@ -23,7 +23,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
-import biz.lobachev.annette.persons.impl.category.CategoryEntity.Command
+import biz.lobachev.annette.service_catalog.impl.category.CategoryEntity.Command
 import com.typesafe.config.Config
 import io.scalaland.chimney.dsl._
 

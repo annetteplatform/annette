@@ -1,75 +1,59 @@
+/*
+ * Copyright 2013 Valery Lobachev
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package biz.lobachev.annette.service_catalog.impl.service
 
-import java.time.OffsetDateTime
 import akka.actor.typed.{ActorRef, Behavior}
-import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
+import akka.cluster.sharding.typed.scaladsl._
 import akka.persistence.typed.PersistenceId
-import akka.persistence.typed.scaladsl.{EventSourcedBehavior, ReplyEffect, RetentionCriteria}
-import com.lightbend.lagom.scaladsl.persistence._
-import play.api.libs.json._
-import org.slf4j.LoggerFactory
-import io.scalaland.chimney.dsl._
-
+import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.translation.Caption
 import biz.lobachev.annette.service_catalog.api.service._
+import biz.lobachev.annette.service_catalog.impl.service.model.ServiceState
+import com.lightbend.lagom.scaladsl.persistence._
+import io.scalaland.chimney.dsl._
+import play.api.libs.json._
 
-object ServiceEntity  {
+import java.time.OffsetDateTime
+
+object ServiceEntity {
 
   trait CommandSerializable
+
   sealed trait Command extends CommandSerializable
-  final case class CreateService(id: ServiceId, name: String, description: String, icon: String, caption: Caption, captionDescription: Caption, link: ServiceLink, createdBy: AnnettePrincipal, replyTo: ActorRef[Confirmation]) extends Command {
-    def apply(payload: CreateServicePayload, replyTo: ActorRef[Confirmation]): CreateService =
-      payload
-      .into[CreateService]
-      .withFieldConst(_.replyTo, replyTo)
-      .transform
-  }
-  final case class UpdateService(id: ServiceId, name: Option[String], description: Option[String], icon: Option[String], caption: Option[Caption], captionDescription: Option[Caption], link: Option[ServiceLink], updatedBy: AnnettePrincipal, replyTo: ActorRef[Confirmation]) extends Command {
-    def apply(payload: UpdateServicePayload, replyTo: ActorRef[Confirmation]): UpdateService =
-      payload
-      .into[UpdateService]
-      .withFieldConst(_.replyTo, replyTo)
-      .transform
-  }
-  final case class ActivateService(id: ServiceId, updatedBy: AnnettePrincipal, replyTo: ActorRef[Confirmation]) extends Command {
-    def apply(payload: ActivateServicePayload, replyTo: ActorRef[Confirmation]): ActivateService =
-      payload
-      .into[ActivateService]
-      .withFieldConst(_.replyTo, replyTo)
-      .transform
-  }
-  final case class DeactivateService(id: ServiceId, updatedBy: AnnettePrincipal, replyTo: ActorRef[Confirmation]) extends Command {
-    def apply(payload: DeactivateServicePayload, replyTo: ActorRef[Confirmation]): DeactivateService =
-      payload
-      .into[DeactivateService]
-      .withFieldConst(_.replyTo, replyTo)
-      .transform
-  }
-  final case class DeleteService(id: ServiceId, deletedBy: AnnettePrincipal, replyTo: ActorRef[Confirmation]) extends Command {
-    def apply(payload: DeleteServicePayload, replyTo: ActorRef[Confirmation]): DeleteService =
-      payload
-      .into[DeleteService]
-      .withFieldConst(_.replyTo, replyTo)
-      .transform
-  }
-  final case class GetService(id: ServiceId, replyTo: ActorRef[Confirmation]) extends Command {
-    def apply(payload: GetServicePayload, replyTo: ActorRef[Confirmation]): GetService =
-      payload
-      .into[GetService]
-      .withFieldConst(_.replyTo, replyTo)
-      .transform
-  }
+
+  final case class CreateService(payload: CreateServicePayload, replyTo: ActorRef[Confirmation])         extends Command
+  final case class UpdateService(payload: UpdateServicePayload, replyTo: ActorRef[Confirmation])         extends Command
+  final case class ActivateService(payload: ActivateServicePayload, replyTo: ActorRef[Confirmation])     extends Command
+  final case class DeactivateService(payload: DeactivateServicePayload, replyTo: ActorRef[Confirmation]) extends Command
+  final case class DeleteService(payload: DeleteServicePayload, replyTo: ActorRef[Confirmation])         extends Command
+  final case class GetService(id: ServiceId, replyTo: ActorRef[Confirmation])                            extends Command
 
   sealed trait Confirmation
-  final case object Success extends Confirmation
-  final case class SuccessService(service: Service) extends Confirmation
-  final case object ServiceAlreadyExist extends Confirmation
-  final case object ServiceNotFound extends Confirmation
+  final case object Success                        extends Confirmation
+  final case class SuccessService(entity: Service) extends Confirmation
+  final case object NotFound                       extends Confirmation
+  final case object AlreadyExist                   extends Confirmation
 
-  implicit val confirmationSuccessFormat: Format[Success.type] = Json.format
-  implicit val confirmationSuccessServiceFormat: Format[SuccessService] = Json.format
-  implicit val confirmationServiceAlreadyExistFormat: Format[ServiceAlreadyExist.type] = Json.format
-  implicit val confirmationServiceNotFoundFormat: Format[ServiceNotFound.type] = Json.format
+  implicit val confirmationSuccessFormat: Format[Success.type]           = Json.format
+  implicit val confirmationSuccessServiceFormat: Format[SuccessService]  = Json.format
+  implicit val confirmationNotFoundFormat: Format[NotFound.type]         = Json.format
+  implicit val confirmationAlreadyExistFormat: Format[AlreadyExist.type] = Json.format
+  implicit val confirmationFormat: Format[Confirmation]                  = Json.format[Confirmation]
 
   sealed trait Event extends AggregateEvent[Event] {
     override def aggregateTag: AggregateEventTagger[Event] = Event.Tag
@@ -79,87 +63,196 @@ object ServiceEntity  {
     val Tag: AggregateEventShards[Event] = AggregateEventTag.sharded[Event](numShards = 10)
   }
 
-  final case class ServiceCreated(id: ServiceId, name: String, description: String, categoryId: CategoryId, targets: Set[AnnettePrincipal] = Set.empty, createdBy: AnnettePrincipal, createdAt: OffsetDateTime = OffsetDateTime.now) extends Event
-  final case class ServiceUpdated(name: Option[String], description: Option[String], categoryId: Option[CategoryId], services: Seq[ServiceId] = Seq.empty, updatedBy: AnnettePrincipal, updatedAt: OffsetDateTime = OffsetDateTime.now) extends Event
-  final case class ServiceActivated(id: ServiceId, updatedBy: AnnettePrincipal, updatedAt: OffsetDateTime = OffsetDateTime.now) extends Event
-  final case class ServiceDeactivated(id: ServiceId, updatedBy: AnnettePrincipal, updatedAt: OffsetDateTime = OffsetDateTime.now) extends Event
-  final case class ServiceDeleted(id: ServiceId, deleteBy: AnnettePrincipal, deleteAt: OffsetDateTime = OffsetDateTime.now) extends Event
+  final case class ServiceCreated(
+    id: ServiceId,
+    name: String,
+    description: String,
+    icon: String,
+    caption: Caption,
+    captionDescription: Caption,
+    link: String,
+    createdBy: AnnettePrincipal,
+    createdAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+  final case class ServiceUpdated(
+    id: ServiceId,
+    name: Option[String],
+    description: Option[String],
+    icon: Option[String],
+    caption: Option[Caption],
+    captionDescription: Option[Caption],
+    link: Option[String],
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+  final case class ServiceActivated(
+    id: ServiceId,
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+  final case class ServiceDeactivated(
+    id: ServiceId,
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+  final case class ServiceDeleted(
+    id: ServiceId,
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
 
-  implicit val eventServiceCreatedFormat: Format[ServiceCreated] = Json.format
-  implicit val eventServiceUpdatedFormat: Format[ServiceUpdated] = Json.format
-  implicit val eventServiceActivatedFormat: Format[ServiceActivated] = Json.format
-  implicit val eventServiceDeactivatedFormat: Format[ServiceDeactivated] = Json.format
-  implicit val eventServiceDeletedFormat: Format[ServiceDeleted] = Json.format
+  implicit val serviceCreatedFormat: Format[ServiceCreated]         = Json.format
+  implicit val serviceUpdatedFormat: Format[ServiceUpdated]         = Json.format
+  implicit val serviceActivatedFormat: Format[ServiceActivated]     = Json.format
+  implicit val serviceDeactivatedFormat: Format[ServiceDeactivated] = Json.format
+  implicit val serviceDeletedFormat: Format[ServiceDeleted]         = Json.format
 
-  val empty = ServiceEntity()
+  val empty                           = ServiceEntity(None)
+  val typeKey: EntityTypeKey[Command] = EntityTypeKey[Command]("Service")
 
-  val typeKey: EntityTypeKey[Command] = EntityTypeKey[Command]("ServiceCatalog_Service")
-
-  def apply(persistenceId: PersistenceId): EventSourcedBehavior[Command, Event, ServiceEntity] = {
+  def apply(persistenceId: PersistenceId): EventSourcedBehavior[Command, Event, ServiceEntity] =
     EventSourcedBehavior
       .withEnforcedReplies[Command, Event, ServiceEntity](
-          persistenceId = persistenceId,
-          emptyState = ServiceEntity.empty,
-          commandHandler = (entity, cmd) => entity.applyCommand(cmd),
-          eventHandler = (entity, evt) => entity.applyEvent(evt)
+        persistenceId = persistenceId,
+        emptyState = ServiceEntity.empty,
+        commandHandler = (entity, cmd) => entity.applyCommand(cmd),
+        eventHandler = (entity, evt) => entity.applyEvent(evt)
       )
-  }
 
   def apply(entityContext: EntityContext[Command]): Behavior[Command] =
     apply(PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId))
       .withTagger(AkkaTaggerAdapter.fromLagom(entityContext, Event.Tag))
       .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2))
 
-  implicit val entityFormat: Format[ServiceEntity] = Json.format
-
+  implicit val serviceEntityFormat: Format[ServiceEntity] = Json.format
 }
 
-final case class  ServiceEntity(maybeState: Option[ServiceState] = None ) {
+final case class ServiceEntity(maybeState: Option[ServiceState]) {
+
   import ServiceEntity._
 
-  val log = LoggerFactory.getLogger(this.getClass)
-
-  def applyCommand(cmd: Command): ReplyEffect[Event, ServiceEntity] = {
+  def applyCommand(cmd: Command): ReplyEffect[Event, ServiceEntity] =
     cmd match {
-      case cmd: CreateService => createService(cmd)
-      case cmd: UpdateService => updateService(cmd)
-      case cmd: ActivateService => activateService(cmd)
-      case cmd: DeactivateService => deactivateService(cmd)
-      case cmd: DeleteService => deleteService(cmd)
-      case cmd: GetService => getService(cmd)
+      case CreateService(payload, replyTo)     => createService(payload, replyTo)
+      case UpdateService(payload, replyTo)     => updateService(payload, replyTo)
+      case ActivateService(payload, replyTo)   => activateService(payload, replyTo)
+      case DeactivateService(payload, replyTo) => deactivateService(payload, replyTo)
+      case DeleteService(payload, replyTo)     => deleteService(payload, replyTo)
+      case GetService(_, replyTo)              => getService(replyTo)
     }
-  }
 
-  def createService(cmd: CreateService): ReplyEffect[Event, ServiceEntity] = ???
+  def createService(payload: CreateServicePayload, replyTo: ActorRef[Confirmation]): ReplyEffect[Event, ServiceEntity] =
+    maybeState match {
+      case None    =>
+        val event = payload.transformInto[ServiceCreated]
+        Effect
+          .persist(event)
+          .thenReply(replyTo)(_ => Success)
+      case Some(_) => Effect.reply(replyTo)(AlreadyExist)
+    }
 
-  def updateService(cmd: UpdateService): ReplyEffect[Event, ServiceEntity] = ???
+  def updateService(payload: UpdateServicePayload, replyTo: ActorRef[Confirmation]): ReplyEffect[Event, ServiceEntity] =
+    maybeState match {
+      case None    => Effect.reply(replyTo)(NotFound)
+      case Some(_) =>
+        val event = payload.transformInto[ServiceUpdated]
+        Effect
+          .persist(event)
+          .thenReply(replyTo)(_ => Success)
+    }
 
-  def activateService(cmd: ActivateService): ReplyEffect[Event, ServiceEntity] = ???
+  def activateService(
+    payload: ActivateServicePayload,
+    replyTo: ActorRef[Confirmation]
+  ): ReplyEffect[Event, ServiceEntity] =
+    maybeState match {
+      case None    => Effect.reply(replyTo)(NotFound)
+      case Some(_) =>
+        val event = payload.transformInto[ServiceActivated]
+        Effect
+          .persist(event)
+          .thenReply(replyTo)(_ => Success)
+    }
 
-  def deactivateService(cmd: DeactivateService): ReplyEffect[Event, ServiceEntity] = ???
+  def deactivateService(
+    payload: DeactivateServicePayload,
+    replyTo: ActorRef[Confirmation]
+  ): ReplyEffect[Event, ServiceEntity] =
+    maybeState match {
+      case None    => Effect.reply(replyTo)(NotFound)
+      case Some(_) =>
+        val event = payload.transformInto[ServiceDeactivated]
+        Effect
+          .persist(event)
+          .thenReply(replyTo)(_ => Success)
+    }
 
-  def deleteService(cmd: DeleteService): ReplyEffect[Event, ServiceEntity] = ???
+  def deleteService(
+    payload: DeleteServicePayload,
+    replyTo: ActorRef[Confirmation]
+  ): ReplyEffect[Event, ServiceEntity] =
+    maybeState match {
+      case None    => Effect.reply(replyTo)(NotFound)
+      case Some(_) =>
+        val event = payload
+          .into[ServiceDeleted]
+          .withFieldComputed(_.updatedBy, _.deletedBy)
+          .transform
+        Effect
+          .persist(event)
+          .thenReply(replyTo)(_ => Success)
+    }
 
-  def getService(cmd: GetService): ReplyEffect[Event, ServiceEntity] = ???
+  def getService(replyTo: ActorRef[Confirmation]): ReplyEffect[Event, ServiceEntity] =
+    maybeState match {
+      case Some(state) => Effect.reply(replyTo)(SuccessService(state.toService()))
+      case None        => Effect.reply(replyTo)(NotFound)
+    }
 
-  def applyEvent(event: Event): ServiceEntity = {
+  def onServiceCreated(event: ServiceCreated): ServiceEntity =
+    ServiceEntity(
+      Some(
+        event
+          .into[ServiceState]
+          .withFieldConst(_.active, true)
+          .withFieldConst(_.updatedAt, event.createdAt)
+          .withFieldConst(_.updatedBy, event.createdBy)
+          .transform
+      )
+    )
+
+  def onServiceUpdated(event: ServiceUpdated): ServiceEntity =
+    ServiceEntity(
+      maybeState.map(s =>
+        s.copy(
+          name = event.name.getOrElse(s.name),
+          description = event.description.getOrElse(s.description),
+          icon = event.icon.getOrElse(s.icon),
+          caption = event.caption.getOrElse(s.caption),
+          captionDescription = event.captionDescription.getOrElse(s.captionDescription),
+          link = event.link.getOrElse(s.link),
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
+
+  def onServiceActivated(event: ServiceActivated): ServiceEntity =
+    ServiceEntity(maybeState.map(_.copy(active = true, updatedBy = event.updatedBy, updatedAt = event.updatedAt)))
+
+  def onServiceDeactivated(event: ServiceDeactivated): ServiceEntity =
+    ServiceEntity(maybeState.map(_.copy(active = false, updatedBy = event.updatedBy, updatedAt = event.updatedAt)))
+
+  def onServiceDeleted(): ServiceEntity =
+    ServiceEntity(None)
+
+  def applyEvent(event: Event): ServiceEntity =
     event match {
-      case event: ServiceCreated => onServiceCreated(event)
-      case event: ServiceUpdated => onServiceUpdated(event)
-      case event: ServiceActivated => onServiceActivated(event)
+      case event: ServiceCreated     => onServiceCreated(event)
+      case event: ServiceUpdated     => onServiceUpdated(event)
+      case event: ServiceActivated   => onServiceActivated(event)
       case event: ServiceDeactivated => onServiceDeactivated(event)
-      case event: ServiceDeleted => onServiceDeleted(event)
+      case _: ServiceDeleted         => onServiceDeleted()
     }
-  }
-
-  def onServiceCreated(event: ServiceCreated): ServiceEntity = ???
-
-  def onServiceUpdated(event: ServiceUpdated): ServiceEntity = ???
-
-  def onServiceActivated(event: ServiceActivated): ServiceEntity = ???
-
-  def onServiceDeactivated(event: ServiceDeactivated): ServiceEntity = ???
-
-  def onServiceDeleted(event: ServiceDeleted): ServiceEntity = ???
 
 }

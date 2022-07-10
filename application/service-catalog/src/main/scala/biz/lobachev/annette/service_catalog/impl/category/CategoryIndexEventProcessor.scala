@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.impl.category
+package biz.lobachev.annette.service_catalog.impl.category
 
 import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor

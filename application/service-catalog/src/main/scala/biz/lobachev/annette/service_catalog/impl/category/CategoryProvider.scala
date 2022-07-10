@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.impl.category
+package biz.lobachev.annette.service_catalog.impl.category
 
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityTypeKey}
 import akka.stream.Materializer
-import biz.lobachev.annette.persons.impl.category.CategoryEntity.Command
+import biz.lobachev.annette.service_catalog.impl.category.CategoryEntity.Command
 import com.lightbend.lagom.scaladsl.persistence.cassandra.{CassandraReadSide, CassandraSession}
 import com.sksamuel.elastic4s.ElasticClient
 import com.typesafe.config.Config
