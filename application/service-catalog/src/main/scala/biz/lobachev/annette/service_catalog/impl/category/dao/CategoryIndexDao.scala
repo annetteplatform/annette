@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.impl.category.dao
+package biz.lobachev.annette.service_catalog.impl.category.dao
 
 import biz.lobachev.annette.core.model.category.CategoryFindQuery
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
-import biz.lobachev.annette.persons.impl.category
+import biz.lobachev.annette.service_catalog.impl.category
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.requests.searches.sort.FieldSort

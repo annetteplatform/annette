@@ -6,7 +6,7 @@ import play.api.libs.json.{Format, Json}
 
 case class AssignServicePrincipalPayload(
   serviceId: ServiceId,
-  principal: String,
+  principal: AnnettePrincipal,
   updatedBy: AnnettePrincipal
 )
 

@@ -84,7 +84,7 @@ class ApplicationServiceApiImpl(
     }
 
   def getAllLanguages: ServiceCall[NotUsed, Seq[Language]] =
-    ServiceCall { ids =>
+    ServiceCall { _ =>
       languageEntityService.getAllLanguages()
     }
 

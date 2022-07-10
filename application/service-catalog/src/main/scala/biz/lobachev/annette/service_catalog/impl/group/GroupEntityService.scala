@@ -1,121 +1,134 @@
+/*
+ * Copyright 2013 Valery Lobachev
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package biz.lobachev.annette.service_catalog.impl.group
 
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
-import org.slf4j.LoggerFactory
+import biz.lobachev.annette.core.model.indexing.FindResult
+import biz.lobachev.annette.service_catalog.api.group._
+import biz.lobachev.annette.service_catalog.impl.group.GroupEntity._
+import biz.lobachev.annette.service_catalog.impl.group.dao.{GroupDbDao, GroupIndexDao}
+import com.typesafe.config.Config
 
+import java.util.concurrent.TimeUnit
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-
-import biz.lobachev.annette.core.elastic.FindResult
-import biz.lobachev.annette.service_catalog.api.group._
+import scala.util.Try
 
 class GroupEntityService(
-    clusterSharding: ClusterSharding,
-    casRepository: GroupCasRepository,
-    elasticRepository: GroupElasticIndexDao,
-)(
-    implicit ec: ExecutionContext,
+  clusterSharding: ClusterSharding,
+  dbDao: GroupDbDao,
+  indexDao: GroupIndexDao,
+  config: Config
+)(implicit
+  ec: ExecutionContext,
+  val materializer: Materializer
 ) {
-  val log = LoggerFactory.getLogger(this.getClass)
 
-  implicit val timeout = Timeout(50.seconds)
+  implicit val timeout =
+    Try(config.getDuration("annette.timeout"))
+      .map(d => Timeout(FiniteDuration(d.toNanos, TimeUnit.NANOSECONDS)))
+      .getOrElse(Timeout(60.seconds))
 
-  private def refFor(id: GroupId): EntityRef[GroupEntity.Command] = {
+  private def refFor(id: GroupId): EntityRef[Command] =
     clusterSharding.entityRefFor(GroupEntity.typeKey, id)
-  }
 
-  private def convertSuccess(confirmation: GroupEntity.Confirmation): Done = {
+  private def convertSuccess(id: GroupId, confirmation: Confirmation): Done =
     confirmation match {
-      case GroupEntity.Success  => Done
-      case GroupEntity.GroupAlreadyExist => throw GroupAlreadyExist()
-      case GroupEntity.GroupNotFound => throw GroupNotFound()
-      case _                             => throw new RuntimeException("Match fail")
+      case Success      => Done
+      case NotFound     => throw GroupNotFound(id)
+      case AlreadyExist => throw GroupAlreadyExist(id)
+      case _            => throw new RuntimeException("Match fail")
     }
-  }
 
-  private def convertSuccessGroup(confirmation: GroupEntity.Confirmation): Group = {
+  private def convertSuccessGroup(id: GroupId, confirmation: Confirmation): Group =
     confirmation match {
-      case GroupEntity.SuccessGroup(group)  => group
-      case GroupEntity.GroupAlreadyExist => throw GroupAlreadyExist()
-      case GroupEntity.GroupNotFound => throw GroupNotFound()
-      case _                             => throw new RuntimeException("Match fail")
+      case SuccessGroup(entity) => entity
+      case NotFound             => throw GroupNotFound(id)
+      case AlreadyExist         => throw GroupAlreadyExist(id)
+      case _                    => throw new RuntimeException("Match fail")
     }
-  }
 
+  def createGroup(payload: CreateGroupPayload): Future[Done] =
+    for {
+      result <- refFor(payload.id)
+                  .ask[Confirmation](CreateGroup(payload, _))
+                  .map(res => convertSuccess(payload.id, res))
+    } yield result
 
-  def createGroup(payload: CreateGroupPayload): Future[Done] = {
-    refFor(id.id)
-      .ask[GroupEntity.Confirmation](GroupEntity.CreateGroup(payload, _))
-      .map(convertSuccess)
-  }
+  def updateGroup(payload: UpdateGroupPayload): Future[Done] =
+    for {
+      result <- refFor(payload.id)
+                  .ask[Confirmation](UpdateGroup(payload, _))
+                  .map(res => convertSuccess(payload.id, res))
+    } yield result
 
-  def updateGroup(payload: UpdateGroupPayload): Future[Done] = {
-    refFor(id.id)
-      .ask[GroupEntity.Confirmation](GroupEntity.UpdateGroup(payload, _))
-      .map(convertSuccess)
-  }
+  def activateGroup(payload: ActivateGroupPayload): Future[Done] =
+    for {
+      result <- refFor(payload.id)
+                  .ask[Confirmation](ActivateGroup(payload, _))
+                  .map(res => convertSuccess(payload.id, res))
+    } yield result
 
-  def activateGroup(payload: ActivateGroupPayload): Future[Done] = {
-    refFor(id.id)
-      .ask[GroupEntity.Confirmation](GroupEntity.ActivateGroup(payload, _))
-      .map(convertSuccess)
-  }
+  def deactivateGroup(payload: DeactivateGroupPayload): Future[Done] =
+    for {
+      result <- refFor(payload.id)
+                  .ask[Confirmation](DeactivateGroup(payload, _))
+                  .map(res => convertSuccess(payload.id, res))
+    } yield result
 
-  def deactivateGroup(payload: DeactivateGroupPayload): Future[Done] = {
-    refFor(id.id)
-      .ask[GroupEntity.Confirmation](GroupEntity.DeactivateGroup(payload, _))
-      .map(convertSuccess)
-  }
+  def deleteGroup(payload: DeleteGroupPayload): Future[Done] =
+    refFor(payload.id)
+      .ask[Confirmation](DeleteGroup(payload, _))
+      .map(res => convertSuccess(payload.id, res))
 
-  def deleteGroup(payload: DeleteGroupPayload): Future[Done] = {
-    refFor(id.id)
-      .ask[GroupEntity.Confirmation](GroupEntity.DeleteGroup(payload, _))
-      .map(convertSuccess)
-  }
-
-  def getGroup(id: GroupId): Future[Group] = {
-    refFor(id.id)
-      .ask[GroupEntity.Confirmation](GroupEntity.GetGroup(payload, _))
-      .map(convertSuccessGroup)
-  }
-
-
-
-  def getGroupById(id: GroupId, fromReadSide: Boolean): Future[Group] = {
-
-    if (fromReadSide) {
-      casRepository
+  def getGroupById(id: GroupId, fromReadSide: Boolean): Future[Group] =
+    if (fromReadSide)
+      dbDao
         .getGroupById(id)
-        .map(_.getOrElse(throw /* TODO: put correct exception */ NotFound()))
-    } else {
-      getGroup(id)
-    }
-  }
+        .map(_.getOrElse(throw GroupNotFound(id)))
+    else
+      refFor(id)
+        .ask[Confirmation](GetGroup(id, _))
+        .map(res => convertSuccessGroup(id, res))
 
-
-  def getGroupsById(ids: Set[GroupId], fromReadSide: Boolean): Future[Map[GroupId, Group]] = {
-
-    if (fromReadSide) {
-      casRepository.getGroupsById(ids)
-    } else {
-      Future
-        .traverse(ids) { id =>
+  def getGroupsById(
+    ids: Set[GroupId],
+    fromReadSide: Boolean
+  ): Future[Seq[Group]] =
+    if (fromReadSide)
+      dbDao.getGroupsById(ids)
+    else
+      Source(ids)
+        .mapAsync(1) { id =>
           refFor(id)
-            .ask[GroupEntity.Confirmation](GroupEntity.GetGroup(id, _))
+            .ask[Confirmation](GetGroup(id, _))
             .map {
-              case GroupEntity.SuccessGroup(group)  => Some(group)
-              case _  => None
+              case GroupEntity.SuccessGroup(group) => Some(group)
+              case _                               => None
             }
         }
-        .map(_.flatten.map(a => a.id -> a).toMap)
-    }
-  }
+        .runWith(Sink.seq)
+        .map(_.flatten)
 
-  def findGroups(ids: Set[GroupId]): Future[Map[GroupId, Group]] = {
-
-    getGroup(ids)
-  }
+  def findGroups(query: GroupFindQuery): Future[FindResult] =
+    indexDao.findGroup(query)
 
 }

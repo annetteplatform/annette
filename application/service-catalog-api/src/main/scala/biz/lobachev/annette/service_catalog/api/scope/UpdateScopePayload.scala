@@ -6,6 +6,7 @@ import biz.lobachev.annette.service_catalog.api.group.GroupId
 import play.api.libs.json.{Format, Json}
 
 case class UpdateScopePayload(
+  id: ScopeId,
   name: Option[String],
   description: Option[String],
   categoryId: Option[CategoryId],

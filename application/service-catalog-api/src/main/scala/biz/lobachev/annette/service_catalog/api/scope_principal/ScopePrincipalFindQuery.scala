@@ -7,8 +7,8 @@ import play.api.libs.json.Json
 case class ScopePrincipalFindQuery(
   offset: Int = 0,
   size: Int,
-  scopeId: Option[ScopeId] = None,
-  principalCodes: Option[Seq[String]] = None,
+  scopes: Option[Set[ScopeId]] = None,
+  principalCodes: Option[Set[String]] = None,
   sortBy: Option[Seq[SortBy]] = None
 )
 
