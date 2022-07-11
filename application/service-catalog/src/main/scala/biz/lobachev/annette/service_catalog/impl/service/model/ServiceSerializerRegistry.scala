@@ -1,8 +1,8 @@
 package biz.lobachev.annette.service_catalog.impl.service.model
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.translation.Caption
-import biz.lobachev.annette.service_catalog.api.service.{Service, ServiceId}
+import biz.lobachev.annette.core.model.translation.MultiLanguageText
+import biz.lobachev.annette.service_catalog.api.service.{Service, ServiceId, ServiceLink}
 import biz.lobachev.annette.service_catalog.impl.service.ServiceEntity
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
@@ -13,10 +13,11 @@ object ServiceSerializerRegistry extends JsonSerializerRegistry {
     List(
       JsonSerializer[ServiceState],
       JsonSerializer[Service],
+      JsonSerializer[ServiceLink],
       JsonSerializer[OffsetDateTime],
       JsonSerializer[AnnettePrincipal],
       JsonSerializer[ServiceId],
-      JsonSerializer[Caption],
+      JsonSerializer[MultiLanguageText],
       JsonSerializer[ServiceEntity.Success.type],
       JsonSerializer[ServiceEntity.SuccessService],
       JsonSerializer[ServiceEntity.AlreadyExist.type],

@@ -77,19 +77,30 @@ private[impl] class ScopeDbDao(override val session: CassandraSession)(implicit
     } yield Done
   }
 
-  def updateScope(event: ScopeUpdated): Future[Done] = {
-    val updates: Seq[ScopeRecord => (Any, Any)] = Seq(
-      event.name.map(v => (r: ScopeRecord) => r.name -> lift(v)),
-      event.description.map(v => (r: ScopeRecord) => r.description -> lift(v)),
-      event.categoryId.map(v => (r: ScopeRecord) => r.categoryId -> lift(v)),
-      event.groups.map(v => (r: ScopeRecord) => r.groups -> lift(v.toList)),
-      Some((r: ScopeRecord) => r.updatedBy -> lift(event.updatedBy)),
-      Some((r: ScopeRecord) => r.updatedAt -> lift(event.updatedAt))
-    ).flatten
+  def updateScope(event: ScopeUpdated): Future[Done] =
+//    val updates: Seq[ScopeRecord => (Any, Any)] = Seq(
+//      event.name.map(v => (r: ScopeRecord) => r.name -> quote(lift(v))),
+//      event.description.map(v => (r: ScopeRecord) => r.description -> quote(lift(v))),
+//      event.categoryId.map(v => (r: ScopeRecord) => r.categoryId -> quote(lift(v))),
+//      event.groups.map(v => (r: ScopeRecord) => r.groups -> quote(lift(v.toList))),
+//      Some((r: ScopeRecord) => r.updatedBy -> quote(lift(event.updatedBy))),
+//      Some((r: ScopeRecord) => r.updatedAt -> quote(lift(event.updatedAt)))
+//    ).flatten
     for {
-      _ <- ctx.run(scopeSchema.filter(_.id == lift(event.id)).update(updates.head, updates.tail: _*))
+      _ <- ctx.run(
+             dynamicQuery[ScopeRecord]
+               .filter(_.id == event.id)
+               .update(
+                 setOpt(_.name, event.name),
+                 setOpt(_.description, event.description),
+                 setOpt(_.categoryId, event.categoryId),
+                 setOpt(_.groups, event.groups.map(_.toList)),
+                 set(_.updatedBy, event.updatedBy),
+                 set(_.updatedAt, event.updatedAt)
+               )
+           )
+//      _ <- ctx.run(scopeSchema.filter(_.id == lift(event.id)).update(updates.head, updates.tail: _*))
     } yield Done
-  }
 
   def activateScope(event: ScopeActivated): Future[Done] =
     for {

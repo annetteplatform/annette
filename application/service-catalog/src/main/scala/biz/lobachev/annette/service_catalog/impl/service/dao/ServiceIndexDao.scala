@@ -38,11 +38,13 @@ class ServiceIndexDao(client: ElasticClient)(implicit
 
   def createService(event: ServiceEntity.ServiceCreated) = {
     val doc = List(
-      "id"          -> event.id,
-      "name"        -> event.name,
-      "description" -> event.description,
-      "active"      -> true,
-      "updatedAt"   -> event.createdAt
+      "id"               -> event.id,
+      "name"             -> event.name,
+      "description"      -> event.description,
+      "label"            -> event.label.values.mkString(" "),
+      "labelDescription" -> event.labelDescription.values.mkString(" "),
+      "active"           -> true,
+      "updatedAt"        -> event.createdAt
     )
     createIndexDoc(event.id, doc)
   }
@@ -50,8 +52,10 @@ class ServiceIndexDao(client: ElasticClient)(implicit
   def updateService(event: ServiceEntity.ServiceUpdated) = {
     val doc = List(
       Some("id"        -> event.id),
-      event.name.map(name => "name" -> name),
-      event.description.map(description => "description" -> description),
+      event.name.map(v => "name" -> v),
+      event.description.map(v => "description" -> v),
+      event.label.map(v => "label" -> v.values.mkString(" ")),
+      event.labelDescription.map(v => "labelDescription" -> v.values.mkString(" ")),
       Some("updatedAt" -> event.updatedAt)
     ).flatten
     updateIndexDoc(event.id, doc)
