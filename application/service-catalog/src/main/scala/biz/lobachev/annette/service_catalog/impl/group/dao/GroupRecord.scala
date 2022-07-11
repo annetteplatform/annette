@@ -17,7 +17,8 @@
 package biz.lobachev.annette.service_catalog.impl.group.dao
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.translation.{TextCaption, TranslationCaption}
+import biz.lobachev.annette.core.model.translation.MultiLanguageText
+import biz.lobachev.annette.service_catalog.api.common.Icon
 import biz.lobachev.annette.service_catalog.api.group.{Group, GroupId}
 import io.scalaland.chimney.dsl._
 
@@ -27,27 +28,13 @@ case class GroupRecord(
   id: GroupId,
   name: String,
   description: String,
-  icon: String,
-  captionText: String,
-  captionTranslation: String,
-  captionDescriptionText: String,
-  captionDescriptionTranslation: String,
+  icon: Icon,
+  label: MultiLanguageText,
+  labelDescription: MultiLanguageText,
   services: List[String],
   active: Boolean,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) {
-  def toGroup: Group = {
-    val caption            =
-      if (captionText.nonEmpty) TextCaption(captionText)
-      else TranslationCaption(captionTranslation)
-    val captionDescription =
-      if (captionDescriptionText.nonEmpty) TextCaption(captionDescriptionText)
-      else TranslationCaption(captionDescriptionTranslation)
-    this
-      .into[Group]
-      .withFieldConst(_.caption, caption)
-      .withFieldConst(_.captionDescription, captionDescription)
-      .transform
-  }
+  def toGroup: Group = this.transformInto[Group]
 }

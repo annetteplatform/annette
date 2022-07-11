@@ -21,7 +21,8 @@ import akka.cluster.sharding.typed.scaladsl._
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.translation.Caption
+import biz.lobachev.annette.core.model.translation.MultiLanguageText
+import biz.lobachev.annette.service_catalog.api.common.Icon
 import biz.lobachev.annette.service_catalog.api.group._
 import biz.lobachev.annette.service_catalog.api.service.ServiceId
 import biz.lobachev.annette.service_catalog.impl.group.model.GroupState
@@ -68,9 +69,9 @@ object GroupEntity {
     id: GroupId,
     name: String,
     description: String,
-    icon: String,
-    caption: Caption,
-    captionDescription: Caption,
+    icon: Icon,
+    label: MultiLanguageText,
+    labelDescription: MultiLanguageText,
     services: Seq[ServiceId] = Seq.empty,
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
@@ -79,9 +80,9 @@ object GroupEntity {
     id: GroupId,
     name: Option[String],
     description: Option[String],
-    icon: Option[String],
-    caption: Option[Caption],
-    captionDescription: Option[Caption],
+    icon: Option[Icon],
+    label: Option[MultiLanguageText],
+    labelDescription: Option[MultiLanguageText],
     services: Option[Seq[ServiceId]],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
@@ -226,8 +227,8 @@ final case class GroupEntity(maybeState: Option[GroupState]) {
           name = event.name.getOrElse(s.name),
           description = event.description.getOrElse(s.description),
           icon = event.icon.getOrElse(s.icon),
-          caption = event.caption.getOrElse(s.caption),
-          captionDescription = event.captionDescription.getOrElse(s.captionDescription),
+          label = event.label.getOrElse(s.label),
+          labelDescription = event.labelDescription.getOrElse(s.labelDescription),
           services = event.services.getOrElse(s.services),
           updatedBy = event.updatedBy,
           updatedAt = event.updatedAt

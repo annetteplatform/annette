@@ -18,9 +18,9 @@ package biz.lobachev.annette.service_catalog.impl.group.dao
 
 import akka.Done
 import akka.stream.Materializer
-import biz.lobachev.annette.core.model.translation.{TextCaption, TranslationCaption}
 import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
 import biz.lobachev.annette.service_catalog.api.group.{Group, GroupId}
+import biz.lobachev.annette.service_catalog.impl.common.{CaptionEncoder, IconEncoder}
 import biz.lobachev.annette.service_catalog.impl.group.GroupEntity.{
   GroupActivated,
   GroupCreated,
@@ -37,7 +37,9 @@ import scala.concurrent.{ExecutionContext, Future}
 private[impl] class GroupDbDao(override val session: CassandraSession)(implicit
   val ec: ExecutionContext,
   val materializer: Materializer
-) extends CassandraQuillDao {
+) extends CassandraQuillDao
+    with CaptionEncoder
+    with IconEncoder {
 
   import ctx._
 
@@ -58,10 +60,8 @@ private[impl] class GroupDbDao(override val session: CassandraSession)(implicit
                .column("name", Text)
                .column("description", Text)
                .column("icon", Text)
-               .column("caption_text", Text)
-               .column("caption_translation", Text)
-               .column("caption_description_text", Text)
-               .column("caption_description_translation", Text)
+               .column("label", Map(Text, Text))
+               .column("label_description", Map(Text, Text))
                .column("services", List(Text))
                .column("active", Boolean)
                .column("updated_at", Timestamp)
@@ -75,34 +75,6 @@ private[impl] class GroupDbDao(override val session: CassandraSession)(implicit
     val group = event
       .into[GroupRecord]
       .withFieldConst(_.active, true)
-      .withFieldComputed(
-        _.captionText,
-        _.caption match {
-          case TextCaption(v) => v
-          case _              => ""
-        }
-      )
-      .withFieldComputed(
-        _.captionTranslation,
-        _.caption match {
-          case TranslationCaption(v) => v
-          case _                     => ""
-        }
-      )
-      .withFieldComputed(
-        _.captionDescriptionText,
-        _.captionDescription match {
-          case TextCaption(v) => v
-          case _              => ""
-        }
-      )
-      .withFieldComputed(
-        _.captionDescriptionTranslation,
-        _.captionDescription match {
-          case TranslationCaption(v) => v
-          case _                     => ""
-        }
-      )
       .withFieldComputed(_.updatedAt, _.createdAt)
       .withFieldComputed(_.updatedBy, _.createdBy)
       .transform
@@ -113,29 +85,15 @@ private[impl] class GroupDbDao(override val session: CassandraSession)(implicit
 
   def updateGroup(event: GroupUpdated): Future[Done] = {
     // TODO:
-    val updates: Seq[GroupRecord => (Any, Any)] = Seq(
-      event.name.map(v => (r: GroupRecord) => r.name -> lift(v)),
-      event.description.map(v => (r: GroupRecord) => r.description -> lift(v)),
-      event.icon.map(v => (r: GroupRecord) => r.icon -> lift(v)),
-      event.caption.map {
-        case TextCaption(v) => (r: GroupRecord) => r.captionText -> lift(v)
-        case _              => (r: GroupRecord) => r.captionText -> lift("")
-      },
-      event.caption.map {
-        case TranslationCaption(v) => (r: GroupRecord) => r.captionTranslation -> lift(v)
-        case _                     => (r: GroupRecord) => r.captionTranslation -> lift("")
-      },
-      event.captionDescription.map {
-        case TextCaption(v) => (r: GroupRecord) => r.captionDescriptionText -> lift(v)
-        case _              => (r: GroupRecord) => r.captionDescriptionText -> lift("")
-      },
-      event.captionDescription.map {
-        case TranslationCaption(v) => (r: GroupRecord) => r.captionDescriptionTranslation -> lift(v)
-        case _                     => (r: GroupRecord) => r.captionDescriptionTranslation -> lift("")
-      },
-      event.services.map(v => (r: GroupRecord) => r.services -> lift(v.toList)),
-      Some((r: GroupRecord) => r.updatedBy -> lift(event.updatedBy)),
-      Some((r: GroupRecord) => r.updatedAt -> lift(event.updatedAt))
+    val updates /*: Seq[GroupRecord => (Any, Any)]*/ = Seq(
+      event.name.map(v => (r: GroupRecord) => r.name -> quote(lift(v))),
+      event.description.map(v => (r: GroupRecord) => r.description -> quote(lift(v))),
+      event.icon.map(v => (r: GroupRecord) => r.icon -> quote(lift(v))),
+      event.label.map(v => (r: GroupRecord) => r.label -> quote(lift(v))),
+      event.labelDescription.map(v => (r: GroupRecord) => r.labelDescription -> quote(lift(v))),
+      event.services.map(v => (r: GroupRecord) => r.services -> quote(lift(v.toList))),
+      Some((r: GroupRecord) => r.updatedBy -> quote(lift(event.updatedBy))),
+      Some((r: GroupRecord) => r.updatedAt -> quote(lift(event.updatedAt)))
     ).flatten
     for {
       _ <- ctx.run(groupSchema.filter(_.id == lift(event.id)).update(updates.head, updates.tail: _*))

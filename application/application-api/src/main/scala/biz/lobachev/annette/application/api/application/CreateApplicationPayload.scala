@@ -26,7 +26,8 @@ case class CreateApplicationPayload(
   name: String,
   caption: Caption,
   translations: Set[TranslationId] = Set.empty,
-  serverUrl: String,
+  frontendUrl: Option[String],
+  backendUrl: Option[String],
   createdBy: AnnettePrincipal
 )
 

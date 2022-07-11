@@ -40,7 +40,8 @@ object ApplicationEntity {
     name: String,
     caption: Caption,
     translations: Set[TranslationId] = Set.empty,
-    serverUrl: String,
+    frontendUrl: Option[String],
+    backendUrl: Option[String],
     createdBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   )                    extends Command
@@ -49,7 +50,8 @@ object ApplicationEntity {
     name: String,
     caption: Caption,
     translations: Set[TranslationId] = Set.empty,
-    serverUrl: String,
+    frontendUrl: Option[String],
+    backendUrl: Option[String],
     updatedBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   )                    extends Command
@@ -89,7 +91,8 @@ object ApplicationEntity {
     name: String,
     caption: Caption,
     translations: Set[TranslationId] = Set.empty,
-    serverUrl: String,
+    frontendUrl: Option[String],
+    backendUrl: Option[String],
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -111,9 +114,15 @@ object ApplicationEntity {
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
-  final case class ApplicationServerUrlUpdated(
+  final case class ApplicationBackendUrlUpdated(
     id: ApplicationId,
-    serverUrl: String,
+    backendUrl: Option[String],
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+  final case class ApplicationFrontendUrlUpdated(
+    id: ApplicationId,
+    frontendUrl: Option[String],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -127,7 +136,8 @@ object ApplicationEntity {
   implicit val eventApplicationNameUpdatedFormat: Format[ApplicationNameUpdated]                 = Json.format
   implicit val eventApplicationCaptionUpdatedFormat: Format[ApplicationCaptionUpdated]           = Json.format
   implicit val eventApplicationTranslationsUpdatedFormat: Format[ApplicationTranslationsUpdated] = Json.format
-  implicit val eventApplicationServerUrlUpdatedFormat: Format[ApplicationServerUrlUpdated]       = Json.format
+  implicit val eventApplicationBackendUrlUpdatedFormat: Format[ApplicationBackendUrlUpdated]     = Json.format
+  implicit val eventApplicationFrontendUrlUpdatedFormat: Format[ApplicationFrontendUrlUpdated]   = Json.format
   implicit val eventApplicationDeletedFormat: Format[ApplicationDeleted]                         = Json.format
 
   val empty = ApplicationEntity()
@@ -186,7 +196,9 @@ final case class ApplicationEntity(maybeState: Option[ApplicationState] = None) 
             if (state.translations != cmd.translations)
               Some(cmd.transformInto[ApplicationTranslationsUpdated])
             else None,
-            if (state.serverUrl != cmd.serverUrl) Some(cmd.transformInto[ApplicationServerUrlUpdated])
+            if (state.backendUrl != cmd.backendUrl) Some(cmd.transformInto[ApplicationBackendUrlUpdated])
+            else None,
+            if (state.frontendUrl != cmd.frontendUrl) Some(cmd.transformInto[ApplicationFrontendUrlUpdated])
             else None
           ).flatten
         Effect.persist(events).thenReply(cmd.replyTo)(_ => Success)
@@ -214,7 +226,8 @@ final case class ApplicationEntity(maybeState: Option[ApplicationState] = None) 
       case event: ApplicationNameUpdated         => onApplicationNameUpdated(event)
       case event: ApplicationCaptionUpdated      => onApplicationCaptionUpdated(event)
       case event: ApplicationTranslationsUpdated => onApplicationTranslationsUpdated(event)
-      case event: ApplicationServerUrlUpdated    => onApplicationServerUrlUpdated(event)
+      case event: ApplicationBackendUrlUpdated   => onApplicationBackendUrlUpdated(event)
+      case event: ApplicationFrontendUrlUpdated  => onApplicationFrontendUrlUpdated(event)
       case _: ApplicationDeleted                 => onApplicationDeleted()
     }
 
@@ -262,11 +275,21 @@ final case class ApplicationEntity(maybeState: Option[ApplicationState] = None) 
       )
     )
 
-  def onApplicationServerUrlUpdated(event: ApplicationServerUrlUpdated): ApplicationEntity =
+  def onApplicationBackendUrlUpdated(event: ApplicationBackendUrlUpdated): ApplicationEntity   =
     ApplicationEntity(
       maybeState.map(state =>
         state.copy(
-          serverUrl = event.serverUrl,
+          backendUrl = event.backendUrl,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
+  def onApplicationFrontendUrlUpdated(event: ApplicationFrontendUrlUpdated): ApplicationEntity =
+    ApplicationEntity(
+      maybeState.map(state =>
+        state.copy(
+          frontendUrl = event.frontendUrl,
           updatedBy = event.updatedBy,
           updatedAt = event.updatedAt
         )

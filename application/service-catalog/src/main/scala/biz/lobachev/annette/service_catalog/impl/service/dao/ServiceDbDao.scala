@@ -18,9 +18,9 @@ package biz.lobachev.annette.service_catalog.impl.service.dao
 
 import akka.Done
 import akka.stream.Materializer
-import biz.lobachev.annette.core.model.translation.{TextCaption, TranslationCaption}
 import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
-import biz.lobachev.annette.service_catalog.api.service.{Service, ServiceId}
+import biz.lobachev.annette.service_catalog.api.service.{Service, ServiceId, ServiceLink}
+import biz.lobachev.annette.service_catalog.impl.common.{CaptionEncoder, IconEncoder}
 import biz.lobachev.annette.service_catalog.impl.service.ServiceEntity.{
   ServiceActivated,
   ServiceCreated,
@@ -37,9 +37,14 @@ import scala.concurrent.{ExecutionContext, Future}
 private[impl] class ServiceDbDao(override val session: CassandraSession)(implicit
   val ec: ExecutionContext,
   val materializer: Materializer
-) extends CassandraQuillDao {
+) extends CassandraQuillDao
+    with CaptionEncoder
+    with IconEncoder {
 
   import ctx._
+
+  implicit val serviceLinkEncoder = genericJsonEncoder[ServiceLink]
+  implicit val serviceLinkDecoder = genericJsonDecoder[ServiceLink]
 
   private val serviceSchema = quote(querySchema[ServiceRecord]("services"))
 
@@ -58,10 +63,8 @@ private[impl] class ServiceDbDao(override val session: CassandraSession)(implici
                .column("name", Text)
                .column("description", Text)
                .column("icon", Text)
-               .column("caption_text", Text)
-               .column("caption_translation", Text)
-               .column("caption_description_text", Text)
-               .column("caption_description_translation", Text)
+               .column("label", Map(Text, Text))
+               .column("label_description", Map(Text, Text))
                .column("link", Text)
                .column("active", Boolean)
                .column("updated_at", Timestamp)
@@ -75,34 +78,6 @@ private[impl] class ServiceDbDao(override val session: CassandraSession)(implici
     val service = event
       .into[ServiceRecord]
       .withFieldConst(_.active, true)
-      .withFieldComputed(
-        _.captionText,
-        _.caption match {
-          case TextCaption(v) => v
-          case _              => ""
-        }
-      )
-      .withFieldComputed(
-        _.captionTranslation,
-        _.caption match {
-          case TranslationCaption(v) => v
-          case _                     => ""
-        }
-      )
-      .withFieldComputed(
-        _.captionDescriptionText,
-        _.captionDescription match {
-          case TextCaption(v) => v
-          case _              => ""
-        }
-      )
-      .withFieldComputed(
-        _.captionDescriptionTranslation,
-        _.captionDescription match {
-          case TranslationCaption(v) => v
-          case _                     => ""
-        }
-      )
       .withFieldComputed(_.updatedAt, _.createdAt)
       .withFieldComputed(_.updatedBy, _.createdBy)
       .transform
@@ -112,30 +87,15 @@ private[impl] class ServiceDbDao(override val session: CassandraSession)(implici
   }
 
   def updateService(event: ServiceUpdated): Future[Done] = {
-    // TODO:
     val updates: Seq[ServiceRecord => (Any, Any)] = Seq(
-      event.name.map(v => (r: ServiceRecord) => r.name -> lift(v)),
-      event.description.map(v => (r: ServiceRecord) => r.description -> lift(v)),
-      event.icon.map(v => (r: ServiceRecord) => r.icon -> lift(v)),
-      event.caption.map {
-        case TextCaption(v) => (r: ServiceRecord) => r.captionText -> lift(v)
-        case _              => (r: ServiceRecord) => r.captionText -> lift("")
-      },
-      event.caption.map {
-        case TranslationCaption(v) => (r: ServiceRecord) => r.captionTranslation -> lift(v)
-        case _                     => (r: ServiceRecord) => r.captionTranslation -> lift("")
-      },
-      event.captionDescription.map {
-        case TextCaption(v) => (r: ServiceRecord) => r.captionDescriptionText -> lift(v)
-        case _              => (r: ServiceRecord) => r.captionDescriptionText -> lift("")
-      },
-      event.captionDescription.map {
-        case TranslationCaption(v) => (r: ServiceRecord) => r.captionDescriptionTranslation -> lift(v)
-        case _                     => (r: ServiceRecord) => r.captionDescriptionTranslation -> lift("")
-      },
-      event.link.map(v => (r: ServiceRecord) => r.link -> lift(v)),
-      Some((r: ServiceRecord) => r.updatedBy -> lift(event.updatedBy)),
-      Some((r: ServiceRecord) => r.updatedAt -> lift(event.updatedAt))
+      event.name.map(v => (r: ServiceRecord) => r.name -> quote(lift(v))),
+      event.description.map(v => (r: ServiceRecord) => r.description -> quote(lift(v))),
+      event.icon.map(v => (r: ServiceRecord) => r.icon -> quote(lift(v))),
+      event.label.map(v => (r: ServiceRecord) => r.label -> quote(lift(v))),
+      event.labelDescription.map(v => (r: ServiceRecord) => r.labelDescription -> quote(lift(v))),
+      event.link.map(v => (r: ServiceRecord) => r.link -> quote(lift(v))),
+      Some((r: ServiceRecord) => r.updatedBy -> quote(lift(event.updatedBy))),
+      Some((r: ServiceRecord) => r.updatedAt -> quote(lift(event.updatedAt)))
     ).flatten
     for {
       _ <- ctx.run(serviceSchema.filter(_.id == lift(event.id)).update(updates.head, updates.tail: _*))

@@ -17,8 +17,9 @@
 package biz.lobachev.annette.service_catalog.impl.service.dao
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.translation.{TextCaption, TranslationCaption}
-import biz.lobachev.annette.service_catalog.api.service.{Service, ServiceId}
+import biz.lobachev.annette.core.model.translation.MultiLanguageText
+import biz.lobachev.annette.service_catalog.api.common.Icon
+import biz.lobachev.annette.service_catalog.api.service.{Service, ServiceId, ServiceLink}
 import io.scalaland.chimney.dsl._
 
 import java.time.OffsetDateTime
@@ -27,27 +28,13 @@ case class ServiceRecord(
   id: ServiceId,
   name: String,
   description: String,
-  icon: String,
-  captionText: String,
-  captionTranslation: String,
-  captionDescriptionText: String,
-  captionDescriptionTranslation: String,
-  link: String,
+  icon: Icon,
+  label: MultiLanguageText,
+  labelDescription: MultiLanguageText,
+  link: ServiceLink,
   active: Boolean,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) {
-  def toService: Service = {
-    val caption            =
-      if (captionText.nonEmpty) TextCaption(captionText)
-      else TranslationCaption(captionTranslation)
-    val captionDescription =
-      if (captionDescriptionText.nonEmpty) TextCaption(captionDescriptionText)
-      else TranslationCaption(captionDescriptionTranslation)
-    this
-      .into[Service]
-      .withFieldConst(_.caption, caption)
-      .withFieldConst(_.captionDescription, captionDescription)
-      .transform
-  }
+  def toService: Service = this.transformInto[Service]
 }

@@ -53,7 +53,8 @@ private[impl] class ApplicationDbDao(
                .column("name", Text)
                .column("caption", Text)
                .column("translations", Set(Text))
-               .column("server_url", Text)
+               .column("frontend_url", Text)
+               .column("backend_url", Text)
                .column("updated_at", Timestamp)
                .column("updated_by", Text)
                .build
@@ -106,14 +107,25 @@ private[impl] class ApplicationDbDao(
         )
     )
 
-  def updateApplicationServerUrl(event: ApplicationEntity.ApplicationServerUrlUpdated): Future[Done] =
+  def updateApplicationBackendUrl(event: ApplicationEntity.ApplicationBackendUrlUpdated): Future[Done] =
     ctx.run(
       applicationSchema
         .filter(_.id == lift(event.id))
         .update(
-          _.serverUrl -> lift(event.serverUrl),
-          _.updatedAt -> lift(event.updatedAt),
-          _.updatedBy -> lift(event.updatedBy)
+          _.backendUrl -> lift(event.backendUrl),
+          _.updatedAt  -> lift(event.updatedAt),
+          _.updatedBy  -> lift(event.updatedBy)
+        )
+    )
+
+  def updateApplicationFrontendUrl(event: ApplicationEntity.ApplicationFrontendUrlUpdated): Future[Done] =
+    ctx.run(
+      applicationSchema
+        .filter(_.id == lift(event.id))
+        .update(
+          _.frontendUrl -> lift(event.frontendUrl),
+          _.updatedAt   -> lift(event.updatedAt),
+          _.updatedBy   -> lift(event.updatedBy)
         )
     )
 

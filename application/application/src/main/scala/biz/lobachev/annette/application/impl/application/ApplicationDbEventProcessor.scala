@@ -38,7 +38,8 @@ private[impl] class ApplicationDbEventProcessor(
       .setEventHandler[ApplicationEntity.ApplicationNameUpdated](handle(dbDao.updateApplicationName))
       .setEventHandler[ApplicationEntity.ApplicationCaptionUpdated](handle(dbDao.updateApplicationCaption))
       .setEventHandler[ApplicationEntity.ApplicationTranslationsUpdated](handle(dbDao.updateApplicationTranslations))
-      .setEventHandler[ApplicationEntity.ApplicationServerUrlUpdated](handle(dbDao.updateApplicationServerUrl))
+      .setEventHandler[ApplicationEntity.ApplicationBackendUrlUpdated](handle(dbDao.updateApplicationBackendUrl))
+      .setEventHandler[ApplicationEntity.ApplicationFrontendUrlUpdated](handle(dbDao.updateApplicationFrontendUrl))
       .setEventHandler[ApplicationEntity.ApplicationDeleted](handle(dbDao.deleteApplication))
       .build()
 

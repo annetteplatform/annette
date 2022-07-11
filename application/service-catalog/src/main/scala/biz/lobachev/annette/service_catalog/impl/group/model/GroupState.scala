@@ -1,7 +1,8 @@
 package biz.lobachev.annette.service_catalog.impl.group.model
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.translation.Caption
+import biz.lobachev.annette.core.model.translation.MultiLanguageText
+import biz.lobachev.annette.service_catalog.api.common.Icon
 import biz.lobachev.annette.service_catalog.api.group.{Group, GroupId}
 import biz.lobachev.annette.service_catalog.api.service.ServiceId
 import io.scalaland.chimney.dsl.TransformerOps
@@ -13,9 +14,9 @@ case class GroupState(
   id: GroupId,
   name: String,
   description: String,
-  icon: String,
-  caption: Caption,
-  captionDescription: Caption,
+  icon: Icon,
+  label: MultiLanguageText,
+  labelDescription: MultiLanguageText,
   services: Seq[ServiceId] = Seq.empty,
   active: Boolean,
   updatedBy: AnnettePrincipal,

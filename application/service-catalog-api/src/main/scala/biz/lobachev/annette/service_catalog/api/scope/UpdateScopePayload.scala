@@ -10,7 +10,7 @@ case class UpdateScopePayload(
   name: Option[String],
   description: Option[String],
   categoryId: Option[CategoryId],
-  groups: Seq[GroupId] = Seq.empty,
+  groups: Option[Seq[GroupId]],
   updatedBy: AnnettePrincipal
 )
 

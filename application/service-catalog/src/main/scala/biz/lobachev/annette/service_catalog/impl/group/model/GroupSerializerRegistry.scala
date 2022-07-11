@@ -1,7 +1,7 @@
 package biz.lobachev.annette.service_catalog.impl.group.model
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.translation.Caption
+import biz.lobachev.annette.core.model.translation.MultiLanguageText
 import biz.lobachev.annette.service_catalog.api.group.{Group, GroupId}
 import biz.lobachev.annette.service_catalog.api.service.ServiceId
 import biz.lobachev.annette.service_catalog.impl.group.GroupEntity
@@ -18,7 +18,7 @@ object GroupSerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[AnnettePrincipal],
       JsonSerializer[GroupId],
       JsonSerializer[ServiceId],
-      JsonSerializer[Caption],
+      JsonSerializer[MultiLanguageText],
       JsonSerializer[GroupEntity.Success.type],
       JsonSerializer[GroupEntity.SuccessGroup],
       JsonSerializer[GroupEntity.AlreadyExist.type],
