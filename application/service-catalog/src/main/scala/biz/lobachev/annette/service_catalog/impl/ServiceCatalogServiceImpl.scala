@@ -2,9 +2,11 @@ package biz.lobachev.annette.service_catalog.impl
 
 import akka.util.Timeout
 import akka.{Done, NotUsed}
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.service_catalog.api._
+import biz.lobachev.annette.service_catalog.api.finder.{ScopeByCategoryFindQuery, ScopeByCategoryFindResult}
 import biz.lobachev.annette.service_catalog.api.group._
 import biz.lobachev.annette.service_catalog.api.scope._
 import biz.lobachev.annette.service_catalog.api.scope_principal._
@@ -19,6 +21,7 @@ import biz.lobachev.annette.service_catalog.impl.service_principal._
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import org.slf4j.LoggerFactory
 
+import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
 class ServiceCatalogServiceImpl(
@@ -28,7 +31,8 @@ class ServiceCatalogServiceImpl(
   groupEntityService: GroupEntityService,
   serviceEntityService: ServiceEntityService,
   servicePrincipalEntityService: ServicePrincipalEntityService
-) extends ServiceCatalogServiceApi {
+)(implicit ec: ExecutionContext)
+    extends ServiceCatalogServiceApi {
 
   implicit val timeout = Timeout(50.seconds)
 
@@ -102,6 +106,37 @@ class ServiceCatalogServiceImpl(
   override def findScopes: ServiceCall[ScopeFindQuery, FindResult] =
     ServiceCall { query =>
       scopeEntityService.findScopes(query)
+    }
+
+  override def findScopesByCategory: ServiceCall[ScopeByCategoryFindQuery, Seq[ScopeByCategoryFindResult]] =
+    ServiceCall { query =>
+      for {
+        scopes <- scopeEntityService.findScopes(
+                    ScopeFindQuery(
+                      size = 100,
+                      categories = Some(query.categories),
+                      active = Some(true)
+                    )
+                  )
+        result <- if (scopes.hits.nonEmpty)
+                    scopePrincipalEntityService
+                      .findScopePrincipals(
+                        ScopePrincipalFindQuery(
+                          size = 100,
+                          scopes = Some(scopes.hits.map(_.id).toSet),
+                          principalCodes = Some(query.principalCodes)
+                        )
+                      )
+                      .map(_.hits.map(_.id))
+                  else Future.successful(Seq.empty)
+      } yield result.map { compositeId =>
+        val split = compositeId.split("/")
+        ScopeByCategoryFindResult(
+          scopeId = split(0),
+          principal = AnnettePrincipal.fromCode(split(1))
+        )
+
+      }
     }
 
   override def assignScopePrincipal: ServiceCall[AssignScopePrincipalPayload, Done] =

@@ -4,6 +4,7 @@ import akka.{Done, NotUsed}
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
+import biz.lobachev.annette.service_catalog.api.finder.{ScopeByCategoryFindQuery, ScopeByCategoryFindResult}
 import biz.lobachev.annette.service_catalog.api.group._
 import biz.lobachev.annette.service_catalog.api.scope._
 import biz.lobachev.annette.service_catalog.api.scope_principal._
@@ -31,6 +32,8 @@ trait ServiceCatalogServiceApi extends LagomService {
   def getScopesById(fromReadSide: Boolean = true): ServiceCall[Set[ScopeId], Seq[Scope]]
 
   def findScopes: ServiceCall[ScopeFindQuery, FindResult]
+
+  def findScopesByCategory: ServiceCall[ScopeByCategoryFindQuery, Seq[ScopeByCategoryFindResult]]
 
   def assignScopePrincipal: ServiceCall[AssignScopePrincipalPayload, Done]
   def unassignScopePrincipal: ServiceCall[UnassignScopePrincipalPayload, Done]
@@ -76,6 +79,7 @@ trait ServiceCatalogServiceApi extends LagomService {
         pathCall("/api/serviceCatalog/v1/getScopeById/:id/:fromReadSide", getScopeById _),
         pathCall("/api/serviceCatalog/v1/getScopesById/:fromReadSide", getScopesById _),
         pathCall("/api/serviceCatalog/v1/findScopes", findScopes),
+        pathCall("/api/serviceCatalog/v1/findScopesByCategory", findScopesByCategory),
         pathCall("/api/serviceCatalog/v1/assignScopePrincipal", assignScopePrincipal),
         pathCall("/api/serviceCatalog/v1/unassignScopePrincipal", unassignScopePrincipal),
         pathCall("/api/serviceCatalog/v1/findScopePrincipals", findScopePrincipals),

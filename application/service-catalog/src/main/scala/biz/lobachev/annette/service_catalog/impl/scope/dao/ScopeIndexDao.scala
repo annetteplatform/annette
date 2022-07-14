@@ -41,6 +41,7 @@ class ScopeIndexDao(client: ElasticClient)(implicit
       "id"          -> event.id,
       "name"        -> event.name,
       "description" -> event.description,
+      "categoryId"  -> event.categoryId,
       "active"      -> true,
       "updatedAt"   -> event.createdAt
     )
@@ -52,6 +53,7 @@ class ScopeIndexDao(client: ElasticClient)(implicit
       Some("id"        -> event.id),
       event.name.map(v => "name" -> v),
       event.description.map(v => "description" -> v),
+      event.categoryId.map(v => "categoryId" -> v),
       Some("updatedAt" -> event.updatedAt)
     ).flatten
     updateIndexDoc(event.id, doc)
