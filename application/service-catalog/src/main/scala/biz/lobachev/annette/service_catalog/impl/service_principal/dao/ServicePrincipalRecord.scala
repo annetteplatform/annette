@@ -19,7 +19,11 @@ package biz.lobachev.annette.service_catalog.impl.service_principal.dao
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.service_catalog.api.service.ServiceId
 
+import java.time.OffsetDateTime
+
 case class ServicePrincipalRecord(
   serviceId: ServiceId,
-  principal: AnnettePrincipal
+  principal: AnnettePrincipal,
+  updatedBy: AnnettePrincipal,
+  updatedAt: OffsetDateTime = OffsetDateTime.now
 )

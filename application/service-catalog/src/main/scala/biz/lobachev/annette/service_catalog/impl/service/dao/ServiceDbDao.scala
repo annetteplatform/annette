@@ -30,9 +30,12 @@ import biz.lobachev.annette.service_catalog.impl.service.ServiceEntity.{
 }
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 import io.scalaland.chimney.dsl._
+import play.api.libs.json.Json
 
+import java.util.Date
 import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.jdk.CollectionConverters._
 
 private[impl] class ServiceDbDao(override val session: CassandraSession)(implicit
   val ec: ExecutionContext,
@@ -87,18 +90,28 @@ private[impl] class ServiceDbDao(override val session: CassandraSession)(implici
   }
 
   def updateService(event: ServiceUpdated): Future[Done] = {
-    val updates: Seq[ServiceRecord => (Any, Any)] = Seq(
-      event.name.map(v => (r: ServiceRecord) => r.name -> quote(lift(v))),
-      event.description.map(v => (r: ServiceRecord) => r.description -> quote(lift(v))),
-      event.icon.map(v => (r: ServiceRecord) => r.icon -> quote(lift(v))),
-      event.label.map(v => (r: ServiceRecord) => r.label -> quote(lift(v))),
-      event.labelDescription.map(v => (r: ServiceRecord) => r.labelDescription -> quote(lift(v))),
-      event.link.map(v => (r: ServiceRecord) => r.link -> quote(lift(v))),
-      Some((r: ServiceRecord) => r.updatedBy -> quote(lift(event.updatedBy))),
-      Some((r: ServiceRecord) => r.updatedAt -> quote(lift(event.updatedAt)))
+    val updates    = Seq(
+      event.name.map(v => "name" -> v),
+      event.description.map(v => "description" -> v),
+      event.icon.map(v => "icon" -> Json.toJson(v).toString()),
+      event.label.map(v => "label" -> v.asJava),
+      event.labelDescription.map(v => "label_description" -> v.asJava),
+      event.link.map(v => "link" -> Json.toJson(v).toString()),
+      Some("updated_by" -> event.updatedBy.code),
+      Some("updated_at" -> new Date(event.updatedAt.toInstant.toEpochMilli))
     ).flatten
+    val updatesCql = updates.map { case f -> _ => s"$f = ?" }.mkString(", ")
+    val update     = s"UPDATE services SET $updatesCql WHERE id = ?;"
+    val params     = updates.map { case _ -> v => v } :+ event.id
+
+    println()
+    println()
+    println(update)
+    println()
+    println()
+
     for {
-      _ <- ctx.run(serviceSchema.filter(_.id == lift(event.id)).update(updates.head, updates.tail: _*))
+      _ <- session.executeWrite(update, params: _*)
     } yield Done
   }
 
@@ -121,7 +134,7 @@ private[impl] class ServiceDbDao(override val session: CassandraSession)(implici
              serviceSchema
                .filter(_.id == lift(event.id))
                .update(
-                 _.active    -> lift(true),
+                 _.active    -> lift(false),
                  _.updatedBy -> lift(event.updatedBy),
                  _.updatedAt -> lift(event.updatedAt)
                )

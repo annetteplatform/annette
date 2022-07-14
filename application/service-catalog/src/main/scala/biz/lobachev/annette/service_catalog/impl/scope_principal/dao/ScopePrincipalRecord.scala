@@ -19,7 +19,11 @@ package biz.lobachev.annette.service_catalog.impl.scope_principal.dao
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.service_catalog.api.scope.ScopeId
 
+import java.time.OffsetDateTime
+
 case class ScopePrincipalRecord(
   scopeId: ScopeId,
-  principal: AnnettePrincipal
+  principal: AnnettePrincipal,
+  updatedBy: AnnettePrincipal,
+  updatedAt: OffsetDateTime = OffsetDateTime.now
 )

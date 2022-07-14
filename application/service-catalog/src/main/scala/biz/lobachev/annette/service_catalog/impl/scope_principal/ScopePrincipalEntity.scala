@@ -96,8 +96,7 @@ object ScopePrincipalEntity {
     scopeId: ScopeId,
     principal: AnnettePrincipal
   ): String =
-    // TODO: review scopePrincipal id calculation (replace whitespace with another symbol)
-    s"$scopeId ${principal.code}"
+    s"$scopeId/${principal.code}"
 
 }
 
