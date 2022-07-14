@@ -29,6 +29,7 @@ trait ServiceCatalogServiceApi extends LagomService {
   def deleteScope: ServiceCall[DeleteScopePayload, Done]
   def getScopeById(id: ScopeId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Scope]
   def getScopesById(fromReadSide: Boolean = true): ServiceCall[Set[ScopeId], Seq[Scope]]
+
   def findScopes: ServiceCall[ScopeFindQuery, FindResult]
 
   def assignScopePrincipal: ServiceCall[AssignScopePrincipalPayload, Done]
@@ -77,7 +78,7 @@ trait ServiceCatalogServiceApi extends LagomService {
         pathCall("/api/serviceCatalog/v1/findScopes", findScopes),
         pathCall("/api/serviceCatalog/v1/assignScopePrincipal", assignScopePrincipal),
         pathCall("/api/serviceCatalog/v1/unassignScopePrincipal", unassignScopePrincipal),
-        pathCall("/api/serviceCatalog/v1/findScopePrincipals", findServicePrincipals),
+        pathCall("/api/serviceCatalog/v1/findScopePrincipals", findScopePrincipals),
         pathCall("/api/serviceCatalog/v1/createGroup", createGroup),
         pathCall("/api/serviceCatalog/v1/updateGroup", updateGroup),
         pathCall("/api/serviceCatalog/v1/activateGroup", activateGroup),

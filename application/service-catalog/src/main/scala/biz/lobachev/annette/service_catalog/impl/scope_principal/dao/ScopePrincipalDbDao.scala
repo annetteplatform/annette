@@ -30,7 +30,7 @@ private[impl] class ScopePrincipalDbDao(
 
   import ctx._
 
-  private val schema = quote(querySchema[ScopePrincipalRecord]("permission_scopePrincipals"))
+  private val schema = quote(querySchema[ScopePrincipalRecord]("scope_principals"))
 
   private implicit val insertEntityMeta = insertMeta[ScopePrincipalRecord]()
   println(insertEntityMeta.toString)
@@ -42,6 +42,8 @@ private[impl] class ScopePrincipalDbDao(
              CassandraTableBuilder("scope_principals")
                .column("scope_id", Text)
                .column("principal", Text)
+               .column("updated_at", Timestamp)
+               .column("updated_by", Text)
                .withPrimaryKey("scope_id", "principal")
                .build
            )
@@ -49,7 +51,12 @@ private[impl] class ScopePrincipalDbDao(
   }
 
   def assignPrincipal(event: ScopePrincipalEntity.ScopePrincipalAssigned) = {
-    val entity = ScopePrincipalRecord(event.scopeId, event.principal)
+    val entity = ScopePrincipalRecord(
+      scopeId = event.scopeId,
+      principal = event.principal,
+      updatedBy = event.updatedBy,
+      updatedAt = event.updatedAt
+    )
     ctx.run(schema.insert(lift(entity)))
   }
 

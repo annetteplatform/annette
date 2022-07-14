@@ -30,7 +30,7 @@ private[impl] class ServicePrincipalDbDao(
 
   import ctx._
 
-  private val schema = quote(querySchema[ServicePrincipalRecord]("permission_servicePrincipals"))
+  private val schema = quote(querySchema[ServicePrincipalRecord]("service_principals"))
 
   private implicit val insertEntityMeta = insertMeta[ServicePrincipalRecord]()
   println(insertEntityMeta.toString)
@@ -40,16 +40,23 @@ private[impl] class ServicePrincipalDbDao(
     for {
       _ <- session.executeCreateTable(
              CassandraTableBuilder("service_principals")
-               .column("scope_id", Text)
+               .column("service_id", Text)
                .column("principal", Text)
-               .withPrimaryKey("scope_id", "principal")
+               .column("updated_at", Timestamp)
+               .column("updated_by", Text)
+               .withPrimaryKey("service_id", "principal")
                .build
            )
     } yield Done
   }
 
   def assignPrincipal(event: ServicePrincipalEntity.ServicePrincipalAssigned) = {
-    val entity = ServicePrincipalRecord(event.serviceId, event.principal)
+    val entity = ServicePrincipalRecord(
+      serviceId = event.serviceId,
+      principal = event.principal,
+      updatedBy = event.updatedBy,
+      updatedAt = event.updatedAt
+    )
     ctx.run(schema.insert(lift(entity)))
   }
 

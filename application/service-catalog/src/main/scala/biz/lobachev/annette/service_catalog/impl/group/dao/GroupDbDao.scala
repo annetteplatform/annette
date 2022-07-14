@@ -30,9 +30,12 @@ import biz.lobachev.annette.service_catalog.impl.group.GroupEntity.{
 }
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 import io.scalaland.chimney.dsl._
+import play.api.libs.json.Json
 
+import java.util.Date
 import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.jdk.CollectionConverters._
 
 private[impl] class GroupDbDao(override val session: CassandraSession)(implicit
   val ec: ExecutionContext,
@@ -84,19 +87,28 @@ private[impl] class GroupDbDao(override val session: CassandraSession)(implicit
   }
 
   def updateGroup(event: GroupUpdated): Future[Done] = {
-    // TODO:
-    val updates /*: Seq[GroupRecord => (Any, Any)]*/ = Seq(
-      event.name.map(v => (r: GroupRecord) => r.name -> quote(lift(v))),
-      event.description.map(v => (r: GroupRecord) => r.description -> quote(lift(v))),
-      event.icon.map(v => (r: GroupRecord) => r.icon -> quote(lift(v))),
-      event.label.map(v => (r: GroupRecord) => r.label -> quote(lift(v))),
-      event.labelDescription.map(v => (r: GroupRecord) => r.labelDescription -> quote(lift(v))),
-      event.services.map(v => (r: GroupRecord) => r.services -> quote(lift(v.toList))),
-      Some((r: GroupRecord) => r.updatedBy -> quote(lift(event.updatedBy))),
-      Some((r: GroupRecord) => r.updatedAt -> quote(lift(event.updatedAt)))
+    val updates    = Seq(
+      event.name.map(v => "name" -> v),
+      event.description.map(v => "description" -> v),
+      event.icon.map(v => "icon" -> Json.toJson(v).toString()),
+      event.label.map(v => "label" -> v.asJava),
+      event.labelDescription.map(v => "label_description" -> v.asJava),
+      event.services.map(v => "services" -> v.asJava),
+      Some("updated_by" -> event.updatedBy.code),
+      Some("updated_at" -> new Date(event.updatedAt.toInstant.toEpochMilli))
     ).flatten
+    val updatesCql = updates.map { case f -> _ => s"$f = ?" }.mkString(", ")
+    val update     = s"UPDATE groups SET $updatesCql WHERE id = ?;"
+    val params     = updates.map { case _ -> v => v } :+ event.id
+
+    println()
+    println()
+    println(update)
+    println()
+    println()
+
     for {
-      _ <- ctx.run(groupSchema.filter(_.id == lift(event.id)).update(updates.head, updates.tail: _*))
+      _ <- session.executeWrite(update, params: _*)
     } yield Done
   }
 
@@ -119,7 +131,7 @@ private[impl] class GroupDbDao(override val session: CassandraSession)(implicit
              groupSchema
                .filter(_.id == lift(event.id))
                .update(
-                 _.active    -> lift(true),
+                 _.active    -> lift(false),
                  _.updatedBy -> lift(event.updatedBy),
                  _.updatedAt -> lift(event.updatedAt)
                )

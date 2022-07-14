@@ -20,9 +20,13 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.service_catalog.api.scope.ScopeId
 import play.api.libs.json.Json
 
+import java.time.OffsetDateTime
+
 case class ScopePrincipalState(
   scopeId: ScopeId,
-  principal: AnnettePrincipal
+  principal: AnnettePrincipal,
+  updatedBy: AnnettePrincipal,
+  updatedAt: OffsetDateTime = OffsetDateTime.now
 )
 
 object ScopePrincipalState {

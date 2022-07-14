@@ -96,8 +96,7 @@ object ServicePrincipalEntity {
     serviceId: ServiceId,
     principal: AnnettePrincipal
   ): String =
-    // TODO: review servicePrincipal id calculation (replace whitespace with another symbol)
-    s"$serviceId ${principal.code}"
+    s"$serviceId/${principal.code}"
 
 }
 

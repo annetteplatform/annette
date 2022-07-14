@@ -30,8 +30,10 @@ import biz.lobachev.annette.service_catalog.impl.scope.ScopeEntity.{
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 import io.scalaland.chimney.dsl._
 
+import java.util.Date
 import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
+import scala.jdk.CollectionConverters._
 
 private[impl] class ScopeDbDao(override val session: CassandraSession)(implicit
   val ec: ExecutionContext,
@@ -77,30 +79,29 @@ private[impl] class ScopeDbDao(override val session: CassandraSession)(implicit
     } yield Done
   }
 
-  def updateScope(event: ScopeUpdated): Future[Done] =
-//    val updates: Seq[ScopeRecord => (Any, Any)] = Seq(
-//      event.name.map(v => (r: ScopeRecord) => r.name -> quote(lift(v))),
-//      event.description.map(v => (r: ScopeRecord) => r.description -> quote(lift(v))),
-//      event.categoryId.map(v => (r: ScopeRecord) => r.categoryId -> quote(lift(v))),
-//      event.groups.map(v => (r: ScopeRecord) => r.groups -> quote(lift(v.toList))),
-//      Some((r: ScopeRecord) => r.updatedBy -> quote(lift(event.updatedBy))),
-//      Some((r: ScopeRecord) => r.updatedAt -> quote(lift(event.updatedAt)))
-//    ).flatten
+  def updateScope(event: ScopeUpdated): Future[Done] = {
+    val updates    = Seq(
+      event.name.map(v => "name" -> v),
+      event.description.map(v => "description" -> v),
+      event.categoryId.map(v => "category_id" -> v),
+      event.groups.map(v => "groups" -> v.asJava),
+      Some("updated_by" -> event.updatedBy.code),
+      Some("updated_at" -> new Date(event.updatedAt.toInstant.toEpochMilli))
+    ).flatten
+    val updatesCql = updates.map { case f -> _ => s"$f = ?" }.mkString(", ")
+    val update     = s"UPDATE scopes SET $updatesCql WHERE id = ?;"
+    val params     = updates.map { case _ -> v => v } :+ event.id
+
+    println()
+    println()
+    println(update)
+    println()
+    println()
+
     for {
-      _ <- ctx.run(
-             dynamicQuery[ScopeRecord]
-               .filter(_.id == event.id)
-               .update(
-                 setOpt(_.name, event.name),
-                 setOpt(_.description, event.description),
-                 setOpt(_.categoryId, event.categoryId),
-                 setOpt(_.groups, event.groups.map(_.toList)),
-                 set(_.updatedBy, event.updatedBy),
-                 set(_.updatedAt, event.updatedAt)
-               )
-           )
-//      _ <- ctx.run(scopeSchema.filter(_.id == lift(event.id)).update(updates.head, updates.tail: _*))
+      _ <- session.executeWrite(update, params: _*)
     } yield Done
+  }
 
   def activateScope(event: ScopeActivated): Future[Done] =
     for {
@@ -121,7 +122,7 @@ private[impl] class ScopeDbDao(override val session: CassandraSession)(implicit
              scopeSchema
                .filter(_.id == lift(event.id))
                .update(
-                 _.active    -> lift(true),
+                 _.active    -> lift(false),
                  _.updatedBy -> lift(event.updatedBy),
                  _.updatedAt -> lift(event.updatedAt)
                )

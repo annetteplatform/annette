@@ -26,7 +26,7 @@ import biz.lobachev.annette.service_catalog.api.scope_principal.{
   ScopePrincipalFindQuery,
   UnassignScopePrincipalPayload
 }
-import biz.lobachev.annette.service_catalog.impl.scope_principal.dao.ScopePrincipalIndexDao
+import biz.lobachev.annette.service_catalog.impl.scope_principal.dao.{ScopePrincipalIndexDao}
 import com.typesafe.config.Config
 
 import java.util.concurrent.TimeUnit
