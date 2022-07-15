@@ -85,14 +85,17 @@ class ServiceIndexDao(client: ElasticClient)(implicit
   // *************************** Search API ***************************
 
   def findService(query: ServiceFindQuery): Future[FindResult] = {
-    val filterQuery            = buildFilterQuery(
+    val filterQuery  = buildFilterQuery(
       query.filter,
       Seq("name" -> 3.0, "description" -> 2.0, "id" -> 1.0)
     )
+    val serviceQuery =
+      query.services.map(serviceId => termsSetQuery(alias2FieldName("serviceId"), serviceId, script("1"))).toSeq
+
     val activeQuery            = query.active.map(matchQuery(alias2FieldName("active"), _)).toSeq
     val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
     val searchRequest          = search(indexName)
-      .bool(must(filterQuery ++ activeQuery))
+      .bool(must(filterQuery ++ activeQuery ++ serviceQuery))
       .from(query.offset)
       .size(query.size)
       .sortBy(sortBy)

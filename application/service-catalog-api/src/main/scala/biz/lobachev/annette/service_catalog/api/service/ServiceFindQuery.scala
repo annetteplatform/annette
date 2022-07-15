@@ -7,6 +7,7 @@ case class ServiceFindQuery(
   offset: Int = 0,
   size: Int,
   filter: Option[String] = None,
+  services: Option[Set[ServiceId]] = None,
   active: Option[Boolean] = None,
   sortBy: Option[Seq[SortBy]] = None
 )
