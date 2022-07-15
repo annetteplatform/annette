@@ -2,11 +2,15 @@ package biz.lobachev.annette.service_catalog.impl
 
 import akka.util.Timeout
 import akka.{Done, NotUsed}
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.service_catalog.api._
-import biz.lobachev.annette.service_catalog.api.finder.{ScopeByCategoryFindQuery, ScopeByCategoryFindResult}
+import biz.lobachev.annette.service_catalog.api.finder.{
+  ScopeByCategoryFindQuery,
+  ScopeByCategoryFindResult,
+  ScopeServices,
+  ScopeServicesQuery
+}
 import biz.lobachev.annette.service_catalog.api.group._
 import biz.lobachev.annette.service_catalog.api.scope._
 import biz.lobachev.annette.service_catalog.api.scope_principal._
@@ -106,37 +110,6 @@ class ServiceCatalogServiceImpl(
   override def findScopes: ServiceCall[ScopeFindQuery, FindResult] =
     ServiceCall { query =>
       scopeEntityService.findScopes(query)
-    }
-
-  override def findScopesByCategory: ServiceCall[ScopeByCategoryFindQuery, Seq[ScopeByCategoryFindResult]] =
-    ServiceCall { query =>
-      for {
-        scopes <- scopeEntityService.findScopes(
-                    ScopeFindQuery(
-                      size = 100,
-                      categories = Some(query.categories),
-                      active = Some(true)
-                    )
-                  )
-        result <- if (scopes.hits.nonEmpty)
-                    scopePrincipalEntityService
-                      .findScopePrincipals(
-                        ScopePrincipalFindQuery(
-                          size = 100,
-                          scopes = Some(scopes.hits.map(_.id).toSet),
-                          principalCodes = Some(query.principalCodes)
-                        )
-                      )
-                      .map(_.hits.map(_.id))
-                  else Future.successful(Seq.empty)
-      } yield result.map { compositeId =>
-        val split = compositeId.split("/")
-        ScopeByCategoryFindResult(
-          scopeId = split(0),
-          principal = AnnettePrincipal.fromCode(split(1))
-        )
-
-      }
     }
 
   override def assignScopePrincipal: ServiceCall[AssignScopePrincipalPayload, Done] =
@@ -249,4 +222,80 @@ class ServiceCatalogServiceImpl(
       servicePrincipalEntityService.findServicePrincipals(query)
     }
 
+  override def findScopesByCategory: ServiceCall[ScopeByCategoryFindQuery, Seq[ScopeByCategoryFindResult]] =
+    ServiceCall { query =>
+      for {
+        scopes <- scopeEntityService.findScopes(
+                    ScopeFindQuery(
+                      size = 100,
+                      categories = Some(query.categories),
+                      active = Some(true)
+                    )
+                  )
+        result <- if (scopes.hits.nonEmpty)
+                    scopePrincipalEntityService
+                      .findScopePrincipals(
+                        ScopePrincipalFindQuery(
+                          size = 100,
+                          scopes = Some(scopes.hits.map(_.id).toSet),
+                          principalCodes = Some(query.principalCodes)
+                        )
+                      )
+                      .map(_.hits.map(_.id))
+                  else Future.successful(Seq.empty)
+      } yield result.map { compositeId =>
+        val (scopeId, principal) = ServicePrincipalEntity.fromCompositeId(compositeId)
+        ScopeByCategoryFindResult(scopeId, principal)
+      }
+    }
+
+  override def getScopeServices: ServiceCall[ScopeServicesQuery, ScopeServices] =
+    ServiceCall { query =>
+      for {
+        scope             <- scopeEntityService.getScopeById(query.scopeId, true)
+        groups            <- groupEntityService.getGroupsById(scope.groups.toSet, true).map(_.filter(_.active))
+        _                  = println(groups)
+        serviceIds         = groups.flatMap(_.services).toSet
+        _                  = println(serviceIds)
+        servicePrincipals <- servicePrincipalEntityService.findServicePrincipals(
+                               ServicePrincipalFindQuery(
+                                 size = 1000,
+                                 services = Some(serviceIds),
+                                 principalCodes = Some(query.principalCodes)
+                               )
+                             )
+        _                  = println(servicePrincipals)
+        allowedServiceIds  = servicePrincipals.hits.map(h => ServicePrincipalEntity.fromCompositeId(h.id)._1).toSet
+        _                  = println(allowedServiceIds)
+        services          <- serviceEntityService.getServicesById(allowedServiceIds, true).map(_.filter(_.active))
+      } yield {
+        val groupMap       = groups.map(g => g.id -> g).toMap
+        val serviceIds     = services.map(_.id).toSet
+        val nonEmptyGroups = scope.groups.flatMap { groupId =>
+          groupMap
+            .get(groupId)
+            .filter(_.services.toSet.intersect(serviceIds).nonEmpty)
+            .map { group =>
+              group.copy(
+                label = query.languageId.map(lang => group.label.filter(l => l._1 == lang)).getOrElse(group.label),
+                labelDescription = query.languageId
+                  .map(lang => group.labelDescription.filter(l => l._1 == lang))
+                  .getOrElse(group.labelDescription),
+                services = group.services.filter(serviceId => serviceIds.contains(serviceId))
+              )
+            }
+        }
+        val services2      = query.languageId
+          .map(lang =>
+            services.map { service =>
+              service.copy(
+                label = service.label.filter(l => l._1 == lang),
+                labelDescription = service.labelDescription.filter(l => l._1 == lang)
+              )
+            }
+          )
+          .getOrElse(services)
+        ScopeServices(nonEmptyGroups, services2)
+      }
+    }
 }

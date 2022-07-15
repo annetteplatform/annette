@@ -36,7 +36,7 @@ class ServicePrincipalIndexDao(client: ElasticClient)(implicit
   override def indexConfigPath = "indexing.service-principal-index"
 
   def assignPrincipal(event: ServicePrincipalEntity.ServicePrincipalAssigned) = {
-    val id = ServicePrincipalEntity.servicePrincipalId(event.serviceId, event.principal)
+    val id = ServicePrincipalEntity.compositeId(event.serviceId, event.principal)
     createIndexDoc(
       id,
       "id"        -> id,
@@ -47,7 +47,7 @@ class ServicePrincipalIndexDao(client: ElasticClient)(implicit
   }
 
   def unassignPrincipal(event: ServicePrincipalEntity.ServicePrincipalUnassigned) = {
-    val id = ServicePrincipalEntity.servicePrincipalId(event.serviceId, event.principal)
+    val id = ServicePrincipalEntity.compositeId(event.serviceId, event.principal)
     deleteIndexDoc(id)
   }
 

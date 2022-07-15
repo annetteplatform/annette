@@ -59,14 +59,14 @@ class ServicePrincipalEntityService(
     }
 
   def assignServicePrincipal(payload: AssignServicePrincipalPayload): Future[Done] = {
-    val id = ServicePrincipalEntity.servicePrincipalId(payload.serviceId, payload.principal)
+    val id = ServicePrincipalEntity.compositeId(payload.serviceId, payload.principal)
     refFor(id)
       .ask[ServicePrincipalEntity.Confirmation](ServicePrincipalEntity.AssignPrincipal(payload, _))
       .map(convertSuccess)
   }
 
   def unassignServicePrincipal(payload: UnassignServicePrincipalPayload): Future[Done] = {
-    val id = ServicePrincipalEntity.servicePrincipalId(payload.serviceId, payload.principal)
+    val id = ServicePrincipalEntity.compositeId(payload.serviceId, payload.principal)
     refFor(id)
       .ask[ServicePrincipalEntity.Confirmation](ServicePrincipalEntity.UnassignPrincipal(payload, _))
       .map(convertSuccess)

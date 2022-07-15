@@ -92,12 +92,16 @@ object ServicePrincipalEntity {
 
   implicit val entityFormat: Format[ServicePrincipalEntity] = Json.format
 
-  def servicePrincipalId(
+  def compositeId(
     serviceId: ServiceId,
     principal: AnnettePrincipal
   ): String =
     s"$serviceId/${principal.code}"
 
+  def fromCompositeId(compositeId: String): (ServiceId, AnnettePrincipal) = {
+    val split = compositeId.split("/")
+    split(0) -> AnnettePrincipal.fromCode(split(1))
+  }
 }
 
 final case class ServicePrincipalEntity(maybeState: Option[ServicePrincipalState] = None) {
