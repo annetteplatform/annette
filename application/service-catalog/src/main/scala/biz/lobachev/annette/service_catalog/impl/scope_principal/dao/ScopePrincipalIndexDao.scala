@@ -18,7 +18,7 @@ package biz.lobachev.annette.service_catalog.impl.scope_principal.dao
 
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
-import biz.lobachev.annette.service_catalog.api.scope_principal.ScopePrincipalFindQuery
+import biz.lobachev.annette.service_catalog.api.scope_principal.FindScopePrincipalQuery
 import biz.lobachev.annette.service_catalog.impl.scope_principal.ScopePrincipalEntity
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
@@ -51,7 +51,7 @@ class ScopePrincipalIndexDao(client: ElasticClient)(implicit
     deleteIndexDoc(id)
   }
 
-  def findScopePrincipals(query: ScopePrincipalFindQuery): Future[FindResult] = {
+  def findScopePrincipals(query: FindScopePrincipalQuery): Future[FindResult] = {
     val scopeQuery             =
       query.scopes.map(scopes => termsSetQuery(alias2FieldName("scopeId"), scopes, script("1"))).toSeq
     val principalQuery         =

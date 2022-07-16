@@ -20,7 +20,7 @@ import biz.lobachev.annette.core.model.indexing.SortBy
 import biz.lobachev.annette.service_catalog.api.service.ServiceId
 import play.api.libs.json.Json
 
-case class ServicePrincipalFindQuery(
+case class FindServicePrincipalQuery(
   offset: Int = 0,
   size: Int,
   services: Option[Set[ServiceId]] = None,
@@ -28,6 +28,6 @@ case class ServicePrincipalFindQuery(
   sortBy: Option[Seq[SortBy]] = None
 )
 
-object ServicePrincipalFindQuery {
-  implicit val format = Json.format[ServicePrincipalFindQuery]
+object FindServicePrincipalQuery {
+  implicit val format = Json.format[FindServicePrincipalQuery]
 }

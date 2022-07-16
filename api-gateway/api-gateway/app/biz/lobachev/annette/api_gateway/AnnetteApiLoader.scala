@@ -61,7 +61,10 @@ import biz.lobachev.annette.service_catalog.gateway.{
   CategoryController,
   GroupController,
   ScopeController,
-  ServiceController
+  ScopePrincipalController,
+  ServiceController,
+  ServicePrincipalController,
+  UserServiceController
 }
 import biz.lobachev.annette.subscription.api.{SubscriptionServiceApi, SubscriptionServiceImpl}
 import com.lightbend.lagom.scaladsl.api.{LagomConfigComponent, ServiceAcl, ServiceInfo}
@@ -128,16 +131,19 @@ abstract class ServiceGateway(context: Context)
   lazy val basicAuthConfig                = wireWith(BasicAuthConfigProvider.get _)
   lazy val basicAuthenticator             = wire[ConfigurationBasicAuthenticator]
 
-  lazy val keycloakController               = wire[KeycloakController]
-  lazy val authorizationController          = wire[AuthorizationController]
-  lazy val personController                 = wire[PersonController]
-  lazy val principalGroupController         = wire[PrincipalGroupController]
-  lazy val orgStructureController           = wire[OrgStructureController]
-  lazy val applicationController            = wire[ApplicationController]
-  lazy val serviceCatalogCategoryController = wire[CategoryController]
-  lazy val serviceCatalogScopeController    = wire[ScopeController]
-  lazy val serviceCatalogGroupController    = wire[GroupController]
-  lazy val serviceCatalogServiceController  = wire[ServiceController]
+  lazy val keycloakController                       = wire[KeycloakController]
+  lazy val authorizationController                  = wire[AuthorizationController]
+  lazy val personController                         = wire[PersonController]
+  lazy val principalGroupController                 = wire[PrincipalGroupController]
+  lazy val orgStructureController                   = wire[OrgStructureController]
+  lazy val applicationController                    = wire[ApplicationController]
+  lazy val serviceCatalogCategoryController         = wire[CategoryController]
+  lazy val serviceCatalogScopeController            = wire[ScopeController]
+  lazy val serviceCatalogScopePrincipalController   = wire[ScopePrincipalController]
+  lazy val serviceCatalogGroupController            = wire[GroupController]
+  lazy val serviceCatalogServiceController          = wire[ServiceController]
+  lazy val serviceCatalogServicePrincipalController = wire[ServicePrincipalController]
+  lazy val serviceCatalogUserServiceController      = wire[UserServiceController]
 
   lazy val cmsCmsStorage              = wire[CmsStorage]
   lazy val cmsCmsS3Helper             = wire[CmsS3Helper]

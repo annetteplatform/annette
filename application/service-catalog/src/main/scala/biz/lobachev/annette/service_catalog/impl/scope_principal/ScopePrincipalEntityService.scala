@@ -23,10 +23,10 @@ import akka.util.Timeout
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.service_catalog.api.scope_principal.{
   AssignScopePrincipalPayload,
-  ScopePrincipalFindQuery,
+  FindScopePrincipalQuery,
   UnassignScopePrincipalPayload
 }
-import biz.lobachev.annette.service_catalog.impl.scope_principal.dao.{ScopePrincipalIndexDao}
+import biz.lobachev.annette.service_catalog.impl.scope_principal.dao.ScopePrincipalIndexDao
 import com.typesafe.config.Config
 
 import java.util.concurrent.TimeUnit
@@ -72,7 +72,7 @@ class ScopePrincipalEntityService(
       .map(convertSuccess)
   }
 
-  def findScopePrincipals(query: ScopePrincipalFindQuery): Future[FindResult] =
+  def findScopePrincipals(query: FindScopePrincipalQuery): Future[FindResult] =
     indexDao.findScopePrincipals(query)
 
 }

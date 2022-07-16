@@ -20,10 +20,12 @@ import akka.Done
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.service_catalog.api.finder.{
+  FindUserServicesQuery,
   ScopeByCategoryFindQuery,
   ScopeByCategoryFindResult,
   ScopeServices,
-  ScopeServicesQuery
+  ScopeServicesQuery,
+  UserServicesResult
 }
 import biz.lobachev.annette.service_catalog.api.group._
 import biz.lobachev.annette.service_catalog.api.scope._
@@ -57,7 +59,7 @@ trait ServiceCatalogService {
 
   def assignScopePrincipal(payload: AssignScopePrincipalPayload): Future[Done]
   def unassignScopePrincipal(payload: UnassignScopePrincipalPayload): Future[Done]
-  def findScopePrincipals(payload: ScopePrincipalFindQuery): Future[FindResult]
+  def findScopePrincipals(payload: FindScopePrincipalQuery): Future[FindResult]
 
   def createGroup(payload: CreateGroupPayload): Future[Done]
   def updateGroup(payload: UpdateGroupPayload): Future[Done]
@@ -79,9 +81,10 @@ trait ServiceCatalogService {
 
   def assignServicePrincipal(payload: AssignServicePrincipalPayload): Future[Done]
   def unassignServicePrincipal(payload: UnassignServicePrincipalPayload): Future[Done]
-  def findServicePrincipals(payload: ServicePrincipalFindQuery): Future[FindResult]
+  def findServicePrincipals(payload: FindServicePrincipalQuery): Future[FindResult]
 
   def findScopesByCategory(payload: ScopeByCategoryFindQuery): Future[Seq[ScopeByCategoryFindResult]]
   def getScopeServices(payload: ScopeServicesQuery): Future[ScopeServices]
+  def findUserServices(payload: FindUserServicesQuery): Future[UserServicesResult]
 
 }

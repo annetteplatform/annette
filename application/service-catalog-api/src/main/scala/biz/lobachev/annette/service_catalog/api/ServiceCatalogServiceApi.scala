@@ -21,10 +21,12 @@ import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.service_catalog.api.finder.{
+  FindUserServicesQuery,
   ScopeByCategoryFindQuery,
   ScopeByCategoryFindResult,
   ScopeServices,
-  ScopeServicesQuery
+  ScopeServicesQuery,
+  UserServicesResult
 }
 import biz.lobachev.annette.service_catalog.api.group._
 import biz.lobachev.annette.service_catalog.api.scope._
@@ -56,7 +58,7 @@ trait ServiceCatalogServiceApi extends LagomService {
 
   def assignScopePrincipal: ServiceCall[AssignScopePrincipalPayload, Done]
   def unassignScopePrincipal: ServiceCall[UnassignScopePrincipalPayload, Done]
-  def findScopePrincipals: ServiceCall[ScopePrincipalFindQuery, FindResult]
+  def findScopePrincipals: ServiceCall[FindScopePrincipalQuery, FindResult]
 
   def createGroup: ServiceCall[CreateGroupPayload, Done]
   def updateGroup: ServiceCall[UpdateGroupPayload, Done]
@@ -78,10 +80,11 @@ trait ServiceCatalogServiceApi extends LagomService {
 
   def assignServicePrincipal: ServiceCall[AssignServicePrincipalPayload, Done]
   def unassignServicePrincipal: ServiceCall[UnassignServicePrincipalPayload, Done]
-  def findServicePrincipals: ServiceCall[ServicePrincipalFindQuery, FindResult]
+  def findServicePrincipals: ServiceCall[FindServicePrincipalQuery, FindResult]
 
   def findScopesByCategory: ServiceCall[ScopeByCategoryFindQuery, Seq[ScopeByCategoryFindResult]]
   def getScopeServices: ServiceCall[ScopeServicesQuery, ScopeServices]
+  def findUserServices: ServiceCall[FindUserServicesQuery, UserServicesResult]
 
   final override def descriptor = {
     import LagomService._
@@ -124,7 +127,8 @@ trait ServiceCatalogServiceApi extends LagomService {
         pathCall("/api/serviceCatalog/v1/unassignServicePrincipal", unassignServicePrincipal),
         pathCall("/api/serviceCatalog/v1/findServicePrincipals", findServicePrincipals),
         pathCall("/api/serviceCatalog/v1/findScopesByCategory", findScopesByCategory),
-        pathCall("/api/serviceCatalog/v1/getScopeServices", getScopeServices)
+        pathCall("/api/serviceCatalog/v1/getScopeServices", getScopeServices),
+        pathCall("/api/serviceCatalog/v1/findUserServices", findUserServices)
       )
       .withExceptionSerializer(new AnnetteTransportExceptionSerializer())
       .withAutoAcl(true)

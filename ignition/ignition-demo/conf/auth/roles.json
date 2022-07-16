@@ -102,6 +102,9 @@
       },
       {
         "id": "annette.serviceCatalog.maintain.all"
+      },
+      {
+        "id": "annette.serviceCatalog.view"
       }
     ]
   },

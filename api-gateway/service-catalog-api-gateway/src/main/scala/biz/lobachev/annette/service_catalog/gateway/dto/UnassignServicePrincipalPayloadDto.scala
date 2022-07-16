@@ -16,13 +16,15 @@
 
 package biz.lobachev.annette.service_catalog.gateway.dto
 
-import biz.lobachev.annette.service_catalog.api.group.GroupId
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.service_catalog.api.service.ServiceId
 import play.api.libs.json.{Format, Json}
 
-case class DeactivateGroupPayloadDto(
-  id: GroupId
+case class UnassignServicePrincipalPayloadDto(
+  serviceId: ServiceId,
+  principal: AnnettePrincipal
 )
 
-object DeactivateGroupPayloadDto {
-  implicit val format: Format[DeactivateGroupPayloadDto] = Json.format
+object UnassignServicePrincipalPayloadDto {
+  implicit val format: Format[UnassignServicePrincipalPayloadDto] = Json.format
 }
