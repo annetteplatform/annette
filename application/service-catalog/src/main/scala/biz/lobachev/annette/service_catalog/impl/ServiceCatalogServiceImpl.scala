@@ -20,31 +20,23 @@ import akka.util.Timeout
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
-import biz.lobachev.annette.service_catalog.api._
-import biz.lobachev.annette.service_catalog.api.finder.{
-  FindUserServicesQuery,
-  ScopeByCategoryFindQuery,
-  ScopeByCategoryFindResult,
-  ScopeServices,
-  ScopeServicesQuery,
-  UserServicesHitResult,
-  UserServicesResult
-}
 import biz.lobachev.annette.service_catalog.api.group._
 import biz.lobachev.annette.service_catalog.api.scope._
 import biz.lobachev.annette.service_catalog.api.scope_principal._
 import biz.lobachev.annette.service_catalog.api.service._
 import biz.lobachev.annette.service_catalog.api.service_principal._
+import biz.lobachev.annette.service_catalog.api.transport.ServiceCatalogServiceApi
+import biz.lobachev.annette.service_catalog.api.user._
 import biz.lobachev.annette.service_catalog.impl.category._
 import biz.lobachev.annette.service_catalog.impl.group._
 import biz.lobachev.annette.service_catalog.impl.scope._
 import biz.lobachev.annette.service_catalog.impl.scope_principal._
 import biz.lobachev.annette.service_catalog.impl.service._
 import biz.lobachev.annette.service_catalog.impl.service_principal._
+import biz.lobachev.annette.service_catalog.impl.user.UserEntityService
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import org.slf4j.LoggerFactory
 
-import scala.concurrent.{ExecutionContext, Future}
 import scala.concurrent.duration._
 
 class ServiceCatalogServiceImpl(
@@ -53,9 +45,9 @@ class ServiceCatalogServiceImpl(
   scopePrincipalEntityService: ScopePrincipalEntityService,
   groupEntityService: GroupEntityService,
   serviceEntityService: ServiceEntityService,
-  servicePrincipalEntityService: ServicePrincipalEntityService
-)(implicit ec: ExecutionContext)
-    extends ServiceCatalogServiceApi {
+  servicePrincipalEntityService: ServicePrincipalEntityService,
+  userService: UserEntityService
+) extends ServiceCatalogServiceApi {
 
   implicit val timeout = Timeout(50.seconds)
 
@@ -243,121 +235,16 @@ class ServiceCatalogServiceImpl(
 
   override def findScopesByCategory: ServiceCall[ScopeByCategoryFindQuery, Seq[ScopeByCategoryFindResult]] =
     ServiceCall { query =>
-      for {
-        scopes <- scopeEntityService.findScopes(
-                    FindScopeQuery(
-                      size = 100,
-                      categories = Some(query.categories),
-                      active = Some(true)
-                    )
-                  )
-        result <- if (scopes.hits.nonEmpty)
-                    scopePrincipalEntityService
-                      .findScopePrincipals(
-                        FindScopePrincipalQuery(
-                          size = 100,
-                          scopes = Some(scopes.hits.map(_.id).toSet),
-                          principalCodes = Some(query.principalCodes)
-                        )
-                      )
-                      .map(_.hits.map(_.id))
-                  else Future.successful(Seq.empty)
-      } yield result.map { compositeId =>
-        val (scopeId, principal) = ServicePrincipalEntity.fromCompositeId(compositeId)
-        ScopeByCategoryFindResult(scopeId, principal)
-      }
+      userService.findScopesByCategory(query)
     }
 
-  override def getScopeServices: ServiceCall[ScopeServicesQuery, ScopeServices] =
+  override def getScopeServices: ServiceCall[ScopeServicesQuery, ScopeServicesResult] =
     ServiceCall { query =>
-      for {
-        scope             <- scopeEntityService.getScopeById(query.scopeId, true)
-        groups            <- groupEntityService.getGroupsById(scope.groups.toSet, true).map(_.filter(_.active))
-        _                  = println(groups)
-        serviceIds         = groups.flatMap(_.services).toSet
-        _                  = println(serviceIds)
-        servicePrincipals <- servicePrincipalEntityService.findServicePrincipals(
-                               FindServicePrincipalQuery(
-                                 size = 1000,
-                                 services = Some(serviceIds),
-                                 principalCodes = Some(query.principalCodes)
-                               )
-                             )
-        _                  = println(servicePrincipals)
-        allowedServiceIds  = servicePrincipals.hits.map(h => ServicePrincipalEntity.fromCompositeId(h.id)._1).toSet
-        _                  = println(allowedServiceIds)
-        services          <- serviceEntityService.getServicesById(allowedServiceIds, true).map(_.filter(_.active))
-      } yield {
-        val groupMap       = groups.map(g => g.id -> g).toMap
-        val serviceIds     = services.map(_.id).toSet
-        val nonEmptyGroups = scope.groups.flatMap { groupId =>
-          groupMap
-            .get(groupId)
-            .filter(_.services.toSet.intersect(serviceIds).nonEmpty)
-            .map { group =>
-              group.copy(
-                label = query.languageId.map(lang => group.label.filter(l => l._1 == lang)).getOrElse(group.label),
-                labelDescription = query.languageId
-                  .map(lang => group.labelDescription.filter(l => l._1 == lang))
-                  .getOrElse(group.labelDescription),
-                services = group.services.filter(serviceId => serviceIds.contains(serviceId))
-              )
-            }
-        }
-        val services2      = query.languageId
-          .map(lang =>
-            services.map { service =>
-              service.copy(
-                label = service.label.filter(l => l._1 == lang),
-                labelDescription = service.labelDescription.filter(l => l._1 == lang)
-              )
-            }
-          )
-          .getOrElse(services)
-        ScopeServices(nonEmptyGroups, services2)
-      }
+      userService.getScopeServices(query)
     }
 
   override def findUserServices: ServiceCall[FindUserServicesQuery, UserServicesResult] =
     ServiceCall { query =>
-      for {
-        assignedServices <- servicePrincipalEntityService.findServicePrincipals(
-                              FindServicePrincipalQuery(
-                                size = 1000,
-                                principalCodes = Some(query.principalCodes)
-                              )
-                            )
-        serviceIds        = assignedServices.hits
-                              .map(compositeId => ServicePrincipalEntity.fromCompositeId(compositeId.id)._1)
-                              .toSet
-        foundServices    <- serviceEntityService.findServices(
-                              FindServiceQuery(
-                                offset = query.offset,
-                                size = query.size,
-                                filter = Some(query.filter),
-                                services = Some(serviceIds),
-                                active = Some(true)
-                              )
-                            )
-        serviceMap       <- serviceEntityService
-                              .getServicesById(foundServices.hits.map(_.id).toSet, true)
-                              .map(_.map(s => s.id -> s).toMap)
-      } yield UserServicesResult(
-        total = foundServices.total,
-        hits = foundServices.hits.flatMap { hit =>
-          serviceMap
-            .get(hit.id)
-            .map(s =>
-              UserServicesHitResult(
-                id = s.id,
-                icon = s.icon,
-                label = s.label.get(query.languageId).getOrElse(""),
-                labelDescription = s.labelDescription.get(query.languageId).getOrElse(""),
-                link = s.link,
-                score = hit.score
-              )
-            )
-        }
-      )
+      userService.findUserServices(query)
     }
 }

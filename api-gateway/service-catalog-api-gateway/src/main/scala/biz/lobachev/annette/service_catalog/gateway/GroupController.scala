@@ -19,9 +19,16 @@ package biz.lobachev.annette.service_catalog.gateway
 import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.service_catalog.gateway.Permissions.MAINTAIN_SERVICE_CATALOG
-import biz.lobachev.annette.service_catalog.gateway.dto._
+import biz.lobachev.annette.service_catalog.gateway.user._
 import biz.lobachev.annette.service_catalog.api.ServiceCatalogService
 import biz.lobachev.annette.service_catalog.api.group._
+import biz.lobachev.annette.service_catalog.gateway.group.{
+  ActivateGroupPayloadDto,
+  CreateGroupPayloadDto,
+  DeactivateGroupPayloadDto,
+  DeleteGroupPayloadDto,
+  UpdateGroupPayloadDto
+}
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}

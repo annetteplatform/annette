@@ -19,7 +19,7 @@ package biz.lobachev.annette.service_catalog.gateway
 import biz.lobachev.annette.api_gateway_core.authentication.MaybeAuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.service_catalog.api.ServiceCatalogService
-import biz.lobachev.annette.service_catalog.api.finder.{
+import biz.lobachev.annette.service_catalog.api.user.{
   FindUserServicesQuery,
   ScopeByCategoryFindQuery,
   ScopeServicesQuery
@@ -57,7 +57,7 @@ class UserServiceController @Inject() (
                       ScopeServicesQuery(
                         scopeId = scopeId,
                         principalCodes = principalCodes,
-                        languageId = Some(languageId)
+                        languageId = languageId
                       )
                     )
         } yield Ok(Json.toJson(result))
