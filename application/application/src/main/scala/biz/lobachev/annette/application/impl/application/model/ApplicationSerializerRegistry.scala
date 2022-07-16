@@ -40,7 +40,7 @@ object ApplicationSerializerRegistry extends JsonSerializerRegistry {
       // events
       JsonSerializer[ApplicationEntity.ApplicationCreated],
       JsonSerializer[ApplicationEntity.ApplicationNameUpdated],
-      JsonSerializer[ApplicationEntity.ApplicationCaptionUpdated],
+      JsonSerializer[ApplicationEntity.ApplicationLabelUpdated],
       JsonSerializer[ApplicationEntity.ApplicationTranslationsUpdated],
       JsonSerializer[ApplicationEntity.ApplicationBackendUrlUpdated],
       JsonSerializer[ApplicationEntity.ApplicationFrontendUrlUpdated],

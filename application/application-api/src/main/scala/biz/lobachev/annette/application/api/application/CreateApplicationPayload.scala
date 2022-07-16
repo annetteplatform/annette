@@ -18,13 +18,14 @@ package biz.lobachev.annette.application.api.application
 
 import biz.lobachev.annette.application.api.translation.TranslationId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.translation.Caption
+import biz.lobachev.annette.core.model.translation.MultiLanguageText
 import play.api.libs.json.{Format, Json}
 
 case class CreateApplicationPayload(
   id: ApplicationId,
   name: String,
-  caption: Caption,
+  label: MultiLanguageText,
+  labelDescription: MultiLanguageText,
   translations: Set[TranslationId] = Set.empty,
   frontendUrl: Option[String],
   backendUrl: Option[String],

@@ -19,8 +19,8 @@ package biz.lobachev.annette.service_catalog.api.user
 import play.api.libs.json.{Format, Json}
 
 case class UserServicesResult(
-  total: Long,           // total items in query
-  hits: Seq[UserService] // results of search
+  total: Long,               // total items in query
+  services: Seq[UserService] // results of search
 )
 
 object UserServicesResult {

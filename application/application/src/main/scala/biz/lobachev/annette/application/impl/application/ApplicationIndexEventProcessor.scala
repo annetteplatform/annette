@@ -37,6 +37,10 @@ private[impl] class ApplicationIndexEventProcessor(
       .setGlobalPrepare(indexDao.createEntityIndex)
       .setEventHandler[ApplicationEntity.ApplicationCreated](handle(indexDao.createApplication))
       .setEventHandler[ApplicationEntity.ApplicationNameUpdated](handle(indexDao.updateApplicationName))
+      .setEventHandler[ApplicationEntity.ApplicationLabelUpdated](handle(indexDao.updateApplicationLabel))
+      .setEventHandler[ApplicationEntity.ApplicationLabelDescriptionUpdated](
+        handle(indexDao.updateApplicationLabelDescription)
+      )
       .setEventHandler[ApplicationEntity.ApplicationDeleted](handle(indexDao.deleteApplication))
       .build()
 

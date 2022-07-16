@@ -25,7 +25,6 @@ import biz.lobachev.annette.service_catalog.api.scope_principal.{
   UnassignScopePrincipalPayload
 }
 import biz.lobachev.annette.service_catalog.gateway.Permissions.MAINTAIN_SERVICE_CATALOG
-import biz.lobachev.annette.service_catalog.gateway.user._
 import biz.lobachev.annette.service_catalog.gateway.scope_principal.{
   AssignScopePrincipalPayloadDto,
   UnassignScopePrincipalPayloadDto
