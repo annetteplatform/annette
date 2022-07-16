@@ -19,7 +19,7 @@ package biz.lobachev.annette.service_catalog.impl
 import akka.cluster.sharding.typed.scaladsl.Entity
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
-import biz.lobachev.annette.service_catalog.api.ServiceCatalogServiceApi
+import biz.lobachev.annette.service_catalog.api.transport.ServiceCatalogServiceApi
 import biz.lobachev.annette.service_catalog.impl.category.model.CategorySerializerRegistry
 import biz.lobachev.annette.service_catalog.impl.category.{CategoryEntity, CategoryProvider}
 import biz.lobachev.annette.service_catalog.impl.group._
@@ -37,6 +37,7 @@ import biz.lobachev.annette.service_catalog.impl.service.model.ServiceSerializer
 import biz.lobachev.annette.service_catalog.impl.service_principal._
 import biz.lobachev.annette.service_catalog.impl.service_principal.dao.{ServicePrincipalDbDao, ServicePrincipalIndexDao}
 import biz.lobachev.annette.service_catalog.impl.service_principal.model.ServicePrincipalSerializerRegistry
+import biz.lobachev.annette.service_catalog.impl.user.UserEntityService
 import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
@@ -150,6 +151,8 @@ abstract class ServiceCatalogServiceApplication(context: LagomApplicationContext
       ServicePrincipalEntity(entityContext)
     }
   )
+
+  lazy val userService = wire[UserEntityService]
 
 }
 

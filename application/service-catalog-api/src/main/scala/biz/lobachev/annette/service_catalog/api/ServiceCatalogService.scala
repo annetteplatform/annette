@@ -19,12 +19,12 @@ package biz.lobachev.annette.service_catalog.api
 import akka.Done
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
-import biz.lobachev.annette.service_catalog.api.finder.{
+import biz.lobachev.annette.service_catalog.api.user.{
   FindUserServicesQuery,
   ScopeByCategoryFindQuery,
   ScopeByCategoryFindResult,
-  ScopeServices,
   ScopeServicesQuery,
+  ScopeServicesResult,
   UserServicesResult
 }
 import biz.lobachev.annette.service_catalog.api.group._
@@ -84,7 +84,7 @@ trait ServiceCatalogService {
   def findServicePrincipals(payload: FindServicePrincipalQuery): Future[FindResult]
 
   def findScopesByCategory(payload: ScopeByCategoryFindQuery): Future[Seq[ScopeByCategoryFindResult]]
-  def getScopeServices(payload: ScopeServicesQuery): Future[ScopeServices]
+  def getScopeServices(payload: ScopeServicesQuery): Future[ScopeServicesResult]
   def findUserServices(payload: FindUserServicesQuery): Future[UserServicesResult]
 
 }

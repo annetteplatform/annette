@@ -56,7 +56,7 @@ import biz.lobachev.annette.person.gateway.PersonController
 import biz.lobachev.annette.persons.api.{PersonServiceApi, PersonServiceImpl}
 import biz.lobachev.annette.principal_group.api.{PrincipalGroupServiceApi, PrincipalGroupServiceImpl}
 import biz.lobachev.annette.principal_group.gateway.PrincipalGroupController
-import biz.lobachev.annette.service_catalog.api.{ServiceCatalogServiceApi, ServiceCatalogServiceImpl}
+import biz.lobachev.annette.service_catalog.api.transport.{ServiceCatalogServiceApi, ServiceCatalogServiceImpl}
 import biz.lobachev.annette.service_catalog.gateway.{
   CategoryController,
   GroupController,
