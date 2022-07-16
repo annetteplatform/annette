@@ -128,7 +128,7 @@ class ScopeEntityService(
         .runWith(Sink.seq)
         .map(_.flatten)
 
-  def findScopes(query: ScopeFindQuery): Future[FindResult] =
+  def findScopes(query: FindScopeQuery): Future[FindResult] =
     indexDao.findScope(query)
 
 }

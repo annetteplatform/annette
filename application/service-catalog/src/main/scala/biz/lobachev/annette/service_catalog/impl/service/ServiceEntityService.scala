@@ -128,7 +128,7 @@ class ServiceEntityService(
         .runWith(Sink.seq)
         .map(_.flatten)
 
-  def findServices(query: ServiceFindQuery): Future[FindResult] =
+  def findServices(query: FindServiceQuery): Future[FindResult] =
     indexDao.findService(query)
 
 }

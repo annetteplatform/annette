@@ -20,7 +20,7 @@ import akka.Done
 import akka.stream.Materializer
 import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
 import biz.lobachev.annette.service_catalog.api.group.{Group, GroupId}
-import biz.lobachev.annette.service_catalog.impl.common.{CaptionEncoder, IconEncoder}
+import biz.lobachev.annette.service_catalog.impl.common.IconEncoder
 import biz.lobachev.annette.service_catalog.impl.group.GroupEntity.{
   GroupActivated,
   GroupCreated,
@@ -41,7 +41,6 @@ private[impl] class GroupDbDao(override val session: CassandraSession)(implicit
   val ec: ExecutionContext,
   val materializer: Materializer
 ) extends CassandraQuillDao
-    with CaptionEncoder
     with IconEncoder {
 
   import ctx._

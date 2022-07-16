@@ -82,7 +82,7 @@ class ScopeIndexDao(client: ElasticClient)(implicit
 
   // *************************** Search API ***************************
 
-  def findScope(query: ScopeFindQuery): Future[FindResult] = {
+  def findScope(query: FindScopeQuery): Future[FindResult] = {
     val filterQuery   = buildFilterQuery(
       query.filter,
       Seq("name" -> 3.0, "description" -> 2.0, "id" -> 1.0)
