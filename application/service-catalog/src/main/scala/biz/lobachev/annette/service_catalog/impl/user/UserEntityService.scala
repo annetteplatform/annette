@@ -78,9 +78,9 @@ class UserEntityService(
     for {
       scope             <- scopeEntityService.getScopeById(query.scopeId, true)
       groups            <- groupEntityService.getGroupsById(scope.groups.toSet, true).map(_.filter(_.active))
-      _                  = println(groups)
+//      _                  = println(groups)
       serviceIds         = groups.flatMap(_.services).toSet
-      _                  = println(serviceIds)
+//      _                  = println(serviceIds)
       servicePrincipals <- servicePrincipalEntityService.findServicePrincipals(
                              FindServicePrincipalQuery(
                                size = 1000,
@@ -88,9 +88,9 @@ class UserEntityService(
                                principalCodes = Some(query.principalCodes)
                              )
                            )
-      _                  = println(servicePrincipals)
+//      _                  = println(servicePrincipals)
       allowedServiceIds  = servicePrincipals.hits.map(h => ServicePrincipalEntity.fromCompositeId(h.id)._1).toSet
-      _                  = println(allowedServiceIds)
+//      _                  = println(allowedServiceIds)
       services          <- serviceEntityService.getServicesById(allowedServiceIds, true).map(_.filter(_.active))
     } yield {
       val groupMap     = groups.map(g => g.id -> g).toMap
