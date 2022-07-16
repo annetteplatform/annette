@@ -84,7 +84,7 @@ class ServiceIndexDao(client: ElasticClient)(implicit
 
   // *************************** Search API ***************************
 
-  def findService(query: ServiceFindQuery): Future[FindResult] = {
+  def findService(query: FindServiceQuery): Future[FindResult] = {
     val filterQuery  = buildFilterQuery(
       query.filter,
       Seq("name" -> 3.0, "description" -> 2.0, "id" -> 1.0)

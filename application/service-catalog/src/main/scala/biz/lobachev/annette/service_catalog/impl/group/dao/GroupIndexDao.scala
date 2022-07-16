@@ -84,7 +84,7 @@ class GroupIndexDao(client: ElasticClient)(implicit
 
   // *************************** Search API ***************************
 
-  def findGroup(query: GroupFindQuery): Future[FindResult] = {
+  def findGroup(query: FindGroupQuery): Future[FindResult] = {
     val filterQuery            = buildFilterQuery(
       query.filter,
       Seq("name" -> 3.0, "description" -> 2.0, "id" -> 1.0)

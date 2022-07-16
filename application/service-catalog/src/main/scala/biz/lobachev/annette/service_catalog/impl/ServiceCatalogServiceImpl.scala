@@ -1,3 +1,19 @@
+/*
+ * Copyright 2013 Valery Lobachev
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package biz.lobachev.annette.service_catalog.impl
 
 import akka.util.Timeout
@@ -107,7 +123,7 @@ class ServiceCatalogServiceImpl(
       scopeEntityService.getScopesById(ids, fromReadSide)
     }
 
-  override def findScopes: ServiceCall[ScopeFindQuery, FindResult] =
+  override def findScopes: ServiceCall[FindScopeQuery, FindResult] =
     ServiceCall { query =>
       scopeEntityService.findScopes(query)
     }
@@ -162,7 +178,7 @@ class ServiceCatalogServiceImpl(
       groupEntityService.getGroupsById(ids, fromReadSide)
     }
 
-  override def findGroups: ServiceCall[GroupFindQuery, FindResult] =
+  override def findGroups: ServiceCall[FindGroupQuery, FindResult] =
     ServiceCall { query =>
       groupEntityService.findGroups(query)
     }
@@ -202,7 +218,7 @@ class ServiceCatalogServiceImpl(
       serviceEntityService.getServicesById(ids, fromReadSide)
     }
 
-  override def findServices: ServiceCall[ServiceFindQuery, FindResult] =
+  override def findServices: ServiceCall[FindServiceQuery, FindResult] =
     ServiceCall { query =>
       serviceEntityService.findServices(query)
     }
@@ -226,7 +242,7 @@ class ServiceCatalogServiceImpl(
     ServiceCall { query =>
       for {
         scopes <- scopeEntityService.findScopes(
-                    ScopeFindQuery(
+                    FindScopeQuery(
                       size = 100,
                       categories = Some(query.categories),
                       active = Some(true)

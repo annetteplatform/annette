@@ -128,7 +128,7 @@ class GroupEntityService(
         .runWith(Sink.seq)
         .map(_.flatten)
 
-  def findGroups(query: GroupFindQuery): Future[FindResult] =
+  def findGroups(query: FindGroupQuery): Future[FindResult] =
     indexDao.findGroup(query)
 
 }
