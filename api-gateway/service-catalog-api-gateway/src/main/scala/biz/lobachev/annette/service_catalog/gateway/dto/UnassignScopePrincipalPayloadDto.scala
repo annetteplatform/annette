@@ -14,20 +14,17 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.service_catalog.api.scope_principal
+package biz.lobachev.annette.service_catalog.gateway.dto
 
-import biz.lobachev.annette.core.model.indexing.SortBy
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.service_catalog.api.scope.ScopeId
-import play.api.libs.json.Json
+import play.api.libs.json.{Format, Json}
 
-case class ScopePrincipalFindQuery(
-  offset: Int = 0,
-  size: Int,
-  scopes: Option[Set[ScopeId]] = None,
-  principalCodes: Option[Set[String]] = None,
-  sortBy: Option[Seq[SortBy]] = None
+case class UnassignScopePrincipalPayloadDto(
+  scopeId: ScopeId,
+  principal: AnnettePrincipal
 )
 
-object ScopePrincipalFindQuery {
-  implicit val format = Json.format[ScopePrincipalFindQuery]
+object UnassignScopePrincipalPayloadDto {
+  implicit val format: Format[UnassignScopePrincipalPayloadDto] = Json.format
 }

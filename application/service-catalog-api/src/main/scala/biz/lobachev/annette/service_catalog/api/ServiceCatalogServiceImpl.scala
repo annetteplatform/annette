@@ -27,10 +27,12 @@ import biz.lobachev.annette.core.model.category.{
 }
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.service_catalog.api.finder.{
+  FindUserServicesQuery,
   ScopeByCategoryFindQuery,
   ScopeByCategoryFindResult,
   ScopeServices,
-  ScopeServicesQuery
+  ScopeServicesQuery,
+  UserServicesResult
 }
 import biz.lobachev.annette.service_catalog.api.group.{
   ActivateGroupPayload,
@@ -54,7 +56,7 @@ import biz.lobachev.annette.service_catalog.api.scope.{
 }
 import biz.lobachev.annette.service_catalog.api.scope_principal.{
   AssignScopePrincipalPayload,
-  ScopePrincipalFindQuery,
+  FindScopePrincipalQuery,
   UnassignScopePrincipalPayload
 }
 import biz.lobachev.annette.service_catalog.api.service.{
@@ -69,7 +71,7 @@ import biz.lobachev.annette.service_catalog.api.service.{
 }
 import biz.lobachev.annette.service_catalog.api.service_principal.{
   AssignServicePrincipalPayload,
-  ServicePrincipalFindQuery,
+  FindServicePrincipalQuery,
   UnassignServicePrincipalPayload
 }
 
@@ -124,7 +126,7 @@ class ServiceCatalogServiceImpl(api: ServiceCatalogServiceApi) extends ServiceCa
   override def unassignScopePrincipal(payload: UnassignScopePrincipalPayload): Future[Done] =
     api.unassignScopePrincipal.invoke(payload)
 
-  override def findScopePrincipals(payload: ScopePrincipalFindQuery): Future[FindResult] =
+  override def findScopePrincipals(payload: FindScopePrincipalQuery): Future[FindResult] =
     api.findScopePrincipals.invoke(payload)
 
   override def createGroup(payload: CreateGroupPayload): Future[Done] =
@@ -181,7 +183,7 @@ class ServiceCatalogServiceImpl(api: ServiceCatalogServiceApi) extends ServiceCa
   override def unassignServicePrincipal(payload: UnassignServicePrincipalPayload): Future[Done] =
     api.unassignServicePrincipal.invoke(payload)
 
-  override def findServicePrincipals(payload: ServicePrincipalFindQuery): Future[FindResult] =
+  override def findServicePrincipals(payload: FindServicePrincipalQuery): Future[FindResult] =
     api.findServicePrincipals.invoke(payload)
 
   override def findScopesByCategory(payload: ScopeByCategoryFindQuery): Future[Seq[ScopeByCategoryFindResult]] =
@@ -189,4 +191,7 @@ class ServiceCatalogServiceImpl(api: ServiceCatalogServiceApi) extends ServiceCa
 
   override def getScopeServices(payload: ScopeServicesQuery): Future[ScopeServices] =
     api.getScopeServices.invoke(payload)
+
+  override def findUserServices(payload: FindUserServicesQuery): Future[UserServicesResult] =
+    api.findUserServices.invoke(payload)
 }

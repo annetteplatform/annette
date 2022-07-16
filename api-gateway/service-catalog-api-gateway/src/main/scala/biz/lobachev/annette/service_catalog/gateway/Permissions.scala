@@ -20,4 +20,5 @@ import biz.lobachev.annette.core.model.auth.Permission
 
 object Permissions {
   final val MAINTAIN_SERVICE_CATALOG = Permission("annette.serviceCatalog.maintain.all")
+  final val VIEW_SERVICE_CATALOG     = Permission("annette.serviceCatalog.view")
 }

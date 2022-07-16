@@ -23,7 +23,7 @@ import akka.util.Timeout
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.service_catalog.api.service_principal.{
   AssignServicePrincipalPayload,
-  ServicePrincipalFindQuery,
+  FindServicePrincipalQuery,
   UnassignServicePrincipalPayload
 }
 import biz.lobachev.annette.service_catalog.impl.service_principal.dao.ServicePrincipalIndexDao
@@ -72,7 +72,7 @@ class ServicePrincipalEntityService(
       .map(convertSuccess)
   }
 
-  def findServicePrincipals(query: ServicePrincipalFindQuery): Future[FindResult] =
+  def findServicePrincipals(query: FindServicePrincipalQuery): Future[FindResult] =
     indexDao.findServicePrincipals(query)
 
 }

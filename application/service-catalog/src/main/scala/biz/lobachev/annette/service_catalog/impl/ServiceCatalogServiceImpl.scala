@@ -22,10 +22,13 @@ import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.service_catalog.api._
 import biz.lobachev.annette.service_catalog.api.finder.{
+  FindUserServicesQuery,
   ScopeByCategoryFindQuery,
   ScopeByCategoryFindResult,
   ScopeServices,
-  ScopeServicesQuery
+  ScopeServicesQuery,
+  UserServicesHitResult,
+  UserServicesResult
 }
 import biz.lobachev.annette.service_catalog.api.group._
 import biz.lobachev.annette.service_catalog.api.scope._
@@ -138,7 +141,7 @@ class ServiceCatalogServiceImpl(
       scopePrincipalEntityService.unassignScopePrincipal(payload)
     }
 
-  override def findScopePrincipals: ServiceCall[ScopePrincipalFindQuery, FindResult] =
+  override def findScopePrincipals: ServiceCall[FindScopePrincipalQuery, FindResult] =
     ServiceCall { query =>
       scopePrincipalEntityService.findScopePrincipals(query)
     }
@@ -233,7 +236,7 @@ class ServiceCatalogServiceImpl(
       servicePrincipalEntityService.unassignServicePrincipal(payload)
     }
 
-  override def findServicePrincipals: ServiceCall[ServicePrincipalFindQuery, FindResult] =
+  override def findServicePrincipals: ServiceCall[FindServicePrincipalQuery, FindResult] =
     ServiceCall { query =>
       servicePrincipalEntityService.findServicePrincipals(query)
     }
@@ -251,7 +254,7 @@ class ServiceCatalogServiceImpl(
         result <- if (scopes.hits.nonEmpty)
                     scopePrincipalEntityService
                       .findScopePrincipals(
-                        ScopePrincipalFindQuery(
+                        FindScopePrincipalQuery(
                           size = 100,
                           scopes = Some(scopes.hits.map(_.id).toSet),
                           principalCodes = Some(query.principalCodes)
@@ -274,7 +277,7 @@ class ServiceCatalogServiceImpl(
         serviceIds         = groups.flatMap(_.services).toSet
         _                  = println(serviceIds)
         servicePrincipals <- servicePrincipalEntityService.findServicePrincipals(
-                               ServicePrincipalFindQuery(
+                               FindServicePrincipalQuery(
                                  size = 1000,
                                  services = Some(serviceIds),
                                  principalCodes = Some(query.principalCodes)
@@ -313,5 +316,48 @@ class ServiceCatalogServiceImpl(
           .getOrElse(services)
         ScopeServices(nonEmptyGroups, services2)
       }
+    }
+
+  override def findUserServices: ServiceCall[FindUserServicesQuery, UserServicesResult] =
+    ServiceCall { query =>
+      for {
+        assignedServices <- servicePrincipalEntityService.findServicePrincipals(
+                              FindServicePrincipalQuery(
+                                size = 1000,
+                                principalCodes = Some(query.principalCodes)
+                              )
+                            )
+        serviceIds        = assignedServices.hits
+                              .map(compositeId => ServicePrincipalEntity.fromCompositeId(compositeId.id)._1)
+                              .toSet
+        foundServices    <- serviceEntityService.findServices(
+                              FindServiceQuery(
+                                offset = query.offset,
+                                size = query.size,
+                                filter = Some(query.filter),
+                                services = Some(serviceIds),
+                                active = Some(true)
+                              )
+                            )
+        serviceMap       <- serviceEntityService
+                              .getServicesById(foundServices.hits.map(_.id).toSet, true)
+                              .map(_.map(s => s.id -> s).toMap)
+      } yield UserServicesResult(
+        total = foundServices.total,
+        hits = foundServices.hits.flatMap { hit =>
+          serviceMap
+            .get(hit.id)
+            .map(s =>
+              UserServicesHitResult(
+                id = s.id,
+                icon = s.icon,
+                label = s.label.get(query.languageId).getOrElse(""),
+                labelDescription = s.labelDescription.get(query.languageId).getOrElse(""),
+                link = s.link,
+                score = hit.score
+              )
+            )
+        }
+      )
     }
 }
