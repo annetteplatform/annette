@@ -19,7 +19,6 @@ package biz.lobachev.annette.application.impl.application.dao
 import akka.Done
 import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.impl.application.ApplicationEntity
-import biz.lobachev.annette.core.model.translation.Caption
 import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 import io.scalaland.chimney.dsl._
@@ -35,12 +34,8 @@ private[impl] class ApplicationDbDao(
 
   private val applicationSchema = quote(querySchema[Application]("applications"))
 
-  private implicit val captionEncoder        = genericJsonEncoder[Caption]
-  private implicit val captionDecoder        = genericJsonDecoder[Caption]
   private implicit val insertApplicationMeta = insertMeta[Application]()
   private implicit val updateApplicationMeta = updateMeta[Application](_.id)
-  println(captionEncoder.toString)
-  println(captionDecoder.toString)
   println(insertApplicationMeta.toString)
   println(updateApplicationMeta.toString)
 
@@ -51,7 +46,8 @@ private[impl] class ApplicationDbDao(
              CassandraTableBuilder("applications")
                .column("id", Text, true)
                .column("name", Text)
-               .column("caption", Text)
+               .column("label", Map(Text, Text))
+               .column("label_description", Map(Text, Text))
                .column("translations", Set(Text))
                .column("frontend_url", Text)
                .column("backend_url", Text)
@@ -83,14 +79,25 @@ private[impl] class ApplicationDbDao(
         )
     )
 
-  def updateApplicationCaption(event: ApplicationEntity.ApplicationCaptionUpdated): Future[Done] =
+  def updateApplicationLabel(event: ApplicationEntity.ApplicationLabelUpdated): Future[Done] =
     ctx.run(
       applicationSchema
         .filter(_.id == lift(event.id))
         .update(
-          _.caption   -> lift(event.caption),
+          _.label     -> lift(event.label),
           _.updatedAt -> lift(event.updatedAt),
           _.updatedBy -> lift(event.updatedBy)
+        )
+    )
+
+  def updateApplicationLabelDescription(event: ApplicationEntity.ApplicationLabelDescriptionUpdated): Future[Done] =
+    ctx.run(
+      applicationSchema
+        .filter(_.id == lift(event.id))
+        .update(
+          _.labelDescription -> lift(event.labelDescription),
+          _.updatedAt        -> lift(event.updatedAt),
+          _.updatedBy        -> lift(event.updatedBy)
         )
     )
 

@@ -151,7 +151,7 @@ class UserEntityService(
                             .map(_.map(s => s.id -> s).toMap)
     } yield UserServicesResult(
       total = foundServices.total,
-      hits = foundServices.hits.flatMap { hit =>
+      services = foundServices.hits.flatMap { hit =>
         serviceMap
           .get(hit.id)
           .map(s =>

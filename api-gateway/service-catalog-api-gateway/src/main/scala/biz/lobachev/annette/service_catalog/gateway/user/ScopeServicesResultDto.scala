@@ -5,7 +5,8 @@ import play.api.libs.json.{Format, Json}
 
 case class ScopeServicesResultDto(
   groups: Seq[UserGroup],
-  services: Seq[UserService]
+  services: Seq[UserService],
+  applicationUrls: Map[String, String]
 )
 
 object ScopeServicesResultDto {

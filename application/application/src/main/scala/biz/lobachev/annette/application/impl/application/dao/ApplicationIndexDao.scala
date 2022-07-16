@@ -38,16 +38,30 @@ class ApplicationIndexDao(client: ElasticClient)(implicit
   def createApplication(event: ApplicationEntity.ApplicationCreated) =
     createIndexDoc(
       event.id,
-      "id"        -> event.id,
-      "name"      -> event.name,
-      "updatedAt" -> event.createdAt
+      "id"               -> event.id,
+      "name"             -> event.name,
+      "label"            -> event.label.values.mkString(" "),
+      "labelDescription" -> event.labelDescription.values.mkString(" "),
+      "updatedAt"        -> event.createdAt
     )
 
-  def updateApplicationName(event: ApplicationEntity.ApplicationNameUpdated) =
+  def updateApplicationName(event: ApplicationEntity.ApplicationNameUpdated)                         =
     updateIndexDoc(
       event.id,
       "name"      -> event.name,
       "updatedAt" -> event.updatedAt
+    )
+  def updateApplicationLabel(event: ApplicationEntity.ApplicationLabelUpdated)                       =
+    updateIndexDoc(
+      event.id,
+      "label"     -> event.label.values.mkString(" "),
+      "updatedAt" -> event.updatedAt
+    )
+  def updateApplicationLabelDescription(event: ApplicationEntity.ApplicationLabelDescriptionUpdated) =
+    updateIndexDoc(
+      event.id,
+      "labelDescription" -> event.labelDescription.values.mkString(" "),
+      "updatedAt"        -> event.updatedAt
     )
 
   def deleteApplication(event: ApplicationEntity.ApplicationDeleted) =

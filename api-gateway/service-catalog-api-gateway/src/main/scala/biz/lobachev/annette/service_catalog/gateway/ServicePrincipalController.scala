@@ -25,7 +25,6 @@ import biz.lobachev.annette.service_catalog.api.service_principal.{
   UnassignServicePrincipalPayload
 }
 import biz.lobachev.annette.service_catalog.gateway.Permissions.MAINTAIN_SERVICE_CATALOG
-import biz.lobachev.annette.service_catalog.gateway.user._
 import biz.lobachev.annette.service_catalog.gateway.service_principal.{
   AssignServicePrincipalPayloadDto,
   UnassignServicePrincipalPayloadDto

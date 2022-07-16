@@ -16,20 +16,21 @@
 
 package biz.lobachev.annette.application.impl.application
 
-import java.time.OffsetDateTime
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
-import com.lightbend.lagom.scaladsl.persistence._
-import play.api.libs.json._
-import org.slf4j.LoggerFactory
 import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.api.translation.TranslationId
 import biz.lobachev.annette.application.impl.application.model.ApplicationState
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.translation.Caption
+import biz.lobachev.annette.core.model.translation.MultiLanguageText
+import com.lightbend.lagom.scaladsl.persistence._
 import io.scalaland.chimney.dsl._
+import org.slf4j.LoggerFactory
+import play.api.libs.json._
+
+import java.time.OffsetDateTime
 
 object ApplicationEntity {
 
@@ -38,7 +39,8 @@ object ApplicationEntity {
   final case class CreateApplication(
     id: ApplicationId,
     name: String,
-    caption: Caption,
+    label: MultiLanguageText,
+    labelDescription: MultiLanguageText,
     translations: Set[TranslationId] = Set.empty,
     frontendUrl: Option[String],
     backendUrl: Option[String],
@@ -48,7 +50,8 @@ object ApplicationEntity {
   final case class UpdateApplication(
     id: ApplicationId,
     name: String,
-    caption: Caption,
+    label: MultiLanguageText,
+    labelDescription: MultiLanguageText,
     translations: Set[TranslationId] = Set.empty,
     frontendUrl: Option[String],
     backendUrl: Option[String],
@@ -89,7 +92,8 @@ object ApplicationEntity {
   final case class ApplicationCreated(
     id: ApplicationId,
     name: String,
-    caption: Caption,
+    label: MultiLanguageText,
+    labelDescription: MultiLanguageText,
     translations: Set[TranslationId] = Set.empty,
     frontendUrl: Option[String],
     backendUrl: Option[String],
@@ -102,9 +106,15 @@ object ApplicationEntity {
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
-  final case class ApplicationCaptionUpdated(
+  final case class ApplicationLabelUpdated(
     id: ApplicationId,
-    caption: Caption,
+    label: MultiLanguageText,
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+  final case class ApplicationLabelDescriptionUpdated(
+    id: ApplicationId,
+    labelDescription: MultiLanguageText,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -132,13 +142,14 @@ object ApplicationEntity {
     deletedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
 
-  implicit val eventApplicationCreatedFormat: Format[ApplicationCreated]                         = Json.format
-  implicit val eventApplicationNameUpdatedFormat: Format[ApplicationNameUpdated]                 = Json.format
-  implicit val eventApplicationCaptionUpdatedFormat: Format[ApplicationCaptionUpdated]           = Json.format
-  implicit val eventApplicationTranslationsUpdatedFormat: Format[ApplicationTranslationsUpdated] = Json.format
-  implicit val eventApplicationBackendUrlUpdatedFormat: Format[ApplicationBackendUrlUpdated]     = Json.format
-  implicit val eventApplicationFrontendUrlUpdatedFormat: Format[ApplicationFrontendUrlUpdated]   = Json.format
-  implicit val eventApplicationDeletedFormat: Format[ApplicationDeleted]                         = Json.format
+  implicit val eventApplicationCreatedFormat: Format[ApplicationCreated]                                 = Json.format
+  implicit val eventApplicationNameUpdatedFormat: Format[ApplicationNameUpdated]                         = Json.format
+  implicit val eventApplicationLabelUpdatedFormat: Format[ApplicationLabelUpdated]                       = Json.format
+  implicit val eventApplicationLabelDescriptionUpdatedFormat: Format[ApplicationLabelDescriptionUpdated] = Json.format
+  implicit val eventApplicationTranslationsUpdatedFormat: Format[ApplicationTranslationsUpdated]         = Json.format
+  implicit val eventApplicationBackendUrlUpdatedFormat: Format[ApplicationBackendUrlUpdated]             = Json.format
+  implicit val eventApplicationFrontendUrlUpdatedFormat: Format[ApplicationFrontendUrlUpdated]           = Json.format
+  implicit val eventApplicationDeletedFormat: Format[ApplicationDeleted]                                 = Json.format
 
   val empty = ApplicationEntity()
 
@@ -191,7 +202,10 @@ final case class ApplicationEntity(maybeState: Option[ApplicationState] = None) 
           Seq(
             if (state.name != cmd.name) Some(cmd.transformInto[ApplicationNameUpdated])
             else None,
-            if (state.caption != cmd.caption) Some(cmd.transformInto[ApplicationCaptionUpdated])
+            if (state.label != cmd.label) Some(cmd.transformInto[ApplicationLabelUpdated])
+            else None,
+            if (state.labelDescription != cmd.labelDescription)
+              Some(cmd.transformInto[ApplicationLabelDescriptionUpdated])
             else None,
             if (state.translations != cmd.translations)
               Some(cmd.transformInto[ApplicationTranslationsUpdated])
@@ -222,13 +236,14 @@ final case class ApplicationEntity(maybeState: Option[ApplicationState] = None) 
 
   def applyEvent(event: Event): ApplicationEntity =
     event match {
-      case event: ApplicationCreated             => onApplicationCreated(event)
-      case event: ApplicationNameUpdated         => onApplicationNameUpdated(event)
-      case event: ApplicationCaptionUpdated      => onApplicationCaptionUpdated(event)
-      case event: ApplicationTranslationsUpdated => onApplicationTranslationsUpdated(event)
-      case event: ApplicationBackendUrlUpdated   => onApplicationBackendUrlUpdated(event)
-      case event: ApplicationFrontendUrlUpdated  => onApplicationFrontendUrlUpdated(event)
-      case _: ApplicationDeleted                 => onApplicationDeleted()
+      case event: ApplicationCreated                 => onApplicationCreated(event)
+      case event: ApplicationNameUpdated             => onApplicationNameUpdated(event)
+      case event: ApplicationLabelUpdated            => onApplicationLabelUpdated(event)
+      case event: ApplicationLabelDescriptionUpdated => onApplicationLabelDescriptionUpdated(event)
+      case event: ApplicationTranslationsUpdated     => onApplicationTranslationsUpdated(event)
+      case event: ApplicationBackendUrlUpdated       => onApplicationBackendUrlUpdated(event)
+      case event: ApplicationFrontendUrlUpdated      => onApplicationFrontendUrlUpdated(event)
+      case _: ApplicationDeleted                     => onApplicationDeleted()
     }
 
   def onApplicationCreated(event: ApplicationCreated): ApplicationEntity =
@@ -253,11 +268,22 @@ final case class ApplicationEntity(maybeState: Option[ApplicationState] = None) 
       )
     )
 
-  def onApplicationCaptionUpdated(event: ApplicationCaptionUpdated): ApplicationEntity =
+  def onApplicationLabelUpdated(event: ApplicationLabelUpdated): ApplicationEntity =
     ApplicationEntity(
       maybeState.map(state =>
         state.copy(
-          caption = event.caption,
+          label = event.label,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
+
+  def onApplicationLabelDescriptionUpdated(event: ApplicationLabelDescriptionUpdated): ApplicationEntity =
+    ApplicationEntity(
+      maybeState.map(state =>
+        state.copy(
+          labelDescription = event.labelDescription,
           updatedBy = event.updatedBy,
           updatedAt = event.updatedAt
         )
