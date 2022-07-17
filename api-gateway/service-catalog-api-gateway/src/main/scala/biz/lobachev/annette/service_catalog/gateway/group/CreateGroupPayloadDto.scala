@@ -19,7 +19,7 @@ package biz.lobachev.annette.service_catalog.gateway.group
 import biz.lobachev.annette.core.model.translation.MultiLanguageText
 import biz.lobachev.annette.service_catalog.api.common.Icon
 import biz.lobachev.annette.service_catalog.api.group.GroupId
-import biz.lobachev.annette.service_catalog.api.service.ServiceId
+import biz.lobachev.annette.service_catalog.api.item.ScopeItemId
 import play.api.libs.json.{Format, Json}
 
 case class CreateGroupPayloadDto(
@@ -29,7 +29,7 @@ case class CreateGroupPayloadDto(
   icon: Icon,
   label: MultiLanguageText,
   labelDescription: MultiLanguageText,
-  services: Seq[ServiceId] = Seq.empty
+  services: Seq[ScopeItemId] = Seq.empty
 )
 
 object CreateGroupPayloadDto {

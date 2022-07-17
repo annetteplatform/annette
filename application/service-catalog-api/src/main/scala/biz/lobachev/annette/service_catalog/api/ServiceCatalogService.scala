@@ -30,7 +30,7 @@ import biz.lobachev.annette.service_catalog.api.user.{
 import biz.lobachev.annette.service_catalog.api.group._
 import biz.lobachev.annette.service_catalog.api.scope._
 import biz.lobachev.annette.service_catalog.api.scope_principal._
-import biz.lobachev.annette.service_catalog.api.service._
+import biz.lobachev.annette.service_catalog.api.item._
 import biz.lobachev.annette.service_catalog.api.service_principal._
 
 import scala.concurrent.Future
@@ -72,12 +72,12 @@ trait ServiceCatalogService {
 
   def createService(payload: CreateServicePayload): Future[Done]
   def updateService(payload: UpdateServicePayload): Future[Done]
-  def activateService(payload: ActivateServicePayload): Future[Done]
-  def deactivateService(payload: DeactivateServicePayload): Future[Done]
-  def deleteService(payload: DeleteServicePayload): Future[Done]
-  def getServiceById(id: ServiceId, fromReadSide: Boolean = true): Future[Service]
-  def getServicesById(ids: Set[ServiceId], fromReadSide: Boolean = true): Future[Seq[Service]]
-  def findServices(payload: FindServiceQuery): Future[FindResult]
+  def activateService(payload: ActivateScopeItemPayload): Future[Done]
+  def deactivateService(payload: DeactivateScopeItemPayload): Future[Done]
+  def deleteService(payload: DeleteScopeItemPayload): Future[Done]
+  def getServiceById(id: ScopeItemId, fromReadSide: Boolean = true): Future[ServiceItem]
+  def getServicesById(ids: Set[ScopeItemId], fromReadSide: Boolean = true): Future[Seq[ServiceItem]]
+  def findServices(payload: FindScopeItemsQuery): Future[FindResult]
 
   def assignServicePrincipal(payload: AssignServicePrincipalPayload): Future[Done]
   def unassignServicePrincipal(payload: UnassignServicePrincipalPayload): Future[Done]

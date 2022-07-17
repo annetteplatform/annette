@@ -20,7 +20,7 @@ import biz.lobachev.annette.api_gateway_core.authentication.MaybeAuthenticatedAc
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.application.api.ApplicationService
 import biz.lobachev.annette.service_catalog.api.ServiceCatalogService
-import biz.lobachev.annette.service_catalog.api.service.{ExternalLink, InternalLink}
+import biz.lobachev.annette.service_catalog.api.item.{ExternalLink, InternalLink}
 import biz.lobachev.annette.service_catalog.api.user.{
   FindUserServicesQuery,
   ScopeByCategoryFindQuery,

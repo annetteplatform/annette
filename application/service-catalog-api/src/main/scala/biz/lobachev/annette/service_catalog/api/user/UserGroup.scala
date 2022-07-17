@@ -18,7 +18,7 @@ package biz.lobachev.annette.service_catalog.api.user
 
 import biz.lobachev.annette.service_catalog.api.common.Icon
 import biz.lobachev.annette.service_catalog.api.group.GroupId
-import biz.lobachev.annette.service_catalog.api.service.ServiceId
+import biz.lobachev.annette.service_catalog.api.item.ScopeItemId
 import play.api.libs.json.{Format, Json}
 
 case class UserGroup(
@@ -26,7 +26,7 @@ case class UserGroup(
   icon: Icon,
   label: String,
   labelDescription: String,
-  services: Seq[ServiceId] = Seq.empty
+  services: Seq[ScopeItemId] = Seq.empty
 )
 
 object UserGroup {
