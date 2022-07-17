@@ -24,7 +24,8 @@ import biz.lobachev.annette.service_catalog.api.item.{ExternalLink, InternalLink
 import biz.lobachev.annette.service_catalog.api.user.{
   FindUserServicesQuery,
   ScopeByCategoryFindQuery,
-  ScopeServicesQuery
+  ScopeServicesQuery,
+  UserService
 }
 import biz.lobachev.annette.service_catalog.gateway.Permissions.VIEW_SERVICE_CATALOG
 import biz.lobachev.annette.service_catalog.gateway.user.{ScopeServicesResultDto, UserServicesResultDto}
@@ -64,22 +65,18 @@ class UserServiceController @Inject() (
                                languageId = languageId
                              )
                            )
-          applicationIds = scopeServices.serviceItems
-                             .flatMap(s =>
-                               s.link match {
-                                 case InternalLink(applicationId, _, _) => Some(applicationId)
-                                 case _: ExternalLink                   => None
-                               }
-                             )
-                             .toSet
+          applicationIds = scopeServices.serviceItems.flatMap {
+                             case UserService(_, _, _, _, InternalLink(applicationId, _, _), _) => Some(applicationId)
+                             case _                                                             => None
+                           }.toSet
           applications  <- if (applicationIds.nonEmpty)
                              appllicationService.getApplicationsById(applicationIds)
                            else Future.successful(Seq.empty)
         } yield Ok(
           Json.toJson(
             ScopeServicesResultDto(
-              groups = scopeServices.groups,
-              services = scopeServices.serviceItems,
+              root = scopeServices.root,
+              serviceItems = scopeServices.serviceItems,
               applicationUrls = applications.map(a => a.id -> a.frontendUrl.getOrElse("")).toMap
             )
           )

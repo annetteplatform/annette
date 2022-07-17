@@ -14,15 +14,15 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.service_catalog.gateway.group
+package biz.lobachev.annette.service_catalog.gateway.item
 
-import biz.lobachev.annette.service_catalog.api.group.GroupId
+import biz.lobachev.annette.service_catalog.api.item.ServiceItemId
 import play.api.libs.json.{Format, Json}
 
-case class ActivateGroupPayloadDto(
-  id: GroupId
+case class DeactivateServiceItemPayloadDto(
+  id: ServiceItemId
 )
 
-object ActivateGroupPayloadDto {
-  implicit val format: Format[ActivateGroupPayloadDto] = Json.format
+object DeactivateServiceItemPayloadDto {
+  implicit val format: Format[DeactivateServiceItemPayloadDto] = Json.format
 }

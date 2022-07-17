@@ -91,13 +91,6 @@ private[service_catalog] class ScopeDbDao(override val session: CassandraSession
     val updatesCql = updates.map { case f -> _ => s"$f = ?" }.mkString(", ")
     val update     = s"UPDATE scopes SET $updatesCql WHERE id = ?;"
     val params     = updates.map { case _ -> v => v } :+ event.id
-
-    println()
-    println()
-    println(update)
-    println()
-    println()
-
     for {
       _ <- session.executeWrite(update, params: _*)
     } yield Done

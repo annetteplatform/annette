@@ -40,11 +40,11 @@ class ScopeController @Inject() (
 
   def createScope =
     authenticated.async(parse.json[CreateScopePayloadDto]) { implicit request =>
-      val payload = request.body
-        .into[CreateScopePayload]
-        .withFieldConst(_.createdBy, request.subject.principals.head)
-        .transform
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
+        val payload = request.body
+          .into[CreateScopePayload]
+          .withFieldConst(_.createdBy, request.subject.principals.head)
+          .transform
         for {
           _      <- serviceCatalogService.createScope(payload)
           result <- serviceCatalogService.getScopeById(payload.id, false)
@@ -54,11 +54,11 @@ class ScopeController @Inject() (
 
   def updateScope =
     authenticated.async(parse.json[UpdateScopePayloadDto]) { implicit request =>
-      val payload = request.body
-        .into[UpdateScopePayload]
-        .withFieldConst(_.updatedBy, request.subject.principals.head)
-        .transform
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
+        val payload = request.body
+          .into[UpdateScopePayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
         for {
           _      <- serviceCatalogService.updateScope(payload)
           result <- serviceCatalogService.getScopeById(payload.id, false)
@@ -68,11 +68,11 @@ class ScopeController @Inject() (
 
   def activateScope =
     authenticated.async(parse.json[ActivateScopePayloadDto]) { implicit request =>
-      val payload = request.body
-        .into[ActivateScopePayload]
-        .withFieldConst(_.updatedBy, request.subject.principals.head)
-        .transform
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
+        val payload = request.body
+          .into[ActivateScopePayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
         for {
           _      <- serviceCatalogService.activateScope(payload)
           result <- serviceCatalogService.getScopeById(payload.id, false)
@@ -82,11 +82,11 @@ class ScopeController @Inject() (
 
   def deactivateScope =
     authenticated.async(parse.json[DeactivateScopePayloadDto]) { implicit request =>
-      val payload = request.body
-        .into[DeactivateScopePayload]
-        .withFieldConst(_.updatedBy, request.subject.principals.head)
-        .transform
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
+        val payload = request.body
+          .into[DeactivateScopePayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
         for {
           _      <- serviceCatalogService.deactivateScope(payload)
           result <- serviceCatalogService.getScopeById(payload.id, false)
@@ -96,11 +96,11 @@ class ScopeController @Inject() (
 
   def deleteScope =
     authenticated.async(parse.json[DeleteScopePayloadDto]) { implicit request =>
-      val payload = request.body
-        .into[DeleteScopePayload]
-        .withFieldConst(_.deletedBy, request.subject.principals.head)
-        .transform
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
+        val payload = request.body
+          .into[DeleteScopePayload]
+          .withFieldConst(_.deletedBy, request.subject.principals.head)
+          .transform
         for {
           _ <- serviceCatalogService.deleteScope(payload)
         } yield Ok("")
@@ -108,43 +108,28 @@ class ScopeController @Inject() (
     }
 
   def getScopeById(id: ScopeId, fromReadSide: Boolean = true) =
-    if (fromReadSide)
-      Action.async { _ =>
+    authenticated.async { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
         for {
           result <- serviceCatalogService.getScopeById(id, fromReadSide)
         } yield Ok(Json.toJson(result))
       }
-    else
-      authenticated.async { implicit request =>
-        authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
-          for {
-            result <- serviceCatalogService.getScopeById(id, fromReadSide)
-          } yield Ok(Json.toJson(result))
-        }
-      }
+    }
 
   def getScopesById(fromReadSide: Boolean = true) =
-    if (fromReadSide)
-      Action.async(parse.json[Set[ScopeId]]) { request =>
+    authenticated.async(parse.json[Set[ScopeId]]) { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
         val ids = request.body
         for {
           result <- serviceCatalogService.getScopesById(ids, fromReadSide)
         } yield Ok(Json.toJson(result))
       }
-    else
-      authenticated.async(parse.json[Set[ScopeId]]) { implicit request =>
-        authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
-          val ids = request.body
-          for {
-            result <- serviceCatalogService.getScopesById(ids, fromReadSide)
-          } yield Ok(Json.toJson(result))
-        }
-      }
+    }
 
   def findScopes =
     authenticated.async(parse.json[FindScopeQuery]) { implicit request =>
-      val query = request.body
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
+        val query = request.body
         for {
           result <- serviceCatalogService.findScopes(query)
         } yield Ok(Json.toJson(result))

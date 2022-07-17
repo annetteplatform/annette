@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.service_catalog.gateway.service
+package biz.lobachev.annette.service_catalog.gateway.item
 
 import biz.lobachev.annette.core.model.translation.MultiLanguageText
 import biz.lobachev.annette.service_catalog.api.common.Icon
-import biz.lobachev.annette.service_catalog.api.item.{ServiceItemId, ServiceLink}
+import biz.lobachev.annette.service_catalog.api.item.ServiceItemId
 import play.api.libs.json.{Format, Json}
 
-case class CreateServicePayloadDto(
+case class UpdateGroupPayloadDto(
   id: ServiceItemId,
-  name: String,
-  description: String,
-  icon: Icon,
-  label: MultiLanguageText,
-  labelDescription: MultiLanguageText,
-  link: ServiceLink
+  name: Option[String],
+  description: Option[String],
+  icon: Option[Icon],
+  label: Option[MultiLanguageText],
+  labelDescription: Option[MultiLanguageText],
+  children: Option[Seq[ServiceItemId]]
 )
 
-object CreateServicePayloadDto {
-  implicit val format: Format[CreateServicePayloadDto] = Json.format
+object UpdateGroupPayloadDto {
+  implicit val format: Format[UpdateGroupPayloadDto] = Json.format
 }
