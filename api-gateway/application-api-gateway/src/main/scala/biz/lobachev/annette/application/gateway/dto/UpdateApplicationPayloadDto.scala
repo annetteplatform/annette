@@ -18,15 +18,17 @@ package biz.lobachev.annette.application.gateway.dto
 
 import biz.lobachev.annette.application.api.application.ApplicationId
 import biz.lobachev.annette.application.api.translation.TranslationId
-import biz.lobachev.annette.core.model.translation.Caption
+import biz.lobachev.annette.core.model.translation.MultiLanguageText
 import play.api.libs.json.{Format, Json}
 
 case class UpdateApplicationPayloadDto(
   id: ApplicationId,
   name: String,
-  caption: Caption,
+  label: MultiLanguageText,
+  labelDescription: MultiLanguageText,
   translations: Set[TranslationId] = Set.empty,
-  serverUrl: String
+  frontendUrl: Option[String],
+  backendUrl: Option[String]
 )
 
 object UpdateApplicationPayloadDto {

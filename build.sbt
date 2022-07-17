@@ -80,10 +80,11 @@ lazy val root = (project in file("."))
     `api-gateway`,
     // initialization application
     `ignition-core`,
-    `demo-ignition`,
+//    `demo-ignition`,
     `camunda`,
     // API gateways
     `application-api-gateway`,
+    `service-catalog-api-gateway`,
     `authorization-api-gateway`,
     `bpm-api-gateway`,
     `cms-api-gateway`,
@@ -92,6 +93,7 @@ lazy val root = (project in file("."))
     `principal-groups-api-gateway`,
     // microservices API
     `application-api`,
+    `service-catalog-api`,
     `authorization-api`,
     `bpm-repository-api`,
     `cms-api`,
@@ -101,6 +103,7 @@ lazy val root = (project in file("."))
     `subscriptions-api`,
     // microservices
     `application`,
+    `service-catalog`,
     `authorization`,
     `bpm-repository`,
     `cms`,
@@ -187,6 +190,7 @@ lazy val `api-gateway` = (project in file("api-gateway/api-gateway"))
   .dependsOn(
     `api-gateway-core`,
     `application-api-gateway`,
+    `service-catalog-api-gateway`,
     `authorization-api-gateway`,
     `org-structure-api-gateway`,
     `persons-api-gateway`,
@@ -270,6 +274,33 @@ def applicationProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`application-api`, `microservice-core`)
 
+lazy val `service-catalog-api` = (project in file("application/service-catalog-api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      lagomScaladslTestKit
+    ) ++ Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(`core`)
+
+def serviceCatalogProject(pr: Project) =
+  pr
+    .enablePlugins(LagomScala)
+    .settings(
+      libraryDependencies ++= Seq(
+        lagomScaladslPersistenceCassandra,
+        lagomScaladslTestKit,
+        Dependencies.macwire,
+        Dependencies.chimney
+      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
+    )
+    .settings(lagomForkedTestSettings: _*)
+    .settings(confDirSettings: _*)
+    .settings(annetteSettings: _*)
+    .settings(dockerSettings: _*)
+    .dependsOn(`service-catalog-api`, `microservice-core`)
+
 lazy val `application-api-gateway` = (project in file("api-gateway/application-api-gateway"))
   .settings(
     libraryDependencies ++= Seq(
@@ -287,6 +318,26 @@ lazy val `application-api-gateway` = (project in file("api-gateway/application-a
   .dependsOn(
     `api-gateway-core`,
     `application-api`
+  )
+
+lazy val `service-catalog-api-gateway` = (project in file("api-gateway/service-catalog-api-gateway"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslServer % Optional,
+      ws,
+      Dependencies.macwire,
+      Dependencies.playJsonExt,
+      Dependencies.jwt,
+      Dependencies.pureConfig,
+      Dependencies.chimney
+    ) ++
+      Dependencies.tests
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(
+    `api-gateway-core`,
+    `application-api`,
+    `service-catalog-api`
   )
 
 lazy val `authorization-api` = (project in file("authorization/authorization-api"))
@@ -619,8 +670,9 @@ def subscriptionsProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`subscriptions-api`, `microservice-core`)
 
-lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/ignition-demo"))
+//lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/ignition-demo"))
 lazy val `application`      = applicationProject(project in file("application/application"))
+lazy val `service-catalog`  = serviceCatalogProject(project in file("application/service-catalog"))
 lazy val `authorization`    = authorizationProject(project in file("authorization/authorization"))
 lazy val `bpm-repository`   = bpmRepositoryProject(project in file("bpm/bpm-repository"))
 lazy val `cms`              = cmsProject(project in file("cms/cms"))

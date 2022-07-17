@@ -16,18 +16,21 @@
 
 package biz.lobachev.annette.application.api.application
 
-import java.time.OffsetDateTime
 import biz.lobachev.annette.application.api.translation.TranslationId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.translation.Caption
+import biz.lobachev.annette.core.model.translation.MultiLanguageText
 import play.api.libs.json.{Format, Json}
+
+import java.time.OffsetDateTime
 
 case class Application(
   id: ApplicationId,
   name: String,
-  caption: Caption,
+  label: MultiLanguageText,
+  labelDescription: MultiLanguageText,
   translations: Set[TranslationId] = Set.empty,
-  serverUrl: String,
+  frontendUrl: Option[String],
+  backendUrl: Option[String],
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
 )

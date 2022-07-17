@@ -60,6 +60,16 @@ services:
     environment:
       POSTGRES_PASSWORD: password
 
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - 15433:80
+    depends_on:
+      - postgres
+    environment:
+      PGADMIN_DEFAULT_PASSWORD: postgres
+      PGADMIN_DEFAULT_EMAIL: postgres@example.com
+
   keycloak:
     image: quay.io/keycloak/keycloak:16.1.1
     environment:
