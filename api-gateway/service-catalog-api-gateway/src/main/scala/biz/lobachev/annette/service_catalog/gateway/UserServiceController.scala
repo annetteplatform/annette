@@ -64,7 +64,7 @@ class UserServiceController @Inject() (
                                languageId = languageId
                              )
                            )
-          applicationIds = scopeServices.services
+          applicationIds = scopeServices.serviceItems
                              .flatMap(s =>
                                s.link match {
                                  case InternalLink(applicationId, _, _) => Some(applicationId)
@@ -79,7 +79,7 @@ class UserServiceController @Inject() (
           Json.toJson(
             ScopeServicesResultDto(
               groups = scopeServices.groups,
-              services = scopeServices.services,
+              services = scopeServices.serviceItems,
               applicationUrls = applications.map(a => a.id -> a.frontendUrl.getOrElse("")).toMap
             )
           )

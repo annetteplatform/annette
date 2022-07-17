@@ -14,33 +14,35 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.service_catalog.service.group
+package biz.lobachev.annette.service_catalog.service.item
 
 import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import biz.lobachev.annette.service_catalog.service.group.dao.GroupDbDao
+import biz.lobachev.annette.service_catalog.service.item.dao.ServiceItemDbDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
 import scala.concurrent.ExecutionContext
 
-private[impl] class GroupDbEventProcessor(
+private[service_catalog] class ServiceItemDbEventProcessor(
   readSide: CassandraReadSide,
-  dbDao: GroupDbDao
+  dbDao: ServiceItemDbDao
 )(implicit ec: ExecutionContext)
-    extends ReadSideProcessor[GroupEntity.Event]
+    extends ReadSideProcessor[ServiceItemEntity.Event]
     with SimpleEventHandling {
 
   def buildHandler() =
     readSide
-      .builder[GroupEntity.Event]("group-cassandra")
+      .builder[ServiceItemEntity.Event]("service-cassandra")
       .setGlobalPrepare(dbDao.createTables)
-      .setEventHandler[GroupEntity.GroupCreated](handle(dbDao.createGroup))
-      .setEventHandler[GroupEntity.GroupUpdated](handle(dbDao.updateGroup))
-      .setEventHandler[GroupEntity.GroupActivated](handle(dbDao.activateGroup))
-      .setEventHandler[GroupEntity.GroupDeactivated](handle(dbDao.deactivateGroup))
-      .setEventHandler[GroupEntity.GroupDeleted](handle(dbDao.deleteGroup))
+      .setEventHandler[ServiceItemEntity.GroupCreated](handle(dbDao.createGroup))
+      .setEventHandler[ServiceItemEntity.GroupUpdated](handle(dbDao.updateGroup))
+      .setEventHandler[ServiceItemEntity.ServiceCreated](handle(dbDao.createService))
+      .setEventHandler[ServiceItemEntity.ServiceUpdated](handle(dbDao.updateService))
+      .setEventHandler[ServiceItemEntity.ServiceItemActivated](handle(dbDao.activateService))
+      .setEventHandler[ServiceItemEntity.ServiceItemDeactivated](handle(dbDao.deactivateService))
+      .setEventHandler[ServiceItemEntity.ServiceItemDeleted](handle(dbDao.deleteService))
       .build()
 
-  def aggregateTags = GroupEntity.Event.Tag.allTags
+  def aggregateTags = ServiceItemEntity.Event.Tag.allTags
 
 }

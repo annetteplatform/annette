@@ -21,7 +21,7 @@ import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.service_catalog.api.item.ScopeItemId
+import biz.lobachev.annette.service_catalog.api.item.ServiceItemId
 import biz.lobachev.annette.service_catalog.api.service_principal.{
   AssignServicePrincipalPayload,
   UnassignServicePrincipalPayload
@@ -57,13 +57,13 @@ object ServicePrincipalEntity {
   }
 
   final case class ServicePrincipalAssigned(
-    serviceId: ScopeItemId,
+    serviceId: ServiceItemId,
     principal: AnnettePrincipal,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
   final case class ServicePrincipalUnassigned(
-    serviceId: ScopeItemId,
+    serviceId: ServiceItemId,
     principal: AnnettePrincipal,
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
@@ -93,12 +93,12 @@ object ServicePrincipalEntity {
   implicit val entityFormat: Format[ServicePrincipalEntity] = Json.format
 
   def compositeId(
-    serviceId: ScopeItemId,
+    serviceId: ServiceItemId,
     principal: AnnettePrincipal
   ): String =
     s"$serviceId/${principal.code}"
 
-  def fromCompositeId(compositeId: String): (ScopeItemId, AnnettePrincipal) = {
+  def fromCompositeId(compositeId: String): (ServiceItemId, AnnettePrincipal) = {
     val split = compositeId.split("/")
     split(0) -> AnnettePrincipal.fromCode(split(1))
   }

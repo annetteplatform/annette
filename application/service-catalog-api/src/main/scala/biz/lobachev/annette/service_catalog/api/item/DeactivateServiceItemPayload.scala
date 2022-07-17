@@ -14,8 +14,16 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.service_catalog.api
+package biz.lobachev.annette.service_catalog.api.item
 
-package object group {
-  type GroupId = String
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import play.api.libs.json.{Format, Json}
+
+case class DeactivateServiceItemPayload(
+  id: ServiceItemId,
+  updatedBy: AnnettePrincipal
+)
+
+object DeactivateServiceItemPayload {
+  implicit val format: Format[DeactivateServiceItemPayload] = Json.format
 }

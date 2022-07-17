@@ -17,12 +17,12 @@
 package biz.lobachev.annette.service_catalog.service.service_principal.dao
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.service_catalog.api.item.ScopeItemId
+import biz.lobachev.annette.service_catalog.api.item.ServiceItemId
 
 import java.time.OffsetDateTime
 
 case class ServicePrincipalRecord(
-  serviceId: ScopeItemId,
+  serviceId: ServiceItemId,
   principal: AnnettePrincipal,
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now

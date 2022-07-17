@@ -14,18 +14,20 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.service_catalog.service.service.dao
+package biz.lobachev.annette.service_catalog.service.item.dao
 
 import akka.Done
 import akka.stream.Materializer
 import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
-import biz.lobachev.annette.service_catalog.api.item.{ScopeItemId, ServiceItem, ServiceLink}
+import biz.lobachev.annette.service_catalog.api.item.{ServiceItem, ServiceItemId, ServiceLink}
 import biz.lobachev.annette.service_catalog.service.common.IconEncoder
-import biz.lobachev.annette.service_catalog.service.service.ServiceEntity.{
-  ServiceActivated,
+import biz.lobachev.annette.service_catalog.service.item.ServiceItemEntity.{
+  GroupCreated,
+  GroupUpdated,
   ServiceCreated,
-  ServiceDeactivated,
-  ServiceDeleted,
+  ServiceItemActivated,
+  ServiceItemDeactivated,
+  ServiceItemDeleted,
   ServiceUpdated
 }
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
@@ -37,7 +39,7 @@ import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 
-private[impl] class ServiceDbDao(override val session: CassandraSession)(implicit
+private[service_catalog] class ServiceItemDbDao(override val session: CassandraSession)(implicit
   val ec: ExecutionContext,
   val materializer: Materializer
 ) extends CassandraQuillDao
@@ -48,10 +50,10 @@ private[impl] class ServiceDbDao(override val session: CassandraSession)(implici
   implicit val serviceLinkEncoder = genericJsonEncoder[ServiceLink]
   implicit val serviceLinkDecoder = genericJsonDecoder[ServiceLink]
 
-  private val serviceSchema = quote(querySchema[ServiceRecord]("services"))
+  private val serviceSchema = quote(querySchema[ServiceItemRecord]("service_items"))
 
-  private implicit val insertServiceMeta = insertMeta[ServiceRecord]()
-  private implicit val updateServiceMeta = updateMeta[ServiceRecord](_.id)
+  private implicit val insertServiceMeta = insertMeta[ServiceItemRecord]()
+  private implicit val updateServiceMeta = updateMeta[ServiceItemRecord](_.id)
   println(insertServiceMeta.toString)
   println(updateServiceMeta.toString)
 
@@ -60,14 +62,16 @@ private[impl] class ServiceDbDao(override val session: CassandraSession)(implici
     for {
 
       _ <- session.executeCreateTable(
-             CassandraTableBuilder("services")
+             CassandraTableBuilder("service_items")
                .column("id", Text, true)
                .column("name", Text)
                .column("description", Text)
                .column("icon", Text)
                .column("label", Map(Text, Text))
                .column("label_description", Map(Text, Text))
+               .column("item_type", Text)
                .column("link", Text)
+               .column("children", List(Text))
                .column("active", Boolean)
                .column("updated_at", Timestamp)
                .column("updated_by", Text)
@@ -76,10 +80,52 @@ private[impl] class ServiceDbDao(override val session: CassandraSession)(implici
     } yield Done
   }
 
+  def createGroup(event: GroupCreated): Future[Done] = {
+    val group = event
+      .into[ServiceItemRecord]
+      .withFieldConst(_.itemType, "group")
+      .withFieldConst(_.active, true)
+      .withFieldConst(_.link, None)
+      .withFieldComputed(_.updatedAt, _.createdAt)
+      .withFieldComputed(_.updatedBy, _.createdBy)
+      .transform
+    for {
+      _ <- ctx.run(serviceSchema.insert(lift(group)))
+    } yield Done
+  }
+
+  def updateGroup(event: GroupUpdated): Future[Done] = {
+    val updates    = Seq(
+      event.name.map(v => "name" -> v),
+      event.description.map(v => "description" -> v),
+      event.icon.map(v => "icon" -> Json.toJson(v).toString()),
+      event.label.map(v => "label" -> v.asJava),
+      event.labelDescription.map(v => "label_description" -> v.asJava),
+      event.children.map(v => "children" -> v.asJava),
+      Some("updated_by" -> event.updatedBy.code),
+      Some("updated_at" -> new Date(event.updatedAt.toInstant.toEpochMilli))
+    ).flatten
+    val updatesCql = updates.map { case f -> _ => s"$f = ?" }.mkString(", ")
+    val update     = s"UPDATE service_items SET $updatesCql WHERE id = ?;"
+    val params     = updates.map { case _ -> v => v } :+ event.id
+
+    println()
+    println()
+    println(update)
+    println()
+    println()
+
+    for {
+      _ <- session.executeWrite(update, params: _*)
+    } yield Done
+  }
+
   def createService(event: ServiceCreated): Future[Done] = {
     val service = event
-      .into[ServiceRecord]
+      .into[ServiceItemRecord]
+      .withFieldConst(_.itemType, "service")
       .withFieldConst(_.active, true)
+      .withFieldConst(_.children, None)
       .withFieldComputed(_.updatedAt, _.createdAt)
       .withFieldComputed(_.updatedBy, _.createdBy)
       .transform
@@ -100,7 +146,7 @@ private[impl] class ServiceDbDao(override val session: CassandraSession)(implici
       Some("updated_at" -> new Date(event.updatedAt.toInstant.toEpochMilli))
     ).flatten
     val updatesCql = updates.map { case f -> _ => s"$f = ?" }.mkString(", ")
-    val update     = s"UPDATE services SET $updatesCql WHERE id = ?;"
+    val update     = s"UPDATE service_items SET $updatesCql WHERE id = ?;"
     val params     = updates.map { case _ -> v => v } :+ event.id
 
     println()
@@ -114,7 +160,7 @@ private[impl] class ServiceDbDao(override val session: CassandraSession)(implici
     } yield Done
   }
 
-  def activateService(event: ServiceActivated): Future[Done] =
+  def activateService(event: ServiceItemActivated): Future[Done] =
     for {
       _ <- ctx.run(
              serviceSchema
@@ -127,7 +173,7 @@ private[impl] class ServiceDbDao(override val session: CassandraSession)(implici
            )
     } yield Done
 
-  def deactivateService(event: ServiceDeactivated): Future[Done] =
+  def deactivateService(event: ServiceItemDeactivated): Future[Done] =
     for {
       _ <- ctx.run(
              serviceSchema
@@ -140,22 +186,22 @@ private[impl] class ServiceDbDao(override val session: CassandraSession)(implici
            )
     } yield Done
 
-  def deleteService(event: ServiceDeleted): Future[Done] =
+  def deleteService(event: ServiceItemDeleted): Future[Done] =
     for {
       _ <- ctx.run(serviceSchema.filter(_.id == lift(event.id)).delete)
     } yield Done
 
-  def getServiceById(id: ScopeItemId): Future[Option[ServiceItem]] =
+  def getServiceItemById(id: ServiceItemId): Future[Option[ServiceItem]] =
     for {
       maybeService <- ctx
                         .run(serviceSchema.filter(_.id == lift(id)))
-                        .map(_.headOption.map(_.toService))
+                        .map(_.headOption.map(_.toServiceItem))
 
     } yield maybeService
 
-  def getServicesById(ids: Set[ScopeItemId]): Future[Seq[ServiceItem]] =
+  def getServiceItemsById(ids: Set[ServiceItemId]): Future[Seq[ServiceItem]] =
     for {
-      services <- ctx.run(serviceSchema.filter(b => liftQuery(ids).contains(b.id))).map(_.map(_.toService))
+      services <- ctx.run(serviceSchema.filter(b => liftQuery(ids).contains(b.id))).map(_.map(_.toServiceItem))
     } yield services
 
 }

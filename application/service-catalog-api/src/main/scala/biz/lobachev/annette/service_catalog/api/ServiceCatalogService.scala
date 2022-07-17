@@ -27,7 +27,6 @@ import biz.lobachev.annette.service_catalog.api.user.{
   ScopeServicesResult,
   UserServicesResult
 }
-import biz.lobachev.annette.service_catalog.api.group._
 import biz.lobachev.annette.service_catalog.api.scope._
 import biz.lobachev.annette.service_catalog.api.scope_principal._
 import biz.lobachev.annette.service_catalog.api.item._
@@ -54,7 +53,6 @@ trait ServiceCatalogService {
   def deleteScope(payload: DeleteScopePayload): Future[Done]
   def getScopeById(id: ScopeId, fromReadSide: Boolean = true): Future[Scope]
   def getScopesById(ids: Set[ScopeId], fromReadSide: Boolean = true): Future[Seq[Scope]]
-
   def findScopes(payload: FindScopeQuery): Future[FindResult]
 
   def assignScopePrincipal(payload: AssignScopePrincipalPayload): Future[Done]
@@ -63,21 +61,15 @@ trait ServiceCatalogService {
 
   def createGroup(payload: CreateGroupPayload): Future[Done]
   def updateGroup(payload: UpdateGroupPayload): Future[Done]
-  def activateGroup(payload: ActivateGroupPayload): Future[Done]
-  def deactivateGroup(payload: DeactivateGroupPayload): Future[Done]
-  def deleteGroup(payload: DeleteGroupPayload): Future[Done]
-  def getGroupById(id: GroupId, fromReadSide: Boolean = true): Future[Group]
-  def getGroupsById(ids: Set[GroupId], fromReadSide: Boolean = true): Future[Seq[Group]]
-  def findGroups(payload: FindGroupQuery): Future[FindResult]
-
   def createService(payload: CreateServicePayload): Future[Done]
   def updateService(payload: UpdateServicePayload): Future[Done]
-  def activateService(payload: ActivateScopeItemPayload): Future[Done]
-  def deactivateService(payload: DeactivateScopeItemPayload): Future[Done]
-  def deleteService(payload: DeleteScopeItemPayload): Future[Done]
-  def getServiceById(id: ScopeItemId, fromReadSide: Boolean = true): Future[ServiceItem]
-  def getServicesById(ids: Set[ScopeItemId], fromReadSide: Boolean = true): Future[Seq[ServiceItem]]
-  def findServices(payload: FindScopeItemsQuery): Future[FindResult]
+
+  def activateServiceItem(payload: ActivateServiceItemPayload): Future[Done]
+  def deactivateServiceItem(payload: DeactivateServiceItemPayload): Future[Done]
+  def deleteServiceItem(payload: DeleteServiceItemPayload): Future[Done]
+  def getServiceItemById(id: ServiceItemId, fromReadSide: Boolean = true): Future[ServiceItem]
+  def getServiceItemsById(ids: Set[ServiceItemId], fromReadSide: Boolean = true): Future[Seq[ServiceItem]]
+  def findServiceItems(payload: FindServiceItemsQuery): Future[FindResult]
 
   def assignServicePrincipal(payload: AssignServicePrincipalPayload): Future[Done]
   def unassignServicePrincipal(payload: UnassignServicePrincipalPayload): Future[Done]

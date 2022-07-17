@@ -21,17 +21,15 @@ import akka.util.Timeout
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.service_catalog.api.ServiceCatalogService
-import biz.lobachev.annette.service_catalog.api.group._
 import biz.lobachev.annette.service_catalog.api.scope._
 import biz.lobachev.annette.service_catalog.api.scope_principal._
 import biz.lobachev.annette.service_catalog.api.item._
 import biz.lobachev.annette.service_catalog.api.service_principal._
 import biz.lobachev.annette.service_catalog.api.user._
 import biz.lobachev.annette.service_catalog.service.category.CategoryEntityService
-import biz.lobachev.annette.service_catalog.service.group.GroupEntityService
 import biz.lobachev.annette.service_catalog.service.scope.ScopeEntityService
 import biz.lobachev.annette.service_catalog.service.scope_principal.ScopePrincipalEntityService
-import biz.lobachev.annette.service_catalog.service.service.ServiceEntityService
+import biz.lobachev.annette.service_catalog.service.item.ServiceItemEntityService
 import biz.lobachev.annette.service_catalog.service.service_principal.ServicePrincipalEntityService
 import biz.lobachev.annette.service_catalog.service.user.UserEntityService
 
@@ -42,8 +40,7 @@ class ServiceCatalogServiceImpl(
   categoryEntityService: CategoryEntityService,
   scopeEntityService: ScopeEntityService,
   scopePrincipalEntityService: ScopePrincipalEntityService,
-  groupEntityService: GroupEntityService,
-  serviceEntityService: ServiceEntityService,
+  serviceEntityService: ServiceItemEntityService,
   servicePrincipalEntityService: ServicePrincipalEntityService,
   userService: UserEntityService
 ) extends ServiceCatalogService {
@@ -102,28 +99,10 @@ class ServiceCatalogServiceImpl(
     scopePrincipalEntityService.findScopePrincipals(payload)
 
   override def createGroup(payload: CreateGroupPayload): Future[Done] =
-    groupEntityService.createGroup(payload)
+    serviceEntityService.createGroup(payload)
 
   override def updateGroup(payload: UpdateGroupPayload): Future[Done] =
-    groupEntityService.updateGroup(payload)
-
-  override def activateGroup(payload: ActivateGroupPayload): Future[Done] =
-    groupEntityService.activateGroup(payload)
-
-  override def deactivateGroup(payload: DeactivateGroupPayload): Future[Done] =
-    groupEntityService.deactivateGroup(payload)
-
-  override def deleteGroup(payload: DeleteGroupPayload): Future[Done] =
-    groupEntityService.deleteGroup(payload)
-
-  override def getGroupById(id: GroupId, fromReadSide: Boolean): Future[Group] =
-    groupEntityService.getGroupById(id, fromReadSide)
-
-  override def getGroupsById(ids: Set[GroupId], fromReadSide: Boolean): Future[Seq[Group]] =
-    groupEntityService.getGroupsById(ids, fromReadSide)
-
-  override def findGroups(payload: FindGroupQuery): Future[FindResult] =
-    groupEntityService.findGroups(payload)
+    serviceEntityService.updateGroup(payload)
 
   override def createService(payload: CreateServicePayload): Future[Done] =
     serviceEntityService.createService(payload)
@@ -131,23 +110,23 @@ class ServiceCatalogServiceImpl(
   override def updateService(payload: UpdateServicePayload): Future[Done] =
     serviceEntityService.updateService(payload)
 
-  override def activateService(payload: ActivateScopeItemPayload): Future[Done] =
-    serviceEntityService.activateService(payload)
+  override def activateServiceItem(payload: ActivateServiceItemPayload): Future[Done] =
+    serviceEntityService.activateServiceItem(payload)
 
-  override def deactivateService(payload: DeactivateScopeItemPayload): Future[Done] =
-    serviceEntityService.deactivateService(payload)
+  override def deactivateServiceItem(payload: DeactivateServiceItemPayload): Future[Done] =
+    serviceEntityService.deactivateServiceItem(payload)
 
-  override def deleteService(payload: DeleteScopeItemPayload): Future[Done] =
-    serviceEntityService.deleteService(payload)
+  override def deleteServiceItem(payload: DeleteServiceItemPayload): Future[Done] =
+    serviceEntityService.deleteServiceItem(payload)
 
-  override def getServiceById(id: ScopeItemId, fromReadSide: Boolean): Future[ServiceItem] =
-    serviceEntityService.getServiceById(id, fromReadSide)
+  override def getServiceItemById(id: ServiceItemId, fromReadSide: Boolean): Future[ServiceItem] =
+    serviceEntityService.getServiceItemById(id, fromReadSide)
 
-  override def getServicesById(ids: Set[ScopeItemId], fromReadSide: Boolean): Future[Seq[ServiceItem]] =
-    serviceEntityService.getServicesById(ids, fromReadSide)
+  override def getServiceItemsById(ids: Set[ServiceItemId], fromReadSide: Boolean): Future[Seq[ServiceItem]] =
+    serviceEntityService.getServiceItemsById(ids, fromReadSide)
 
-  override def findServices(payload: FindScopeItemsQuery): Future[FindResult] =
-    serviceEntityService.findServices(payload)
+  override def findServiceItems(payload: FindServiceItemsQuery): Future[FindResult] =
+    serviceEntityService.findServiceItems(payload)
 
   override def assignServicePrincipal(payload: AssignServicePrincipalPayload): Future[Done] =
     servicePrincipalEntityService.assignServicePrincipal(payload)

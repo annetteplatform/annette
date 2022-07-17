@@ -22,7 +22,7 @@ import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.CategoryId
-import biz.lobachev.annette.service_catalog.api.group.GroupId
+import biz.lobachev.annette.service_catalog.api.item.ServiceItemId
 import biz.lobachev.annette.service_catalog.api.scope._
 import biz.lobachev.annette.service_catalog.service.scope.model.ScopeState
 import com.lightbend.lagom.scaladsl.persistence._
@@ -69,7 +69,7 @@ object ScopeEntity {
     name: String,
     description: String,
     categoryId: CategoryId,
-    groups: Seq[GroupId] = Seq.empty,
+    children: Seq[ServiceItemId] = Seq.empty,
     createdBy: AnnettePrincipal,
     createdAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -78,7 +78,7 @@ object ScopeEntity {
     name: Option[String],
     description: Option[String],
     categoryId: Option[CategoryId],
-    groups: Option[Seq[GroupId]],
+    children: Option[Seq[ServiceItemId]],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -222,7 +222,7 @@ final case class ScopeEntity(maybeState: Option[ScopeState]) {
           name = event.name.getOrElse(s.name),
           description = event.description.getOrElse(s.description),
           categoryId = event.categoryId.getOrElse(s.categoryId),
-          groups = event.groups.getOrElse(s.groups),
+          children = event.children.getOrElse(s.children),
           updatedBy = event.updatedBy,
           updatedAt = event.updatedAt
         )

@@ -17,5 +17,5 @@
 package biz.lobachev.annette.service_catalog.api
 
 package object item {
-  type ScopeItemId = String
+  type ServiceItemId = String
 }

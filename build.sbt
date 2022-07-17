@@ -84,7 +84,7 @@ lazy val root = (project in file("."))
     `camunda`,
     // API gateways
     `application-api-gateway`,
-    `service-catalog-api-gateway`,
+//    `service-catalog-api-gateway`,
     `authorization-api-gateway`,
     `bpm-api-gateway`,
     `cms-api-gateway`,
@@ -190,7 +190,7 @@ lazy val `api-gateway` = (project in file("api-gateway/api-gateway"))
   .dependsOn(
     `api-gateway-core`,
     `application-api-gateway`,
-    `service-catalog-api-gateway`,
+//    `service-catalog-api-gateway`,
     `authorization-api-gateway`,
     `org-structure-api-gateway`,
     `persons-api-gateway`,
@@ -320,25 +320,25 @@ lazy val `application-api-gateway` = (project in file("api-gateway/application-a
     `application-api`
   )
 
-lazy val `service-catalog-api-gateway` = (project in file("api-gateway/service-catalog-api-gateway"))
-  .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslServer % Optional,
-      ws,
-      Dependencies.macwire,
-      Dependencies.playJsonExt,
-      Dependencies.jwt,
-      Dependencies.pureConfig,
-      Dependencies.chimney
-    ) ++
-      Dependencies.tests
-  )
-  .settings(annetteSettings: _*)
-  .dependsOn(
-    `api-gateway-core`,
-    `application-api`,
-    `service-catalog-api`
-  )
+//lazy val `service-catalog-api-gateway` = (project in file("api-gateway/service-catalog-api-gateway"))
+//  .settings(
+//    libraryDependencies ++= Seq(
+//      lagomScaladslServer % Optional,
+//      ws,
+//      Dependencies.macwire,
+//      Dependencies.playJsonExt,
+//      Dependencies.jwt,
+//      Dependencies.pureConfig,
+//      Dependencies.chimney
+//    ) ++
+//      Dependencies.tests
+//  )
+//  .settings(annetteSettings: _*)
+//  .dependsOn(
+//    `api-gateway-core`,
+//    `application-api`,
+//    `service-catalog-api`
+//  )
 
 lazy val `authorization-api` = (project in file("authorization/authorization-api"))
   .settings(

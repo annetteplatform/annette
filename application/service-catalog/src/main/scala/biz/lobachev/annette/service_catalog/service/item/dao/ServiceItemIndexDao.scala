@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.service_catalog.service.service.dao
+package biz.lobachev.annette.service_catalog.service.item.dao
 
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
 import biz.lobachev.annette.service_catalog.api.item._
-import biz.lobachev.annette.service_catalog.service.service.ServiceEntity
+import biz.lobachev.annette.service_catalog.service.item.ServiceItemEntity
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.requests.searches.sort.FieldSort
@@ -27,28 +27,29 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ServiceIndexDao(client: ElasticClient)(implicit
+class ServiceItemIndexDao(client: ElasticClient)(implicit
   override val ec: ExecutionContext
 ) extends AbstractIndexDao(client) {
 
   override val log = LoggerFactory.getLogger(this.getClass)
 
-  override def indexConfigPath = "indexing.service-index"
+  override def indexConfigPath = "indexing.service-item-index"
 
-  def createService(event: ServiceEntity.ServiceCreated) = {
+  def createGroup(event: ServiceItemEntity.GroupCreated) = {
     val doc = List(
       "id"               -> event.id,
       "name"             -> event.name,
       "description"      -> event.description,
       "label"            -> event.label.values.mkString(" "),
       "labelDescription" -> event.labelDescription.values.mkString(" "),
+      "itemType"         -> "group",
       "active"           -> true,
       "updatedAt"        -> event.createdAt
     )
     createIndexDoc(event.id, doc)
   }
 
-  def updateService(event: ServiceEntity.ServiceUpdated) = {
+  def updateGroup(event: ServiceItemEntity.GroupUpdated) = {
     val doc = List(
       Some("id"        -> event.id),
       event.name.map(v => "name" -> v),
@@ -60,7 +61,33 @@ class ServiceIndexDao(client: ElasticClient)(implicit
     updateIndexDoc(event.id, doc)
   }
 
-  def activateService(event: ServiceEntity.ServiceActivated) = {
+  def createService(event: ServiceItemEntity.ServiceCreated) = {
+    val doc = List(
+      "id"               -> event.id,
+      "name"             -> event.name,
+      "description"      -> event.description,
+      "label"            -> event.label.values.mkString(" "),
+      "labelDescription" -> event.labelDescription.values.mkString(" "),
+      "itemType"         -> "service",
+      "active"           -> true,
+      "updatedAt"        -> event.createdAt
+    )
+    createIndexDoc(event.id, doc)
+  }
+
+  def updateService(event: ServiceItemEntity.ServiceUpdated) = {
+    val doc = List(
+      Some("id"        -> event.id),
+      event.name.map(v => "name" -> v),
+      event.description.map(v => "description" -> v),
+      event.label.map(v => "label" -> v.values.mkString(" ")),
+      event.labelDescription.map(v => "labelDescription" -> v.values.mkString(" ")),
+      Some("updatedAt" -> event.updatedAt)
+    ).flatten
+    updateIndexDoc(event.id, doc)
+  }
+
+  def activateService(event: ServiceItemEntity.ServiceItemActivated) = {
     val doc = List(
       "id"        -> event.id,
       "active"    -> true,
@@ -69,7 +96,7 @@ class ServiceIndexDao(client: ElasticClient)(implicit
     updateIndexDoc(event.id, doc)
   }
 
-  def deactivateService(event: ServiceEntity.ServiceDeactivated) = {
+  def deactivateService(event: ServiceItemEntity.ServiceItemDeactivated) = {
     val doc = List(
       "id"        -> event.id,
       "active"    -> false,
@@ -78,23 +105,26 @@ class ServiceIndexDao(client: ElasticClient)(implicit
     updateIndexDoc(event.id, doc)
   }
 
-  def deleteService(event: ServiceEntity.ServiceDeleted) =
+  def deleteService(event: ServiceItemEntity.ServiceItemDeleted) =
     deleteIndexDoc(event.id)
 
   // *************************** Search API ***************************
 
-  def findService(query: FindScopeItemsQuery): Future[FindResult] = {
-    val filterQuery  = buildFilterQuery(
+  def findService(query: FindServiceItemsQuery): Future[FindResult] = {
+    val filterQuery = buildFilterQuery(
       query.filter,
       Seq("name" -> 3.0, "description" -> 2.0, "id" -> 1.0)
     )
-    val serviceQuery =
-      query.services.map(serviceId => termsSetQuery(alias2FieldName("id"), serviceId, script("1"))).toSeq
+    val idsQuery    =
+      query.ids.map(serviceId => termsSetQuery(alias2FieldName("id"), serviceId, script("1"))).toSeq
+
+    val typeQuery =
+      query.types.map(itemType => termsSetQuery(alias2FieldName("itemType"), itemType, script("1"))).toSeq
 
     val activeQuery            = query.active.map(matchQuery(alias2FieldName("active"), _)).toSeq
     val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
     val searchRequest          = search(indexName)
-      .bool(must(filterQuery ++ activeQuery ++ serviceQuery))
+      .bool(must(filterQuery ++ activeQuery ++ idsQuery ++ typeQuery))
       .from(query.offset)
       .size(query.size)
       .sortBy(sortBy)

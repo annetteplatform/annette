@@ -18,13 +18,12 @@ package biz.lobachev.annette.service_catalog.service.user
 
 import biz.lobachev.annette.service_catalog.api.scope.FindScopeQuery
 import biz.lobachev.annette.service_catalog.api.scope_principal.FindScopePrincipalQuery
-import biz.lobachev.annette.service_catalog.api.item.FindScopeItemsQuery
+import biz.lobachev.annette.service_catalog.api.item.{FindServiceItemsQuery, Group, Service, ServiceItem, ServiceItemId}
 import biz.lobachev.annette.service_catalog.api.service_principal.FindServicePrincipalQuery
 import biz.lobachev.annette.service_catalog.api.user._
-import biz.lobachev.annette.service_catalog.service.group.GroupEntityService
 import biz.lobachev.annette.service_catalog.service.scope.ScopeEntityService
 import biz.lobachev.annette.service_catalog.service.scope_principal.ScopePrincipalEntityService
-import biz.lobachev.annette.service_catalog.service.service.ServiceEntityService
+import biz.lobachev.annette.service_catalog.service.item.ServiceItemEntityService
 import biz.lobachev.annette.service_catalog.service.service_principal.{
   ServicePrincipalEntity,
   ServicePrincipalEntityService
@@ -35,8 +34,7 @@ import scala.concurrent.{ExecutionContext, Future}
 class UserEntityService(
   scopeEntityService: ScopeEntityService,
   scopePrincipalEntityService: ScopePrincipalEntityService,
-  groupEntityService: GroupEntityService,
-  serviceEntityService: ServiceEntityService,
+  serviceEntityService: ServiceItemEntityService,
   servicePrincipalEntityService: ServicePrincipalEntityService
 )(implicit ec: ExecutionContext) {
 
@@ -65,12 +63,51 @@ class UserEntityService(
       ScopeByCategoryFindResult(scopeId, principal)
     }
 
+  def getServiceItems(ids: Set[ServiceItemId], processed: Set[ServiceItemId]): Future[Seq[ServiceItem]] =
+    for {
+      items         <- serviceEntityService.getServiceItemsById(ids, true).map(_.filter(_.active))
+      childrenIds    =
+        items.filter(_.isInstanceOf[Group]).flatMap(_.asInstanceOf[Group].children).toSet -- ids -- processed
+      childrenItems <- if (childrenIds.nonEmpty)
+                         getServiceItems(childrenIds, ids ++ processed).map(_.filter(_.active))
+                       else Future.successful(Seq.empty[ServiceItem])
+    } yield items ++ childrenItems
+
+  def compactTree(
+    children: Seq[ServiceItemId],
+    serviceMap: Map[ServiceItemId, Service],
+    groupMap: Map[ServiceItemId, Group],
+    processedGroups: Set[ServiceItemId] = Set.empty
+  ): (Seq[ServiceItemId], Map[ServiceItemId, ServiceItem]) = {
+    val res = children.flatMap {
+      case serviceId if serviceMap.contains(serviceId) =>
+        Some(serviceId -> Map(serviceId -> serviceMap(serviceId)))
+      case groupId
+          if groupMap.contains(groupId) &&
+            !processedGroups.contains(groupId) =>
+        val (newChildren, newItems) = compactTree(
+          children = groupMap(groupId).children,
+          serviceMap = serviceMap,
+          groupMap = groupMap,
+          processedGroups = processedGroups + groupId
+        )
+        if (newChildren.nonEmpty)
+          Some(groupId -> (newItems + (groupId -> groupMap(groupId).copy(children = newChildren))))
+        else None
+      case _                                           => None
+    }
+    (res.map(_._1), res.flatMap(_._2).toMap)
+  }
+
   def getScopeServices(query: ScopeServicesQuery): Future[ScopeServicesResult] =
     for {
       scope             <- scopeEntityService.getScopeById(query.scopeId, true)
-      groups            <- groupEntityService.getGroupsById(scope.groups.toSet, true).map(_.filter(_.active))
-//      _                  = println(groups)
-      serviceIds         = groups.flatMap(_.services).toSet
+      items             <- getServiceItems(scope.children.toSet, Set.empty)
+//      _                  = println(items)
+      serviceIds         = items.flatMap {
+                             case s: Service => Some(s.id)
+                             case _          => None
+                           }.toSet
 //      _                  = println(serviceIds)
       servicePrincipals <- servicePrincipalEntityService.findServicePrincipals(
                              FindServicePrincipalQuery(
@@ -82,38 +119,38 @@ class UserEntityService(
 //      _                  = println(servicePrincipals)
       allowedServiceIds  = servicePrincipals.hits.map(h => ServicePrincipalEntity.fromCompositeId(h.id)._1).toSet
 //      _                  = println(allowedServiceIds)
-      services          <- serviceEntityService.getServicesById(allowedServiceIds, true).map(_.filter(_.active))
     } yield {
-      val groupMap     = groups.map(g => g.id -> g).toMap
-      val serviceIds   = services.map(_.id).toSet
-      val userGroups   = scope.groups.flatMap { groupId =>
-        groupMap
-          .get(groupId)
-          .filter(_.services.toSet.intersect(serviceIds).nonEmpty)
-          .map { group =>
-            UserGroup(
-              id = group.id,
-              icon = group.icon,
-              label = group.label.get(query.languageId).getOrElse(""),
-              labelDescription = group.labelDescription
-                .get(query.languageId)
-                .getOrElse(""),
-              services = group.services.filter(serviceId => serviceIds.contains(serviceId))
-            )
-          }
-      }
-      val userServices = services.map(service =>
-        UserService(
-          id = service.id,
-          icon = service.icon,
-          label = service.label.get(query.languageId).getOrElse(""),
-          labelDescription = service.labelDescription.get(query.languageId).getOrElse(""),
-          link = service.link
-        )
-      )
+      val serviceMap          = items.flatMap {
+        case s: Service if allowedServiceIds.contains(s.id) => Some(s.id -> s)
+        case _                                              => None
+      }.toMap
+      val groupMap            = items.flatMap {
+        case s: Group => Some(s.id -> s)
+        case _        => None
+      }.toMap
+      val (root, resultItems) = compactTree(scope.children, serviceMap, groupMap)
       ScopeServicesResult(
-        groups = userGroups,
-        services = userServices
+        root = root,
+        serviceItems = resultItems.values.map {
+          case s: Service =>
+            UserService(
+              id = s.id,
+              icon = s.icon,
+              label = s.label.get(query.languageId).getOrElse(""),
+              labelDescription = s.labelDescription.get(query.languageId).getOrElse(""),
+              link = s.link,
+              score = None
+            )
+          case g: Group   =>
+            UserGroup(
+              id = g.id,
+              icon = g.icon,
+              label = g.label.get(query.languageId).getOrElse(""),
+              labelDescription = g.labelDescription.get(query.languageId).getOrElse(""),
+              children = g.children,
+              score = None
+            )
+        }.toSeq
       )
     }
 
@@ -128,33 +165,38 @@ class UserEntityService(
       serviceIds        = assignedServices.hits
                             .map(compositeId => ServicePrincipalEntity.fromCompositeId(compositeId.id)._1)
                             .toSet
-      foundServices    <- serviceEntityService.findServices(
-                            FindScopeItemsQuery(
+      foundServices    <- serviceEntityService.findServiceItems(
+                            FindServiceItemsQuery(
                               offset = query.offset,
                               size = query.size,
                               filter = Some(query.filter),
-                              services = Some(serviceIds),
-                              active = Some(true)
+                              ids = Some(serviceIds),
+                              active = Some(true),
+                              types = Some(Set("service"))
                             )
                           )
       serviceMap       <- serviceEntityService
-                            .getServicesById(foundServices.hits.map(_.id).toSet, true)
+                            .getServiceItemsById(foundServices.hits.map(_.id).toSet, true)
                             .map(_.map(s => s.id -> s).toMap)
     } yield UserServicesResult(
       total = foundServices.total,
       services = foundServices.hits.flatMap { hit =>
         serviceMap
           .get(hit.id)
-          .map(s =>
-            UserService(
-              id = s.id,
-              icon = s.icon,
-              label = s.label.get(query.languageId).getOrElse(""),
-              labelDescription = s.labelDescription.get(query.languageId).getOrElse(""),
-              link = s.link,
-              score = Some(hit.score)
-            )
-          )
+          .flatMap {
+            case s: Service =>
+              Some(
+                UserService(
+                  id = s.id,
+                  icon = s.icon,
+                  label = s.label.get(query.languageId).getOrElse(""),
+                  labelDescription = s.labelDescription.get(query.languageId).getOrElse(""),
+                  link = s.link,
+                  score = Some(hit.score)
+                )
+              )
+            case _          => None
+          }
       }
     )
 

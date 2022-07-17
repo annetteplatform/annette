@@ -19,17 +19,16 @@ package biz.lobachev.annette.service_catalog.api.item
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.translation.MultiLanguageText
 import biz.lobachev.annette.service_catalog.api.common.Icon
-import biz.lobachev.annette.service_catalog.api.group.GroupId
 import play.api.libs.json.{Format, Json}
 
 case class UpdateGroupPayload(
-  id: GroupId,
+  id: ServiceItemId,
   name: Option[String],
   description: Option[String],
   icon: Option[Icon],
   label: Option[MultiLanguageText],
   labelDescription: Option[MultiLanguageText],
-  services: Option[Seq[ScopeItemId]],
+  children: Option[Seq[ServiceItemId]],
   updatedBy: AnnettePrincipal
 )
 

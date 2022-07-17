@@ -23,7 +23,7 @@ import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProc
 
 import scala.concurrent.ExecutionContext
 
-private[impl] class ServicePrincipalIndexEventProcessor(
+private[service_catalog] class ServicePrincipalIndexEventProcessor(
   readSide: CassandraReadSide,
   indexDao: ServicePrincipalIndexDao
 )(implicit

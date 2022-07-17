@@ -20,57 +20,46 @@ import akka.cluster.sharding.typed.scaladsl.Entity
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
 import biz.lobachev.annette.service_catalog.client.http.ServiceCatalogServiceLagomApi
-import biz.lobachev.annette.service_catalog.impl.service.ServiceCatalogServiceImpl
-import biz.lobachev.annette.service_catalog.impl.service.category.model.CategorySerializerRegistry
-import biz.lobachev.annette.service_catalog.impl.service.category.{CategoryEntity, CategoryProvider}
-import biz.lobachev.annette.service_catalog.impl.service.group.dao.{GroupDbDao, GroupIndexDao}
-import biz.lobachev.annette.service_catalog.impl.service.group.model.GroupSerializerRegistry
-import biz.lobachev.annette.service_catalog.impl.service.group.{
-  GroupDbEventProcessor,
-  GroupEntity,
-  GroupEntityService,
-  GroupIndexEventProcessor
-}
-import biz.lobachev.annette.service_catalog.impl.service.scope.dao.{ScopeDbDao, ScopeIndexDao}
-import biz.lobachev.annette.service_catalog.impl.service.scope.model.ScopeSerializerRegistry
-import biz.lobachev.annette.service_catalog.impl.service.scope.{
+import biz.lobachev.annette.service_catalog.service.ServiceCatalogServiceImpl
+import biz.lobachev.annette.service_catalog.service.category.model.CategorySerializerRegistry
+import biz.lobachev.annette.service_catalog.service.category.{CategoryEntity, CategoryProvider}
+import biz.lobachev.annette.service_catalog.service.scope.dao.{ScopeDbDao, ScopeIndexDao}
+import biz.lobachev.annette.service_catalog.service.scope.model.ScopeSerializerRegistry
+import biz.lobachev.annette.service_catalog.service.scope.{
   ScopeDbEventProcessor,
   ScopeEntity,
   ScopeEntityService,
   ScopeIndexEventProcessor
 }
-import biz.lobachev.annette.service_catalog.impl.service.scope_principal.dao.{
-  ScopePrincipalDbDao,
-  ScopePrincipalIndexDao
-}
-import biz.lobachev.annette.service_catalog.impl.service.scope_principal.model.ScopePrincipalSerializerRegistry
-import biz.lobachev.annette.service_catalog.impl.service.scope_principal.{
+import biz.lobachev.annette.service_catalog.service.scope_principal.dao.{ScopePrincipalDbDao, ScopePrincipalIndexDao}
+import biz.lobachev.annette.service_catalog.service.scope_principal.model.ScopePrincipalSerializerRegistry
+import biz.lobachev.annette.service_catalog.service.scope_principal.{
   ScopePrincipalDbEventProcessor,
   ScopePrincipalEntity,
   ScopePrincipalEntityService,
   ScopePrincipalIndexEventProcessor
 }
-import biz.lobachev.annette.service_catalog.impl.service.service.dao.{ServiceDbDao, ServiceIndexDao}
-import biz.lobachev.annette.service_catalog.impl.service.service.model.ServiceSerializerRegistry
-import biz.lobachev.annette.service_catalog.impl.service.service.{
-  ServiceDbEventProcessor,
-  ServiceEntity,
-  ServiceEntityService,
-  ServiceIndexEventProcessor
-}
-import biz.lobachev.annette.service_catalog.impl.service.service_principal.dao.{
+import biz.lobachev.annette.service_catalog.service.service_principal.dao.{
   ServicePrincipalDbDao,
   ServicePrincipalIndexDao
 }
-import biz.lobachev.annette.service_catalog.impl.service.service_principal.model.ServicePrincipalSerializerRegistry
-import biz.lobachev.annette.service_catalog.impl.service.service_principal.{
+import biz.lobachev.annette.service_catalog.service.service_principal.model.ServicePrincipalSerializerRegistry
+import biz.lobachev.annette.service_catalog.service.service_principal.{
   ServicePrincipalDbEventProcessor,
   ServicePrincipalEntity,
   ServicePrincipalEntityService,
   ServicePrincipalIndexEventProcessor
 }
-import biz.lobachev.annette.service_catalog.impl.service.user.UserEntityService
+import biz.lobachev.annette.service_catalog.service.user.UserEntityService
 import biz.lobachev.annette.service_catalog.server.http.ServiceCatalogServiceLagomApiImpl
+import biz.lobachev.annette.service_catalog.service.item.{
+  ServiceItemDbEventProcessor,
+  ServiceItemEntity,
+  ServiceItemEntityService,
+  ServiceItemIndexEventProcessor
+}
+import biz.lobachev.annette.service_catalog.service.item.dao.{ServiceItemDbDao, ServiceItemIndexDao}
+import biz.lobachev.annette.service_catalog.service.item.model.ServiceItemSerializerRegistry
 import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
@@ -108,6 +97,7 @@ abstract class ServiceCatalogServiceApplication(context: LagomApplicationContext
   lazy val jsonSerializerRegistry = ServiceCatalogSerializerRegistry
 
   val indexingModule = new IndexingModule()
+  import indexingModule._
 
   override lazy val lagomServer = serverFor[ServiceCatalogServiceLagomApi](wire[ServiceCatalogServiceLagomApiImpl])
 
@@ -151,25 +141,14 @@ abstract class ServiceCatalogServiceApplication(context: LagomApplicationContext
     }
   )
 
-  lazy val groupIndexDao = wire[GroupIndexDao]
-  lazy val groupService  = wire[GroupEntityService]
-  lazy val groupDbDao    = wire[GroupDbDao]
-  readSide.register(wire[GroupDbEventProcessor])
-  readSide.register(wire[GroupIndexEventProcessor])
+  lazy val serviceItemIndexDao    = wire[ServiceItemIndexDao]
+  lazy val serviceItemServiceItem = wire[ServiceItemEntityService]
+  lazy val serviceItemDbDao       = wire[ServiceItemDbDao]
+  readSide.register(wire[ServiceItemDbEventProcessor])
+  readSide.register(wire[ServiceItemIndexEventProcessor])
   clusterSharding.init(
-    Entity(GroupEntity.typeKey) { entityContext =>
-      GroupEntity(entityContext)
-    }
-  )
-
-  lazy val serviceIndexDao = wire[ServiceIndexDao]
-  lazy val serviceService  = wire[ServiceEntityService]
-  lazy val serviceDbDao    = wire[ServiceDbDao]
-  readSide.register(wire[ServiceDbEventProcessor])
-  readSide.register(wire[ServiceIndexEventProcessor])
-  clusterSharding.init(
-    Entity(ServiceEntity.typeKey) { entityContext =>
-      ServiceEntity(entityContext)
+    Entity(ServiceItemEntity.typeKey) { entityContext =>
+      ServiceItemEntity(entityContext)
     }
   )
 
@@ -195,7 +174,6 @@ object ServiceCatalogSerializerRegistry extends JsonSerializerRegistry {
     CategorySerializerRegistry.serializers ++
       ScopeSerializerRegistry.serializers ++
       ScopePrincipalSerializerRegistry.serializers ++
-      GroupSerializerRegistry.serializers ++
-      ServiceSerializerRegistry.serializers ++
+      ServiceItemSerializerRegistry.serializers ++
       ServicePrincipalSerializerRegistry.serializers
 }

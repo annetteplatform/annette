@@ -20,14 +20,13 @@ import biz.lobachev.annette.core.exception.AnnetteTransportExceptionCompanion1
 import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
 
 object ScopeAlreadyExist extends AnnetteTransportExceptionCompanion1 {
-  val ErrorCode = TransportErrorCode.BadRequest
-  val MessageCode = "annette.serviceCatalog.scope.scopeAlreadyExist"
+  val ErrorCode       = TransportErrorCode.BadRequest
+  val MessageCode     = "annette.serviceCatalog.scope.alreadyExist"
   val Arg1Key: String = "id"
 }
 
 object ScopeNotFound extends AnnetteTransportExceptionCompanion1 {
-  val ErrorCode = TransportErrorCode.NotFound
-  val MessageCode = "annette.serviceCatalog.scope.scopeNotFound"
+  val ErrorCode       = TransportErrorCode.NotFound
+  val MessageCode     = "annette.serviceCatalog.scope.notFound"
   val Arg1Key: String = "id"
 }
-

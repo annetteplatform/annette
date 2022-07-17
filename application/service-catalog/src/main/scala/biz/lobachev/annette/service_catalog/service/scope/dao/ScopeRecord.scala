@@ -27,7 +27,7 @@ case class ScopeRecord(
   name: String,
   description: String,
   categoryId: String,
-  groups: List[String],
+  children: List[String],
   active: Boolean,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal

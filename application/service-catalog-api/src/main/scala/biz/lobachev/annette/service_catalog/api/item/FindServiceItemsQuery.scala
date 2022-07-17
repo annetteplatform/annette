@@ -16,14 +16,19 @@
 
 package biz.lobachev.annette.service_catalog.api.item
 
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import play.api.libs.json.{Format, Json}
+import biz.lobachev.annette.core.model.indexing.SortBy
+import play.api.libs.json.Json
 
-case class ActivateScopeItemPayload(
-  id: ScopeItemId,
-  updatedBy: AnnettePrincipal
+case class FindServiceItemsQuery(
+  offset: Int = 0,
+  size: Int,
+  filter: Option[String] = None,
+  types: Option[Set[String]] = None,
+  ids: Option[Set[ServiceItemId]] = None,
+  active: Option[Boolean] = None,
+  sortBy: Option[Seq[SortBy]] = None
 )
 
-object ActivateScopeItemPayload {
-  implicit val format: Format[ActivateScopeItemPayload] = Json.format
+object FindServiceItemsQuery {
+  implicit val format = Json.format[FindServiceItemsQuery]
 }
