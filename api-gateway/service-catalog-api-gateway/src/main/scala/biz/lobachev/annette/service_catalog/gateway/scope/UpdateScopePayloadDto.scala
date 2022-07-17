@@ -17,7 +17,7 @@
 package biz.lobachev.annette.service_catalog.gateway.scope
 
 import biz.lobachev.annette.core.model.category.CategoryId
-import biz.lobachev.annette.service_catalog.api.group.GroupId
+import biz.lobachev.annette.service_catalog.api.item.ServiceItemId
 import biz.lobachev.annette.service_catalog.api.scope.ScopeId
 import play.api.libs.json.{Format, Json}
 
@@ -26,7 +26,7 @@ case class UpdateScopePayloadDto(
   name: Option[String],
   description: Option[String],
   categoryId: Option[CategoryId],
-  groups: Option[Seq[GroupId]]
+  children: Option[Seq[ServiceItemId]]
 )
 
 object UpdateScopePayloadDto {

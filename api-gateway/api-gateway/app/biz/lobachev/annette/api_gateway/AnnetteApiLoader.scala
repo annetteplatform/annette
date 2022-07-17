@@ -56,16 +56,15 @@ import biz.lobachev.annette.person.gateway.PersonController
 import biz.lobachev.annette.persons.api.{PersonServiceApi, PersonServiceImpl}
 import biz.lobachev.annette.principal_group.api.{PrincipalGroupServiceApi, PrincipalGroupServiceImpl}
 import biz.lobachev.annette.principal_group.gateway.PrincipalGroupController
-//import biz.lobachev.annette.service_catalog.client.http.{ServiceCatalogServiceLagomApi, ServiceCatalogServiceLagomImpl}
-//import biz.lobachev.annette.service_catalog.gateway.{
-//  CategoryController,
-//  GroupController,
-//  ScopeController,
-//  ScopePrincipalController,
-//  ServiceController,
-//  ServicePrincipalController,
-//  UserServiceController
-//}
+import biz.lobachev.annette.service_catalog.client.http.{ServiceCatalogServiceLagomApi, ServiceCatalogServiceLagomImpl}
+import biz.lobachev.annette.service_catalog.gateway.{
+  CategoryController,
+  ScopeController,
+  ScopePrincipalController,
+  ServiceItemController,
+  ServicePrincipalController,
+  UserServiceController
+}
 import biz.lobachev.annette.subscription.api.{SubscriptionServiceApi, SubscriptionServiceImpl}
 import com.lightbend.lagom.scaladsl.api.{LagomConfigComponent, ServiceAcl, ServiceInfo}
 import com.lightbend.lagom.scaladsl.client.LagomServiceClientComponents
@@ -131,19 +130,18 @@ abstract class ServiceGateway(context: Context)
   lazy val basicAuthConfig                = wireWith(BasicAuthConfigProvider.get _)
   lazy val basicAuthenticator             = wire[ConfigurationBasicAuthenticator]
 
-  lazy val keycloakController       = wire[KeycloakController]
-  lazy val authorizationController  = wire[AuthorizationController]
-  lazy val personController         = wire[PersonController]
-  lazy val principalGroupController = wire[PrincipalGroupController]
-  lazy val orgStructureController   = wire[OrgStructureController]
-  lazy val applicationController    = wire[ApplicationController]
-//  lazy val serviceCatalogCategoryController         = wire[CategoryController]
-//  lazy val serviceCatalogScopeController            = wire[ScopeController]
-//  lazy val serviceCatalogScopePrincipalController   = wire[ScopePrincipalController]
-//  lazy val serviceCatalogGroupController            = wire[GroupController]
-//  lazy val serviceCatalogServiceController          = wire[ServiceController]
-//  lazy val serviceCatalogServicePrincipalController = wire[ServicePrincipalController]
-//  lazy val serviceCatalogUserServiceController      = wire[UserServiceController]
+  lazy val keycloakController                       = wire[KeycloakController]
+  lazy val authorizationController                  = wire[AuthorizationController]
+  lazy val personController                         = wire[PersonController]
+  lazy val principalGroupController                 = wire[PrincipalGroupController]
+  lazy val orgStructureController                   = wire[OrgStructureController]
+  lazy val applicationController                    = wire[ApplicationController]
+  lazy val serviceCatalogCategoryController         = wire[CategoryController]
+  lazy val serviceCatalogScopeController            = wire[ScopeController]
+  lazy val serviceCatalogScopePrincipalController   = wire[ScopePrincipalController]
+  lazy val serviceCatalogServiceController          = wire[ServiceItemController]
+  lazy val serviceCatalogServicePrincipalController = wire[ServicePrincipalController]
+  lazy val serviceCatalogUserServiceController      = wire[UserServiceController]
 
   lazy val cmsCmsStorage              = wire[CmsStorage]
   lazy val cmsCmsS3Helper             = wire[CmsS3Helper]
@@ -183,8 +181,8 @@ abstract class ServiceGateway(context: Context)
   lazy val applicationServiceApi = serviceClient.implement[ApplicationServiceApi]
   lazy val applicationService    = wire[ApplicationServiceImpl]
 
-//  lazy val serviceCatalogServiceApi = serviceClient.implement[ServiceCatalogServiceLagomApi]
-//  lazy val serviceCatalogService    = wire[ServiceCatalogServiceLagomImpl]
+  lazy val serviceCatalogServiceApi = serviceClient.implement[ServiceCatalogServiceLagomApi]
+  lazy val serviceCatalogService    = wire[ServiceCatalogServiceLagomImpl]
 
   lazy val principalGroupServiceApi = serviceClient.implement[PrincipalGroupServiceApi]
   lazy val principalGroupService    = wire[PrincipalGroupServiceImpl]

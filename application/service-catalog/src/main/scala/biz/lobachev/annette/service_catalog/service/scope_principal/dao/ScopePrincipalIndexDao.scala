@@ -58,8 +58,6 @@ class ScopePrincipalIndexDao(client: ElasticClient)(implicit
       query.principalCodes
         .map(principalCodes => termsSetQuery(alias2FieldName("principal"), principalCodes, script("1")))
         .toSeq
-    println(scopeQuery)
-    println(principalQuery)
     val sortBy: Seq[FieldSort] = buildSortBySeq(query.sortBy)
     val searchRequest          = search(indexName)
       .bool(must(scopeQuery ++ principalQuery))

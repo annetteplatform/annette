@@ -44,11 +44,11 @@ class CategoryController @Inject() (
 
   def createCategory =
     authenticated.async(parse.json[CreateCategoryPayloadDto]) { implicit request =>
-      val payload = request.body
-        .into[CreateCategoryPayload]
-        .withFieldConst(_.createdBy, request.subject.principals.head)
-        .transform
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
+        val payload = request.body
+          .into[CreateCategoryPayload]
+          .withFieldConst(_.createdBy, request.subject.principals.head)
+          .transform
         for {
           _      <- serviceCatalogService.createCategory(payload)
           result <- serviceCatalogService.getCategoryById(payload.id, false)
@@ -58,11 +58,11 @@ class CategoryController @Inject() (
 
   def updateCategory =
     authenticated.async(parse.json[UpdateCategoryPayloadDto]) { implicit request =>
-      val payload = request.body
-        .into[UpdateCategoryPayload]
-        .withFieldConst(_.updatedBy, request.subject.principals.head)
-        .transform
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
+        val payload = request.body
+          .into[UpdateCategoryPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
         for {
           _      <- serviceCatalogService.updateCategory(payload)
           result <- serviceCatalogService.getCategoryById(payload.id, false)
@@ -72,11 +72,11 @@ class CategoryController @Inject() (
 
   def deleteCategory =
     authenticated.async(parse.json[DeleteCategoryPayloadDto]) { implicit request =>
-      val payload = request.body
-        .into[DeleteCategoryPayload]
-        .withFieldConst(_.deletedBy, request.subject.principals.head)
-        .transform
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
+        val payload = request.body
+          .into[DeleteCategoryPayload]
+          .withFieldConst(_.deletedBy, request.subject.principals.head)
+          .transform
         for {
           _ <- serviceCatalogService.deleteCategory(payload)
         } yield Ok("")
@@ -84,43 +84,28 @@ class CategoryController @Inject() (
     }
 
   def getCategoryById(id: CategoryId, fromReadSide: Boolean = true) =
-    if (fromReadSide)
-      Action.async { _ =>
+    authenticated.async { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
         for {
           result <- serviceCatalogService.getCategoryById(id, fromReadSide)
         } yield Ok(Json.toJson(result))
       }
-    else
-      authenticated.async { implicit request =>
-        authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
-          for {
-            result <- serviceCatalogService.getCategoryById(id, fromReadSide)
-          } yield Ok(Json.toJson(result))
-        }
-      }
+    }
 
   def getCategoriesById(fromReadSide: Boolean = true) =
-    if (fromReadSide)
-      Action.async(parse.json[Set[CategoryId]]) { request =>
+    authenticated.async(parse.json[Set[CategoryId]]) { implicit request =>
+      authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
         val ids = request.body
         for {
           result <- serviceCatalogService.getCategoriesById(ids, fromReadSide)
         } yield Ok(Json.toJson(result))
       }
-    else
-      authenticated.async(parse.json[Set[CategoryId]]) { implicit request =>
-        authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
-          val ids = request.body
-          for {
-            result <- serviceCatalogService.getCategoriesById(ids, fromReadSide)
-          } yield Ok(Json.toJson(result))
-        }
-      }
+    }
 
   def findCategories =
     authenticated.async(parse.json[CategoryFindQuery]) { implicit request =>
-      val query = request.body
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
+        val query = request.body
         for {
           result <- serviceCatalogService.findCategories(query)
         } yield Ok(Json.toJson(result))

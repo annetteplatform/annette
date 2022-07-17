@@ -47,11 +47,11 @@ class ServicePrincipalController @Inject() (
 
   def assignServicePrincipal =
     authenticated.async(parse.json[AssignServicePrincipalPayloadDto]) { implicit request =>
-      val payload = request.body
-        .into[AssignServicePrincipalPayload]
-        .withFieldConst(_.updatedBy, request.subject.principals.head)
-        .transform
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
+        val payload = request.body
+          .into[AssignServicePrincipalPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
         for {
           _ <- serviceCatalogService.assignServicePrincipal(payload)
         } yield Ok("")
@@ -60,11 +60,11 @@ class ServicePrincipalController @Inject() (
 
   def unassignServicePrincipal =
     authenticated.async(parse.json[UnassignServicePrincipalPayloadDto]) { implicit request =>
-      val payload = request.body
-        .into[UnassignServicePrincipalPayload]
-        .withFieldConst(_.updatedBy, request.subject.principals.head)
-        .transform
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
+        val payload = request.body
+          .into[UnassignServicePrincipalPayload]
+          .withFieldConst(_.updatedBy, request.subject.principals.head)
+          .transform
         for {
           _ <- serviceCatalogService.unassignServicePrincipal(payload)
         } yield Ok("")
@@ -73,8 +73,8 @@ class ServicePrincipalController @Inject() (
 
   def findServicePrincipals =
     authenticated.async(parse.json[FindServicePrincipalQuery]) { implicit request =>
-      val query = request.body
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
+        val query = request.body
         for {
           result <- serviceCatalogService.findServicePrincipals(query)
         } yield Ok(Json.toJson(result))

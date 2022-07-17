@@ -14,23 +14,15 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.service_catalog.gateway.service
+package biz.lobachev.annette.service_catalog.gateway.item
 
-import biz.lobachev.annette.core.model.translation.MultiLanguageText
-import biz.lobachev.annette.service_catalog.api.common.Icon
-import biz.lobachev.annette.service_catalog.api.item.{ServiceItemId, ServiceLink}
+import biz.lobachev.annette.service_catalog.api.item.ServiceItemId
 import play.api.libs.json.{Format, Json}
 
-case class UpdateServicePayloadDto(
-  id: ServiceItemId,
-  name: Option[String],
-  description: Option[String],
-  icon: Option[Icon],
-  label: Option[MultiLanguageText],
-  labelDescription: Option[MultiLanguageText],
-  link: Option[ServiceLink]
+case class DeleteServiceItemPayloadDto(
+  id: ServiceItemId
 )
 
-object UpdateServicePayloadDto {
-  implicit val format: Format[UpdateServicePayloadDto] = Json.format
+object DeleteServiceItemPayloadDto {
+  implicit val format: Format[DeleteServiceItemPayloadDto] = Json.format
 }

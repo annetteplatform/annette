@@ -14,15 +14,23 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.service_catalog.gateway.group
+package biz.lobachev.annette.service_catalog.gateway.item
 
-import biz.lobachev.annette.service_catalog.api.group.GroupId
+import biz.lobachev.annette.core.model.translation.MultiLanguageText
+import biz.lobachev.annette.service_catalog.api.common.Icon
+import biz.lobachev.annette.service_catalog.api.item.ServiceItemId
 import play.api.libs.json.{Format, Json}
 
-case class DeleteGroupPayloadDto(
-  id: GroupId
+case class CreateGroupPayloadDto(
+  id: ServiceItemId,
+  name: String,
+  description: String,
+  icon: Icon,
+  label: MultiLanguageText,
+  labelDescription: MultiLanguageText,
+  children: Seq[ServiceItemId] = Seq.empty
 )
 
-object DeleteGroupPayloadDto {
-  implicit val format: Format[DeleteGroupPayloadDto] = Json.format
+object CreateGroupPayloadDto {
+  implicit val format: Format[CreateGroupPayloadDto] = Json.format
 }
