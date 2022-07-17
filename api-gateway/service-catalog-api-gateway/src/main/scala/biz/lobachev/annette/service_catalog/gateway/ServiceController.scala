@@ -19,7 +19,7 @@ package biz.lobachev.annette.service_catalog.gateway
 import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.service_catalog.api.ServiceCatalogService
-import biz.lobachev.annette.service_catalog.api.service._
+import biz.lobachev.annette.service_catalog.api.item._
 import biz.lobachev.annette.service_catalog.gateway.Permissions.MAINTAIN_SERVICE_CATALOG
 import biz.lobachev.annette.service_catalog.gateway.service._
 import io.scalaland.chimney.dsl._
@@ -69,7 +69,7 @@ class ServiceController @Inject() (
   def activateService =
     authenticated.async(parse.json[ActivateServicePayloadDto]) { implicit request =>
       val payload = request.body
-        .into[ActivateServicePayload]
+        .into[ActivateScopeItemPayload]
         .withFieldConst(_.updatedBy, request.subject.principals.head)
         .transform
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
@@ -83,7 +83,7 @@ class ServiceController @Inject() (
   def deactivateService =
     authenticated.async(parse.json[DeactivateServicePayloadDto]) { implicit request =>
       val payload = request.body
-        .into[DeactivateServicePayload]
+        .into[DeactivateScopeItemPayload]
         .withFieldConst(_.updatedBy, request.subject.principals.head)
         .transform
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
@@ -97,7 +97,7 @@ class ServiceController @Inject() (
   def deleteService =
     authenticated.async(parse.json[DeleteServicePayloadDto]) { implicit request =>
       val payload = request.body
-        .into[DeleteServicePayload]
+        .into[DeleteScopeItemPayload]
         .withFieldConst(_.deletedBy, request.subject.principals.head)
         .transform
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
@@ -107,7 +107,7 @@ class ServiceController @Inject() (
       }
     }
 
-  def getServiceById(id: ServiceId, fromReadSide: Boolean = true) =
+  def getServiceById(id: ScopeItemId, fromReadSide: Boolean = true) =
     if (fromReadSide)
       Action.async { _ =>
         for {
@@ -125,14 +125,14 @@ class ServiceController @Inject() (
 
   def getServicesById(fromReadSide: Boolean = true) =
     if (fromReadSide)
-      Action.async(parse.json[Set[ServiceId]]) { request =>
+      Action.async(parse.json[Set[ScopeItemId]]) { request =>
         val ids = request.body
         for {
           result <- serviceCatalogService.getServicesById(ids, fromReadSide)
         } yield Ok(Json.toJson(result))
       }
     else
-      authenticated.async(parse.json[Set[ServiceId]]) { implicit request =>
+      authenticated.async(parse.json[Set[ScopeItemId]]) { implicit request =>
         authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
           val ids = request.body
           for {
@@ -142,7 +142,7 @@ class ServiceController @Inject() (
       }
 
   def findServices =
-    authenticated.async(parse.json[FindServiceQuery]) { implicit request =>
+    authenticated.async(parse.json[FindScopeItemsQuery]) { implicit request =>
       val query = request.body
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
         for {

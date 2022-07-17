@@ -56,7 +56,7 @@ import biz.lobachev.annette.person.gateway.PersonController
 import biz.lobachev.annette.persons.api.{PersonServiceApi, PersonServiceImpl}
 import biz.lobachev.annette.principal_group.api.{PrincipalGroupServiceApi, PrincipalGroupServiceImpl}
 import biz.lobachev.annette.principal_group.gateway.PrincipalGroupController
-import biz.lobachev.annette.service_catalog.api.transport.{ServiceCatalogServiceApi, ServiceCatalogServiceImpl}
+import biz.lobachev.annette.service_catalog.client.http.{ServiceCatalogServiceLagomApi, ServiceCatalogServiceLagomImpl}
 import biz.lobachev.annette.service_catalog.gateway.{
   CategoryController,
   GroupController,
@@ -183,8 +183,8 @@ abstract class ServiceGateway(context: Context)
   lazy val applicationServiceApi = serviceClient.implement[ApplicationServiceApi]
   lazy val applicationService    = wire[ApplicationServiceImpl]
 
-  lazy val serviceCatalogServiceApi = serviceClient.implement[ServiceCatalogServiceApi]
-  lazy val serviceCatalogService    = wire[ServiceCatalogServiceImpl]
+  lazy val serviceCatalogServiceApi = serviceClient.implement[ServiceCatalogServiceLagomApi]
+  lazy val serviceCatalogService    = wire[ServiceCatalogServiceLagomImpl]
 
   lazy val principalGroupServiceApi = serviceClient.implement[PrincipalGroupServiceApi]
   lazy val principalGroupService    = wire[PrincipalGroupServiceImpl]

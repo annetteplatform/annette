@@ -18,11 +18,11 @@ package biz.lobachev.annette.service_catalog.gateway.service
 
 import biz.lobachev.annette.core.model.translation.MultiLanguageText
 import biz.lobachev.annette.service_catalog.api.common.Icon
-import biz.lobachev.annette.service_catalog.api.service.{ServiceId, ServiceLink}
+import biz.lobachev.annette.service_catalog.api.item.{ScopeItemId, ServiceLink}
 import play.api.libs.json.{Format, Json}
 
 case class UpdateServicePayloadDto(
-  id: ServiceId,
+  id: ScopeItemId,
   name: Option[String],
   description: Option[String],
   icon: Option[Icon],

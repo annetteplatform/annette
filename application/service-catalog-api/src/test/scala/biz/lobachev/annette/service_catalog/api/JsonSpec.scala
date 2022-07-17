@@ -3,7 +3,7 @@ package biz.lobachev.annette.service_catalog.api
 import biz.lobachev.annette.core.model.auth.PersonPrincipal
 import biz.lobachev.annette.service_catalog.api.common.{FileIcon, FrameworkIcon}
 import biz.lobachev.annette.service_catalog.api.group.Group
-import biz.lobachev.annette.service_catalog.api.service.{ExternalLink, InternalLink, Service}
+import biz.lobachev.annette.service_catalog.api.item.{ExternalLink, InternalLink, ServiceItem}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.Json
@@ -46,7 +46,7 @@ class JsonSpec extends AnyWordSpec with Matchers {
   "Service" should {
     "service" in {
       val services = Seq(
-        Service(
+        ServiceItem(
           id = "ORG_STRUCTURE_SVC",
           name = "Орг структура",
           description = "",
@@ -66,7 +66,7 @@ class JsonSpec extends AnyWordSpec with Matchers {
           updatedBy = PersonPrincipal("P0001"),
           updatedAt = OffsetDateTime.now()
         ),
-        Service(
+        ServiceItem(
           id = "PERSON_SVC",
           name = "Персоны",
           description = "",
@@ -86,7 +86,7 @@ class JsonSpec extends AnyWordSpec with Matchers {
           updatedBy = PersonPrincipal("P0001"),
           updatedAt = OffsetDateTime.now()
         ),
-        Service(
+        ServiceItem(
           id = "ANNETTE_EXT_SVC",
           name = "Сайт платформы Annette",
           description = "",

@@ -16,11 +16,11 @@
 
 package biz.lobachev.annette.service_catalog.gateway.service
 
-import biz.lobachev.annette.service_catalog.api.service.ServiceId
+import biz.lobachev.annette.service_catalog.api.item.ScopeItemId
 import play.api.libs.json.{Format, Json}
 
 case class ActivateServicePayloadDto(
-  id: ServiceId
+  id: ScopeItemId
 )
 
 object ActivateServicePayloadDto {

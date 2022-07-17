@@ -20,6 +20,7 @@ import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.service_catalog.api.ServiceCatalogService
 import biz.lobachev.annette.service_catalog.api.group._
+import biz.lobachev.annette.service_catalog.api.item.{CreateGroupPayload, UpdateGroupPayload}
 import biz.lobachev.annette.service_catalog.gateway.Permissions.MAINTAIN_SERVICE_CATALOG
 import biz.lobachev.annette.service_catalog.gateway.group._
 import io.scalaland.chimney.dsl._

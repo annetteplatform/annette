@@ -41,6 +41,7 @@ object ApplicationSerializerRegistry extends JsonSerializerRegistry {
       JsonSerializer[ApplicationEntity.ApplicationCreated],
       JsonSerializer[ApplicationEntity.ApplicationNameUpdated],
       JsonSerializer[ApplicationEntity.ApplicationLabelUpdated],
+      JsonSerializer[ApplicationEntity.ApplicationLabelDescriptionUpdated],
       JsonSerializer[ApplicationEntity.ApplicationTranslationsUpdated],
       JsonSerializer[ApplicationEntity.ApplicationBackendUrlUpdated],
       JsonSerializer[ApplicationEntity.ApplicationFrontendUrlUpdated],
