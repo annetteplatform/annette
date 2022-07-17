@@ -19,14 +19,26 @@ package biz.lobachev.annette.service_catalog.api.item
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionCompanion1
 import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
 
-object ServiceAlreadyExist extends AnnetteTransportExceptionCompanion1 {
+object ServiceItemAlreadyExist extends AnnetteTransportExceptionCompanion1 {
   val ErrorCode       = TransportErrorCode.BadRequest
-  val MessageCode     = "annette.serviceCatalog.service.serviceAlreadyExist"
+  val MessageCode     = "annette.serviceCatalog.serviceItem.alreadyExist"
   val Arg1Key: String = "id"
 }
 
-object ServiceNotFound extends AnnetteTransportExceptionCompanion1 {
+object ServiceItemNotFound extends AnnetteTransportExceptionCompanion1 {
   val ErrorCode       = TransportErrorCode.NotFound
-  val MessageCode     = "annette.serviceCatalog.service.serviceNotFound"
+  val MessageCode     = "annette.serviceCatalog.serviceItem.notFound"
+  val Arg1Key: String = "id"
+}
+
+object ServiceItemIsNotService extends AnnetteTransportExceptionCompanion1 {
+  val ErrorCode       = TransportErrorCode.BadRequest
+  val MessageCode     = "annette.serviceCatalog.serviceItem.isNotService"
+  val Arg1Key: String = "id"
+}
+
+object ServiceItemIsNotGroup extends AnnetteTransportExceptionCompanion1 {
+  val ErrorCode       = TransportErrorCode.BadRequest
+  val MessageCode     = "annette.serviceCatalog.serviceItem.isNotGroup"
   val Arg1Key: String = "id"
 }

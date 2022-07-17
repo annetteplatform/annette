@@ -22,7 +22,7 @@ import biz.lobachev.annette.service_catalog.api.common.Icon
 import play.api.libs.json.{Format, Json}
 
 case class CreateServicePayload(
-  id: ScopeItemId,
+  id: ServiceItemId,
   name: String,
   description: String,
   icon: Icon,

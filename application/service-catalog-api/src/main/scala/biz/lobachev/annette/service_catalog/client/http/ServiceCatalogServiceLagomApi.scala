@@ -1,10 +1,25 @@
+/*
+ * Copyright 2013 Valery Lobachev
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package biz.lobachev.annette.service_catalog.client.http
 
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionSerializer
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
-import biz.lobachev.annette.service_catalog.api.group._
 import biz.lobachev.annette.service_catalog.api.scope._
 import biz.lobachev.annette.service_catalog.api.scope_principal.{
   AssignScopePrincipalPayload,
@@ -39,7 +54,6 @@ trait ServiceCatalogServiceLagomApi extends LagomService {
   def deleteScope: ServiceCall[DeleteScopePayload, Done]
   def getScopeById(id: ScopeId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Scope]
   def getScopesById(fromReadSide: Boolean = true): ServiceCall[Set[ScopeId], Seq[Scope]]
-
   def findScopes: ServiceCall[FindScopeQuery, FindResult]
 
   def assignScopePrincipal: ServiceCall[AssignScopePrincipalPayload, Done]
@@ -48,21 +62,15 @@ trait ServiceCatalogServiceLagomApi extends LagomService {
 
   def createGroup: ServiceCall[CreateGroupPayload, Done]
   def updateGroup: ServiceCall[UpdateGroupPayload, Done]
-  def activateGroup: ServiceCall[ActivateGroupPayload, Done]
-  def deactivateGroup: ServiceCall[DeactivateGroupPayload, Done]
-  def deleteGroup: ServiceCall[DeleteGroupPayload, Done]
-  def getGroupById(id: GroupId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Group]
-  def getGroupsById(fromReadSide: Boolean = true): ServiceCall[Set[GroupId], Seq[Group]]
-  def findGroups: ServiceCall[FindGroupQuery, FindResult]
-
   def createService: ServiceCall[CreateServicePayload, Done]
   def updateService: ServiceCall[UpdateServicePayload, Done]
-  def activateService: ServiceCall[ActivateScopeItemPayload, Done]
-  def deactivateService: ServiceCall[DeactivateScopeItemPayload, Done]
-  def deleteService: ServiceCall[DeleteScopeItemPayload, Done]
-  def getServiceById(id: ScopeItemId, fromReadSide: Boolean = true): ServiceCall[NotUsed, ServiceItem]
-  def getServicesById(fromReadSide: Boolean = true): ServiceCall[Set[ScopeItemId], Seq[ServiceItem]]
-  def findServices: ServiceCall[FindScopeItemsQuery, FindResult]
+
+  def activateServiceItem: ServiceCall[ActivateServiceItemPayload, Done]
+  def deactivateServiceItem: ServiceCall[DeactivateServiceItemPayload, Done]
+  def deleteServiceItem: ServiceCall[DeleteServiceItemPayload, Done]
+  def getServiceItemById(id: ServiceItemId, fromReadSide: Boolean = true): ServiceCall[NotUsed, ServiceItem]
+  def getServiceItemsById(fromReadSide: Boolean = true): ServiceCall[Set[ServiceItemId], Seq[ServiceItem]]
+  def findServiceItems: ServiceCall[FindServiceItemsQuery, FindResult]
 
   def assignServicePrincipal: ServiceCall[AssignServicePrincipalPayload, Done]
   def unassignServicePrincipal: ServiceCall[UnassignServicePrincipalPayload, Done]
@@ -94,20 +102,14 @@ trait ServiceCatalogServiceLagomApi extends LagomService {
         pathCall("/api/serviceCatalog/v1/findScopePrincipals", findScopePrincipals),
         pathCall("/api/serviceCatalog/v1/createGroup", createGroup),
         pathCall("/api/serviceCatalog/v1/updateGroup", updateGroup),
-        pathCall("/api/serviceCatalog/v1/activateGroup", activateGroup),
-        pathCall("/api/serviceCatalog/v1/deactivateGroup", deactivateGroup),
-        pathCall("/api/serviceCatalog/v1/deleteGroup", deleteGroup),
-        pathCall("/api/serviceCatalog/v1/getGroupById/:id/:fromReadSide", getGroupById _),
-        pathCall("/api/serviceCatalog/v1/getGroupsById/:fromReadSide", getGroupsById _),
-        pathCall("/api/serviceCatalog/v1/findGroups", findGroups),
         pathCall("/api/serviceCatalog/v1/createService", createService),
         pathCall("/api/serviceCatalog/v1/updateService", updateService),
-        pathCall("/api/serviceCatalog/v1/activateService", activateService),
-        pathCall("/api/serviceCatalog/v1/deactivateService", deactivateService),
-        pathCall("/api/serviceCatalog/v1/deleteService", deleteService),
-        pathCall("/api/serviceCatalog/v1/getServiceById/:id/:fromReadSide", getServiceById _),
-        pathCall("/api/serviceCatalog/v1/getServicesById/:fromReadSide", getServicesById _),
-        pathCall("/api/serviceCatalog/v1/findServices", findServices),
+        pathCall("/api/serviceCatalog/v1/activateServiceItem", activateServiceItem),
+        pathCall("/api/serviceCatalog/v1/deactivateServiceItem", deactivateServiceItem),
+        pathCall("/api/serviceCatalog/v1/deleteServiceItem", deleteServiceItem),
+        pathCall("/api/serviceCatalog/v1/getServiceItemById/:id/:fromReadSide", getServiceItemById _),
+        pathCall("/api/serviceCatalog/v1/getServiceItemsById/:fromReadSide", getServiceItemsById _),
+        pathCall("/api/serviceCatalog/v1/findServiceItems", findServiceItems),
         pathCall("/api/serviceCatalog/v1/assignServicePrincipal", assignServicePrincipal),
         pathCall("/api/serviceCatalog/v1/unassignServicePrincipal", unassignServicePrincipal),
         pathCall("/api/serviceCatalog/v1/findServicePrincipals", findServicePrincipals),

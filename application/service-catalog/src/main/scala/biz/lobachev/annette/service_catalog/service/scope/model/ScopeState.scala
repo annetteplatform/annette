@@ -18,7 +18,7 @@ package biz.lobachev.annette.service_catalog.service.scope.model
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.CategoryId
-import biz.lobachev.annette.service_catalog.api.group.GroupId
+import biz.lobachev.annette.service_catalog.api.item.ServiceItemId
 import biz.lobachev.annette.service_catalog.api.scope.{Scope, ScopeId}
 import io.scalaland.chimney.dsl.TransformerOps
 import play.api.libs.json.{Format, Json}
@@ -30,7 +30,7 @@ case class ScopeState(
   name: String,
   description: String,
   categoryId: CategoryId,
-  groups: Seq[GroupId] = Seq.empty,
+  children: Seq[ServiceItemId] = Seq.empty,
   active: Boolean,
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now

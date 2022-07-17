@@ -21,7 +21,6 @@ import akka.{Done, NotUsed}
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.service_catalog.api.ServiceCatalogService
-import biz.lobachev.annette.service_catalog.api.group._
 import biz.lobachev.annette.service_catalog.api.scope._
 import biz.lobachev.annette.service_catalog.api.scope_principal._
 import biz.lobachev.annette.service_catalog.api.item._
@@ -136,36 +135,6 @@ class ServiceCatalogServiceLagomApiImpl(
       serviceCatalogService.updateGroup(payload)
     }
 
-  override def activateGroup: ServiceCall[ActivateGroupPayload, Done] =
-    ServiceCall { payload =>
-      serviceCatalogService.activateGroup(payload)
-    }
-
-  override def deactivateGroup: ServiceCall[DeactivateGroupPayload, Done] =
-    ServiceCall { payload =>
-      serviceCatalogService.deactivateGroup(payload)
-    }
-
-  override def deleteGroup: ServiceCall[DeleteGroupPayload, Done] =
-    ServiceCall { payload =>
-      serviceCatalogService.deleteGroup(payload)
-    }
-
-  override def getGroupById(id: GroupId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Group] =
-    ServiceCall { _ =>
-      serviceCatalogService.getGroupById(id, fromReadSide)
-    }
-
-  override def getGroupsById(fromReadSide: Boolean = true): ServiceCall[Set[GroupId], Seq[Group]] =
-    ServiceCall { ids =>
-      serviceCatalogService.getGroupsById(ids, fromReadSide)
-    }
-
-  override def findGroups: ServiceCall[FindGroupQuery, FindResult] =
-    ServiceCall { query =>
-      serviceCatalogService.findGroups(query)
-    }
-
   override def createService: ServiceCall[CreateServicePayload, Done] =
     ServiceCall { payload =>
       serviceCatalogService.createService(payload)
@@ -176,34 +145,34 @@ class ServiceCatalogServiceLagomApiImpl(
       serviceCatalogService.updateService(payload)
     }
 
-  override def activateService: ServiceCall[ActivateScopeItemPayload, Done] =
+  override def activateServiceItem: ServiceCall[ActivateServiceItemPayload, Done] =
     ServiceCall { payload =>
-      serviceCatalogService.activateService(payload)
+      serviceCatalogService.activateServiceItem(payload)
     }
 
-  override def deactivateService: ServiceCall[DeactivateScopeItemPayload, Done] =
+  override def deactivateServiceItem: ServiceCall[DeactivateServiceItemPayload, Done] =
     ServiceCall { payload =>
-      serviceCatalogService.deactivateService(payload)
+      serviceCatalogService.deactivateServiceItem(payload)
     }
 
-  override def deleteService: ServiceCall[DeleteScopeItemPayload, Done] =
+  override def deleteServiceItem: ServiceCall[DeleteServiceItemPayload, Done] =
     ServiceCall { payload =>
-      serviceCatalogService.deleteService(payload)
+      serviceCatalogService.deleteServiceItem(payload)
     }
 
-  override def getServiceById(id: ScopeItemId, fromReadSide: Boolean = true): ServiceCall[NotUsed, ServiceItem] =
+  override def getServiceItemById(id: ServiceItemId, fromReadSide: Boolean = true): ServiceCall[NotUsed, ServiceItem] =
     ServiceCall { _ =>
-      serviceCatalogService.getServiceById(id, fromReadSide)
+      serviceCatalogService.getServiceItemById(id, fromReadSide)
     }
 
-  override def getServicesById(fromReadSide: Boolean = true): ServiceCall[Set[ScopeItemId], Seq[ServiceItem]] =
+  override def getServiceItemsById(fromReadSide: Boolean = true): ServiceCall[Set[ServiceItemId], Seq[ServiceItem]] =
     ServiceCall { ids =>
-      serviceCatalogService.getServicesById(ids, fromReadSide)
+      serviceCatalogService.getServiceItemsById(ids, fromReadSide)
     }
 
-  override def findServices: ServiceCall[FindScopeItemsQuery, FindResult] =
+  override def findServiceItems: ServiceCall[FindServiceItemsQuery, FindResult] =
     ServiceCall { query =>
-      serviceCatalogService.findServices(query)
+      serviceCatalogService.findServiceItems(query)
     }
 
   override def assignServicePrincipal: ServiceCall[AssignServicePrincipalPayload, Done] =

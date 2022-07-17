@@ -35,7 +35,7 @@ import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 
-private[impl] class ScopeDbDao(override val session: CassandraSession)(implicit
+private[service_catalog] class ScopeDbDao(override val session: CassandraSession)(implicit
   val ec: ExecutionContext,
   val materializer: Materializer
 ) extends CassandraQuillDao {
@@ -58,7 +58,7 @@ private[impl] class ScopeDbDao(override val session: CassandraSession)(implicit
                .column("name", Text)
                .column("description", Text)
                .column("category_id", Text)
-               .column("groups", List(Text))
+               .column("children", List(Text))
                .column("active", Boolean)
                .column("updated_at", Timestamp)
                .column("updated_by", Text)
@@ -84,7 +84,7 @@ private[impl] class ScopeDbDao(override val session: CassandraSession)(implicit
       event.name.map(v => "name" -> v),
       event.description.map(v => "description" -> v),
       event.categoryId.map(v => "category_id" -> v),
-      event.groups.map(v => "groups" -> v.asJava),
+      event.children.map(v => "children" -> v.asJava),
       Some("updated_by" -> event.updatedBy.code),
       Some("updated_at" -> new Date(event.updatedAt.toInstant.toEpochMilli))
     ).flatten

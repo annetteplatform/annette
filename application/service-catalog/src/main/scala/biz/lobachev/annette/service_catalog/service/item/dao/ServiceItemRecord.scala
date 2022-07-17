@@ -14,27 +14,54 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.service_catalog.service.group.dao
+package biz.lobachev.annette.service_catalog.service.item.dao
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.translation.MultiLanguageText
 import biz.lobachev.annette.service_catalog.api.common.Icon
-import biz.lobachev.annette.service_catalog.api.group.{Group, GroupId}
-import io.scalaland.chimney.dsl._
+import biz.lobachev.annette.service_catalog.api.item.{Group, Service, ServiceItem, ServiceItemId, ServiceLink}
 
 import java.time.OffsetDateTime
 
-case class GroupRecord(
-  id: GroupId,
+case class ServiceItemRecord(
+  id: ServiceItemId,
   name: String,
   description: String,
   icon: Icon,
   label: MultiLanguageText,
   labelDescription: MultiLanguageText,
-  services: List[String],
+  itemType: String,
+  link: Option[ServiceLink],
+  children: Option[List[String]],
   active: Boolean,
   updatedAt: OffsetDateTime = OffsetDateTime.now(),
   updatedBy: AnnettePrincipal
 ) {
-  def toGroup: Group = this.transformInto[Group]
+  def toServiceItem: ServiceItem =
+    if (itemType == "service")
+      Service(
+        id = id,
+        name = name,
+        description = description,
+        icon = icon,
+        label = label,
+        labelDescription = labelDescription,
+        link = link.get,
+        active = active,
+        updatedBy = updatedBy,
+        updatedAt = updatedAt
+      )
+    else
+      Group(
+        id = id,
+        name = name,
+        description = description,
+        icon = icon,
+        label = label,
+        labelDescription = labelDescription,
+        children = children.get,
+        active = active,
+        updatedBy = updatedBy,
+        updatedAt = updatedAt
+      )
 }

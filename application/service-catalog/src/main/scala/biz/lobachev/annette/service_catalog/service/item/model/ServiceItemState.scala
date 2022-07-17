@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.service_catalog.api.item
+package biz.lobachev.annette.service_catalog.service.item.model
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.translation.MultiLanguageText
 import biz.lobachev.annette.service_catalog.api.common.Icon
-import biz.lobachev.annette.service_catalog.api.group.GroupId
+import biz.lobachev.annette.service_catalog.api.item.{Group, Service, ServiceItem, ServiceItemId, ServiceLink}
 import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
+import io.scalaland.chimney.dsl.TransformerOps
 import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 
 import java.time.OffsetDateTime
@@ -28,12 +29,12 @@ import java.time.OffsetDateTime
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes(
   Array(
-    new JsonSubTypes.Type(value = classOf[ServiceItem], name = "service"),
-    new JsonSubTypes.Type(value = classOf[GroupItem], name = "group")
+    new JsonSubTypes.Type(value = classOf[ServiceState], name = "service"),
+    new JsonSubTypes.Type(value = classOf[GroupState], name = "group")
   )
 )
-sealed trait ScopeItem {
-  val id: ScopeItemId
+sealed trait ServiceItemState {
+  val id: ServiceItemId
   val name: String
   val description: String
   val icon: Icon
@@ -42,10 +43,12 @@ sealed trait ScopeItem {
   val active: Boolean
   val updatedBy: AnnettePrincipal
   val updatedAt: OffsetDateTime
+
+  def toServiceItem(): ServiceItem
 }
 
-case class ServiceItem(
-  id: ScopeItemId,
+case class ServiceState(
+  id: ServiceItemId,
   name: String,
   description: String,
   icon: Icon,
@@ -55,39 +58,43 @@ case class ServiceItem(
   active: Boolean,
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
-) extends ScopeItem
-
-object ServiceItem {
-  implicit val format: Format[ServiceItem] = Json.format
+) extends ServiceItemState {
+  def toServiceItem(): ServiceItem = this.transformInto[Service]
 }
 
-case class GroupItem(
-  id: ScopeItemId,
+object ServiceState {
+  implicit val format: Format[ServiceState] = Json.format
+}
+
+case class GroupState(
+  id: ServiceItemId,
   name: String,
   description: String,
   icon: Icon,
   label: MultiLanguageText,
   labelDescription: MultiLanguageText,
-  items: Seq[ScopeItemId] = Seq.empty,
+  children: Seq[ServiceItemId] = Seq.empty,
   active: Boolean,
   updatedBy: AnnettePrincipal,
   updatedAt: OffsetDateTime = OffsetDateTime.now
-) extends ScopeItem
-
-object GroupItem {
-  implicit val format: Format[GroupItem] = Json.format
+) extends ServiceItemState {
+  def toServiceItem(): ServiceItem = this.transformInto[Group]
 }
 
-object ScopeItem {
+object GroupState {
+  implicit val format: Format[GroupState] = Json.format
+}
+
+object ServiceItemState {
   implicit val config = JsonConfiguration(
     discriminator = "type",
     typeNaming = JsonNaming { fullName =>
       fullName.split("\\.").toSeq.last match {
-        case "ServiceItem" => "service"
-        case "GroupItem"   => "group"
+        case "ServiceState" => "service"
+        case "GroupState"   => "group"
       }
     }
   )
 
-  implicit val format = Json.format[ScopeItem]
+  implicit val format = Json.format[ServiceItemState]
 }

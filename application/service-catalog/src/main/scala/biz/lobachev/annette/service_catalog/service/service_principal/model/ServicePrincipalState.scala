@@ -17,11 +17,11 @@
 package biz.lobachev.annette.service_catalog.service.service_principal.model
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.service_catalog.api.item.ScopeItemId
+import biz.lobachev.annette.service_catalog.api.item.ServiceItemId
 import play.api.libs.json.Json
 
 case class ServicePrincipalState(
-  serviceId: ScopeItemId,
+  serviceId: ServiceItemId,
   principal: AnnettePrincipal
 )
 

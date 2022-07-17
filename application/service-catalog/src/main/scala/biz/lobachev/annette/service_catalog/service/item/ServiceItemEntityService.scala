@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.service_catalog.service.service
+package biz.lobachev.annette.service_catalog.service.item
 
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
@@ -23,8 +23,8 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.service_catalog.api.item._
-import biz.lobachev.annette.service_catalog.service.service.ServiceEntity._
-import biz.lobachev.annette.service_catalog.service.service.dao.{ServiceDbDao, ServiceIndexDao}
+import biz.lobachev.annette.service_catalog.service.item.ServiceItemEntity._
+import biz.lobachev.annette.service_catalog.service.item.dao.{ServiceItemDbDao, ServiceItemIndexDao}
 import com.typesafe.config.Config
 
 import java.util.concurrent.TimeUnit
@@ -32,10 +32,10 @@ import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
 
-class ServiceEntityService(
+class ServiceItemEntityService(
   clusterSharding: ClusterSharding,
-  dbDao: ServiceDbDao,
-  indexDao: ServiceIndexDao,
+  dbDao: ServiceItemDbDao,
+  indexDao: ServiceItemIndexDao,
   config: Config
 )(implicit
   ec: ExecutionContext,
@@ -47,24 +47,40 @@ class ServiceEntityService(
       .map(d => Timeout(FiniteDuration(d.toNanos, TimeUnit.NANOSECONDS)))
       .getOrElse(Timeout(60.seconds))
 
-  private def refFor(id: ScopeItemId): EntityRef[ServiceEntity.Command] =
-    clusterSharding.entityRefFor(ServiceEntity.typeKey, id)
+  private def refFor(id: ServiceItemId): EntityRef[ServiceItemEntity.Command] =
+    clusterSharding.entityRefFor(ServiceItemEntity.typeKey, id)
 
-  private def convertSuccess(id: ScopeItemId, confirmation: Confirmation): Done =
+  private def convertSuccess(id: ServiceItemId, confirmation: Confirmation): Done =
     confirmation match {
       case Success      => Done
-      case NotFound     => throw ServiceNotFound(id)
-      case AlreadyExist => throw ServiceAlreadyExist(id)
+      case NotFound     => throw ServiceItemNotFound(id)
+      case AlreadyExist => throw ServiceItemAlreadyExist(id)
+      case IsNotService => throw ServiceItemIsNotService(id)
+      case IsNotGroup   => throw ServiceItemIsNotGroup(id)
       case _            => throw new RuntimeException("Match fail")
     }
 
-  private def convertSuccessService(id: ScopeItemId, confirmation: Confirmation): ServiceItem =
+  private def convertSuccessService(id: ServiceItemId, confirmation: Confirmation): ServiceItem =
     confirmation match {
-      case SuccessService(entity) => entity
-      case NotFound               => throw ServiceNotFound(id)
-      case AlreadyExist           => throw ServiceAlreadyExist(id)
-      case _                      => throw new RuntimeException("Match fail")
+      case SuccessServiceItem(entity) => entity
+      case NotFound                   => throw ServiceItemNotFound(id)
+      case AlreadyExist               => throw ServiceItemAlreadyExist(id)
+      case _                          => throw new RuntimeException("Match fail")
     }
+
+  def createGroup(payload: CreateGroupPayload): Future[Done] =
+    for {
+      result <- refFor(payload.id)
+                  .ask[Confirmation](CreateGroup(payload, _))
+                  .map(res => convertSuccess(payload.id, res))
+    } yield result
+
+  def updateGroup(payload: UpdateGroupPayload): Future[Done] =
+    for {
+      result <- refFor(payload.id)
+                  .ask[Confirmation](UpdateGroup(payload, _))
+                  .map(res => convertSuccess(payload.id, res))
+    } yield result
 
   def createService(payload: CreateServicePayload): Future[Done] =
     for {
@@ -80,55 +96,55 @@ class ServiceEntityService(
                   .map(res => convertSuccess(payload.id, res))
     } yield result
 
-  def activateService(payload: ActivateScopeItemPayload): Future[Done] =
+  def activateServiceItem(payload: ActivateServiceItemPayload): Future[Done] =
     for {
       result <- refFor(payload.id)
-                  .ask[Confirmation](ActivateService(payload, _))
+                  .ask[Confirmation](ActivateServiceItem(payload, _))
                   .map(res => convertSuccess(payload.id, res))
     } yield result
 
-  def deactivateService(payload: DeactivateScopeItemPayload): Future[Done] =
+  def deactivateServiceItem(payload: DeactivateServiceItemPayload): Future[Done] =
     for {
       result <- refFor(payload.id)
-                  .ask[Confirmation](DeactivateService(payload, _))
+                  .ask[Confirmation](DeactivateServiceItem(payload, _))
                   .map(res => convertSuccess(payload.id, res))
     } yield result
 
-  def deleteService(payload: DeleteScopeItemPayload): Future[Done] =
+  def deleteServiceItem(payload: DeleteServiceItemPayload): Future[Done] =
     refFor(payload.id)
-      .ask[Confirmation](DeleteService(payload, _))
+      .ask[Confirmation](DeleteServiceItem(payload, _))
       .map(res => convertSuccess(payload.id, res))
 
-  def getServiceById(id: ScopeItemId, fromReadSide: Boolean): Future[ServiceItem] =
+  def getServiceItemById(id: ServiceItemId, fromReadSide: Boolean): Future[ServiceItem] =
     if (fromReadSide)
       dbDao
-        .getServiceById(id)
-        .map(_.getOrElse(throw ServiceNotFound(id)))
+        .getServiceItemById(id)
+        .map(_.getOrElse(throw ServiceItemNotFound(id)))
     else
       refFor(id)
-        .ask[Confirmation](GetService(id, _))
+        .ask[Confirmation](GetServiceItem(id, _))
         .map(res => convertSuccessService(id, res))
 
-  def getServicesById(
-    ids: Set[ScopeItemId],
+  def getServiceItemsById(
+    ids: Set[ServiceItemId],
     fromReadSide: Boolean
   ): Future[Seq[ServiceItem]] =
     if (fromReadSide)
-      dbDao.getServicesById(ids)
+      dbDao.getServiceItemsById(ids)
     else
       Source(ids)
         .mapAsync(1) { id =>
           refFor(id)
-            .ask[Confirmation](GetService(id, _))
+            .ask[Confirmation](GetServiceItem(id, _))
             .map {
-              case ServiceEntity.SuccessService(service) => Some(service)
-              case _                                     => None
+              case ServiceItemEntity.SuccessServiceItem(service) => Some(service)
+              case _                                             => None
             }
         }
         .runWith(Sink.seq)
         .map(_.flatten)
 
-  def findServices(query: FindScopeItemsQuery): Future[FindResult] =
+  def findServiceItems(query: FindServiceItemsQuery): Future[FindResult] =
     indexDao.findService(query)
 
 }

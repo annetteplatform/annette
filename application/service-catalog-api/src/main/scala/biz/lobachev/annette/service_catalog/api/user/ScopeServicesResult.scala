@@ -16,11 +16,12 @@
 
 package biz.lobachev.annette.service_catalog.api.user
 
+import biz.lobachev.annette.service_catalog.api.item.ServiceItemId
 import play.api.libs.json.{Format, Json}
 
 case class ScopeServicesResult(
-  groups: Seq[UserGroup],
-  services: Seq[UserService]
+  root: Seq[ServiceItemId],
+  serviceItems: Seq[UserServiceItem]
 )
 
 object ScopeServicesResult {

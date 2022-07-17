@@ -20,7 +20,6 @@ import akka.Done
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.service_catalog.api.ServiceCatalogService
-import biz.lobachev.annette.service_catalog.api.group._
 import biz.lobachev.annette.service_catalog.api.scope._
 import biz.lobachev.annette.service_catalog.api.scope_principal.{
   AssignScopePrincipalPayload,
@@ -95,47 +94,29 @@ class ServiceCatalogServiceLagomImpl(api: ServiceCatalogServiceLagomApi) extends
   override def updateGroup(payload: UpdateGroupPayload): Future[Done] =
     api.updateGroup.invoke(payload)
 
-  override def activateGroup(payload: ActivateGroupPayload): Future[Done] =
-    api.activateGroup.invoke(payload)
-
-  override def deactivateGroup(payload: DeactivateGroupPayload): Future[Done] =
-    api.deactivateGroup.invoke(payload)
-
-  override def deleteGroup(payload: DeleteGroupPayload): Future[Done] =
-    api.deleteGroup.invoke(payload)
-
-  override def getGroupById(id: GroupId, fromReadSide: Boolean): Future[Group] =
-    api.getGroupById(id, fromReadSide).invoke()
-
-  override def getGroupsById(ids: Set[GroupId], fromReadSide: Boolean): Future[Seq[Group]] =
-    api.getGroupsById(fromReadSide).invoke(ids)
-
-  override def findGroups(payload: FindGroupQuery): Future[FindResult] =
-    api.findGroups.invoke(payload)
-
   override def createService(payload: CreateServicePayload): Future[Done] =
     api.createService.invoke(payload)
 
   override def updateService(payload: UpdateServicePayload): Future[Done] =
     api.updateService.invoke(payload)
 
-  override def activateService(payload: ActivateScopeItemPayload): Future[Done] =
-    api.activateService.invoke(payload)
+  override def activateServiceItem(payload: ActivateServiceItemPayload): Future[Done] =
+    api.activateServiceItem.invoke(payload)
 
-  override def deactivateService(payload: DeactivateScopeItemPayload): Future[Done] =
-    api.deactivateService.invoke(payload)
+  override def deactivateServiceItem(payload: DeactivateServiceItemPayload): Future[Done] =
+    api.deactivateServiceItem.invoke(payload)
 
-  override def deleteService(payload: DeleteScopeItemPayload): Future[Done] =
-    api.deleteService.invoke(payload)
+  override def deleteServiceItem(payload: DeleteServiceItemPayload): Future[Done] =
+    api.deleteServiceItem.invoke(payload)
 
-  override def getServiceById(id: ScopeItemId, fromReadSide: Boolean): Future[ServiceItem] =
-    api.getServiceById(id, fromReadSide).invoke()
+  override def getServiceItemById(id: ServiceItemId, fromReadSide: Boolean): Future[ServiceItem] =
+    api.getServiceItemById(id, fromReadSide).invoke()
 
-  override def getServicesById(ids: Set[ScopeItemId], fromReadSide: Boolean): Future[Seq[ServiceItem]] =
-    api.getServicesById(fromReadSide).invoke(ids)
+  override def getServiceItemsById(ids: Set[ServiceItemId], fromReadSide: Boolean): Future[Seq[ServiceItem]] =
+    api.getServiceItemsById(fromReadSide).invoke(ids)
 
-  override def findServices(payload: FindScopeItemsQuery): Future[FindResult] =
-    api.findServices.invoke(payload)
+  override def findServiceItems(payload: FindServiceItemsQuery): Future[FindResult] =
+    api.findServiceItems.invoke(payload)
 
   override def assignServicePrincipal(payload: AssignServicePrincipalPayload): Future[Done] =
     api.assignServicePrincipal.invoke(payload)

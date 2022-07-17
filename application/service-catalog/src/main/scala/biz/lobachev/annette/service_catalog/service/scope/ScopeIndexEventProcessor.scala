@@ -23,7 +23,7 @@ import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
 import scala.concurrent.ExecutionContext
 
-private[impl] class ScopeIndexEventProcessor(
+private[service_catalog] class ScopeIndexEventProcessor(
   readSide: CassandraReadSide,
   indexDao: ScopeIndexDao
 )(implicit

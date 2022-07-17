@@ -23,7 +23,7 @@ import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 
 import scala.concurrent.{ExecutionContext, Future}
 
-private[impl] class ServicePrincipalDbDao(
+private[service_catalog] class ServicePrincipalDbDao(
   override val session: CassandraSession
 )(implicit ec: ExecutionContext)
     extends CassandraQuillDao {

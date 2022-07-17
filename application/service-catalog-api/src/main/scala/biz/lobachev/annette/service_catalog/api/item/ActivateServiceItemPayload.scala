@@ -19,11 +19,11 @@ package biz.lobachev.annette.service_catalog.api.item
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
 
-case class DeactivateScopeItemPayload(
-  id: ScopeItemId,
+case class ActivateServiceItemPayload(
+  id: ServiceItemId,
   updatedBy: AnnettePrincipal
 )
 
-object DeactivateScopeItemPayload {
-  implicit val format: Format[DeactivateScopeItemPayload] = Json.format
+object ActivateServiceItemPayload {
+  implicit val format: Format[ActivateServiceItemPayload] = Json.format
 }
