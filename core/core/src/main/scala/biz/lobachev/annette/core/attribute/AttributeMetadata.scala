@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.core.attribute
 
-import biz.lobachev.annette.core.model.translation.Caption
+import biz.lobachev.annette.core.model.text.Caption
 import biz.lobachev.annette.core.utils.Encase
 import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
 import play.api.libs.json.{Json, JsonConfiguration, JsonNaming}

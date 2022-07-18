@@ -18,7 +18,7 @@ package biz.lobachev.annette.application.api.application
 
 import biz.lobachev.annette.application.api.translation.TranslationId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.translation.MultiLanguageText
+import biz.lobachev.annette.core.model.text.{Icon, MultiLanguageText}
 import play.api.libs.json.{Format, Json}
 
 import java.time.OffsetDateTime
@@ -26,6 +26,7 @@ import java.time.OffsetDateTime
 case class Application(
   id: ApplicationId,
   name: String,
+  icon: Option[Icon],
   label: MultiLanguageText,
   labelDescription: MultiLanguageText,
   translations: Set[TranslationId] = Set.empty,

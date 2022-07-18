@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.application.api
+package biz.lobachev.annette.application.client.http
 
 import akka.{Done, NotUsed}
 import biz.lobachev.annette.application.api.application._
@@ -26,7 +26,7 @@ import biz.lobachev.annette.core.model.indexing.FindResult
 import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 import play.api.libs.json.JsObject
 
-trait ApplicationServiceApi extends Service {
+trait ApplicationServiceLagomApi extends Service {
 
   def createLanguage: ServiceCall[CreateLanguagePayload, Done]
   def updateLanguage: ServiceCall[UpdateLanguagePayload, Done]
@@ -54,6 +54,7 @@ trait ApplicationServiceApi extends Service {
   def deleteApplication: ServiceCall[DeleteApplicationPayload, Done]
   def getApplicationById(id: ApplicationId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Application]
   def getApplicationsById(fromReadSide: Boolean = true): ServiceCall[Set[ApplicationId], Seq[Application]]
+  def getAllApplications: ServiceCall[NotUsed, Seq[Application]]
   def findApplications: ServiceCall[FindApplicationQuery, FindResult]
   def getApplicationTranslations(id: ApplicationId, languageId: LanguageId): ServiceCall[NotUsed, JsObject]
 
@@ -84,6 +85,7 @@ trait ApplicationServiceApi extends Service {
         pathCall("/api/application/v1/deleteApplication", deleteApplication),
         pathCall("/api/application/v1/getApplicationById/:id/:fromReadSide", getApplicationById _),
         pathCall("/api/application/v1/getApplicationsById/:fromReadSide", getApplicationsById _),
+        pathCall("/api/application/v1/getAllApplications", getAllApplications),
         pathCall("/api/application/v1/findApplications", findApplications),
         pathCall("/api/application/v1/getApplicationTranslations/:id/:languageId", getApplicationTranslations _)
       )

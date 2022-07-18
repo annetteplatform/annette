@@ -14,16 +14,8 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.application.gateway.dto
+package biz.lobachev.annette.core.model
 
-import biz.lobachev.annette.core.model.LanguageId
-import play.api.libs.json.Json
-
-case class UpdateLanguagePayloadDto(
-  id: LanguageId,
-  name: String
-)
-
-object UpdateLanguagePayloadDto {
-  implicit val format = Json.format[UpdateLanguagePayloadDto]
+package object text {
+  type MultiLanguageText = Map[LanguageId, String]
 }

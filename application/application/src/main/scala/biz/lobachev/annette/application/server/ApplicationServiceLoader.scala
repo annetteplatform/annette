@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.application.impl
+package biz.lobachev.annette.application.server
 
 import akka.cluster.sharding.typed.scaladsl.Entity
 import akka.stream.Materializer
-import biz.lobachev.annette.application.api._
+import biz.lobachev.annette.application.client.http.ApplicationServiceLagomApi
+import biz.lobachev.annette.application.impl.ApplicationServiceImpl
 import biz.lobachev.annette.application.impl.application._
 import biz.lobachev.annette.application.impl.application.dao.{ApplicationDbDao, ApplicationIndexDao}
 import biz.lobachev.annette.application.impl.application.model.ApplicationSerializerRegistry
@@ -35,6 +36,7 @@ import biz.lobachev.annette.application.impl.translation_json.{
   TranslationJsonEntity,
   TranslationJsonEntityService
 }
+import biz.lobachev.annette.application.server.http.ApplicationServiceLagomApiImpl
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
 import com.lightbend.lagom.scaladsl.api.LagomConfigComponent
@@ -64,7 +66,7 @@ class ApplicationServiceLoader extends LagomApplicationLoader {
     new ApplicationServiceApplication(context) with LagomDevModeComponents
   }
 
-  override def describeService = Some(readDescriptor[ApplicationServiceApi])
+  override def describeService = Some(readDescriptor[ApplicationServiceLagomApi])
 }
 
 trait ApplicationComponents
@@ -81,9 +83,11 @@ trait ApplicationComponents
   val indexingModule = new IndexingModule()
   import indexingModule._
 
-  override lazy val lagomServer = serverFor[ApplicationServiceApi](wire[ApplicationServiceApiImpl])
+  override lazy val lagomServer = serverFor[ApplicationServiceLagomApi](wire[ApplicationServiceLagomApiImpl])
 
   lazy val jsonSerializerRegistry = ApplicationServiceSerializerRegistry
+
+  lazy val applicationService = wire[ApplicationServiceImpl]
 
   lazy val wiredLanguageCasRepository = wire[LanguageDbDao]
   lazy val wiredLanguageIndexDao      = wire[LanguageIndexDao]

@@ -25,7 +25,7 @@ import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-private[impl] class ApplicationDbDao(
+class ApplicationDbDao(
   override val session: CassandraSession
 )(implicit ec: ExecutionContext)
     extends CassandraQuillDao {
@@ -46,6 +46,7 @@ private[impl] class ApplicationDbDao(
              CassandraTableBuilder("applications")
                .column("id", Text, true)
                .column("name", Text)
+               .column("icon", Text)
                .column("label", Map(Text, Text))
                .column("label_description", Map(Text, Text))
                .column("translations", Set(Text))
@@ -74,6 +75,17 @@ private[impl] class ApplicationDbDao(
         .filter(_.id == lift(event.id))
         .update(
           _.name      -> lift(event.name),
+          _.updatedAt -> lift(event.updatedAt),
+          _.updatedBy -> lift(event.updatedBy)
+        )
+    )
+
+  def updateApplicationIcon(event: ApplicationEntity.ApplicationIconUpdated): Future[Done] =
+    ctx.run(
+      applicationSchema
+        .filter(_.id == lift(event.id))
+        .update(
+          _.icon      -> lift(event.icon),
           _.updatedAt -> lift(event.updatedAt),
           _.updatedBy -> lift(event.updatedBy)
         )
@@ -147,4 +159,6 @@ private[impl] class ApplicationDbDao(
   def getApplicationsById(ids: Set[ApplicationId]): Future[Seq[Application]] =
     ctx.run(applicationSchema.filter(b => liftQuery(ids).contains(b.id)))
 
+  def getAllApplications(): Future[Seq[Application]] =
+    ctx.run(applicationSchema)
 }

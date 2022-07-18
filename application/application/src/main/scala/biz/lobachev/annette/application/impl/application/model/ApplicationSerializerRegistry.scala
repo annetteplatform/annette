@@ -19,7 +19,7 @@ package biz.lobachev.annette.application.impl.application.model
 import biz.lobachev.annette.application.api.application.Application
 import biz.lobachev.annette.application.impl.application.ApplicationEntity
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.translation.Caption
+import biz.lobachev.annette.core.model.text.Caption
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
 
 object ApplicationSerializerRegistry extends JsonSerializerRegistry {
@@ -40,6 +40,7 @@ object ApplicationSerializerRegistry extends JsonSerializerRegistry {
       // events
       JsonSerializer[ApplicationEntity.ApplicationCreated],
       JsonSerializer[ApplicationEntity.ApplicationNameUpdated],
+      JsonSerializer[ApplicationEntity.ApplicationIconUpdated],
       JsonSerializer[ApplicationEntity.ApplicationLabelUpdated],
       JsonSerializer[ApplicationEntity.ApplicationLabelDescriptionUpdated],
       JsonSerializer[ApplicationEntity.ApplicationTranslationsUpdated],

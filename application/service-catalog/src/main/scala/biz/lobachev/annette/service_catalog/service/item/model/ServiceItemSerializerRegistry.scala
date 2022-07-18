@@ -17,7 +17,7 @@
 package biz.lobachev.annette.service_catalog.service.item.model
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.translation.MultiLanguageText
+import biz.lobachev.annette.core.model.text.MultiLanguageText
 import biz.lobachev.annette.service_catalog.api.item.{Service, ServiceItemId, ServiceLink}
 import biz.lobachev.annette.service_catalog.service.item.ServiceItemEntity
 import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}

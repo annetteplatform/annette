@@ -14,13 +14,17 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.service_catalog.service.common
+package biz.lobachev.annette.application.gateway.translation
 
-import biz.lobachev.annette.microservice_core.db.QuillEncoders
-import biz.lobachev.annette.service_catalog.api.common.Icon
+import biz.lobachev.annette.core.model.{LanguageId, TranslationId}
+import play.api.libs.json.{JsObject, Json}
 
-trait IconEncoder extends QuillEncoders {
+case class UpdateTranslationJsonPayloadDto(
+  translationId: TranslationId,
+  languageId: LanguageId,
+  json: JsObject
+)
 
-  implicit val encoder = genericJsonEncoder[Icon]
-  implicit val decoder = genericJsonDecoder[Icon]
+object UpdateTranslationJsonPayloadDto {
+  implicit val format = Json.format[UpdateTranslationJsonPayloadDto]
 }

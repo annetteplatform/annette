@@ -14,16 +14,17 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.application.gateway.dto
+package biz.lobachev.annette.application.gateway.application
 
 import biz.lobachev.annette.application.api.application.ApplicationId
 import biz.lobachev.annette.application.api.translation.TranslationId
-import biz.lobachev.annette.core.model.translation.MultiLanguageText
+import biz.lobachev.annette.core.model.text.{Icon, MultiLanguageText}
 import play.api.libs.json.{Format, Json}
 
 case class UpdateApplicationPayloadDto(
   id: ApplicationId,
   name: String,
+  icon: Option[Icon],
   label: MultiLanguageText,
   labelDescription: MultiLanguageText,
   translations: Set[TranslationId] = Set.empty,

@@ -25,6 +25,7 @@ import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.application.impl.translation_json.dao.TranslationJsonDbDao
 import biz.lobachev.annette.core.model.LanguageId
 import com.typesafe.config.Config
+import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
 
 import java.util.concurrent.TimeUnit
@@ -32,7 +33,6 @@ import scala.collection.immutable.{Map, Seq, Set}
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
-import io.scalaland.chimney.dsl._
 
 class TranslationJsonEntityService(
   clusterSharding: ClusterSharding,

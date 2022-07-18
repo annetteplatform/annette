@@ -20,7 +20,6 @@ import akka.Done
 import akka.stream.Materializer
 import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
 import biz.lobachev.annette.service_catalog.api.item.{ServiceItem, ServiceItemId, ServiceLink}
-import biz.lobachev.annette.service_catalog.service.common.IconEncoder
 import biz.lobachev.annette.service_catalog.service.item.ServiceItemEntity.{
   GroupCreated,
   GroupUpdated,
@@ -42,8 +41,7 @@ import scala.jdk.CollectionConverters._
 private[service_catalog] class ServiceItemDbDao(override val session: CassandraSession)(implicit
   val ec: ExecutionContext,
   val materializer: Materializer
-) extends CassandraQuillDao
-    with IconEncoder {
+) extends CassandraQuillDao {
 
   import ctx._
 

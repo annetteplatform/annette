@@ -25,8 +25,13 @@ import biz.lobachev.annette.api_gateway_core.authentication.keycloak.{KeycloakAu
 import biz.lobachev.annette.api_gateway_core.authentication._
 import biz.lobachev.annette.api_gateway_core.authorization.{AuthorizationServiceAuthorizer, ConfigurationAuthorizer}
 import biz.lobachev.annette.api_gateway_core.exception.ApiGatewayErrorHandler
-import biz.lobachev.annette.application.api.{ApplicationServiceApi, ApplicationServiceImpl}
-import biz.lobachev.annette.application.gateway.ApplicationController
+import biz.lobachev.annette.application.client.http.{ApplicationServiceLagomApi, ApplicationServiceLagomImpl}
+import biz.lobachev.annette.application.gateway.{
+  ApplicationController,
+  LanguageController,
+  TranslationController,
+  UserApplicationController
+}
 import biz.lobachev.annette.authorization.api.{AuthorizationServiceApi, AuthorizationServiceImpl}
 import biz.lobachev.annette.authorization.gateway.AuthorizationController
 import biz.lobachev.annette.bpm.gateway.{
@@ -136,6 +141,9 @@ abstract class ServiceGateway(context: Context)
   lazy val principalGroupController                 = wire[PrincipalGroupController]
   lazy val orgStructureController                   = wire[OrgStructureController]
   lazy val applicationController                    = wire[ApplicationController]
+  lazy val languageController                       = wire[LanguageController]
+  lazy val translationController                    = wire[TranslationController]
+  lazy val userApplicationController                = wire[UserApplicationController]
   lazy val serviceCatalogCategoryController         = wire[CategoryController]
   lazy val serviceCatalogScopeController            = wire[ScopeController]
   lazy val serviceCatalogScopePrincipalController   = wire[ScopePrincipalController]
@@ -178,8 +186,8 @@ abstract class ServiceGateway(context: Context)
   lazy val personServiceApi = serviceClient.implement[PersonServiceApi]
   lazy val personService    = wire[PersonServiceImpl]
 
-  lazy val applicationServiceApi = serviceClient.implement[ApplicationServiceApi]
-  lazy val applicationService    = wire[ApplicationServiceImpl]
+  lazy val applicationServiceApi = serviceClient.implement[ApplicationServiceLagomApi]
+  lazy val applicationService    = wire[ApplicationServiceLagomImpl]
 
   lazy val serviceCatalogServiceApi = serviceClient.implement[ServiceCatalogServiceLagomApi]
   lazy val serviceCatalogService    = wire[ServiceCatalogServiceLagomImpl]

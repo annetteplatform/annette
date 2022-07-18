@@ -23,7 +23,7 @@ import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProc
 
 import scala.concurrent.ExecutionContext
 
-private[impl] class TranslationIndexEventProcessor(
+private[application] class TranslationIndexEventProcessor(
   readSide: CassandraReadSide,
   indexDao: TranslationIndexDao
 )(implicit

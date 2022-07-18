@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.service_catalog.api.user
 
-import biz.lobachev.annette.service_catalog.api.common.Icon
+import biz.lobachev.annette.core.model.text.Icon
 import biz.lobachev.annette.service_catalog.api.item.{ServiceItemId, ServiceLink}
 import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 

@@ -14,16 +14,16 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.application.gateway.dto
+package biz.lobachev.annette.application.gateway.translation
 
-import biz.lobachev.annette.core.model.TranslationId
+import biz.lobachev.annette.core.model.{LanguageId, TranslationId}
 import play.api.libs.json.Json
 
-case class CreateTranslationPayloadDto(
-  id: TranslationId,
-  name: String
+case class DeleteTranslationJsonPayloadDto(
+  translationId: TranslationId,
+  languageId: LanguageId
 )
 
-object CreateTranslationPayloadDto {
-  implicit val format = Json.format[CreateTranslationPayloadDto]
+object DeleteTranslationJsonPayloadDto {
+  implicit val format = Json.format[DeleteTranslationJsonPayloadDto]
 }
