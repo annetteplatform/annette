@@ -28,7 +28,7 @@ import biz.lobachev.annette.core.attribute.{
   OffsetDatetimeAttributeMetadata,
   StringAttributeMetadata
 }
-import biz.lobachev.annette.core.model.translation.{Caption, TextCaption, TranslationCaption}
+import biz.lobachev.annette.core.model.text.{Caption, TextCaption, TranslationCaption}
 import biz.lobachev.annette.core.utils.Encase
 import pureconfig.generic.FieldCoproductHint
 

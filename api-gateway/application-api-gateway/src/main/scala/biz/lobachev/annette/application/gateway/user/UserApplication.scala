@@ -14,22 +14,25 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.application.impl.translation_json.model
+package biz.lobachev.annette.application.gateway.user
 
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.{LanguageId, TranslationId}
+import biz.lobachev.annette.application.api.application.{Application, ApplicationId}
+import biz.lobachev.annette.core.model.text.{Icon, MultiLanguageText}
+import io.scalaland.chimney.dsl.TransformerOps
 import play.api.libs.json.Json
 
-import java.time.OffsetDateTime
-
-case class TranslationJsonState(
-  translationId: TranslationId,
-  languageId: LanguageId,
-  json: String,
-  updatedBy: AnnettePrincipal,
-  updatedAt: OffsetDateTime = OffsetDateTime.now
+case class UserApplication(
+  id: ApplicationId,
+  icon: Option[Icon],
+  label: MultiLanguageText,
+  labelDescription: MultiLanguageText,
+  frontendUrl: Option[String],
+  backendUrl: Option[String]
 )
 
-object TranslationJsonState {
-  implicit val format = Json.format[TranslationJsonState]
+object UserApplication {
+
+  def apply(app: Application): UserApplication = app.transformInto[UserApplication]
+
+  implicit val format = Json.format[UserApplication]
 }

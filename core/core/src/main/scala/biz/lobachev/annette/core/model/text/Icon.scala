@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.service_catalog.api.common
+package biz.lobachev.annette.core.model.text
 
 import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
 import play.api.libs.json.{Json, JsonConfiguration, JsonNaming}

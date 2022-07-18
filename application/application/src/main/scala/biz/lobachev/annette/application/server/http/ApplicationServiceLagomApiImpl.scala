@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.application.impl
+package biz.lobachev.annette.application.server.http
 
 import akka.util.Timeout
 import akka.{Done, NotUsed}
-import biz.lobachev.annette.application.api._
 import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.api.language._
 import biz.lobachev.annette.application.api.translation._
+import biz.lobachev.annette.application.client.http.ApplicationServiceLagomApi
 import biz.lobachev.annette.application.impl.application._
 import biz.lobachev.annette.application.impl.language._
 import biz.lobachev.annette.application.impl.translation._
@@ -38,14 +38,14 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.duration._
 import scala.util.Try
 
-class ApplicationServiceApiImpl(
+class ApplicationServiceLagomApiImpl(
   languageEntityService: LanguageEntityService,
   translationEntityService: TranslationEntityService,
   translationJsonEntityService: TranslationJsonEntityService,
   applicationEntityService: ApplicationEntityService,
   config: Config
 )(implicit val ec: ExecutionContext)
-    extends ApplicationServiceApi {
+    extends ApplicationServiceLagomApi {
 
   implicit val timeout =
     Try(config.getDuration("annette.timeout"))
@@ -175,6 +175,11 @@ class ApplicationServiceApiImpl(
       applicationEntityService.getApplicationsById(ids, fromReadSide)
     }
 
+  override def getAllApplications: ServiceCall[NotUsed, Seq[Application]] =
+    ServiceCall { _ =>
+      applicationEntityService.getAllApplications()
+    }
+
   override def findApplications: ServiceCall[FindApplicationQuery, FindResult] =
     ServiceCall { query =>
       applicationEntityService.findApplications(query)
@@ -188,4 +193,5 @@ class ApplicationServiceApiImpl(
         json              = translationJsons.map(_.json).reduceRight((obj, acc) => acc.deepMerge(obj))
       } yield json
     }
+
 }

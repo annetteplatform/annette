@@ -17,8 +17,7 @@
 package biz.lobachev.annette.service_catalog.service.item.dao
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.translation.MultiLanguageText
-import biz.lobachev.annette.service_catalog.api.common.Icon
+import biz.lobachev.annette.core.model.text.{Icon, MultiLanguageText}
 import biz.lobachev.annette.service_catalog.api.item.{Group, Service, ServiceItem, ServiceItemId, ServiceLink}
 
 import java.time.OffsetDateTime

@@ -1,7 +1,7 @@
 package biz.lobachev.annette.service_catalog.api
 
 import biz.lobachev.annette.core.model.auth.PersonPrincipal
-import biz.lobachev.annette.service_catalog.api.common.{FileIcon, FrameworkIcon}
+import biz.lobachev.annette.core.model.text.{FileIcon, FrameworkIcon}
 import biz.lobachev.annette.service_catalog.api.group.Group
 import biz.lobachev.annette.service_catalog.api.item.{ExternalLink, InternalLink, Service}
 import org.scalatest.matchers.should.Matchers

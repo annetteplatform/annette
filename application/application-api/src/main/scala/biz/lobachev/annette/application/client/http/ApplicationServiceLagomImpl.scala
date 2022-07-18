@@ -14,9 +14,10 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.application.api
+package biz.lobachev.annette.application.client.http
 
 import akka.Done
+import biz.lobachev.annette.application.api.ApplicationService
 import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.api.language._
 import biz.lobachev.annette.application.api.translation._
@@ -26,7 +27,7 @@ import play.api.libs.json.JsObject
 
 import scala.concurrent.Future
 
-class ApplicationServiceImpl(api: ApplicationServiceApi) extends ApplicationService {
+class ApplicationServiceLagomImpl(api: ApplicationServiceLagomApi) extends ApplicationService {
 
   def createLanguage(payload: CreateLanguagePayload): Future[Done] =
     api.createLanguage.invoke(payload)
@@ -102,6 +103,9 @@ class ApplicationServiceImpl(api: ApplicationServiceApi) extends ApplicationServ
 
   def getApplicationsById(ids: Set[ApplicationId], fromReadSide: Boolean = true): Future[Seq[Application]] =
     api.getApplicationsById(fromReadSide).invoke(ids)
+
+  override def getAllApplications(): Future[Seq[Application]] =
+    api.getAllApplications.invoke()
 
   def findApplications(query: FindApplicationQuery): Future[FindResult] =
     api.findApplications.invoke(query)

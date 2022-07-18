@@ -32,9 +32,12 @@ import biz.lobachev.annette.service_catalog.service.scope_principal.ScopePrincip
 import biz.lobachev.annette.service_catalog.service.item.ServiceItemEntityService
 import biz.lobachev.annette.service_catalog.service.service_principal.ServicePrincipalEntityService
 import biz.lobachev.annette.service_catalog.service.user.UserEntityService
+import com.typesafe.config.Config
 
+import java.util.concurrent.TimeUnit
 import scala.concurrent.Future
 import scala.concurrent.duration._
+import scala.util.Try
 
 class ServiceCatalogServiceImpl(
   categoryEntityService: CategoryEntityService,
@@ -42,10 +45,14 @@ class ServiceCatalogServiceImpl(
   scopePrincipalEntityService: ScopePrincipalEntityService,
   serviceEntityService: ServiceItemEntityService,
   servicePrincipalEntityService: ServicePrincipalEntityService,
-  userService: UserEntityService
+  userService: UserEntityService,
+  config: Config
 ) extends ServiceCatalogService {
 
-  implicit val timeout = Timeout(50.seconds)
+  implicit val timeout =
+    Try(config.getDuration("annette.timeout"))
+      .map(d => Timeout(FiniteDuration(d.toNanos, TimeUnit.NANOSECONDS)))
+      .getOrElse(Timeout(60.seconds))
 
   override def createCategory(payload: CreateCategoryPayload): Future[Done] =
     categoryEntityService.createCategory(payload)

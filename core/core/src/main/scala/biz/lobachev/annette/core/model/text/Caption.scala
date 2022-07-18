@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.core.model.translation
+package biz.lobachev.annette.core.model.text
 
 import biz.lobachev.annette.core.model.TranslationId
 import biz.lobachev.annette.core.utils.Encase

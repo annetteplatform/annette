@@ -54,6 +54,7 @@ trait ApplicationService {
   def deleteApplication(payload: DeleteApplicationPayload): Future[Done]
   def getApplicationById(id: ApplicationId, fromReadSide: Boolean = true): Future[Application]
   def getApplicationsById(ids: Set[ApplicationId], fromReadSide: Boolean = true): Future[Seq[Application]]
+  def getAllApplications(): Future[Seq[Application]]
   def findApplications(query: FindApplicationQuery): Future[FindResult]
   def getApplicationTranslations(id: ApplicationId, languageId: LanguageId): Future[JsObject]
 
