@@ -21,8 +21,7 @@ import akka.cluster.sharding.typed.scaladsl._
 import akka.persistence.typed.PersistenceId
 import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.translation.MultiLanguageText
-import biz.lobachev.annette.service_catalog.api.common.Icon
+import biz.lobachev.annette.core.model.text.{Icon, MultiLanguageText}
 import biz.lobachev.annette.service_catalog.api.item._
 import biz.lobachev.annette.service_catalog.service.item.model.{GroupState, ServiceItemState, ServiceState}
 import com.lightbend.lagom.scaladsl.persistence._

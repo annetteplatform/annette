@@ -24,7 +24,7 @@ import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.api.translation.TranslationId
 import biz.lobachev.annette.application.impl.application.model.ApplicationState
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.translation.MultiLanguageText
+import biz.lobachev.annette.core.model.text.{Icon, MultiLanguageText}
 import com.lightbend.lagom.scaladsl.persistence._
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
@@ -39,6 +39,7 @@ object ApplicationEntity {
   final case class CreateApplication(
     id: ApplicationId,
     name: String,
+    icon: Option[Icon],
     label: MultiLanguageText,
     labelDescription: MultiLanguageText,
     translations: Set[TranslationId] = Set.empty,
@@ -50,6 +51,7 @@ object ApplicationEntity {
   final case class UpdateApplication(
     id: ApplicationId,
     name: String,
+    icon: Option[Icon],
     label: MultiLanguageText,
     labelDescription: MultiLanguageText,
     translations: Set[TranslationId] = Set.empty,
@@ -92,6 +94,7 @@ object ApplicationEntity {
   final case class ApplicationCreated(
     id: ApplicationId,
     name: String,
+    icon: Option[Icon],
     label: MultiLanguageText,
     labelDescription: MultiLanguageText,
     translations: Set[TranslationId] = Set.empty,
@@ -103,6 +106,12 @@ object ApplicationEntity {
   final case class ApplicationNameUpdated(
     id: ApplicationId,
     name: String,
+    updatedBy: AnnettePrincipal,
+    updatedAt: OffsetDateTime = OffsetDateTime.now
+  ) extends Event
+  final case class ApplicationIconUpdated(
+    id: ApplicationId,
+    icon: Option[Icon],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime = OffsetDateTime.now
   ) extends Event
@@ -144,6 +153,7 @@ object ApplicationEntity {
 
   implicit val eventApplicationCreatedFormat: Format[ApplicationCreated]                                 = Json.format
   implicit val eventApplicationNameUpdatedFormat: Format[ApplicationNameUpdated]                         = Json.format
+  implicit val eventApplicationIconUpdatedFormat: Format[ApplicationIconUpdated]                         = Json.format
   implicit val eventApplicationLabelUpdatedFormat: Format[ApplicationLabelUpdated]                       = Json.format
   implicit val eventApplicationLabelDescriptionUpdatedFormat: Format[ApplicationLabelDescriptionUpdated] = Json.format
   implicit val eventApplicationTranslationsUpdatedFormat: Format[ApplicationTranslationsUpdated]         = Json.format
@@ -202,6 +212,8 @@ final case class ApplicationEntity(maybeState: Option[ApplicationState] = None) 
           Seq(
             if (state.name != cmd.name) Some(cmd.transformInto[ApplicationNameUpdated])
             else None,
+            if (state.icon != cmd.icon) Some(cmd.transformInto[ApplicationIconUpdated])
+            else None,
             if (state.label != cmd.label) Some(cmd.transformInto[ApplicationLabelUpdated])
             else None,
             if (state.labelDescription != cmd.labelDescription)
@@ -238,6 +250,7 @@ final case class ApplicationEntity(maybeState: Option[ApplicationState] = None) 
     event match {
       case event: ApplicationCreated                 => onApplicationCreated(event)
       case event: ApplicationNameUpdated             => onApplicationNameUpdated(event)
+      case event: ApplicationIconUpdated             => onApplicationIconUpdated(event)
       case event: ApplicationLabelUpdated            => onApplicationLabelUpdated(event)
       case event: ApplicationLabelDescriptionUpdated => onApplicationLabelDescriptionUpdated(event)
       case event: ApplicationTranslationsUpdated     => onApplicationTranslationsUpdated(event)
@@ -262,6 +275,17 @@ final case class ApplicationEntity(maybeState: Option[ApplicationState] = None) 
       maybeState.map(state =>
         state.copy(
           name = event.name,
+          updatedBy = event.updatedBy,
+          updatedAt = event.updatedAt
+        )
+      )
+    )
+
+  def onApplicationIconUpdated(event: ApplicationIconUpdated): ApplicationEntity =
+    ApplicationEntity(
+      maybeState.map(state =>
+        state.copy(
+          icon = event.icon,
           updatedBy = event.updatedBy,
           updatedAt = event.updatedAt
         )

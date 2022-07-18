@@ -16,7 +16,6 @@
 
 package biz.lobachev.annette.application.impl.language
 
-import java.time.OffsetDateTime
 import akka.actor.typed.{ActorRef, Behavior}
 import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
 import akka.persistence.typed.PersistenceId
@@ -29,6 +28,8 @@ import com.lightbend.lagom.scaladsl.persistence._
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
 import play.api.libs.json._
+
+import java.time.OffsetDateTime
 
 object LanguageEntity {
 

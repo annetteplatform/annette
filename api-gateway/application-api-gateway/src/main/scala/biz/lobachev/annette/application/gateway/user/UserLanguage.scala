@@ -14,16 +14,21 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.application.gateway.dto
+package biz.lobachev.annette.application.gateway.user
 
+import biz.lobachev.annette.application.api.language.Language
 import biz.lobachev.annette.core.model.LanguageId
+import io.scalaland.chimney.dsl.TransformerOps
 import play.api.libs.json.Json
 
-case class CreateLanguagePayloadDto(
+case class UserLanguage(
   id: LanguageId,
   name: String
 )
 
-object CreateLanguagePayloadDto {
-  implicit val format = Json.format[CreateLanguagePayloadDto]
+object UserLanguage {
+
+  def apply(app: Language): UserLanguage = app.transformInto[UserLanguage]
+
+  implicit val format = Json.format[UserLanguage]
 }

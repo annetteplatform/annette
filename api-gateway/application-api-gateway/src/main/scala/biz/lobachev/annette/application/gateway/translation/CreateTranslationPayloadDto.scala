@@ -14,8 +14,16 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.core.model
+package biz.lobachev.annette.application.gateway.translation
 
-package object translation {
-  type MultiLanguageText = Map[LanguageId, String]
+import biz.lobachev.annette.core.model.TranslationId
+import play.api.libs.json.Json
+
+case class CreateTranslationPayloadDto(
+  id: TranslationId,
+  name: String
+)
+
+object CreateTranslationPayloadDto {
+  implicit val format = Json.format[CreateTranslationPayloadDto]
 }

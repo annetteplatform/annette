@@ -16,8 +16,7 @@
 
 package biz.lobachev.annette.service_catalog.gateway.item
 
-import biz.lobachev.annette.core.model.translation.MultiLanguageText
-import biz.lobachev.annette.service_catalog.api.common.Icon
+import biz.lobachev.annette.core.model.text.{Icon, MultiLanguageText}
 import biz.lobachev.annette.service_catalog.api.item.{ServiceItemId, ServiceLink}
 import play.api.libs.json.{Format, Json}
 

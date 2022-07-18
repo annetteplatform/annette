@@ -17,6 +17,7 @@
 package biz.lobachev.annette.microservice_core.db
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.text.Icon
 import io.getquill.MappedEncoding
 import play.api.libs.json.{JsValue, Json, Reads, Writes}
 
@@ -51,5 +52,8 @@ trait QuillEncoders {
   def genericStringEncoder[T]: MappedEncoding[T, String] = MappedEncoding[T, String](_.toString)
 
   def genericStringDecoder[T](d: String => T): MappedEncoding[String, T] = MappedEncoding[String, T](d)
+
+  implicit val encoder = genericJsonEncoder[Icon]
+  implicit val decoder = genericJsonDecoder[Icon]
 
 }

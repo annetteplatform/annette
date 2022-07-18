@@ -16,7 +16,6 @@
 
 package biz.lobachev.annette.application.impl.application
 
-import java.util.concurrent.TimeUnit
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.stream.Materializer
@@ -26,9 +25,10 @@ import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.impl.application.dao.{ApplicationDbDao, ApplicationIndexDao}
 import biz.lobachev.annette.core.model.indexing.FindResult
 import com.typesafe.config.Config
-import org.slf4j.LoggerFactory
 import io.scalaland.chimney.dsl._
+import org.slf4j.LoggerFactory
 
+import java.util.concurrent.TimeUnit
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.Try
@@ -127,6 +127,9 @@ class ApplicationEntityService(
         }
         .runWith(Sink.seq)
         .map(_.flatten)
+
+  def getAllApplications(): Future[Seq[Application]] =
+    dbDao.getAllApplications()
 
   def findApplications(query: FindApplicationQuery): Future[FindResult] =
     indexDao.findApplications(query)

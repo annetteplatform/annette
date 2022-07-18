@@ -26,7 +26,7 @@ import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-private[impl] class LanguageDbDao(
+private[application] class LanguageDbDao(
   override val session: CassandraSession
 )(implicit ec: ExecutionContext)
     extends CassandraQuillDao {

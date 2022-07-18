@@ -23,7 +23,7 @@ import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProc
 
 import scala.concurrent.ExecutionContext
 
-private[impl] class ApplicationDbEventProcessor(
+class ApplicationDbEventProcessor(
   readSide: CassandraReadSide,
   dbDao: ApplicationDbDao
 )(implicit ec: ExecutionContext)
@@ -36,6 +36,7 @@ private[impl] class ApplicationDbEventProcessor(
       .setGlobalPrepare(dbDao.createTables)
       .setEventHandler[ApplicationEntity.ApplicationCreated](handle(dbDao.createApplication))
       .setEventHandler[ApplicationEntity.ApplicationNameUpdated](handle(dbDao.updateApplicationName))
+      .setEventHandler[ApplicationEntity.ApplicationIconUpdated](handle(dbDao.updateApplicationIcon))
       .setEventHandler[ApplicationEntity.ApplicationLabelUpdated](handle(dbDao.updateApplicationLabel))
       .setEventHandler[ApplicationEntity.ApplicationLabelDescriptionUpdated](
         handle(dbDao.updateApplicationLabelDescription)

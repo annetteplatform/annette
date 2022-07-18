@@ -23,12 +23,12 @@ import biz.lobachev.annette.application.impl.translation_json.model.TranslationJ
 import biz.lobachev.annette.core.model.LanguageId
 import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
-import play.api.libs.json.JsObject
 import io.scalaland.chimney.dsl._
+import play.api.libs.json.JsObject
 
 import scala.concurrent.{ExecutionContext, Future}
 
-private[impl] class TranslationJsonDbDao(
+private[application] class TranslationJsonDbDao(
   override val session: CassandraSession
 )(implicit ec: ExecutionContext)
     extends CassandraQuillDao {
