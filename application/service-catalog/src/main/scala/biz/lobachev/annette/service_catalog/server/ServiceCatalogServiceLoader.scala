@@ -20,46 +20,43 @@ import akka.cluster.sharding.typed.scaladsl.Entity
 import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
 import biz.lobachev.annette.service_catalog.client.http.ServiceCatalogServiceLagomApi
-import biz.lobachev.annette.service_catalog.service.ServiceCatalogServiceImpl
-import biz.lobachev.annette.service_catalog.service.category.model.CategorySerializerRegistry
-import biz.lobachev.annette.service_catalog.service.category.{CategoryEntity, CategoryProvider}
-import biz.lobachev.annette.service_catalog.service.scope.dao.{ScopeDbDao, ScopeIndexDao}
-import biz.lobachev.annette.service_catalog.service.scope.model.ScopeSerializerRegistry
-import biz.lobachev.annette.service_catalog.service.scope.{
+import biz.lobachev.annette.service_catalog.impl.ServiceCatalogServiceImpl
+import biz.lobachev.annette.service_catalog.impl.category.model.CategorySerializerRegistry
+import biz.lobachev.annette.service_catalog.impl.category.{CategoryEntity, CategoryProvider}
+import biz.lobachev.annette.service_catalog.impl.scope.dao.{ScopeDbDao, ScopeIndexDao}
+import biz.lobachev.annette.service_catalog.impl.scope.model.ScopeSerializerRegistry
+import biz.lobachev.annette.service_catalog.impl.scope.{
   ScopeDbEventProcessor,
   ScopeEntity,
   ScopeEntityService,
   ScopeIndexEventProcessor
 }
-import biz.lobachev.annette.service_catalog.service.scope_principal.dao.{ScopePrincipalDbDao, ScopePrincipalIndexDao}
-import biz.lobachev.annette.service_catalog.service.scope_principal.model.ScopePrincipalSerializerRegistry
-import biz.lobachev.annette.service_catalog.service.scope_principal.{
+import biz.lobachev.annette.service_catalog.impl.scope_principal.dao.{ScopePrincipalDbDao, ScopePrincipalIndexDao}
+import biz.lobachev.annette.service_catalog.impl.scope_principal.model.ScopePrincipalSerializerRegistry
+import biz.lobachev.annette.service_catalog.impl.scope_principal.{
   ScopePrincipalDbEventProcessor,
   ScopePrincipalEntity,
   ScopePrincipalEntityService,
   ScopePrincipalIndexEventProcessor
 }
-import biz.lobachev.annette.service_catalog.service.service_principal.dao.{
-  ServicePrincipalDbDao,
-  ServicePrincipalIndexDao
-}
-import biz.lobachev.annette.service_catalog.service.service_principal.model.ServicePrincipalSerializerRegistry
-import biz.lobachev.annette.service_catalog.service.service_principal.{
+import biz.lobachev.annette.service_catalog.impl.service_principal.dao.{ServicePrincipalDbDao, ServicePrincipalIndexDao}
+import biz.lobachev.annette.service_catalog.impl.service_principal.model.ServicePrincipalSerializerRegistry
+import biz.lobachev.annette.service_catalog.impl.service_principal.{
   ServicePrincipalDbEventProcessor,
   ServicePrincipalEntity,
   ServicePrincipalEntityService,
   ServicePrincipalIndexEventProcessor
 }
-import biz.lobachev.annette.service_catalog.service.user.UserEntityService
+import biz.lobachev.annette.service_catalog.impl.user.UserEntityService
 import biz.lobachev.annette.service_catalog.server.http.ServiceCatalogServiceLagomApiImpl
-import biz.lobachev.annette.service_catalog.service.item.{
+import biz.lobachev.annette.service_catalog.impl.item.{
   ServiceItemDbEventProcessor,
   ServiceItemEntity,
   ServiceItemEntityService,
   ServiceItemIndexEventProcessor
 }
-import biz.lobachev.annette.service_catalog.service.item.dao.{ServiceItemDbDao, ServiceItemIndexDao}
-import biz.lobachev.annette.service_catalog.service.item.model.ServiceItemSerializerRegistry
+import biz.lobachev.annette.service_catalog.impl.item.dao.{ServiceItemDbDao, ServiceItemIndexDao}
+import biz.lobachev.annette.service_catalog.impl.item.model.ServiceItemSerializerRegistry
 import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
