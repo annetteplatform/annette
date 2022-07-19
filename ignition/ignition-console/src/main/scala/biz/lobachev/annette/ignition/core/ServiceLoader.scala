@@ -21,7 +21,7 @@ trait ServiceLoader {
 
   protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 
-  def createEntityLoader(entity: String, entityConfig: Config, principal: AnnettePrincipal): EntityLoader
+  def createEntityLoader(entity: String, entityConfig: Config, principal: AnnettePrincipal): EntityLoader[_]
 
   def run(): Future[Done] = {
     val entities = Try(config.getStringList("entities").asScala.toSeq).getOrElse(Seq.empty)

@@ -12,7 +12,7 @@ class ServiceCatalogLoader(val client: IgnitionLagomClient, val config: Config, 
   lazy val serviceApi = client.serviceClient.implement[ServiceCatalogServiceLagomApi]
   lazy val service    = wire[ServiceCatalogServiceLagomImpl]
 
-  override def createEntityLoader(entity: String, entityConfig: Config, principal: AnnettePrincipal): EntityLoader =
+  override def createEntityLoader(entity: String, entityConfig: Config, principal: AnnettePrincipal): EntityLoader[_] =
     entity match {
       case "category" => new CategoryEntityLoader(service, entityConfig, principal)
     }
