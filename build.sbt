@@ -264,7 +264,8 @@ def ignitionConsoleProject(pr: Project) =
         Dependencies.macwire,
         Dependencies.playJsonExt,
         Dependencies.pureConfig,
-        Dependencies.chimney
+        Dependencies.chimney,
+        Dependencies.jacksonYaml
       ) ++
         Dependencies.tests ++
         Dependencies.slf4j

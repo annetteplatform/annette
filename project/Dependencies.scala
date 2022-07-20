@@ -19,6 +19,7 @@ object Dependencies {
     val slick_hikaricp          = "3.3.3"
     val postgresql              = "42.3.1"
     val playJson                = "2.8.2"
+    val jacksonYaml             = "2.11.4"
     val slf4j                   = "1.7.36"
   }
 
@@ -72,6 +73,8 @@ object Dependencies {
   val postgresql: ModuleID = "org.postgresql" % "postgresql" % Version.postgresql
 
   val playJson = "com.typesafe.play" %% "play-json" % Version.playJson
+
+  val jacksonYaml = "com.fasterxml.jackson.dataformat" % "jackson-dataformat-yaml" % Version.jacksonYaml
 
   val slf4j = Seq(
     "org.slf4j" % "slf4j-api"    % Version.slf4j,

@@ -1,6 +1,7 @@
 package biz.lobachev.annette.ignition.core
 
 import akka.Done
+import akka.pattern.CircuitBreakerOpenException
 import akka.stream.scaladsl.{RestartSource, Sink, Source}
 import akka.stream.{Materializer, RestartSettings}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
@@ -8,9 +9,12 @@ import biz.lobachev.annette.ignition.core.config.{MODE_UPSERT, ON_ERROR_IGNORE, 
 import com.typesafe.config.Config
 import org.slf4j.{Logger, LoggerFactory}
 import play.api.libs.json.{Json, Reads}
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 
+import java.net.ConnectException
 import scala.concurrent.duration._
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext, Future, TimeoutException}
 import scala.io.{Source => FileSource}
 import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
@@ -62,8 +66,11 @@ trait EntityLoader[A] {
         for {
           res <- loadWithBackOff(() =>
                    loadItem(item, mode).recoverWith {
-                     case th: IllegalStateException => Future.failed(th)
-                     case th                        => Future.successful(Left(th))
+                     case th: IllegalStateException       => Future.failed(th)
+                     case th: ConnectException            => Future.failed(th)
+                     case th: TimeoutException            => Future.failed(th)
+                     case th: CircuitBreakerOpenException => Future.failed(th)
+                     case th                              => Future.successful(Left(th))
                    }
                  )
         } yield res match {
@@ -85,9 +92,16 @@ trait EntityLoader[A] {
       }
 
   protected def loadFromFile(filename: String): Seq[A] = {
-    val jsonTry = Try(FileSource.fromResource(filename).mkString)
+
+    val jsonTry = Try {
+      val fileContent = FileSource.fromResource(filename).mkString
+      if (filename.endsWith(".yaml") || filename.endsWith(".yml"))
+        convertYamlToJson(fileContent)
+      else fileContent
+    }
     jsonTry match {
       case Success(json) =>
+        println(json)
         val resTry = Try(Json.parse(json))
         resTry match {
           case Success(value) if singleItemFile => Seq(value.as[A])
@@ -102,6 +116,13 @@ trait EntityLoader[A] {
         log.error(message, th)
         throw new IllegalArgumentException(message, th)
     }
+  }
+
+  def convertYamlToJson(str: String): String = {
+    val yamlReader = new ObjectMapper(new YAMLFactory())
+    val obj        = yamlReader.readValue(str, classOf[Any])
+    val jsonWriter = new ObjectMapper
+    jsonWriter.writeValueAsString(obj)
   }
 
   def loadWithBackOff[T](fn: () => Future[T]): Future[T] =
