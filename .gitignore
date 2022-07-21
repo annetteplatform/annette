@@ -2,6 +2,7 @@ queries.sql
 build-local.sh
 run-local*.sh
 run-local.sh
+run-*.sh
 run-cm.sh
 test-local.sh
 .metals

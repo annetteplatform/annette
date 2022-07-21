@@ -165,6 +165,7 @@ class UserEntityService(
       serviceIds        = assignedServices.hits
                             .map(compositeId => ServicePrincipalEntity.fromCompositeId(compositeId.id)._1)
                             .toSet
+      // TODO: check if serviceIds is empty
       foundServices    <- serviceEntityService.findServiceItems(
                             FindServiceItemsQuery(
                               offset = query.offset,

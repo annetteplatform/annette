@@ -1,0 +1,136 @@
+- serviceId: ANNETTE_SITE_SERVICE
+  principal:
+    principalType: authenticated
+    principalId: user
+- serviceId: ANNETTE_GITHUB_SERVICE
+  principal:
+    principalType: authenticated
+    principalId: user
+- serviceId: SERVICE_SEARCH_SERVICE
+  principal:
+    principalType: authenticated
+    principalId: user
+- serviceId: POSTS_VIEW_SERVICE
+  principal:
+    principalType: authenticated
+    principalId: user
+- serviceId: BLOGS_VIEW_SERVICE
+  principal:
+    principalType: authenticated
+    principalId: user
+- serviceId: PAGES_VIEW_SERVICE
+  principal:
+    principalType: authenticated
+    principalId: user
+- serviceId: SPACES_VIEW_SERVICE
+  principal:
+    principalType: authenticated
+    principalId: user
+- serviceId: LANGUAGES_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: TRANSLATIONS_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: APPLICATIONS_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: PERSON_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: PERSON_CATEGORIES_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: HIERARCHY_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: ORG_CATEGORIES_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: ORG_ROLES_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: BLOG_CATEGORIES_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: BLOGS_EDIT_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: POSTS_EDIT_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: SPACE_CATEGORIES_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: SPACES_EDIT_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: PAGES_EDIT_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: HOME_PAGE_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: SERVICE_CATALOG_CATEGORIES_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: SCOPES_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: SCOPE_PRINCIPALS_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: SERVICE_ITEMS_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: SERVICE_PRINCIPALS_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: BPM_MODELS_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: DATA_SCHEMAS_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: BUSINESS_PROCESSES_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: PRINCIPAL_GROUPS_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: PRINCIPAL_GROUP_CATEGORIES_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: AUTH_ROLES_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin
+- serviceId: PERMISSIONS_SERVICE
+  principal:
+    principalType: principal-group
+    principalId: admin

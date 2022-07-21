@@ -28,12 +28,12 @@ import play.api.libs.json.{Json, JsonConfiguration, JsonNaming}
 )
 sealed trait ServiceLink {
   val url: String
-  val openInNew: Boolean
+  val openInNew: Option[Boolean]
 }
 
 case class ExternalLink(
   url: String,
-  openInNew: Boolean
+  openInNew: Option[Boolean]
 ) extends ServiceLink
 
 object ExternalLink {
@@ -43,7 +43,7 @@ object ExternalLink {
 case class InternalLink(
   applicationId: String,
   url: String,
-  openInNew: Boolean
+  openInNew: Option[Boolean]
 ) extends ServiceLink
 
 object InternalLink {

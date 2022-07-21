@@ -1,0 +1,8 @@
+- scopeId: MAIN
+  principal:
+    principalType: authenticated
+    principalId: user
+- scopeId: ANNETTE-CONSOLE
+  principal:
+    principalType: authenticated
+    principalId: user

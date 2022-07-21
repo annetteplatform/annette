@@ -81,7 +81,7 @@ trait ServiceCatalogServiceLagomApi extends LagomService {
   def findUserServices: ServiceCall[FindUserServicesQuery, UserServicesResult]
 
   final override def descriptor =
-    named("serviceCatalog")
+    named("service-catalog")
       .withCalls(
         pathCall("/api/serviceCatalog/v1/createCategory", createCategory),
         pathCall("/api/serviceCatalog/v1/updateCategory", updateCategory),

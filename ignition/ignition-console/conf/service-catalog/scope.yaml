@@ -1,0 +1,39 @@
+- id: MAIN
+  name: All services
+  description: All services of Annette Platform
+  categoryId: MAIN
+  children:
+    - ANNETTE_SITE_SERVICE
+    - ANNETTE_GITHUB_SERVICE
+    - SERVICE_SEARCH_SERVICE
+    - APP_GROUP
+    - SERVICE_CATALOG_GROUP
+    - PERSON_GROUP
+    - ORG_STRUCTURE_GROUP
+    - AUTHORIZATION_GROUP
+    - PRINCIPAL_GROUP_GROUP
+    - BLOGS_GROUP
+    - BLOGS_VIEW_GROUP
+    - PAGES_GROUP
+    - SPACE_VIEW_GROUP
+    - BPM_GROUP
+- id: ANNETTE-CONSOLE
+  name: Annette Console services
+  description: All services of Annette Console
+  categoryId: ANNETTE-CONSOLE
+  children:
+    - ANNETTE_SITE_SERVICE
+    - ANNETTE_GITHUB_SERVICE
+    - SERVICE_SEARCH_SERVICE
+    - APP_GROUP
+    - SERVICE_CATALOG_GROUP
+    - PERSON_GROUP
+    - ORG_STRUCTURE_GROUP
+    - AUTHORIZATION_GROUP
+    - PRINCIPAL_GROUP_GROUP
+    - BLOGS_GROUP
+    - BLOGS_VIEW_GROUP
+    - PAGES_GROUP
+    - SPACE_VIEW_GROUP
+    - BPM_GROUP
+

@@ -81,6 +81,7 @@ lazy val root = (project in file("."))
     // initialization application
     `ignition-core`,
 //    `demo-ignition`,
+    `ignition-console`,
     `camunda`,
     // API gateways
     `application-api-gateway`,
@@ -245,6 +246,36 @@ def demoIgnitionProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(
       `ignition-core`
+    )
+
+def ignitionConsoleProject(pr: Project) =
+  pr
+//    .enablePlugins(LagomScala)
+    .enablePlugins(UniversalPlugin)
+    .settings(
+//      scriptClasspath := "../conf/" +: scriptClasspath.value,
+      Runtime / unmanagedClasspath += baseDirectory.value / "conf",
+      Universal / mappings ++= directory(baseDirectory.value / "conf"),
+      scriptClasspath := Seq("../lib", "../conf/"),
+      // To disable Unused import error for routes
+      RoutesKeys.routesImport := Seq.empty,
+      libraryDependencies ++= Seq(
+        ws,
+        Dependencies.macwire,
+        Dependencies.playJsonExt,
+        Dependencies.pureConfig,
+        Dependencies.chimney,
+        Dependencies.jacksonYaml
+      ) ++
+        Dependencies.tests ++
+        Dependencies.slf4j
+    )
+//    .settings(confDirSettings: _*)
+    .settings(annetteSettings: _*)
+//    .settings(dockerSettings: _*)
+    .dependsOn(
+//      `ignition-core`
+      `service-catalog-api`
     )
 
 lazy val `application-api` = (project in file("application/application-api"))
@@ -671,6 +702,7 @@ def subscriptionsProject(pr: Project) =
     .dependsOn(`subscriptions-api`, `microservice-core`)
 
 //lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/ignition-demo"))
+lazy val `ignition-console` = ignitionConsoleProject(project in file("ignition/ignition-console"))
 lazy val `application`      = applicationProject(project in file("application/application"))
 lazy val `service-catalog`  = serviceCatalogProject(project in file("application/service-catalog"))
 lazy val `authorization`    = authorizationProject(project in file("authorization/authorization"))
