@@ -1,6 +1,5 @@
-- id: MAIN3
-  name: Main 3
-- id: MAIN4
-  name: Main 4
-- id: MAIN5
-  name: Main 5
+- id: MAIN
+  name: Main Services
+- id: ANNETTE-CONSOLE
+  name: Annette Console Services
+

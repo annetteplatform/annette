@@ -1,0 +1,160 @@
+- id:  APP_GROUP
+  name: Applications
+  description: Maintain languages, translations and applications
+  icon:
+    type: framework
+    icon: workspaces
+  label:
+    en: Applications
+  labelDescription:
+    en: Maintain languages, translations and applications
+  children:
+    - LANGUAGES_SERVICE
+    - TRANSLATIONS_SERVICE
+    - APPLICATIONS_SERVICE
+- id:  SERVICE_CATALOG_GROUP
+  name: Service Catalog
+  description: Maintain scopes, service group and services
+  icon:
+    type: framework
+    icon: apps
+  label:
+    en: Service Catalog
+  labelDescription:
+    en: Maintain scopes, service group and services
+  children:
+    - SERVICE_CATALOG_CATEGORIES_SERVICE
+    - SCOPES_SERVICE
+    - SCOPE_PRINCIPALS_SERVICE
+    - SERVICE_ITEMS_SERVICE
+    - SERVICE_PRINCIPALS_SERVICE
+- id:  PERSON_GROUP
+  name: Persons
+  description: View person list, create, update and delete persons
+  icon:
+    type: framework
+    icon: people
+  label:
+    en: Persons
+  labelDescription:
+    en: View person list, create, update and delete persons
+  children:
+    - PERSON_CATEGORIES_SERVICE
+    - PERSON_SERVICE
+
+- id:  ORG_STRUCTURE_GROUP
+  name: Organizational Structures
+  description: Maintain organizational structures and roles
+  icon:
+    type: framework
+    icon: account_balance
+  label:
+    en: Organizational Structures
+  labelDescription:
+    en: Maintain organizational structures and roles
+  children:
+    - ORG_CATEGORIES_SERVICE
+    - HIERARCHY_SERVICE
+    - ORG_ROLES_SERVICE
+
+- id:  AUTHORIZATION_GROUP
+  name: Authorization
+  description: Maintain authorization roles and assign permissions
+  icon:
+    type: framework
+    icon: admin_panel_settings
+  label:
+    en: Authorization
+  labelDescription:
+    en: Maintain authorization roles and assign permissions
+  children:
+    - AUTH_ROLES_SERVICE
+    - PERMISSIONS_SERVICE
+
+- id:  PRINCIPAL_GROUP_GROUP
+  name: Principal Group
+  description: Maintain principal groups
+  icon:
+    type: framework
+    icon: admin_panel_settings
+  label:
+    en: Principal Group
+  labelDescription:
+    en: Maintain principal groups
+  children:
+    - PRINCIPAL_GROUP_CATEGORIES_SERVICE
+    - PRINCIPAL_GROUPS_SERVICE
+
+- id:  BLOG_EDIT_GROUP
+  name: Blog Administration
+  description: Maintain blogs and blog's posts
+  icon:
+    type: framework
+    icon: inventory
+  label:
+    en: Blog Administration
+  labelDescription:
+    en: Maintain blogs and blog's posts
+  children:
+    - BLOG_CATEGORIES_SERVICE
+    - BLOGS_EDIT_SERVICE
+    - POSTS_EDIT_SERVICE
+
+- id:  BLOG_VIEW_GROUP
+  name: Blogs
+  description: Subscribe to blogs and view blog posts
+  icon:
+    type: framework
+    icon: feed
+  label:
+    en: Blogs
+  labelDescription:
+    en: Subscribe to blogs and view blog posts
+  children:
+    - POSTS_VIEW_SERVICE
+    - BLOGS_VIEW_SERVICE
+
+- id:  SPACE_EDIT_GROUP
+  name: Space & Page Administration
+  description: Maintain spaces and pages
+  icon:
+    type: framework
+    icon: inventory
+  label:
+    en: Space & Page Administration
+  labelDescription:
+    en: Maintain spaces and pages
+  children:
+    - SPACE_CATEGORIES_SERVICE
+    - SPACES_EDIT_SERVICE
+    - PAGES_EDIT_SERVICE
+    - HOME_PAGE_SERVICE
+
+- id:  SPACE_VIEW_GROUP
+  name: Spaces & Pages
+  description: View spaces and pages
+  icon:
+    type: framework
+    icon: feed
+  label:
+    en: Spaces & Pages
+  labelDescription:
+    en: Subscribe to blogs and view blog posts
+  children:
+    - PAGES_VIEW_SERVICE
+    - SPACES_VIEW_SERVICE
+
+- id:  BPM_GROUP
+  name: BPM Administration
+  description: Maintain BPM models, data scemas and business processes
+  icon:
+    type: framework
+    icon: schema
+  label:
+    en: BPM Administration
+  labelDescription:
+    en: Maintain BPM models, data scemas and business processes
+  children:
+    - BPM_MODELS_SERVICE
+    - DATA_SCHEMAS_SERVICE
+    - BUSINESS_PROCESSES_SERVICE

@@ -1,4 +1,4 @@
-package biz.lobachev.annette.ignition.service_catalog.data
+package biz.lobachev.annette.ignition.service_catalog.loaders.data
 
 import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.Json

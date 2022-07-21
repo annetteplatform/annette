@@ -1,48 +1,47 @@
-package biz.lobachev.annette.ignition.service_catalog
+package biz.lobachev.annette.ignition.service_catalog.loaders
 
 import akka.Done
 import akka.stream.Materializer
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.category.{CategoryAlreadyExist, CreateCategoryPayload, UpdateCategoryPayload}
 import biz.lobachev.annette.ignition.core.EntityLoader
 import biz.lobachev.annette.ignition.core.config.MODE_UPSERT
-import biz.lobachev.annette.ignition.service_catalog.data.CategoryData
+import biz.lobachev.annette.ignition.service_catalog.loaders.data.ScopeData
 import biz.lobachev.annette.service_catalog.api.ServiceCatalogService
+import biz.lobachev.annette.service_catalog.api.scope.{CreateScopePayload, ScopeAlreadyExist, UpdateScopePayload}
 import com.typesafe.config.Config
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Reads
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class CategoryEntityLoader(
+class ScopeEntityLoader(
   service: ServiceCatalogService,
   val config: Config,
   val principal: AnnettePrincipal
 )(implicit val ec: ExecutionContext, val materializer: Materializer)
-    extends EntityLoader[CategoryData] {
+    extends EntityLoader[ScopeData] {
 
-  override implicit val reads: Reads[CategoryData] = CategoryData.format
-  override val singleItemFile: Boolean             = false
+  override implicit val reads: Reads[ScopeData] = ScopeData.format
 
-  def loadItem(item: CategoryData, mode: String): Future[Either[Throwable, Done.type]] = {
+  def loadItem(item: ScopeData, mode: String): Future[Either[Throwable, Done.type]] = {
     val createPayload = item
-      .into[CreateCategoryPayload]
+      .into[CreateScopePayload]
       .withFieldConst(_.createdBy, principal)
       .transform
     service
-      .createCategory(createPayload)
+      .createScope(createPayload)
       .map(_ => Right(Done))
       .recoverWith {
-        case CategoryAlreadyExist(_) if mode == MODE_UPSERT =>
+        case ScopeAlreadyExist(_) if mode == MODE_UPSERT =>
           val updatePayload = createPayload
-            .into[UpdateCategoryPayload]
+            .into[UpdateScopePayload]
             .withFieldComputed(_.updatedBy, _.createdBy)
             .transform
           service
-            .updateCategory(updatePayload)
+            .updateScope(updatePayload)
             .map(_ => Right(Done))
             .recover(th => Left(th))
-        case th                                             => Future.failed(th)
+        case th                                          => Future.failed(th)
       }
 
   }

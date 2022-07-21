@@ -75,6 +75,10 @@ object TechnicalPrincipal extends SimplePrincipal {
   val PRINCIPAL_TYPE = "tech"
 }
 
+object PrincipalGroupPrincipal extends SimplePrincipal {
+  val PRINCIPAL_TYPE = "principal-group"
+}
+
 object AuthenticatedPrincipal {
   val PRINCIPAL_TYPE: String                             = "authenticated"
   val PRINCIPAL_ID: String                               = "user"

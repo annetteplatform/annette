@@ -26,8 +26,6 @@ trait EntityLoader[A] {
   implicit val materializer: Materializer
   implicit val reads: Reads[A]
 
-  val singleItemFile: Boolean
-
   protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 
   def loadItem(item: A, mode: String): Future[Either[Throwable, Done.type]]
@@ -101,12 +99,10 @@ trait EntityLoader[A] {
     }
     jsonTry match {
       case Success(json) =>
-        println(json)
         val resTry = Try(Json.parse(json))
         resTry match {
-          case Success(value) if singleItemFile => Seq(value.as[A])
-          case Success(value)                   => value.as[Seq[A]]
-          case Failure(th)                      =>
+          case Success(value) => value.as[Seq[A]]
+          case Failure(th)    =>
             val message = s"Parsing json failed: $filename"
             log.error(message, th)
             throw new IllegalArgumentException(message, th)

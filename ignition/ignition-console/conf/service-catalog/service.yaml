@@ -1,0 +1,510 @@
+- id: ANNETTE_SITE_SERVICE
+  name: Annette Platform Docs
+  description: Annette Platform documentation site
+  icon:
+    type: framework
+    icon: fa-brands fa-github
+  label:
+    en: Annette Docs
+  labelDescription:
+    en: Annette Platform documentation site
+  link:
+    type: external
+    url: https://annetteplatform.github.io/
+    openInNew: true
+- id: ANNETTE_GITHUB_SERVICE
+  name: Annette source code
+  description: Annette source code
+  icon:
+    type: framework
+    icon: fa-brands fa-github
+  label:
+    en: Annette sources
+  labelDescription:
+    en: Annette Platform source code
+  link:
+    type: external
+    url: https://github.com/annetteplatform/annette
+    openInNew: true
+
+- id: LANGUAGES_SERVICE
+  name: Languages
+  description: ""
+  icon:
+    type: framework
+    icon: language
+  label:
+    en: Languages
+  labelDescription:
+    en: ""
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /application/languages
+
+- id: TRANSLATIONS_SERVICE
+  name: Translations
+  description: ""
+  icon:
+    type: framework
+    icon: translate
+  label:
+    en: Translations
+  labelDescription:
+    en: ""
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /application/translations
+
+- id: APPLICATIONS_SERVICE
+  name: Applications
+  description: ""
+  icon:
+    type: framework
+    icon: apps
+  label:
+    en: Applications
+  labelDescription:
+    en: ""
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /application/applications
+
+- id: SERVICE_CATALOG_CATEGORIES_SERVICE
+  name: Categories
+  description: ""
+  icon:
+    type: framework
+    icon: local_offer
+  label:
+    en: Categories
+  labelDescription:
+    en: ""
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /service-catalog/categories
+
+- id: SCOPES_SERVICE
+  name: Scopes
+  description: ""
+  icon:
+    type: framework
+    icon: apps
+  label:
+    en: Scopes
+  labelDescription:
+    en: ""
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /service-catalog/scopes
+
+- id: SCOPE_PRINCIPALS_SERVICE
+  name: Scope principals
+  description: ""
+  icon:
+    type: framework
+    icon: policy
+  label:
+    en: Scope principals
+  labelDescription:
+    en: ""
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /service-catalog/scope-principals
+
+- id: SERVICE_ITEMS_SERVICE
+  name: Services & service groups
+  description: ""
+  icon:
+    type: framework
+    icon: apps
+  label:
+    en: Services & service groups
+  labelDescription:
+    en: ""
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /service-catalog/service-items
+
+- id: SERVICE_PRINCIPALS_SERVICE
+  name: Service principals
+  description: ""
+  icon:
+    type: framework
+    icon: policy
+  label:
+    en: Service principals
+  labelDescription:
+    en: ""
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /service-catalog/service-principals
+
+- id: SERVICE_SEARCH_SERVICE
+  name: Search services
+  description: ""
+  icon:
+    type: framework
+    icon: search
+  label:
+    en: Search services
+  labelDescription:
+    en: ""
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /service-catalog/search-services
+
+- id: PERSON_SERVICE
+  name: Persons
+  description: View person list, create, update and delete persons
+  icon:
+    type: framework
+    icon: people
+  label:
+    en: Persons
+  labelDescription:
+    en: View person list, create, update and delete persons
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /person/persons
+
+- id: PERSON_CATEGORIES_SERVICE
+  name: Person categories
+  description: Maintain person categories
+  icon:
+    type: framework
+    icon: people
+  label:
+    en: Person categories
+  labelDescription:
+    en: Maintain person categories
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /person/categories
+
+- id: ORG_CATEGORIES_SERVICE
+  name: Org. categories
+  description: Maintain org. categories
+  icon:
+    type: framework
+    icon: local_offer
+  label:
+    en: Org. categories
+  labelDescription:
+    en: Maintain org. categories
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /org-structure/categories
+
+- id: HIERARCHY_SERVICE
+  name: Organizations
+  description: Maintain organizations, hierarchies, person assignments to positions
+  icon:
+    type: framework
+    icon: account_balance
+  label:
+    en: Organizations
+  labelDescription:
+    en: Maintain organizations, hierarchies, person assignments to positions
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /org-structure/organizations
+
+- id: ORG_ROLES_SERVICE
+  name: Organizational roles
+  description: Maintain organizational roles
+  icon:
+    type: framework
+    icon: category
+  label:
+    en: Organizational roles
+  labelDescription:
+    en: Maintain organizational roles
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /org-structure/roles
+
+- id: AUTH_ROLES_SERVICE
+  name: Authorization roles
+  description: Maintain authorization roles, assign principals to roles
+  icon:
+    type: framework
+    icon: admin_panel_settings
+  label:
+    en: Authorization roles
+  labelDescription:
+    en: Maintain authorization roles, assign principals to roles
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /authorization/roles
+
+- id: PERMISSIONS_SERVICE
+  name: Permission assignments
+  description: View permission assignments to principals
+  icon:
+    type: framework
+    icon: policy
+  label:
+    en: Permission assignments
+  labelDescription:
+    en: View permission assignments to principals
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /authorization/permission-assignments
+
+- id: PRINCIPAL_GROUP_CATEGORIES_SERVICE
+  name: Group categories
+  description: Maintain principal group categories
+  icon:
+    type: framework
+    icon: local_offer
+  label:
+    en: Group categories
+  labelDescription:
+    en: Maintain principal group categories
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /principal-group/categories
+
+- id: PRINCIPAL_GROUPS_SERVICE
+  name: Principal groups
+  description: View principal group list, create, update and delete groups
+  icon:
+    type: framework
+    icon: groups
+  label:
+    en: Principal groups
+  labelDescription:
+    en: View principal group list, create, update and delete groups
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /principal-group/groups
+
+- id: BLOG_CATEGORIES_SERVICE
+  name: Blog categories
+  description: Maintain blog categories
+  icon:
+    type: framework
+    icon: local_offer
+  label:
+    en: Blog categories
+  labelDescription:
+    en: Maintain blog categories
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /cms/blog-categories
+
+- id: BLOGS_EDIT_SERVICE
+  name: Blogs
+  description: Maintain blogs
+  icon:
+    type: framework
+    icon: inventory
+  label:
+    en: Blogs
+  labelDescription:
+    en: Maintain blogs
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /cms/blogs
+
+- id: POSTS_EDIT_SERVICE
+  name: Posts
+  description: Maintain posts
+  icon:
+    type: framework
+    icon: feed
+  label:
+    en: Posts
+  labelDescription:
+    en: Maintain posts
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /cms/posts
+
+- id: POSTS_VIEW_SERVICE
+  name: Blog posts
+  description: View blog posts
+  icon:
+    type: framework
+    icon: feed
+  label:
+    en: Blog posts
+  labelDescription:
+    en: View blog posts
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /cms/post-views
+
+- id: BLOGS_VIEW_SERVICE
+  name: Blogs
+  description: View list of blogs
+  icon:
+    type: framework
+    icon: inventory
+  label:
+    en: Blogs
+  labelDescription:
+    en: View list of blogs
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /cms/blog-views
+
+- id: SPACE_CATEGORIES_SERVICE
+  name: Space categories
+  description: Maintain space categories
+  icon:
+    type: framework
+    icon: local_offer
+  label:
+    en: Space categories
+  labelDescription:
+    en: Maintain space categories
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /cms/space-categories
+
+- id: SPACES_EDIT_SERVICE
+  name: Spaces
+  description: Maintain spaces
+  icon:
+    type: framework
+    icon: inventory
+  label:
+    en: Spaces
+  labelDescription:
+    en: Maintain spaces
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /cms/spaces
+
+- id: PAGES_EDIT_SERVICE
+  name: Pages
+  description: Maintain pages
+  icon:
+    type: framework
+    icon: feed
+  label:
+    en: Pages
+  labelDescription:
+    en: Maintain pages
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /cms/pages
+
+- id: HOME_PAGE_SERVICE
+  name: Home Page Assignments
+  description: Assign home pages to principals
+  icon:
+    type: framework
+    icon: feed
+  label:
+    en: Home Page Assignments
+  labelDescription:
+    en: Assign home pages to principals
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /cms/home-pages
+
+
+- id: PAGES_VIEW_SERVICE
+  name: Pages
+  description: View pages
+  icon:
+    type: framework
+    icon: feed
+  label:
+    en: Pages
+  labelDescription:
+    en: View pages
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /cms/page-views
+
+- id: SPACES_VIEW_SERVICE
+  name: Spaces
+  description: View list of spaces
+  icon:
+    type: framework
+    icon: inventory
+  label:
+    en: Spaces
+  labelDescription:
+    en: View list of spaces
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /cms/space-views
+
+
+- id: BPM_MODELS_SERVICE
+  name: BPM Models
+  description: View list of BPM models
+  icon:
+    type: framework
+    icon: schema
+  label:
+    en: BPM Models
+  labelDescription:
+    en: View list of BPM models
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /bpm/bpmModels
+
+- id: DATA_SCHEMAS_SERVICE
+  name: Data Schemas
+  description: View list of data schemas
+  icon:
+    type: framework
+    icon: account_tree
+  label:
+    en: Data Schemas
+  labelDescription:
+    en: View list of data schemas
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /bpm/dataSchemas
+
+- id: BUSINESS_PROCESSES_SERVICE
+  name: Business processes
+  description: View list of business processes
+  icon:
+    type: framework
+    icon: video_library
+  label:
+    en: Business processes
+  labelDescription:
+    en: View list of business processes
+  link:
+    type: internal
+    applicationId: ANNETTE-CONSOLE
+    url: /bpm/businessProcesses
