@@ -39,6 +39,7 @@ trait PrincipalGroupService {
   ): Future[Seq[PrincipalGroup]]
   def findPrincipalGroups(query: PrincipalGroupFindQuery): Future[FindResult]
   def getAssignments(id: PrincipalGroupId): Future[Set[AnnettePrincipal]]
+  def getPrincipalAssignments(principals: Set[AnnettePrincipal]): Future[Set[PrincipalGroupId]]
 
   // category methods
 

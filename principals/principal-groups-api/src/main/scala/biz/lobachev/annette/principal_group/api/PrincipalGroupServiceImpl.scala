@@ -64,6 +64,9 @@ class PrincipalGroupServiceImpl(api: PrincipalGroupServiceApi, implicit val ec: 
   override def getAssignments(id: PrincipalGroupId): Future[Set[AnnettePrincipal]] =
     api.getAssignments(id).invoke()
 
+  override def getPrincipalAssignments(principals: Set[AnnettePrincipal]): Future[Set[PrincipalGroupId]] =
+    api.getPrincipalAssignments.invoke(principals)
+
   // org category methods
 
   def createCategory(payload: CreateCategoryPayload): Future[Done] =

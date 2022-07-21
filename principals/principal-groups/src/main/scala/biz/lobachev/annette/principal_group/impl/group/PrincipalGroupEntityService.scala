@@ -176,4 +176,7 @@ class PrincipalGroupEntityService(
   def getAssignments(id: PrincipalGroupId): Future[Set[AnnettePrincipal]] =
     dbDao.getAssignments(id)
 
+  def getPrincipalAssignments(principals: Set[AnnettePrincipal]): Future[Set[PrincipalGroupId]] =
+    dbDao.getPrincipalAssignments(principals)
+
 }

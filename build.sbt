@@ -170,7 +170,8 @@ lazy val `api-gateway-core` = (project in file("core/api-gateway-core"))
     `core`,
     `authorization-api`,
     `org-structure-api`,
-    `persons-api`
+    `persons-api`,
+    `principal-groups-api`
   )
 
 lazy val `api-gateway` = (project in file("api-gateway/api-gateway"))
