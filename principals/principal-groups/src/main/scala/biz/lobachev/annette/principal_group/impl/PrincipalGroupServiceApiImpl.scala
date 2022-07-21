@@ -102,6 +102,11 @@ class PrincipalGroupServiceApiImpl(
       groupEntityService.getAssignments(id)
     }
 
+  override def getPrincipalAssignments: ServiceCall[Set[AnnettePrincipal], Set[PrincipalGroupId]] =
+    ServiceCall { principals =>
+      groupEntityService.getPrincipalAssignments(principals)
+    }
+
   // ****************************** Category methods ******************************
 
   override def createCategory: ServiceCall[CreateCategoryPayload, Done] =

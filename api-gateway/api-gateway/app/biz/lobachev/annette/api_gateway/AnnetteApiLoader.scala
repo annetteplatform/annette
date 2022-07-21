@@ -116,15 +116,12 @@ abstract class ServiceGateway(context: Context)
 
   lazy val parser = wire[BodyParsers.Default]
 
-  val authorizerConf     = config.getString("annette.authorization.authorizer")
-  val enableOrgStructure = config.getBoolean("annette.authorization.enable-org-structure")
+  val authorizerConf = config.getString("annette.authorization.authorizer")
 
   lazy val authorizer                     =
     if (authorizerConf == "config") wire[ConfigurationAuthorizer]
     else wire[AuthorizationServiceAuthorizer]
-  lazy val subjectTransformer             =
-    if (enableOrgStructure) wire[OrgStructureSubjectTransformer]
-    else wire[NoopSubjectTransformer]
+  lazy val subjectTransformer             = wire[DefaultSubjectTransformer]
   lazy val authenticatedAction            = wire[AuthenticatedAction]
   lazy val maybeAuthenticatedAction       = wire[MaybeAuthenticatedAction]
   lazy val cookieAuthenticatedAction      = wire[CookieAuthenticatedAction]

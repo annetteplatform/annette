@@ -43,8 +43,9 @@ private[impl] class PrincipalGroupDbDao(
 
   import ctx._
 
-  private val groupSchema      = quote(querySchema[PrincipalGroup]("groups"))
-  private val assignmentSchema = quote(querySchema[AssignmentRecord]("assignments"))
+  private val groupSchema               = quote(querySchema[PrincipalGroup]("groups"))
+  private val assignmentSchema          = quote(querySchema[AssignmentRecord]("assignments"))
+  private val principalAssignmentSchema = quote(querySchema[AssignmentRecord]("principal_assignments"))
 
   private implicit val insertGroupMeta = insertMeta[PrincipalGroup]()
   private implicit val updateGroupMeta = updateMeta[PrincipalGroup](_.id)
@@ -69,6 +70,13 @@ private[impl] class PrincipalGroupDbDao(
                .column("group_id", Text)
                .column("principal", Text)
                .withPrimaryKey("group_id", "principal")
+               .build
+           )
+      _ <- session.executeCreateTable(
+             CassandraTableBuilder("principal_assignments")
+               .column("principal", Text)
+               .column("group_id", Text)
+               .withPrimaryKey("principal", "group_id")
                .build
            )
 
@@ -119,13 +127,16 @@ private[impl] class PrincipalGroupDbDao(
 
   def deletePrincipalGroup(event: PrincipalGroupDeleted) =
     for {
-      _ <- ctx.run(groupSchema.filter(_.id == lift(event.id)).delete)
-      _ <- ctx.run(assignmentSchema.filter(_.groupId == lift(event.id)).delete)
+      principals <- getAssignments(event.id)
+      _          <- ctx.run(groupSchema.filter(_.id == lift(event.id)).delete)
+      _          <- ctx.run(assignmentSchema.filter(_.groupId == lift(event.id)).delete)
+      _          <- ctx.run(principalAssignmentSchema.filter(b => liftQuery(principals).contains(b.principal)).delete)
     } yield Done
 
   def assignPrincipal(event: PrincipalAssigned) =
     for {
       _ <- ctx.run(assignmentSchema.insert(lift(AssignmentRecord(event.id, event.principal))))
+      _ <- ctx.run(principalAssignmentSchema.insert(lift(AssignmentRecord(event.id, event.principal))))
       _ <- ctx.run(
              groupSchema
                .filter(_.id == lift(event.id))
@@ -143,6 +154,14 @@ private[impl] class PrincipalGroupDbDao(
                .filter(r =>
                  r.groupId == lift(event.id) &&
                    r.principal == lift(event.principal)
+               )
+               .delete
+           )
+      _ <- ctx.run(
+             principalAssignmentSchema
+               .filter(r =>
+                 r.principal == lift(event.principal) &&
+                   r.groupId == lift(event.id)
                )
                .delete
            )
@@ -167,5 +186,10 @@ private[impl] class PrincipalGroupDbDao(
   def getAssignments(id: PrincipalGroupId): Future[Set[AnnettePrincipal]] =
     ctx
       .run(assignmentSchema.filter(_.groupId == lift(id)).map(_.principal))
+      .map(_.toSet)
+
+  def getPrincipalAssignments(principals: Set[AnnettePrincipal]): Future[Set[PrincipalGroupId]] =
+    ctx
+      .run(principalAssignmentSchema.filter(b => liftQuery(principals).contains(b.principal)).map(_.groupId))
       .map(_.toSet)
 }

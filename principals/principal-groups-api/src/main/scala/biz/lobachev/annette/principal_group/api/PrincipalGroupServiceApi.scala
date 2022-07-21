@@ -46,6 +46,7 @@ trait PrincipalGroupServiceApi extends Service {
   ): ServiceCall[Set[PrincipalGroupId], Seq[PrincipalGroup]]
   def findPrincipalGroups: ServiceCall[PrincipalGroupFindQuery, FindResult]
   def getAssignments(id: PrincipalGroupId): ServiceCall[NotUsed, Set[AnnettePrincipal]]
+  def getPrincipalAssignments: ServiceCall[Set[AnnettePrincipal], Set[PrincipalGroupId]]
 
   // org item category
 
@@ -72,6 +73,7 @@ trait PrincipalGroupServiceApi extends Service {
         pathCall("/api/principal-groups/v1/getPrincipalGroupsById/:fromReadSide",    getPrincipalGroupsById _),
         pathCall("/api/principal-groups/v1/findPrincipalGroups",                     findPrincipalGroups),
         pathCall("/api/principal-groups/v1/getAssignments/:id",                      getAssignments _),
+        pathCall("/api/principal-groups/v1/getPrincipalAssignments",                 getPrincipalAssignments),
 
         pathCall("/api/principal-groups/v1/createCategory",                 createCategory),
         pathCall("/api/principal-groups/v1/updateCategory",                 updateCategory),
