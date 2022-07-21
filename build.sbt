@@ -251,8 +251,8 @@ def demoIgnitionProject(pr: Project) =
 
 def ignitionConsoleProject(pr: Project) =
   pr
-//    .enablePlugins(LagomScala)
     .enablePlugins(UniversalPlugin)
+    .enablePlugins(JavaAppPackaging)
     .settings(
 //      scriptClasspath := "../conf/" +: scriptClasspath.value,
       Runtime / unmanagedClasspath += baseDirectory.value / "conf",
@@ -271,9 +271,12 @@ def ignitionConsoleProject(pr: Project) =
         Dependencies.tests ++
         Dependencies.slf4j
     )
-//    .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
-//    .settings(dockerSettings: _*)
+    .settings(
+      dockerBaseImage := "openjdk:11",
+      dockerChmodType := DockerChmodType.UserGroupWriteExecute,
+      dockerUsername := Some("annetteplatform")
+    )
     .dependsOn(
 //      `ignition-core`
       `service-catalog-api`
