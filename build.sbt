@@ -277,7 +277,12 @@ def ignitionConsoleProject(pr: Project) =
     .dependsOn(
 //      `ignition-core`
       `service-catalog-api`,
-      `application-api`
+      `application-api`,
+      `authorization-api`,
+      `org-structure-api`,
+      `persons-api`,
+      `cms-api`,
+      `subscriptions-api`
     )
 
 lazy val `application-api` = (project in file("application/application-api"))

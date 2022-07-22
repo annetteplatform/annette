@@ -18,7 +18,9 @@ package biz.lobachev.annette.ignition.console
 
 import akka.Done
 import biz.lobachev.annette.ignition.application.ApplicationLoaderFactory
+import biz.lobachev.annette.ignition.authorization.AuthorizationLoaderFactory
 import biz.lobachev.annette.ignition.core.{Ignition, IgnitionLagomClient, ServiceLoaderFactory}
+import biz.lobachev.annette.ignition.persons.PersonLoaderFactory
 import biz.lobachev.annette.ignition.service_catalog.ServiceCatalogLoaderFactory
 
 import scala.concurrent.Await
@@ -30,7 +32,9 @@ object ConsoleIgnitionApp extends App {
 
   val factories: Map[String, ServiceLoaderFactory] = Map(
     "service-catalog" -> ServiceCatalogLoaderFactory,
-    "application"     -> ApplicationLoaderFactory
+    "application"     -> ApplicationLoaderFactory,
+    "authorization"   -> AuthorizationLoaderFactory,
+    "person"          -> PersonLoaderFactory
   )
 
   val ignition = new Ignition(client, factories)
