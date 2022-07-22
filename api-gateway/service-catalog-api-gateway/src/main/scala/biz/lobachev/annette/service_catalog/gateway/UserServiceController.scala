@@ -28,7 +28,12 @@ import biz.lobachev.annette.service_catalog.api.user.{
   UserService
 }
 import biz.lobachev.annette.service_catalog.gateway.Permissions.VIEW_SERVICE_CATALOG
-import biz.lobachev.annette.service_catalog.gateway.user.{ScopeServicesResultDto, UserServicesResultDto}
+import biz.lobachev.annette.service_catalog.gateway.user.{
+  FindUserServicesQueryDto,
+  ScopeServicesResultDto,
+  UserServicesResultDto
+}
+import io.scalaland.chimney.dsl.TransformerOps
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}
 
@@ -85,8 +90,11 @@ class UserServiceController @Inject() (
     }
 
   def findUserServices =
-    maybeAuthenticatedAction.async(parse.json[FindUserServicesQuery]) { implicit request =>
+    maybeAuthenticatedAction.async(parse.json[FindUserServicesQueryDto]) { implicit request =>
       val query = request.body
+        .into[FindUserServicesQuery]
+        .withFieldConst(_.principalCodes, request.subject.principals.map(_.code).toSet)
+        .transform
       authorizer.performCheckAny(VIEW_SERVICE_CATALOG) {
         for {
           userServices  <- serviceCatalogService.findUserServices(query)
