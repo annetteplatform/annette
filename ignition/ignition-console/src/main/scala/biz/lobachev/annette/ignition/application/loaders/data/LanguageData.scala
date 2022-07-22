@@ -14,17 +14,16 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.ignition.service_catalog.loaders.data
+package biz.lobachev.annette.ignition.application.loaders.data
 
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.service_catalog.api.scope.ScopeId
+import biz.lobachev.annette.core.model.LanguageId
 import play.api.libs.json.Json
 
-case class ScopePrincipalData(
-  scopeId: ScopeId,
-  principal: AnnettePrincipal
+case class LanguageData(
+  id: LanguageId,
+  name: String
 )
 
-object ScopePrincipalData {
-  implicit val format = Json.format[ScopePrincipalData]
+object LanguageData {
+  implicit val format = Json.format[LanguageData]
 }

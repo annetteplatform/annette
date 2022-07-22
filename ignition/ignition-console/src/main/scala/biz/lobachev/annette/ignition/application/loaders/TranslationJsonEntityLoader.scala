@@ -14,41 +14,39 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.ignition.service_catalog.loaders
+package biz.lobachev.annette.ignition.application.loaders
 
 import akka.Done
 import akka.stream.Materializer
+import biz.lobachev.annette.application.api.ApplicationService
+import biz.lobachev.annette.application.api.translation.UpdateTranslationJsonPayload
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.ignition.application.loaders.data.TranslationJsonData
 import biz.lobachev.annette.ignition.core.EntityLoader
-import biz.lobachev.annette.ignition.service_catalog.loaders.data.ScopePrincipalData
-import biz.lobachev.annette.service_catalog.api.ServiceCatalogService
-import biz.lobachev.annette.service_catalog.api.scope_principal.AssignScopePrincipalPayload
 import com.typesafe.config.Config
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Reads
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ScopePrincipalEntityLoader(
-  service: ServiceCatalogService,
+class TranslationJsonEntityLoader(
+  service: ApplicationService,
   val config: Config,
   val principal: AnnettePrincipal
 )(implicit val ec: ExecutionContext, val materializer: Materializer)
-    extends EntityLoader[ScopePrincipalData] {
+    extends EntityLoader[TranslationJsonData] {
 
-  override implicit val reads: Reads[ScopePrincipalData] = ScopePrincipalData.format
+  override implicit val reads: Reads[TranslationJsonData] = TranslationJsonData.format
 
-  def loadItem(item: ScopePrincipalData, mode: String): Future[Either[Throwable, Done.type]] = {
-    val createPayload = item
-      .into[AssignScopePrincipalPayload]
+  def loadItem(item: TranslationJsonData, mode: String): Future[Either[Throwable, Done.type]] = {
+    val updatePayload = item
+      .into[UpdateTranslationJsonPayload]
       .withFieldConst(_.updatedBy, principal)
       .transform
     service
-      .assignScopePrincipal(createPayload)
+      .updateTranslationJson(updatePayload)
       .map(_ => Right(Done))
-      .recoverWith {
-        case th => Future.failed(th)
-      }
+      .recover(th => Left(th))
 
   }
 

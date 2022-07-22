@@ -80,7 +80,7 @@ lazy val root = (project in file("."))
     `api-gateway`,
     // initialization application
     `ignition-core`,
-    `demo-ignition`,
+//    `demo-ignition`,
     `ignition-console`,
     `camunda`,
     // API gateways
@@ -276,7 +276,8 @@ def ignitionConsoleProject(pr: Project) =
     )
     .dependsOn(
 //      `ignition-core`
-      `service-catalog-api`
+      `service-catalog-api`,
+      `application-api`
     )
 
 lazy val `application-api` = (project in file("application/application-api"))
@@ -702,7 +703,7 @@ def subscriptionsProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`subscriptions-api`, `microservice-core`)
 
-lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/ignition-demo"))
+//lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/ignition-demo"))
 lazy val `ignition-console` = ignitionConsoleProject(project in file("ignition/ignition-console"))
 lazy val `application`      = applicationProject(project in file("application/application"))
 lazy val `service-catalog`  = serviceCatalogProject(project in file("application/service-catalog"))

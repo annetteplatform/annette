@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.ignition.service_catalog.loaders.data
+package biz.lobachev.annette.ignition.application
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.service_catalog.api.scope.ScopeId
-import play.api.libs.json.Json
+import biz.lobachev.annette.ignition.core.{IgnitionLagomClient, ServiceLoader, ServiceLoaderFactory}
+import com.typesafe.config.Config
 
-case class ScopePrincipalData(
-  scopeId: ScopeId,
-  principal: AnnettePrincipal
-)
-
-object ScopePrincipalData {
-  implicit val format = Json.format[ScopePrincipalData]
+object ApplicationLoaderFactory extends ServiceLoaderFactory {
+  override def create(client: IgnitionLagomClient, config: Config, principal: AnnettePrincipal): ServiceLoader =
+    new ApplicationLoader(client, config, principal)
 }

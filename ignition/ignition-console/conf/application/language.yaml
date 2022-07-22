@@ -1,0 +1,10 @@
+- id: en
+  name: English
+- id: fr
+  name: French
+- id: de
+  name: German
+- id: pl
+  name: Polish
+- id: ru
+  name: Russian

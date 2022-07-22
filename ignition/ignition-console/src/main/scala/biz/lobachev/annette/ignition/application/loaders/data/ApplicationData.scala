@@ -14,18 +14,24 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.service_catalog.gateway.user
+package biz.lobachev.annette.ignition.application.loaders.data
 
-import biz.lobachev.annette.core.model.LanguageId
+import biz.lobachev.annette.application.api.application.ApplicationId
+import biz.lobachev.annette.application.api.translation.TranslationId
+import biz.lobachev.annette.core.model.text.{Icon, MultiLanguageText}
 import play.api.libs.json.{Format, Json}
 
-case class FindUserServicesQueryDto(
-  offset: Int = 0,
-  size: Int,
-  filter: String,
-  languageId: LanguageId
+case class ApplicationData(
+  id: ApplicationId,
+  name: String,
+  icon: Option[Icon],
+  label: MultiLanguageText,
+  labelDescription: MultiLanguageText,
+  translations: Set[TranslationId] = Set.empty,
+  frontendUrl: Option[String],
+  backendUrl: Option[String]
 )
 
-object FindUserServicesQueryDto {
-  implicit val format: Format[FindUserServicesQueryDto] = Json.format
+object ApplicationData {
+  implicit val format: Format[ApplicationData] = Json.format
 }
