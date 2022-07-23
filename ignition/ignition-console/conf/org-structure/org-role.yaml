@@ -1,0 +1,15 @@
+- id: SALESMAN
+  name: Salesman
+  description: ""
+
+- id: CHIEF-SALESMAN
+  name: Chief salesman
+  description: ""
+
+- id: STORE-MANAGER
+  name: Store Manager
+  description: ""
+
+- id: CHIEF-CASHIER
+  name: Chief cashier
+  description: ""

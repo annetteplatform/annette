@@ -1,0 +1,2688 @@
+- id: ANN-RETAIL
+  name: Annette Retail
+  type: U
+  categoryId: ORG
+  chief: ANN-RETAIL:0002
+  children:
+    - id: ANN-RETAIL:0002
+      name: Chief Executive Officer
+      type: P
+      categoryId: POSITION
+      limit: 1
+      persons:
+        - P0030
+    - id: ANN-RETAIL:0003
+      name: Administration
+      type: U
+      categoryId: UNIT
+      chief: ANN-RETAIL:0004
+      children:
+        - id: ANN-RETAIL:0004
+          name: Head of Administration
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0032
+        - id: ANN-RETAIL:0005
+          name: Assistant
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0033
+        - id: ANN-RETAIL:0006
+          name: Assistant
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0034
+    - id: ANN-RETAIL:0007
+      name: Finance Department
+      type: U
+      categoryId: UNIT
+      chief: ANN-RETAIL:0008
+      children:
+        - id: ANN-RETAIL:0008
+          name: Chief Financial Officer
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0036
+        - id: ANN-RETAIL:0009
+          name: CFO Assistant
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0037
+        - id: ANN-RETAIL:0010
+          name: CFO Assistant
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0038
+        - id: ANN-RETAIL:0011
+          name: Accounting Department
+          type: U
+          categoryId: UNIT
+          chief: ANN-RETAIL:0012
+          children:
+            - id: ANN-RETAIL:0012
+              name: Chief Accountant
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0040
+            - id: ANN-RETAIL:0013
+              name: Lead accountant
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0041
+            - id: ANN-RETAIL:0014
+              name: Lead accountant
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0042
+            - id: ANN-RETAIL:0015
+              name: Accountant
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0043
+            - id: ANN-RETAIL:0016
+              name: Accountant
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0044
+            - id: ANN-RETAIL:0017
+              name: Accountant
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0045
+            - id: ANN-RETAIL:0018
+              name: Accountant
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0046
+            - id: ANN-RETAIL:0019
+              name: Accountant
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0047
+        - id: ANN-RETAIL:0020
+          name: Management Accounting Department
+          type: U
+          categoryId: UNIT
+          chief: ANN-RETAIL:0021
+          children:
+            - id: ANN-RETAIL:0021
+              name: Chief Management Accountant
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0049
+            - id: ANN-RETAIL:0022
+              name: Managerial Accountant
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0050
+            - id: ANN-RETAIL:0023
+              name: Managerial Accountant
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0051
+            - id: ANN-RETAIL:0024
+              name: Managerial Accountant
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0052
+        - id: ANN-RETAIL:0025
+          name: Treasure
+          type: U
+          categoryId: UNIT
+          chief: ANN-RETAIL:0026
+          children:
+            - id: ANN-RETAIL:0026
+              name: Chief Treasurer Officer
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0054
+            - id: ANN-RETAIL:0027
+              name: Treasure Officer
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0055
+            - id: ANN-RETAIL:0028
+              name: Treasure Officer
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0056
+            - id: ANN-RETAIL:0029
+              name: Treasure Officer
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0057
+        - id: ANN-RETAIL:0030
+          name: Analysis and Reporting Department
+          type: U
+          categoryId: UNIT
+          chief: ANN-RETAIL:0031
+          children:
+            - id: ANN-RETAIL:0031
+              name: Head of A&R Department
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0059
+            - id: ANN-RETAIL:0032
+              name: Analyst
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0060
+            - id: ANN-RETAIL:0033
+              name: Analyst
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0061
+            - id: ANN-RETAIL:0034
+              name: Analyst
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0062
+    - id: ANN-RETAIL:0035
+      name: IT Department
+      type: U
+      categoryId: UNIT
+      chief: ANN-RETAIL:0036
+      children:
+        - id: ANN-RETAIL:0036
+          name: Chief IT Officer
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0064
+        - id: ANN-RETAIL:0037
+          name: CIO Assistant
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0065
+        - id: ANN-RETAIL:0038
+          name: Project Unit
+          type: U
+          categoryId: UNIT
+          chief: ANN-RETAIL:0039
+          children:
+            - id: ANN-RETAIL:0039
+              name: Head of Project Unit
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0067
+            - id: ANN-RETAIL:0040
+              name: Project Manager
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0068
+            - id: ANN-RETAIL:0041
+              name: Project Manager
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0069
+            - id: ANN-RETAIL:0042
+              name: Project Manager
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0070
+            - id: ANN-RETAIL:0043
+              name: Project Administrator
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0071
+            - id: ANN-RETAIL:0044
+              name: Project Administrator
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0072
+            - id: ANN-RETAIL:0045
+              name: Project Administrator
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0073
+            - id: ANN-RETAIL:0046
+              name: Project Administrator
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0074
+        - id: ANN-RETAIL:0047
+          name: Infrastructure Department
+          type: U
+          categoryId: UNIT
+          chief: ANN-RETAIL:0048
+          children:
+            - id: ANN-RETAIL:0048
+              name: Head of Infrastructure
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0076
+            - id: ANN-RETAIL:0049
+              name: Hardware Engineer
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0077
+            - id: ANN-RETAIL:0050
+              name: Hardware Engineer
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0078
+            - id: ANN-RETAIL:0051
+              name: Hardware Engineer
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0079
+            - id: ANN-RETAIL:0052
+              name: Network Engineer
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0080
+            - id: ANN-RETAIL:0053
+              name: Network Engineer
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0081
+            - id: ANN-RETAIL:0054
+              name: Network Engineer
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0082
+            - id: ANN-RETAIL:0055
+              name: System Administrator
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0083
+            - id: ANN-RETAIL:0056
+              name: System Administrator
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0084
+            - id: ANN-RETAIL:0057
+              name: System Administrator
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0085
+            - id: ANN-RETAIL:0058
+              name: Data Base Administrator
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0086
+            - id: ANN-RETAIL:0059
+              name: Data Base Administrator
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0087
+    - id: ANN-RETAIL:0060
+      name: Marketing Department
+      type: U
+      categoryId: UNIT
+      chief: ANN-RETAIL:0061
+      children:
+        - id: ANN-RETAIL:0061
+          name: Chief Marketing Officer
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0089
+        - id: ANN-RETAIL:0062
+          name: CMA Assistant
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0090
+        - id: ANN-RETAIL:0063
+          name: Brand Manager
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0091
+        - id: ANN-RETAIL:0064
+          name: Brand Manager
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0092
+        - id: ANN-RETAIL:0065
+          name: Brand Manager
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0093
+        - id: ANN-RETAIL:0066
+          name: Brand Manager
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0094
+        - id: ANN-RETAIL:0067
+          name: Advertising Manager
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0095
+        - id: ANN-RETAIL:0068
+          name: Advertising Manager
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0096
+    - id: ANN-RETAIL:0069
+      name: Human Resource Department
+      type: U
+      categoryId: UNIT
+      chief: ANN-RETAIL:0070
+      children:
+        - id: ANN-RETAIL:0070
+          name: Chief Human Resources Officer
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0098
+        - id: ANN-RETAIL:0071
+          name: CHRO Assostant
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0099
+        - id: ANN-RETAIL:0072
+          name: Human Resurces Officer
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0100
+        - id: ANN-RETAIL:0073
+          name: Human Resurces Officer
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0101
+        - id: ANN-RETAIL:0074
+          name: Human Resurces Officer
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0102
+        - id: ANN-RETAIL:0075
+          name: Human Resurces Officer
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0103
+    - id: ANN-RETAIL:0076
+      name: Operation Department
+      type: U
+      categoryId: UNIT
+      chief: ANN-RETAIL:0077
+      children:
+        - id: ANN-RETAIL:0077
+          name: Chief Operation Officer
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0105
+        - id: ANN-RETAIL:0078
+          name: COO Assistant
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0106
+        - id: ANN-RETAIL:0079
+          name: COO Assistant
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0107
+        - id: ANN-RETAIL:0080
+          name: COO Assistant
+          type: P
+          categoryId: POSITION
+          limit: 1
+          persons:
+            - P0108
+        - id: ANN-RETAIL:0081
+          name: Purchase Department
+          type: U
+          categoryId: UNIT
+          chief: ANN-RETAIL:0082
+          children:
+            - id: ANN-RETAIL:0082
+              name: Head of Purchase Department
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0110
+            - id: ANN-RETAIL:0083
+              name: Purchaser
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0111
+            - id: ANN-RETAIL:0084
+              name: Purchaser
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0112
+            - id: ANN-RETAIL:0085
+              name: Purchaser
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0113
+            - id: ANN-RETAIL:0086
+              name: Purchaser
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0114
+            - id: ANN-RETAIL:0087
+              name: Purchaser
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0115
+        - id: ANN-RETAIL:0088
+          name: Warehouse Department
+          type: U
+          categoryId: UNIT
+          chief: ANN-RETAIL:0089
+          children:
+            - id: ANN-RETAIL:0089
+              name: Head of Warehouse Department
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0117
+            - id: ANN-RETAIL:0090
+              name: Warehouse Head Assistant
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0118
+            - id: ANN-RETAIL:0091
+              name: Warehouse Head Assistant
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0119
+            - id: ANN-RETAIL:0092
+              name: North Warehouse
+              type: U
+              categoryId: UNIT
+              chief: ANN-RETAIL:0093
+              children:
+                - id: ANN-RETAIL:0093
+                  name: Head of North WH
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0121
+                - id: ANN-RETAIL:0094
+                  name: Warehouse Clerk
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0122
+                - id: ANN-RETAIL:0095
+                  name: Warehouse Clerk
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0123
+                - id: ANN-RETAIL:0096
+                  name: Stockman
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0124
+                - id: ANN-RETAIL:0097
+                  name: Stockman
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0125
+                - id: ANN-RETAIL:0098
+                  name: Stockman
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0126
+                - id: ANN-RETAIL:0099
+                  name: Stockman
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0127
+            - id: ANN-RETAIL:0100
+              name: East Warehouse
+              type: U
+              categoryId: UNIT
+              chief: ANN-RETAIL:0101
+              children:
+                - id: ANN-RETAIL:0101
+                  name: Head of East WH
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0129
+                - id: ANN-RETAIL:0102
+                  name: Warehouse Clerk
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0130
+                - id: ANN-RETAIL:0103
+                  name: Warehouse Clerk
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0131
+                - id: ANN-RETAIL:0104
+                  name: Stockman
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0132
+                - id: ANN-RETAIL:0105
+                  name: Stockman
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0133
+                - id: ANN-RETAIL:0106
+                  name: Stockman
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0134
+                - id: ANN-RETAIL:0107
+                  name: Stockman
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0135
+            - id: ANN-RETAIL:0108
+              name: South Warehouse
+              type: U
+              categoryId: UNIT
+              chief: ANN-RETAIL:0109
+              children:
+                - id: ANN-RETAIL:0109
+                  name: Head of South WH
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0137
+                - id: ANN-RETAIL:0110
+                  name: Warehouse Clerk
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0138
+                - id: ANN-RETAIL:0111
+                  name: Warehouse Clerk
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0139
+                - id: ANN-RETAIL:0112
+                  name: Stockman
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0140
+                - id: ANN-RETAIL:0113
+                  name: Stockman
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0141
+                - id: ANN-RETAIL:0114
+                  name: Stockman
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0142
+                - id: ANN-RETAIL:0115
+                  name: Stockman
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0143
+            - id: ANN-RETAIL:0116
+              name: West Warehouse
+              type: U
+              categoryId: UNIT
+              chief: ANN-RETAIL:0117
+              children:
+                - id: ANN-RETAIL:0117
+                  name: Head of West WH
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0145
+                - id: ANN-RETAIL:0118
+                  name: Warehouse Clerk
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0146
+                - id: ANN-RETAIL:0119
+                  name: Warehouse Clerk
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0147
+                - id: ANN-RETAIL:0120
+                  name: Stockman
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0148
+                - id: ANN-RETAIL:0121
+                  name: Stockman
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0149
+                - id: ANN-RETAIL:0122
+                  name: Stockman
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0150
+                - id: ANN-RETAIL:0123
+                  name: Stockman
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0151
+        - id: ANN-RETAIL:0124
+          name: Retail Department
+          type: U
+          categoryId: UNIT
+          chief: ANN-RETAIL:0125
+          children:
+            - id: ANN-RETAIL:0125
+              name: Head of Retail Department
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0153
+            - id: ANN-RETAIL:0126
+              name: Retail Head Assistant
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0154
+            - id: ANN-RETAIL:0127
+              name: Retail Head Assistant
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0155
+            - id: ANN-RETAIL:0128
+              name: Retail Head Assistant
+              type: P
+              categoryId: POSITION
+              limit: 1
+              persons:
+                - P0156
+            - id: ANN-RETAIL:0129
+              name: North Region
+              type: U
+              categoryId: UNIT
+              chief: ANN-RETAIL:0130
+              children:
+                - id: ANN-RETAIL:0130
+                  name: North Region Head
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0158
+                - id: ANN-RETAIL:0131
+                  name: Region Head Assistant
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0159
+                - id: ANN-RETAIL:0132
+                  name: Region Head Assistant
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0160
+                - id: ANN-RETAIL:0133
+                  name: Store N1
+                  type: U
+                  categoryId: UNIT
+                  chief: ANN-RETAIL:0134
+                  children:
+                    - id: ANN-RETAIL:0134
+                      name: Store Manager
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0162
+                    - id: ANN-RETAIL:0135
+                      name: Store Manager Assistant
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0163
+                    - id: ANN-RETAIL:0136
+                      name: Sales
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0137
+                      children:
+                        - id: ANN-RETAIL:0137
+                          name: Chief Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0165
+                        - id: ANN-RETAIL:0138
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0166
+                        - id: ANN-RETAIL:0139
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0167
+                        - id: ANN-RETAIL:0140
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0168
+                        - id: ANN-RETAIL:0141
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0169
+                    - id: ANN-RETAIL:0142
+                      name: Cashiers
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0143
+                      children:
+                        - id: ANN-RETAIL:0143
+                          name: Chief Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0171
+                        - id: ANN-RETAIL:0144
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0172
+                        - id: ANN-RETAIL:0145
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0173
+                    - id: ANN-RETAIL:0146
+                      name: Service
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0174
+                    - id: ANN-RETAIL:0147
+                      name: Service Head
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0148
+                      children:
+                        - id: ANN-RETAIL:0148
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0176
+                        - id: ANN-RETAIL:0149
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0177
+                    - id: ANN-RETAIL:0150
+                      name: Stock
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0151
+                      children:
+                        - id: ANN-RETAIL:0151
+                          name: Chief Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0179
+                        - id: ANN-RETAIL:0152
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0180
+                        - id: ANN-RETAIL:0153
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0181
+                - id: ANN-RETAIL:0154
+                  name: Store N2
+                  type: U
+                  categoryId: UNIT
+                  chief: ANN-RETAIL:0155
+                  children:
+                    - id: ANN-RETAIL:0155
+                      name: Store Manager
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0183
+                    - id: ANN-RETAIL:0156
+                      name: Store Manager Assistant
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0184
+                    - id: ANN-RETAIL:0157
+                      name: Sales
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0158
+                      children:
+                        - id: ANN-RETAIL:0158
+                          name: Chief Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0186
+                        - id: ANN-RETAIL:0159
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0187
+                        - id: ANN-RETAIL:0160
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0188
+                        - id: ANN-RETAIL:0161
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0189
+                        - id: ANN-RETAIL:0162
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0190
+                    - id: ANN-RETAIL:0163
+                      name: Cashiers
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0164
+                      children:
+                        - id: ANN-RETAIL:0164
+                          name: Chief Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0192
+                        - id: ANN-RETAIL:0165
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0193
+                        - id: ANN-RETAIL:0166
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0194
+                    - id: ANN-RETAIL:0167
+                      name: Service
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0195
+                    - id: ANN-RETAIL:0168
+                      name: Service Head
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0169
+                      children:
+                        - id: ANN-RETAIL:0169
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0197
+                        - id: ANN-RETAIL:0170
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0198
+                    - id: ANN-RETAIL:0171
+                      name: Stock
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0172
+                      children:
+                        - id: ANN-RETAIL:0172
+                          name: Chief Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0200
+                        - id: ANN-RETAIL:0173
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0201
+                        - id: ANN-RETAIL:0174
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0202
+                - id: ANN-RETAIL:0175
+                  name: Store N3
+                  type: U
+                  categoryId: UNIT
+                  chief: ANN-RETAIL:0176
+                  children:
+                    - id: ANN-RETAIL:0176
+                      name: Store Manager
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0204
+                    - id: ANN-RETAIL:0177
+                      name: Store Manager Assistant
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0205
+                    - id: ANN-RETAIL:0178
+                      name: Sales
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0179
+                      children:
+                        - id: ANN-RETAIL:0179
+                          name: Chief Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0207
+                        - id: ANN-RETAIL:0180
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0208
+                        - id: ANN-RETAIL:0181
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0209
+                        - id: ANN-RETAIL:0182
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0210
+                        - id: ANN-RETAIL:0183
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0211
+                    - id: ANN-RETAIL:0184
+                      name: Cashiers
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0185
+                      children:
+                        - id: ANN-RETAIL:0185
+                          name: Chief Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0213
+                        - id: ANN-RETAIL:0186
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0214
+                        - id: ANN-RETAIL:0187
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0215
+                    - id: ANN-RETAIL:0188
+                      name: Service
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0216
+                    - id: ANN-RETAIL:0189
+                      name: Service Head
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0190
+                      children:
+                        - id: ANN-RETAIL:0190
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0218
+                        - id: ANN-RETAIL:0191
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0219
+                    - id: ANN-RETAIL:0192
+                      name: Stock
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0193
+                      children:
+                        - id: ANN-RETAIL:0193
+                          name: Chief Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0221
+                        - id: ANN-RETAIL:0194
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0222
+                        - id: ANN-RETAIL:0195
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0223
+            - id: ANN-RETAIL:0196
+              name: East Region
+              type: U
+              categoryId: UNIT
+              chief: ANN-RETAIL:0197
+              children:
+                - id: ANN-RETAIL:0197
+                  name: East Region Head
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0225
+                - id: ANN-RETAIL:0198
+                  name: Region Head Assistant
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0226
+                - id: ANN-RETAIL:0199
+                  name: Region Head Assistant
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0227
+                - id: ANN-RETAIL:0200
+                  name: Store E1
+                  type: U
+                  categoryId: UNIT
+                  chief: ANN-RETAIL:0201
+                  children:
+                    - id: ANN-RETAIL:0201
+                      name: Store Manager
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0229
+                    - id: ANN-RETAIL:0202
+                      name: Store Manager Assistant
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0230
+                    - id: ANN-RETAIL:0203
+                      name: Sales
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0204
+                      children:
+                        - id: ANN-RETAIL:0204
+                          name: Chief Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0232
+                        - id: ANN-RETAIL:0205
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0233
+                        - id: ANN-RETAIL:0206
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0234
+                        - id: ANN-RETAIL:0207
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0235
+                        - id: ANN-RETAIL:0208
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0236
+                    - id: ANN-RETAIL:0209
+                      name: Cashiers
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0210
+                      children:
+                        - id: ANN-RETAIL:0210
+                          name: Chief Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0238
+                        - id: ANN-RETAIL:0211
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0239
+                        - id: ANN-RETAIL:0212
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0240
+                    - id: ANN-RETAIL:0213
+                      name: Service
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0241
+                    - id: ANN-RETAIL:0214
+                      name: Service Head
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0215
+                      children:
+                        - id: ANN-RETAIL:0215
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0243
+                        - id: ANN-RETAIL:0216
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0244
+                    - id: ANN-RETAIL:0217
+                      name: Stock
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0218
+                      children:
+                        - id: ANN-RETAIL:0218
+                          name: Chief Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0246
+                        - id: ANN-RETAIL:0219
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0247
+                        - id: ANN-RETAIL:0220
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0248
+                - id: ANN-RETAIL:0221
+                  name: Store E2
+                  type: U
+                  categoryId: UNIT
+                  chief: ANN-RETAIL:0222
+                  children:
+                    - id: ANN-RETAIL:0222
+                      name: Store Manager
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0250
+                    - id: ANN-RETAIL:0223
+                      name: Store Manager Assistant
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0251
+                    - id: ANN-RETAIL:0224
+                      name: Sales
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0225
+                      children:
+                        - id: ANN-RETAIL:0225
+                          name: Chief Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0253
+                        - id: ANN-RETAIL:0226
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0254
+                        - id: ANN-RETAIL:0227
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0255
+                        - id: ANN-RETAIL:0228
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0256
+                        - id: ANN-RETAIL:0229
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0257
+                    - id: ANN-RETAIL:0230
+                      name: Cashiers
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0231
+                      children:
+                        - id: ANN-RETAIL:0231
+                          name: Chief Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0259
+                        - id: ANN-RETAIL:0232
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0260
+                        - id: ANN-RETAIL:0233
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0261
+                    - id: ANN-RETAIL:0234
+                      name: Service
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0262
+                    - id: ANN-RETAIL:0235
+                      name: Service Head
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0236
+                      children:
+                        - id: ANN-RETAIL:0236
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0264
+                        - id: ANN-RETAIL:0237
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0265
+                    - id: ANN-RETAIL:0238
+                      name: Stock
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0239
+                      children:
+                        - id: ANN-RETAIL:0239
+                          name: Chief Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0267
+                        - id: ANN-RETAIL:0240
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0268
+                        - id: ANN-RETAIL:0241
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0269
+                - id: ANN-RETAIL:0242
+                  name: Store E3
+                  type: U
+                  categoryId: UNIT
+                  chief: ANN-RETAIL:0243
+                  children:
+                    - id: ANN-RETAIL:0243
+                      name: Store Manager
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0271
+                    - id: ANN-RETAIL:0244
+                      name: Store Manager Assistant
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0272
+                    - id: ANN-RETAIL:0245
+                      name: Sales
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0246
+                      children:
+                        - id: ANN-RETAIL:0246
+                          name: Chief Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0274
+                        - id: ANN-RETAIL:0247
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0275
+                        - id: ANN-RETAIL:0248
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0276
+                        - id: ANN-RETAIL:0249
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0277
+                        - id: ANN-RETAIL:0250
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0278
+                    - id: ANN-RETAIL:0251
+                      name: Cashiers
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0252
+                      children:
+                        - id: ANN-RETAIL:0252
+                          name: Chief Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0280
+                        - id: ANN-RETAIL:0253
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0281
+                        - id: ANN-RETAIL:0254
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0282
+                    - id: ANN-RETAIL:0255
+                      name: Service
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0283
+                    - id: ANN-RETAIL:0256
+                      name: Service Head
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0257
+                      children:
+                        - id: ANN-RETAIL:0257
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0285
+                        - id: ANN-RETAIL:0258
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0286
+                    - id: ANN-RETAIL:0259
+                      name: Stock
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0260
+                      children:
+                        - id: ANN-RETAIL:0260
+                          name: Chief Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0288
+                        - id: ANN-RETAIL:0261
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0289
+                        - id: ANN-RETAIL:0262
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0290
+            - id: ANN-RETAIL:0263
+              name: South Region
+              type: U
+              categoryId: UNIT
+              chief: ANN-RETAIL:0264
+              children:
+                - id: ANN-RETAIL:0264
+                  name: South Region Head
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0292
+                - id: ANN-RETAIL:0265
+                  name: Region Head Assistant
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0293
+                - id: ANN-RETAIL:0266
+                  name: Region Head Assistant
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0294
+                - id: ANN-RETAIL:0267
+                  name: Store S1
+                  type: U
+                  categoryId: UNIT
+                  chief: ANN-RETAIL:0268
+                  children:
+                    - id: ANN-RETAIL:0268
+                      name: Store Manager
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0296
+                    - id: ANN-RETAIL:0269
+                      name: Store Manager Assistant
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0297
+                    - id: ANN-RETAIL:0270
+                      name: Sales
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0271
+                      children:
+                        - id: ANN-RETAIL:0271
+                          name: Chief Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0299
+                        - id: ANN-RETAIL:0272
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0300
+                        - id: ANN-RETAIL:0273
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0301
+                        - id: ANN-RETAIL:0274
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0302
+                        - id: ANN-RETAIL:0275
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0303
+                    - id: ANN-RETAIL:0276
+                      name: Cashiers
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0277
+                      children:
+                        - id: ANN-RETAIL:0277
+                          name: Chief Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0305
+                        - id: ANN-RETAIL:0278
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0306
+                        - id: ANN-RETAIL:0279
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0307
+                    - id: ANN-RETAIL:0280
+                      name: Service
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0308
+                    - id: ANN-RETAIL:0281
+                      name: Service Head
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0282
+                      children:
+                        - id: ANN-RETAIL:0282
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0310
+                        - id: ANN-RETAIL:0283
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0311
+                    - id: ANN-RETAIL:0284
+                      name: Stock
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0285
+                      children:
+                        - id: ANN-RETAIL:0285
+                          name: Chief Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0313
+                        - id: ANN-RETAIL:0286
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0314
+                        - id: ANN-RETAIL:0287
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0315
+                - id: ANN-RETAIL:0288
+                  name: Store S2
+                  type: U
+                  categoryId: UNIT
+                  chief: ANN-RETAIL:0289
+                  children:
+                    - id: ANN-RETAIL:0289
+                      name: Store Manager
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0317
+                    - id: ANN-RETAIL:0290
+                      name: Store Manager Assistant
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0318
+                    - id: ANN-RETAIL:0291
+                      name: Sales
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0292
+                      children:
+                        - id: ANN-RETAIL:0292
+                          name: Chief Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0320
+                        - id: ANN-RETAIL:0293
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0321
+                        - id: ANN-RETAIL:0294
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0322
+                        - id: ANN-RETAIL:0295
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0323
+                        - id: ANN-RETAIL:0296
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0324
+                    - id: ANN-RETAIL:0297
+                      name: Cashiers
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0298
+                      children:
+                        - id: ANN-RETAIL:0298
+                          name: Chief Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0326
+                        - id: ANN-RETAIL:0299
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0327
+                        - id: ANN-RETAIL:0300
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0328
+                    - id: ANN-RETAIL:0301
+                      name: Service
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0329
+                    - id: ANN-RETAIL:0302
+                      name: Service Head
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0303
+                      children:
+                        - id: ANN-RETAIL:0303
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0331
+                        - id: ANN-RETAIL:0304
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0332
+                    - id: ANN-RETAIL:0305
+                      name: Stock
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0306
+                      children:
+                        - id: ANN-RETAIL:0306
+                          name: Chief Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0334
+                        - id: ANN-RETAIL:0307
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0335
+                        - id: ANN-RETAIL:0308
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0336
+                - id: ANN-RETAIL:0309
+                  name: Store S3
+                  type: U
+                  categoryId: UNIT
+                  chief: ANN-RETAIL:0310
+                  children:
+                    - id: ANN-RETAIL:0310
+                      name: Store Manager
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0338
+                    - id: ANN-RETAIL:0311
+                      name: Store Manager Assistant
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0339
+                    - id: ANN-RETAIL:0312
+                      name: Sales
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0313
+                      children:
+                        - id: ANN-RETAIL:0313
+                          name: Chief Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0341
+                        - id: ANN-RETAIL:0314
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0342
+                        - id: ANN-RETAIL:0315
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0343
+                        - id: ANN-RETAIL:0316
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0344
+                        - id: ANN-RETAIL:0317
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0345
+                    - id: ANN-RETAIL:0318
+                      name: Cashiers
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0319
+                      children:
+                        - id: ANN-RETAIL:0319
+                          name: Chief Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0347
+                        - id: ANN-RETAIL:0320
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0348
+                        - id: ANN-RETAIL:0321
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0349
+                    - id: ANN-RETAIL:0322
+                      name: Service
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0350
+                    - id: ANN-RETAIL:0323
+                      name: Service Head
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0324
+                      children:
+                        - id: ANN-RETAIL:0324
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0352
+                        - id: ANN-RETAIL:0325
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0353
+                    - id: ANN-RETAIL:0326
+                      name: Stock
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0327
+                      children:
+                        - id: ANN-RETAIL:0327
+                          name: Chief Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0355
+                        - id: ANN-RETAIL:0328
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0356
+                        - id: ANN-RETAIL:0329
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0357
+            - id: ANN-RETAIL:0330
+              name: West Region
+              type: U
+              categoryId: UNIT
+              chief: ANN-RETAIL:0331
+              children:
+                - id: ANN-RETAIL:0331
+                  name: West Region Head
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0359
+                - id: ANN-RETAIL:0332
+                  name: Region Head Assistant
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0360
+                - id: ANN-RETAIL:0333
+                  name: Region Head Assistant
+                  type: P
+                  categoryId: POSITION
+                  limit: 1
+                  persons:
+                    - P0361
+                - id: ANN-RETAIL:0334
+                  name: Store W1
+                  type: U
+                  categoryId: UNIT
+                  chief: ANN-RETAIL:0335
+                  children:
+                    - id: ANN-RETAIL:0335
+                      name: Store Manager
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0363
+                    - id: ANN-RETAIL:0336
+                      name: Store Manager Assistant
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0364
+                    - id: ANN-RETAIL:0337
+                      name: Sales
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0338
+                      children:
+                        - id: ANN-RETAIL:0338
+                          name: Chief Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0366
+                        - id: ANN-RETAIL:0339
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0367
+                        - id: ANN-RETAIL:0340
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0368
+                        - id: ANN-RETAIL:0341
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0369
+                        - id: ANN-RETAIL:0342
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0370
+                    - id: ANN-RETAIL:0343
+                      name: Cashiers
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0344
+                      children:
+                        - id: ANN-RETAIL:0344
+                          name: Chief Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0372
+                        - id: ANN-RETAIL:0345
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0373
+                        - id: ANN-RETAIL:0346
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0374
+                    - id: ANN-RETAIL:0347
+                      name: Service
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0375
+                    - id: ANN-RETAIL:0348
+                      name: Service Head
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0349
+                      children:
+                        - id: ANN-RETAIL:0349
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0377
+                        - id: ANN-RETAIL:0350
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0378
+                    - id: ANN-RETAIL:0351
+                      name: Stock
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0352
+                      children:
+                        - id: ANN-RETAIL:0352
+                          name: Chief Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0380
+                        - id: ANN-RETAIL:0353
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0381
+                        - id: ANN-RETAIL:0354
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0382
+                - id: ANN-RETAIL:0355
+                  name: Store W2
+                  type: U
+                  categoryId: UNIT
+                  chief: ANN-RETAIL:0356
+                  children:
+                    - id: ANN-RETAIL:0356
+                      name: Store Manager
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0384
+                    - id: ANN-RETAIL:0357
+                      name: Store Manager Assistant
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0385
+                    - id: ANN-RETAIL:0358
+                      name: Sales
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0359
+                      children:
+                        - id: ANN-RETAIL:0359
+                          name: Chief Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0387
+                        - id: ANN-RETAIL:0360
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0388
+                        - id: ANN-RETAIL:0361
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0389
+                        - id: ANN-RETAIL:0362
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0390
+                        - id: ANN-RETAIL:0363
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0391
+                    - id: ANN-RETAIL:0364
+                      name: Cashiers
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0365
+                      children:
+                        - id: ANN-RETAIL:0365
+                          name: Chief Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0393
+                        - id: ANN-RETAIL:0366
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0394
+                        - id: ANN-RETAIL:0367
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0395
+                    - id: ANN-RETAIL:0368
+                      name: Service
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0396
+                    - id: ANN-RETAIL:0369
+                      name: Service Head
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0370
+                      children:
+                        - id: ANN-RETAIL:0370
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0398
+                        - id: ANN-RETAIL:0371
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0399
+                    - id: ANN-RETAIL:0372
+                      name: Stock
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0373
+                      children:
+                        - id: ANN-RETAIL:0373
+                          name: Chief Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0401
+                        - id: ANN-RETAIL:0374
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0402
+                        - id: ANN-RETAIL:0375
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0403
+                - id: ANN-RETAIL:0376
+                  name: Store W3
+                  type: U
+                  categoryId: UNIT
+                  chief: ANN-RETAIL:0377
+                  children:
+                    - id: ANN-RETAIL:0377
+                      name: Store Manager
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0405
+                    - id: ANN-RETAIL:0378
+                      name: Store Manager Assistant
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0406
+                    - id: ANN-RETAIL:0379
+                      name: Sales
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0380
+                      children:
+                        - id: ANN-RETAIL:0380
+                          name: Chief Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0408
+                        - id: ANN-RETAIL:0381
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0409
+                        - id: ANN-RETAIL:0382
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0410
+                        - id: ANN-RETAIL:0383
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0411
+                        - id: ANN-RETAIL:0384
+                          name: Salesman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0412
+                    - id: ANN-RETAIL:0385
+                      name: Cashiers
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0386
+                      children:
+                        - id: ANN-RETAIL:0386
+                          name: Chief Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0414
+                        - id: ANN-RETAIL:0387
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0415
+                        - id: ANN-RETAIL:0388
+                          name: Cashier
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0416
+                    - id: ANN-RETAIL:0389
+                      name: Service
+                      type: P
+                      categoryId: POSITION
+                      limit: 1
+                      persons:
+                        - P0417
+                    - id: ANN-RETAIL:0390
+                      name: Service Head
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0391
+                      children:
+                        - id: ANN-RETAIL:0391
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0419
+                        - id: ANN-RETAIL:0392
+                          name: Serviceman
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0420
+                    - id: ANN-RETAIL:0393
+                      name: Stock
+                      type: U
+                      categoryId: UNIT
+                      chief: ANN-RETAIL:0394
+                      children:
+                        - id: ANN-RETAIL:0394
+                          name: Chief Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0422
+                        - id: ANN-RETAIL:0395
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0423
+                        - id: ANN-RETAIL:0396
+                          name: Stockkeeper
+                          type: P
+                          categoryId: POSITION
+                          limit: 1
+                          persons:
+                            - P0424

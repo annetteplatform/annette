@@ -88,8 +88,11 @@ trait EntityLoader[A] {
                    }
                  )
         } yield res match {
-          case Left(th) if onError == ON_ERROR_STOP => throw th
-          case _                                    => res
+          case Left(th) =>
+            log.error(s"Load failed ", th)
+            if (onError == ON_ERROR_STOP) throw th
+            res
+          case _        => res
         }
       }
       .runWith(Sink.seq)
