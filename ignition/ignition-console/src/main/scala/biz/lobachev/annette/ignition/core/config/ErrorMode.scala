@@ -29,5 +29,5 @@ object ErrorMode {
     Try(
       if (config.getString("on-error") == "ignore") IgnoreError
       else StopOnError
-    ).getOrElse(StopOnError)
+    ).getOrElse(IgnoreError)
 }

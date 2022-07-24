@@ -46,8 +46,11 @@ trait EntityLoader[A, C <: EntityLoaderConfig] {
   def run(): Future[EntityLoadResult] =
     Source(config.data)
       .mapAsync(1) { file =>
-        val data = loadFromFile(file)
-        runBatch(file, data)
+        println(file)
+        val data   = loadFromFile(file)
+        val future = runBatch(file, data)
+        future.foreach(r => log.info(s"Batch completed: ${r.toString}"))
+        future
       }
       .takeWhile(
         {
@@ -94,8 +97,8 @@ trait EntityLoader[A, C <: EntityLoaderConfig] {
       .runWith(Sink.seq)
       .map { seq =>
         val success = seq.count {
-          case LoadOk => false
-          case _      => true
+          case LoadOk => true
+          case _      => false
         }
         val errors  = seq.count {
           case LoadFailed(_) => true

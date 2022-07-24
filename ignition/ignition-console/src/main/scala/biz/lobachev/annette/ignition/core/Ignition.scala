@@ -69,7 +69,7 @@ class Ignition(
   def runStage(stage: String, config: Config) =
     try {
       log.info(s"Running stage $stage")
-      val loader = factories(stage).create(client, config)
+      val loader = factories(stage).create(client, config.getConfig(stage))
       for {
         res <- loader.run()
       } yield {

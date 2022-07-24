@@ -33,12 +33,15 @@ trait ServiceLoader[C <: ServiceLoaderConfig] {
 
   protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 
+  println(config)
+
   def createEntityLoader(entity: String): EntityLoader[_, _]
 
   def run(): Future[ServiceLoadResult] =
     Source(config.entities)
       .mapAsync(1) { entity =>
         val entityLoader = createEntityLoader(entity)
+        println(entityLoader.name)
         entityLoader.run()
       }
       .takeWhile(
