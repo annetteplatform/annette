@@ -22,7 +22,8 @@ import play.api.libs.json.Json
 
 case class ScopePrincipalData(
   scopeId: ScopeId,
-  principal: AnnettePrincipal
+  principal: AnnettePrincipal,
+  updatedBy: Option[AnnettePrincipal]
 )
 
 object ScopePrincipalData {

@@ -16,11 +16,12 @@
 
 package biz.lobachev.annette.ignition.org_structure.loaders
 
-import akka.Done
 import akka.stream.Materializer
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.SystemPrincipal
 import biz.lobachev.annette.ignition.core.EntityLoader
-import biz.lobachev.annette.ignition.core.config.MODE_UPSERT
+import biz.lobachev.annette.ignition.core.config.{DefaultEntityLoaderConfig, UpsertMode}
+import biz.lobachev.annette.ignition.core.result.{LoadFailed, LoadOk, LoadStatus}
+import biz.lobachev.annette.ignition.org_structure.OrgStructureLoader
 import biz.lobachev.annette.ignition.org_structure.loaders.data.CategoryData
 import biz.lobachev.annette.org_structure.api.OrgStructureService
 import biz.lobachev.annette.org_structure.api.category.{
@@ -28,7 +29,6 @@ import biz.lobachev.annette.org_structure.api.category.{
   OrgCategoryAlreadyExist,
   UpdateCategoryPayload
 }
-import com.typesafe.config.Config
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Reads
 
@@ -36,37 +36,37 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class CategoryEntityLoader(
   service: OrgStructureService,
-  val config: Config,
-  val principal: AnnettePrincipal
+  val config: DefaultEntityLoaderConfig
 )(implicit val ec: ExecutionContext, val materializer: Materializer)
-    extends EntityLoader[CategoryData] {
+    extends EntityLoader[CategoryData, DefaultEntityLoaderConfig] {
 
   override implicit val reads: Reads[CategoryData] = CategoryData.format
 
-  def loadItem(item: CategoryData, mode: String): Future[Either[Throwable, Done.type]] = {
+  def loadItem(item: CategoryData): Future[LoadStatus] = {
     val createPayload = item
       .into[CreateCategoryPayload]
-      .withFieldConst(_.createdBy, principal)
+      .withFieldComputed(_.createdBy, _.updatedBy.getOrElse(SystemPrincipal()))
       .withFieldComputed(_.forOrganization, _.forOrganization.getOrElse(false))
       .withFieldComputed(_.forUnit, _.forUnit.getOrElse(false))
       .withFieldComputed(_.forPosition, _.forPosition.getOrElse(false))
       .transform
     service
       .createCategory(createPayload)
-      .map(_ => Right(Done))
+      .map(_ => LoadOk)
       .recoverWith {
-        case OrgCategoryAlreadyExist(_) if mode == MODE_UPSERT =>
+        case OrgCategoryAlreadyExist(_) if config.mode == UpsertMode =>
           val updatePayload = createPayload
             .into[UpdateCategoryPayload]
             .withFieldComputed(_.updatedBy, _.createdBy)
             .transform
           service
             .updateCategory(updatePayload)
-            .map(_ => Right(Done))
-            .recover(th => Left(th))
-        case th                                                => Future.failed(th)
+            .map(_ => LoadOk)
+            .recover(th => LoadFailed(th.getMessage))
+        case th                                                      => Future.failed(th)
       }
 
   }
 
+  override val name: String = OrgStructureLoader.Category
 }

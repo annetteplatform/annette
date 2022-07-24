@@ -16,10 +16,9 @@
 
 package biz.lobachev.annette.ignition.core
 
-import akka.Done
 import akka.stream.scaladsl.{Sink, Source}
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.ignition.core.config.{ON_ERROR_IGNORE, ON_ERROR_STOP}
+import biz.lobachev.annette.ignition.core.config.{IgnoreError, StopOnError}
+import biz.lobachev.annette.ignition.core.result.{LoadFailed, ServiceLoadResult}
 import com.typesafe.config.Config
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -36,35 +35,46 @@ class Ignition(
 
   protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 
-  def run(): Future[Done] = {
-    val config    = client.config.getConfig("annette.ignition")
-    val stages    = Try(config.getStringList("stages").asScala.toSeq).getOrElse(Seq.empty)
-    val onError   = Try(config.getString("on-error")).getOrElse(ON_ERROR_IGNORE)
-    val principal = AnnettePrincipal.fromCode(config.getString("principal"))
+  def run() = {
+    val config  = client.config.getConfig("annette.ignition")
+    val stages  = Try(config.getStringList("stages").asScala.toSeq).getOrElse(Seq.empty)
+    val onError = Try(if (config.getString("on-error") == "ignore") IgnoreError else StopOnError)
+      .getOrElse(IgnoreError)
     Source(stages)
       .mapAsync(1) { stage =>
-        val future = runStage(stage, config, principal)
-        if (onError == ON_ERROR_STOP) future
-        else
-          future.recover {
-            case th =>
-              log.error(s"Stage $stage failed ", th)
-              Seq(Done)
-          }
+        val future = runStage(stage, config)
+        future.failed.foreach(th => log.error(s"Stage $stage failed ", th))
+        future
       }
-      .runWith(Sink.ignore)
+      .takeWhile(
+        {
+          case ServiceLoadResult(_, LoadFailed(_), _) if onError == StopOnError => false
+          case _                                                                => true
+        },
+        inclusive = true
+      )
+      .runWith(Sink.seq)
+      .map { seq =>
+        println()
+        println()
+        println()
+        seq.flatMap(_.toStrings()).foreach(println)
+        println()
+        println()
+        println()
+        seq.flatMap(_.toStrings()).foreach(log.info)
+      }
   }
 
-  def runStage(stage: String, config: Config, principal: AnnettePrincipal): Future[Done] =
+  def runStage(stage: String, config: Config) =
     try {
       log.info(s"Running stage $stage")
-      val stageConfig = config.getConfig(stage)
-      val loader      = factories(stage).create(client, stageConfig, principal)
+      val loader = factories(stage).create(client, config)
       for {
-        _ <- loader.run()
+        res <- loader.run()
       } yield {
         log.info(s"Stage $stage completed")
-        Done
+        res
       }
     } catch {
       case th: Throwable => Future.failed(th)

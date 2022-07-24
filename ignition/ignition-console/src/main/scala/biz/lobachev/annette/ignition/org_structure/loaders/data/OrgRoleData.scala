@@ -16,13 +16,15 @@
 
 package biz.lobachev.annette.ignition.org_structure.loaders.data
 
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.Json
 
 case class OrgRoleData(
   id: CategoryId,
   name: String,
-  description: String
+  description: String,
+  updatedBy: Option[AnnettePrincipal]
 )
 
 object OrgRoleData {

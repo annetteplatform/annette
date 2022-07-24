@@ -16,7 +16,6 @@
 
 package biz.lobachev.annette.ignition.application.loaders
 
-import akka.Done
 import akka.stream.Materializer
 import biz.lobachev.annette.application.api.ApplicationService
 import biz.lobachev.annette.application.api.translation.{
@@ -24,11 +23,12 @@ import biz.lobachev.annette.application.api.translation.{
   TranslationAlreadyExist,
   UpdateTranslationPayload
 }
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.SystemPrincipal
+import biz.lobachev.annette.ignition.application.ApplicationLoader
 import biz.lobachev.annette.ignition.application.loaders.data.TranslationData
 import biz.lobachev.annette.ignition.core.EntityLoader
-import biz.lobachev.annette.ignition.core.config.MODE_UPSERT
-import com.typesafe.config.Config
+import biz.lobachev.annette.ignition.core.config.{DefaultEntityLoaderConfig, UpsertMode}
+import biz.lobachev.annette.ignition.core.result.{LoadFailed, LoadOk, LoadStatus}
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Reads
 
@@ -36,32 +36,33 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class TranslationEntityLoader(
   service: ApplicationService,
-  val config: Config,
-  val principal: AnnettePrincipal
+  val config: DefaultEntityLoaderConfig
 )(implicit val ec: ExecutionContext, val materializer: Materializer)
-    extends EntityLoader[TranslationData] {
+    extends EntityLoader[TranslationData, DefaultEntityLoaderConfig] {
 
   override implicit val reads: Reads[TranslationData] = TranslationData.format
 
-  def loadItem(item: TranslationData, mode: String): Future[Either[Throwable, Done.type]] = {
+  override val name: String = ApplicationLoader.Translation
+
+  def loadItem(item: TranslationData): Future[LoadStatus] = {
     val createPayload = item
       .into[CreateTranslationPayload]
-      .withFieldConst(_.createdBy, principal)
+      .withFieldComputed(_.createdBy, _.updatedBy.getOrElse(SystemPrincipal()))
       .transform
     service
       .createTranslation(createPayload)
-      .map(_ => Right(Done))
+      .map(_ => LoadOk)
       .recoverWith {
-        case TranslationAlreadyExist(_) if mode == MODE_UPSERT =>
+        case TranslationAlreadyExist(_) if config.mode == UpsertMode =>
           val updatePayload = createPayload
             .into[UpdateTranslationPayload]
             .withFieldComputed(_.updatedBy, _.createdBy)
             .transform
           service
             .updateTranslation(updatePayload)
-            .map(_ => Right(Done))
-            .recover(th => Left(th))
-        case th                                                => Future.failed(th)
+            .map(_ => LoadOk)
+            .recover(th => LoadFailed(th.getMessage))
+        case th                                                      => Future.failed(th)
       }
 
   }

@@ -17,11 +17,13 @@
 package biz.lobachev.annette.ignition.application.loaders.data
 
 import biz.lobachev.annette.core.model.LanguageId
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class LanguageData(
   id: LanguageId,
-  name: String
+  name: String,
+  updatedBy: Option[AnnettePrincipal]
 )
 
 object LanguageData {

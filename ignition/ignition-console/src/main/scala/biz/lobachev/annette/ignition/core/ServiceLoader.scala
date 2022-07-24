@@ -16,46 +16,44 @@
 
 package biz.lobachev.annette.ignition.core
 
-import akka.Done
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.ignition.core.config.{ON_ERROR_IGNORE, ON_ERROR_STOP}
-import com.typesafe.config.Config
+import biz.lobachev.annette.ignition.core.config.{ServiceLoaderConfig, StopOnError}
+import biz.lobachev.annette.ignition.core.result.{EntityLoadResult, LoadFailed, LoadOk, ServiceLoadResult}
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
-import scala.jdk.CollectionConverters._
-import scala.util.Try
 
-trait ServiceLoader {
+trait ServiceLoader[C <: ServiceLoaderConfig] {
+  val name: String
   val client: IgnitionLagomClient
-  val config: Config
-  val principal: AnnettePrincipal
+  val config: C
   implicit val ec: ExecutionContext       = client.executionContext
   implicit val materializer: Materializer = client.materializer
 
   protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 
-  def createEntityLoader(entity: String, entityConfig: Config, principal: AnnettePrincipal): EntityLoader[_]
+  def createEntityLoader(entity: String): EntityLoader[_, _]
 
-  def run(): Future[Done] = {
-    val entities = Try(config.getStringList("entities").asScala.toSeq).getOrElse(Seq.empty)
-    val onError  = Try(config.getString("on-error")).getOrElse(ON_ERROR_IGNORE)
-    Source(entities)
+  def run(): Future[ServiceLoadResult] =
+    Source(config.entities)
       .mapAsync(1) { entity =>
-        val entityConfig = config.getConfig(entity)
-        val entityLoader = createEntityLoader(entity, entityConfig, principal)
-        val future       = entityLoader.run()
-        if (onError == ON_ERROR_STOP) future
-        else
-          future.recover {
-            case th =>
-              log.error(s"Entity $entity failed ", th)
-              Seq(Done)
-          }
+        val entityLoader = createEntityLoader(entity)
+        entityLoader.run()
       }
-      .runWith(Sink.ignore)
-  }
+      .takeWhile(
+        {
+          case EntityLoadResult(_, LoadFailed(_), _) if config.onError == StopOnError => false
+          case _                                                                      => true
+        },
+        inclusive = true
+      )
+      .runWith(Sink.seq)
+      .map(seq =>
+        if (config.onError == StopOnError)
+          ServiceLoadResult(name, seq.last.status, seq)
+        else
+          ServiceLoadResult(name, LoadOk, seq)
+      )
 
 }

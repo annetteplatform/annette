@@ -18,12 +18,14 @@ package biz.lobachev.annette.ignition.application.loaders.data
 
 import biz.lobachev.annette.application.api.translation.TranslationId
 import biz.lobachev.annette.core.model.LanguageId
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{JsObject, Json}
 
 case class TranslationJsonData(
   translationId: TranslationId,
   languageId: LanguageId,
-  json: JsObject
+  json: JsObject,
+  updatedBy: Option[AnnettePrincipal]
 )
 
 object TranslationJsonData {

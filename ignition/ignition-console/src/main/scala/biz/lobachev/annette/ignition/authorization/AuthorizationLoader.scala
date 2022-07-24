@@ -17,21 +17,27 @@
 package biz.lobachev.annette.ignition.authorization
 
 import biz.lobachev.annette.authorization.api.{AuthorizationServiceApi, AuthorizationServiceImpl}
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.ignition.authorization.loaders.{RoleAssignmentEntityLoader, RoleEntityLoader}
 import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionLagomClient, ServiceLoader}
 import com.softwaremill.macwire.wire
-import com.typesafe.config.Config
 
-class AuthorizationLoader(val client: IgnitionLagomClient, val config: Config, val principal: AnnettePrincipal)
-    extends ServiceLoader {
+class AuthorizationLoader(val client: IgnitionLagomClient, val config: AuthorizationLoaderConfig)
+    extends ServiceLoader[AuthorizationLoaderConfig] {
 
   lazy val serviceApi = client.serviceClient.implement[AuthorizationServiceApi]
   lazy val service    = wire[AuthorizationServiceImpl]
 
-  override def createEntityLoader(entity: String, entityConfig: Config, principal: AnnettePrincipal): EntityLoader[_] =
+  override val name: String = "authorization"
+
+  override def createEntityLoader(entity: String): EntityLoader[_, _] =
     entity match {
-      case "role"            => new RoleEntityLoader(service, entityConfig, principal)
-      case "role-assignment" => new RoleAssignmentEntityLoader(service, entityConfig, principal)
+      case AuthorizationLoader.Role           => new RoleEntityLoader(service, config.role.get)
+      case AuthorizationLoader.RoleAssignment => new RoleAssignmentEntityLoader(service, config.roleAssignment.get)
     }
+}
+
+object AuthorizationLoader {
+  val Role: String           = "role"
+  val RoleAssignment: String = "role-assignment"
+
 }

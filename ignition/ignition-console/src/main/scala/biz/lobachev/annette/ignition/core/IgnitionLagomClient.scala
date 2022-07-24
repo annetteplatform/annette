@@ -21,6 +21,6 @@ import com.lightbend.lagom.scaladsl.client.StandaloneLagomClientFactory
 import play.api.libs.ws.ahc.AhcWSComponents
 
 class IgnitionLagomClient
-    extends StandaloneLagomClientFactory("ConsoleIgnitionServiceClient")
+    extends StandaloneLagomClientFactory("IgnitionServiceClient")
     with AhcWSComponents
     with AnnetteDiscoveryComponents {}

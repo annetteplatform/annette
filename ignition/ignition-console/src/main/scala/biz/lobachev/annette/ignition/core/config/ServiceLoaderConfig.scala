@@ -16,11 +16,20 @@
 
 package biz.lobachev.annette.ignition.core.config
 
-case class ServiceLoaderConfig(
-  name: Option[String],
-  stage: String,
-  `type`: String,
-  onError: String = ON_ERROR_STOP,
-  sequence: Seq[String],
-  entities: Map[String, EntityLoaderConfig]
-)
+import com.typesafe.config.Config
+
+import scala.jdk.CollectionConverters._
+import scala.util.Try
+
+trait ServiceLoaderConfig {
+  val entities: Seq[String]
+  val onError: ErrorMode
+}
+
+object ServiceLoaderConfig {
+  def entities(config: Config): Seq[String] =
+    Try(
+      config.getStringList("entities").asScala.toSeq
+    )
+      .getOrElse(Seq.empty)
+}

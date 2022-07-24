@@ -22,7 +22,8 @@ import play.api.libs.json.Json
 
 case class ServicePrincipalData(
   serviceId: ServiceItemId,
-  principal: AnnettePrincipal
+  principal: AnnettePrincipal,
+  updatedBy: Option[AnnettePrincipal]
 )
 
 object ServicePrincipalData {

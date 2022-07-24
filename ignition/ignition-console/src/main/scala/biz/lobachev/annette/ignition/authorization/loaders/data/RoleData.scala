@@ -17,13 +17,15 @@
 package biz.lobachev.annette.ignition.authorization.loaders.data
 
 import biz.lobachev.annette.authorization.api.role.AuthRoleId
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.Json
 
 case class RoleData(
   id: AuthRoleId,
   name: String,
   description: String,
-  permissions: Set[PermissionData]
+  permissions: Set[PermissionData],
+  updatedBy: Option[AnnettePrincipal]
 )
 
 object RoleData {

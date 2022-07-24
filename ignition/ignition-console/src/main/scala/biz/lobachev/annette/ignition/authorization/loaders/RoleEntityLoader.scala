@@ -16,15 +16,15 @@
 
 package biz.lobachev.annette.ignition.authorization.loaders
 
-import akka.Done
 import akka.stream.Materializer
 import biz.lobachev.annette.authorization.api.AuthorizationService
 import biz.lobachev.annette.authorization.api.role.{CreateRolePayload, RoleAlreadyExist, UpdateRolePayload}
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.SystemPrincipal
+import biz.lobachev.annette.ignition.authorization.AuthorizationLoader
 import biz.lobachev.annette.ignition.authorization.loaders.data.RoleData
 import biz.lobachev.annette.ignition.core.EntityLoader
-import biz.lobachev.annette.ignition.core.config.MODE_UPSERT
-import com.typesafe.config.Config
+import biz.lobachev.annette.ignition.core.config.{DefaultEntityLoaderConfig, UpsertMode}
+import biz.lobachev.annette.ignition.core.result.{LoadFailed, LoadOk, LoadStatus}
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Reads
 
@@ -32,33 +32,34 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class RoleEntityLoader(
   service: AuthorizationService,
-  val config: Config,
-  val principal: AnnettePrincipal
+  val config: DefaultEntityLoaderConfig
 )(implicit val ec: ExecutionContext, val materializer: Materializer)
-    extends EntityLoader[RoleData] {
+    extends EntityLoader[RoleData, DefaultEntityLoaderConfig] {
 
   override implicit val reads: Reads[RoleData] = RoleData.format
 
-  def loadItem(item: RoleData, mode: String): Future[Either[Throwable, Done.type]] = {
+  override val name: String = AuthorizationLoader.RoleAssignment
+
+  def loadItem(item: RoleData): Future[LoadStatus] = {
     val createPayload = item
       .into[CreateRolePayload]
-      .withFieldConst(_.createdBy, principal)
+      .withFieldComputed(_.createdBy, _.updatedBy.getOrElse(SystemPrincipal()))
       .withFieldComputed(_.permissions, _.permissions.map(_.toPermission))
       .transform
     service
       .createRole(createPayload)
-      .map(_ => Right(Done))
+      .map(_ => LoadOk)
       .recoverWith {
-        case RoleAlreadyExist(_) if mode == MODE_UPSERT =>
+        case RoleAlreadyExist(_) if config.mode == UpsertMode =>
           val updatePayload = createPayload
             .into[UpdateRolePayload]
             .withFieldComputed(_.updatedBy, _.createdBy)
             .transform
           service
             .updateRole(updatePayload)
-            .map(_ => Right(Done))
-            .recover(th => Left(th))
-        case th                                         => Future.failed(th)
+            .map(_ => LoadOk)
+            .recover(th => LoadFailed(th.getMessage))
+        case th                                               => Future.failed(th)
       }
 
   }

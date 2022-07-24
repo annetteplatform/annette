@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.ignition.service_catalog.loaders.data
 
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.text.{Icon, MultiLanguageText}
 import biz.lobachev.annette.service_catalog.api.item.ServiceItemId
 import play.api.libs.json.Json
@@ -27,7 +28,8 @@ case class GroupData(
   icon: Icon,
   label: MultiLanguageText,
   labelDescription: MultiLanguageText,
-  children: Seq[ServiceItemId] = Seq.empty
+  children: Seq[ServiceItemId] = Seq.empty,
+  updatedBy: Option[AnnettePrincipal]
 )
 
 object GroupData {

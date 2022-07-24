@@ -20,13 +20,14 @@ import akka.Done
 import akka.stream.scaladsl.{RestartSource, Sink, Source}
 import akka.stream.{Materializer, RestartSettings}
 import biz.lobachev.annette.core.attribute.UpdateAttributesPayload
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, SystemPrincipal}
 import biz.lobachev.annette.ignition.core.EntityLoader
-import biz.lobachev.annette.ignition.core.config.MODE_UPSERT
+import biz.lobachev.annette.ignition.core.config.UpsertMode
+import biz.lobachev.annette.ignition.core.result.{LoadFailed, LoadOk, LoadStatus}
+import biz.lobachev.annette.ignition.org_structure.OrgStructureLoader
 import biz.lobachev.annette.ignition.org_structure.loaders.data.{OrgItemData, PositionData, UnitData}
 import biz.lobachev.annette.org_structure.api.OrgStructureService
 import biz.lobachev.annette.org_structure.api.hierarchy._
-import com.typesafe.config.Config
 import io.scalaland.chimney.dsl.TransformerOps
 import play.api.libs.json.Reads
 
@@ -35,14 +36,12 @@ import java.util.UUID
 import scala.collection.immutable
 import scala.concurrent.duration.DurationInt
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 
 class HierarchyEntityLoader(
   service: OrgStructureService,
-  val config: Config,
-  val principal: AnnettePrincipal
+  val config: HierarchyEntityLoaderConfig
 )(implicit val ec: ExecutionContext, val materializer: Materializer)
-    extends EntityLoader[OrgItemData] {
+    extends EntityLoader[OrgItemData, HierarchyEntityLoaderConfig] {
 
   sealed trait OrgLoadResult
   case object OrgCreated                     extends OrgLoadResult
@@ -51,39 +50,36 @@ class HierarchyEntityLoader(
 
   override implicit val reads: Reads[OrgItemData] = OrgItemData.format
 
-  val disposedCategory = Try(config.getString("disposed-category")).getOrElse("DISPOSED-UNIT")
-  val removeDisposed   = Try(config.getBoolean("remove-disposed")).getOrElse(false)
+  override val name: String = OrgStructureLoader.Hierarchy
 
-  def loadItem(item: OrgItemData, mode: String): Future[Either[Throwable, Done.type]] =
+  def loadItem(item: OrgItemData): Future[LoadStatus] =
     item match {
       case org: UnitData   =>
         (
           for {
-            result <- createOrg(org, principal)
+            result <- createOrg(org)
             _      <- result match {
-                        case OrgCreated                      => loadOrg(org.children, org.id, org.id, principal)
-                        case OrgExist if mode == MODE_UPSERT =>
-                          mergeOrg(org, org.id, disposedCategory, removeDisposed, principal)
-                        case OrgExist                        =>
+                        case OrgCreated                            => loadOrg(org.children, org.id, org.id)
+                        case OrgExist if config.mode == UpsertMode => mergeOrg(org, org.id)
+                        case OrgExist                              =>
                           throw new IllegalArgumentException("Organization already exist")
-                        case OrgCreateFailure(th)            => throw th
+                        case OrgCreateFailure(th)                  => throw th
                       }
-            _      <- loadChiefs(org, org.id, principal)
-          } yield Right(Done)
+            _      <- loadChiefs(org, org.id)
+          } yield LoadOk
         )
-          .recover(th => Left(th))
-      case _: PositionData => Future.successful(Left(new IllegalArgumentException("Unit required for root item")))
+          .recover(th => LoadFailed(th.getMessage))
+      case _: PositionData => Future.successful(LoadFailed("Unit required for root item"))
     }
 
   private def createOrg(
-    org: UnitData,
-    principal: AnnettePrincipal
+    org: UnitData
   ): Future[OrgLoadResult] = {
 
     val payload = org
       .into[CreateOrganizationPayload]
       .withFieldConst(_.orgId, org.id)
-      .withFieldConst(_.createdBy, principal)
+      .withFieldComputed(_.createdBy, _.updatedBy.getOrElse(SystemPrincipal()))
       .transform
     RestartSource
       .onFailuresWithBackoff(
@@ -121,8 +117,7 @@ class HierarchyEntityLoader(
   private def loadOrg(
     children: Seq[OrgItemData],
     orgId: CompositeOrgItemId,
-    parentId: CompositeOrgItemId,
-    createdBy: AnnettePrincipal
+    parentId: CompositeOrgItemId
   ): Future[Unit] =
     children
       .foldLeft(Future.successful(())) { (f, orgItem) =>
@@ -130,26 +125,25 @@ class HierarchyEntityLoader(
           orgItem match {
             case unit: UnitData         =>
               for {
-                _ <- createOrgUnit(unit, parentId, createdBy)
-                _ <- loadOrg(unit.children, orgId, unit.id, createdBy)
+                _ <- createOrgUnit(unit, parentId)
+                _ <- loadOrg(unit.children, orgId, unit.id)
               } yield ()
             case position: PositionData =>
-              createPosition(position, parentId, createdBy)
+              createPosition(position, parentId)
           }
         }
       }
 
   private def createOrgUnit(
     unit: UnitData,
-    parentId: CompositeOrgItemId,
-    createdBy: AnnettePrincipal
+    parentId: CompositeOrgItemId
   ): Future[Unit] = {
     val payload = unit
       .into[CreateUnitPayload]
       .withFieldConst(_.parentId, parentId)
       .withFieldConst(_.unitId, unit.id)
       .withFieldConst(_.order, None)
-      .withFieldConst(_.createdBy, createdBy)
+      .withFieldConst(_.createdBy, unit.updatedBy.getOrElse(SystemPrincipal()))
       .transform
     for {
       _ <- service.createUnit(payload)
@@ -158,15 +152,14 @@ class HierarchyEntityLoader(
 
   private def createPosition(
     position: PositionData,
-    parentId: CompositeOrgItemId,
-    createdBy: AnnettePrincipal
+    parentId: CompositeOrgItemId
   ): Future[Unit] = {
     val createPositionPayload = position
       .into[CreatePositionPayload]
       .withFieldConst(_.parentId, parentId)
       .withFieldConst(_.positionId, position.id)
       .withFieldConst(_.order, None)
-      .withFieldConst(_.createdBy, createdBy)
+      .withFieldConst(_.createdBy, position.updatedBy.getOrElse(SystemPrincipal()))
       .transform
     for {
       _ <- service.createPosition(createPositionPayload)
@@ -177,7 +170,7 @@ class HierarchyEntityLoader(
                    AssignPersonPayload(
                      positionId = position.id,
                      personId = personId,
-                     updatedBy = createdBy
+                     updatedBy = position.updatedBy.getOrElse(SystemPrincipal())
                    )
                  )
                }
@@ -188,10 +181,7 @@ class HierarchyEntityLoader(
 
   private def mergeOrg(
     org: UnitData,
-    orgId: CompositeOrgItemId,
-    disposedCategory: String,
-    removeDisposed: Boolean,
-    updatedBy: AnnettePrincipal
+    orgId: CompositeOrgItemId
   ): Future[Unit] = {
     log.debug("Merging organization: {} - {}", orgId, org.name)
     val disposedUnitId   = s"$orgId:${UUID.randomUUID().toString}"
@@ -200,24 +190,28 @@ class HierarchyEntityLoader(
     for {
       currentOrg        <- service.getOrgItemById(orgId, false).map(_.asInstanceOf[OrgUnit])
       _                 <- if (currentOrg.name != org.name)
-                             service.updateName(UpdateNamePayload(orgId, org.name, updatedBy))
+                             service.updateName(UpdateNamePayload(orgId, org.name, org.updatedBy.getOrElse(SystemPrincipal())))
                            else Future.successful(())
       _                 <- if (currentOrg.categoryId != org.categoryId)
-                             service.assignCategory(AssignCategoryPayload(orgId, org.categoryId, updatedBy))
+                             service.assignCategory(
+                               AssignCategoryPayload(orgId, org.categoryId, org.updatedBy.getOrElse(SystemPrincipal()))
+                             )
                            else Future.successful(())
       _                 <- service.createUnit(
                              CreateUnitPayload(
                                parentId = orgId,
                                unitId = disposedUnitId,
                                name = disposedUnitName,
-                               categoryId = disposedCategory,
+                               categoryId = config.disposedCategory,
                                order = None,
-                               createdBy = updatedBy
+                               createdBy = org.updatedBy.getOrElse(SystemPrincipal())
                              )
                            )
       moveToMergeUnitIds = currentOrg.children.toSet -- org.children.map(_.id).toSet
-      _                 <- moveToMergeUnit(disposedUnitId, moveToMergeUnitIds, updatedBy)
-      _                 <- sequentialProcess(org.children)(child => mergeItem(child, orgId, disposedUnitId, updatedBy))
+      _                 <- moveToMergeUnit(disposedUnitId, moveToMergeUnitIds, org.updatedBy.getOrElse(SystemPrincipal()))
+      _                 <- sequentialProcess(org.children)(child =>
+                             mergeItem(child, orgId, disposedUnitId, org.updatedBy.getOrElse(SystemPrincipal()))
+                           )
     } yield {
       log.debug("Completed merging organization {} - {}", orgId, org.name)
       ()
@@ -269,7 +263,7 @@ class HierarchyEntityLoader(
                          mergeNewUnit(item.asInstanceOf[UnitData], parentId, mergeUnitId, updatedBy)
                        } else {
                          log.debug("Creating new position {} - {}", item.id, item.name)
-                         mergeNewPosition(item.asInstanceOf[PositionData], parentId, updatedBy)
+                         mergeNewPosition(item.asInstanceOf[PositionData], parentId)
                        }
                      }
     } yield ()
@@ -300,15 +294,14 @@ class HierarchyEntityLoader(
     updatedBy: AnnettePrincipal
   ): Future[Unit] =
     for {
-      _ <- createOrgUnit(newUnit, parentId, updatedBy)
+      _ <- createOrgUnit(newUnit, parentId)
       _ <- sequentialProcess(newUnit.children)(child => mergeItem(child, newUnit.id, mergeUnitId, updatedBy))
     } yield ()
 
   def mergeNewPosition(
     newPosition: PositionData,
-    parentId: CompositeOrgItemId,
-    updatedBy: AnnettePrincipal
-  ): Future[Unit] = createPosition(newPosition, parentId, updatedBy)
+    parentId: CompositeOrgItemId
+  ): Future[Unit] = createPosition(newPosition, parentId)
 
   def mergeCurrentUnit(
     currentUnit: OrgUnit,
@@ -385,7 +378,7 @@ class HierarchyEntityLoader(
 
     } yield ()
 
-  def loadChiefs(unit: UnitData, orgId: CompositeOrgItemId, createdBy: AnnettePrincipal): Future[Unit] =
+  def loadChiefs(unit: UnitData, orgId: CompositeOrgItemId): Future[Unit] =
     for {
       _ <- unit.chief.map { chiefId =>
              for {
@@ -394,18 +387,19 @@ class HierarchyEntityLoader(
                                 case currentUnit: OrgUnit if currentUnit.chief.isEmpty          =>
                                   service
                                     .assignChief(
-                                      AssignChiefPayload(currentUnit.id, chiefId, createdBy)
+                                      AssignChiefPayload(currentUnit.id, chiefId, unit.updatedBy.getOrElse(SystemPrincipal()))
                                     )
                                 case currentUnit: OrgUnit if currentUnit.chief != Some(chiefId) =>
                                   for {
                                     _ <- service
                                            .unassignChief(
-                                             UnassignChiefPayload(unit.id, createdBy)
+                                             UnassignChiefPayload(unit.id, unit.updatedBy.getOrElse(SystemPrincipal()))
                                            )
-                                    _ <- service
-                                           .assignChief(
-                                             AssignChiefPayload(currentUnit.id, chiefId, createdBy)
-                                           )
+                                    _ <-
+                                      service
+                                        .assignChief(
+                                          AssignChiefPayload(currentUnit.id, chiefId, unit.updatedBy.getOrElse(SystemPrincipal()))
+                                        )
                                   } yield Done
                                 case _: OrgUnit                                                 => Future.successful(Done)
                                 case currentPosition: OrgPosition                               =>
@@ -425,7 +419,7 @@ class HierarchyEntityLoader(
            }.flatten
              .foldLeft(Future.successful(())) { (f, childUnit) =>
                f.flatMap { _ =>
-                 loadChiefs(childUnit, orgId, createdBy)
+                 loadChiefs(childUnit, orgId)
                }
              }
     } yield ()

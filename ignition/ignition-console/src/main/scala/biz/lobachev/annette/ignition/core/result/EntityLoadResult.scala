@@ -19,13 +19,12 @@ package biz.lobachev.annette.ignition.core.result
 case class EntityLoadResult(
   name: String,
   status: LoadStatus,
-  quantity: Int,
   batches: Seq[BatchLoadResult]
 ) {
   def toStrings(): Seq[String] = {
     val res = for {
       batchResult <- batches
     } yield batchResult.toString()
-    s"  $name $quantity $status" +: res
+    s"  $name $status" +: res
   }
 }

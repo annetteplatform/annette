@@ -16,33 +16,36 @@
 
 package biz.lobachev.annette.ignition.service_catalog
 
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionLagomClient, ServiceLoader}
-import biz.lobachev.annette.ignition.service_catalog.loaders.{
-  CategoryEntityLoader,
-  GroupEntityLoader,
-  ScopeEntityLoader,
-  ScopePrincipalEntityLoader,
-  ServiceEntityLoader,
-  ServicePrincipalEntityLoader
-}
+import biz.lobachev.annette.ignition.service_catalog.loaders._
 import biz.lobachev.annette.service_catalog.client.http.{ServiceCatalogServiceLagomApi, ServiceCatalogServiceLagomImpl}
 import com.softwaremill.macwire.wire
-import com.typesafe.config.Config
 
-class ServiceCatalogLoader(val client: IgnitionLagomClient, val config: Config, val principal: AnnettePrincipal)
-    extends ServiceLoader {
+class ServiceCatalogLoader(val client: IgnitionLagomClient, val config: ServiceCatalogLoaderConfig)
+    extends ServiceLoader[ServiceCatalogLoaderConfig] {
 
   lazy val serviceApi = client.serviceClient.implement[ServiceCatalogServiceLagomApi]
   lazy val service    = wire[ServiceCatalogServiceLagomImpl]
 
-  override def createEntityLoader(entity: String, entityConfig: Config, principal: AnnettePrincipal): EntityLoader[_] =
+  override def createEntityLoader(entity: String): EntityLoader[_, _] =
     entity match {
-      case "category"          => new CategoryEntityLoader(service, entityConfig, principal)
-      case "scope"             => new ScopeEntityLoader(service, entityConfig, principal)
-      case "scope-principal"   => new ScopePrincipalEntityLoader(service, entityConfig, principal)
-      case "group"             => new GroupEntityLoader(service, entityConfig, principal)
-      case "service"           => new ServiceEntityLoader(service, entityConfig, principal)
-      case "service-principal" => new ServicePrincipalEntityLoader(service, entityConfig, principal)
+      case ServiceCatalogLoader.Category         => new CategoryEntityLoader(service, config.category.get)
+      case ServiceCatalogLoader.Scope            => new ScopeEntityLoader(service, config.scope.get)
+      case ServiceCatalogLoader.ScopePrincipal   => new ScopePrincipalEntityLoader(service, config.scopePrincipal.get)
+      case ServiceCatalogLoader.Group            => new GroupEntityLoader(service, config.group.get)
+      case ServiceCatalogLoader.Service          => new ServiceEntityLoader(service, config.service.get)
+      case ServiceCatalogLoader.ServicePrincipal =>
+        new ServicePrincipalEntityLoader(service, config.servicePrincipal.get)
     }
+
+  override val name: String = "service-catalog"
+}
+
+object ServiceCatalogLoader {
+  val Category: String         = "category"
+  val Scope: String            = "scope"
+  val ScopePrincipal: String   = "scope-principal"
+  val Group: String            = "group"
+  val Service                  = "service"
+  val ServicePrincipal: String = "service-principal"
 }

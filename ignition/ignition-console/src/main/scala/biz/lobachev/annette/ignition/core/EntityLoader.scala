@@ -16,96 +16,95 @@
 
 package biz.lobachev.annette.ignition.core
 
-import akka.Done
 import akka.pattern.CircuitBreakerOpenException
 import akka.stream.scaladsl.{RestartSource, Sink, Source}
 import akka.stream.{Materializer, RestartSettings}
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.ignition.core.config.{MODE_UPSERT, ON_ERROR_IGNORE, ON_ERROR_STOP}
-import com.typesafe.config.Config
-import org.slf4j.{Logger, LoggerFactory}
-import play.api.libs.json.{Json, Reads}
+import biz.lobachev.annette.ignition.core.config.{EntityLoaderConfig, StopOnError}
+import biz.lobachev.annette.ignition.core.result._
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import org.slf4j.{Logger, LoggerFactory}
+import play.api.libs.json.{Json, Reads}
 
 import java.net.ConnectException
 import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future, TimeoutException}
 import scala.io.{Source => FileSource}
-import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 
-trait EntityLoader[A] {
-  val config: Config
-  val principal: AnnettePrincipal
+trait EntityLoader[A, C <: EntityLoaderConfig] {
+  val name: String
+  val config: C
   implicit val ec: ExecutionContext
   implicit val materializer: Materializer
   implicit val reads: Reads[A]
 
   protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 
-  def loadItem(item: A, mode: String): Future[Either[Throwable, Done.type]]
+  def loadItem(item: A): Future[LoadStatus]
 
-  def run(): Future[Done] = {
-    val files       = Try(config.getStringList("data").asScala.toSeq).getOrElse(Seq.empty)
-    val onError     = Try(config.getString("on-error")).getOrElse(ON_ERROR_IGNORE)
-    val mode        = Try(config.getString("mode")).getOrElse(MODE_UPSERT)
-    val parallelism = Try(config.getInt("parallelism")).getOrElse(1)
-
-    Source(files)
+  def run(): Future[EntityLoadResult] =
+    Source(config.data)
       .mapAsync(1) { file =>
-        val data   = loadFromFile(file)
-        val future = saveData(data, onError, mode, parallelism)
-          .map(n => log.info(s"Loaded from $file: success = ${n._1}, error = ${n._2}"))
-        if (onError == ON_ERROR_STOP) future
-        else
-          future.recover {
-            case th =>
-              log.error(s"Load from $file failed ", th)
-              Done
-          }
+        val data = loadFromFile(file)
+        runBatch(file, data)
       }
-      .runWith(Sink.ignore)
+      .takeWhile(
+        {
+          case BatchLoadResult(_, LoadFailed(_), _, _) if config.onError == StopOnError => false
+          case _                                                                        => true
+        },
+        true
+      )
+      .runWith(Sink.seq)
+      .map(seq =>
+        if (config.onError == StopOnError)
+          EntityLoadResult(name, seq.last.status, seq)
+        else
+          EntityLoadResult(name, LoadOk, seq)
+      )
 
-  }
-
-  def saveData(
-    data: Seq[A],
-    onError: String,
-    mode: String,
-    parallelism: Int
-  ): Future[(Int, Int)] =
+  def runBatch(
+    name: String,
+    data: Seq[A]
+  ): Future[BatchLoadResult] =
     Source(data)
-      .mapAsync(parallelism) { item =>
+      .mapAsync(config.parallelism) { item =>
         for {
-          res <- loadWithBackOff(() =>
-                   loadItem(item, mode).recoverWith {
+          res <- runWithBackOff(() =>
+                   loadItem(item).recoverWith {
                      case th: IllegalStateException       => Future.failed(th)
                      case th: ConnectException            => Future.failed(th)
                      case th: TimeoutException            => Future.failed(th)
                      case th: CircuitBreakerOpenException => Future.failed(th)
-                     case th                              => Future.successful(Left(th))
+                     case th                              => Future.successful(LoadFailed(th.getMessage))
                    }
                  )
-        } yield res match {
-          case Left(th) =>
-            log.error(s"Load failed ", th)
-            if (onError == ON_ERROR_STOP) throw th
-            res
-          case _        => res
-        }
+        } yield res
       }
+      .takeWhile(
+        {
+          case LoadFailed(msg) if config.onError == StopOnError =>
+            log.error(s"Batch $name stopped due to error: $msg")
+            false
+          case _                                                => true
+        },
+        inclusive = true
+      )
       .runWith(Sink.seq)
       .map { seq =>
         val success = seq.count {
-          case Left(_) => false
-          case _       => true
+          case LoadOk => false
+          case _      => true
         }
         val errors  = seq.count {
-          case Left(_) => true
-          case _       => false
+          case LoadFailed(_) => true
+          case _             => false
         }
-        (success, errors)
+        if (config.onError == StopOnError)
+          BatchLoadResult(name, seq.last, success, errors)
+        else
+          BatchLoadResult(name, LoadOk, success, errors)
       }
 
   protected def loadFromFile(filename: String): Seq[A] = {
@@ -140,7 +139,7 @@ trait EntityLoader[A] {
     jsonWriter.writeValueAsString(obj)
   }
 
-  def loadWithBackOff[T](fn: () => Future[T]): Future[T] =
+  def runWithBackOff[T](fn: () => Future[T]): Future[T] =
     RestartSource
       .onFailuresWithBackoff(
         RestartSettings(

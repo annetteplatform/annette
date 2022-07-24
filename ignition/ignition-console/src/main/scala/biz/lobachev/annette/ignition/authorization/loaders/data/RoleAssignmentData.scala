@@ -22,7 +22,8 @@ import play.api.libs.json.Json
 
 case class RoleAssignmentData(
   roleId: AuthRoleId,
-  principal: AnnettePrincipal
+  principal: AnnettePrincipal,
+  updatedBy: Option[AnnettePrincipal]
 )
 
 object RoleAssignmentData {

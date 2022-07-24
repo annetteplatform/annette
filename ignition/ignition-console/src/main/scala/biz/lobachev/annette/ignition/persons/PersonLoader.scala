@@ -16,22 +16,29 @@
 
 package biz.lobachev.annette.ignition.persons
 
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionLagomClient, ServiceLoader}
 import biz.lobachev.annette.ignition.persons.loaders.{CategoryEntityLoader, PersonEntityLoader}
 import biz.lobachev.annette.persons.api.{PersonServiceApi, PersonServiceImpl}
 import com.softwaremill.macwire.wire
-import com.typesafe.config.Config
 
-class PersonLoader(val client: IgnitionLagomClient, val config: Config, val principal: AnnettePrincipal)
-    extends ServiceLoader {
+class PersonLoader(val client: IgnitionLagomClient, val config: PersonLoaderConfig)
+    extends ServiceLoader[PersonLoaderConfig] {
 
   lazy val serviceApi = client.serviceClient.implement[PersonServiceApi]
   lazy val service    = wire[PersonServiceImpl]
 
-  override def createEntityLoader(entity: String, entityConfig: Config, principal: AnnettePrincipal): EntityLoader[_] =
+  override def createEntityLoader(entity: String): EntityLoader[_, _] =
     entity match {
-      case "category" => new CategoryEntityLoader(service, entityConfig, principal)
-      case "person"   => new PersonEntityLoader(service, entityConfig, principal)
+      case PersonLoader.Category => new CategoryEntityLoader(service, config.category.get)
+      case PersonLoader.Person   => new PersonEntityLoader(service, config.person.get)
     }
+
+  override val name: String = "person"
+}
+
+object PersonLoader {
+
+  val Category = "category"
+  val Person   = "person"
+
 }

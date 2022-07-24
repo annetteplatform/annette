@@ -1,6 +1,7 @@
 package biz.lobachev.annette.ignition.org_structure.loaders.data
 
 import biz.lobachev.annette.core.attribute.AttributeValues
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.category.OrgCategoryId
 import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 
@@ -11,6 +12,7 @@ sealed trait OrgItemData {
   val source: Option[String]
   val externalId: Option[String]
   val attributes: Option[AttributeValues]
+  val updatedBy: Option[AnnettePrincipal]
 }
 
 case class PositionData(
@@ -21,7 +23,8 @@ case class PositionData(
   persons: Option[Set[String]] = None,
   source: Option[String] = None,
   externalId: Option[String] = None,
-  attributes: Option[AttributeValues] = None
+  attributes: Option[AttributeValues] = None,
+  updatedBy: Option[AnnettePrincipal] = None
 ) extends OrgItemData
 
 object PositionData {
@@ -36,7 +39,8 @@ case class UnitData(
   categoryId: OrgCategoryId,
   source: Option[String] = None,
   externalId: Option[String] = None,
-  attributes: Option[AttributeValues] = None
+  attributes: Option[AttributeValues] = None,
+  updatedBy: Option[AnnettePrincipal] = None
 ) extends OrgItemData
 
 object UnitData {

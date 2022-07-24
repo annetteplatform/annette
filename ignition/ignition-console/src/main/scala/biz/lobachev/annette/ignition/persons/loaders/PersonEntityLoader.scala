@@ -16,15 +16,14 @@
 
 package biz.lobachev.annette.ignition.persons.loaders
 
-import akka.Done
 import akka.stream.Materializer
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.SystemPrincipal
 import biz.lobachev.annette.ignition.core.EntityLoader
-import biz.lobachev.annette.ignition.core.config.MODE_UPSERT
+import biz.lobachev.annette.ignition.core.config.{DefaultEntityLoaderConfig, UpsertMode}
+import biz.lobachev.annette.ignition.core.result.{LoadFailed, LoadOk, LoadStatus}
 import biz.lobachev.annette.ignition.persons.loaders.data.PersonData
 import biz.lobachev.annette.persons.api.PersonService
 import biz.lobachev.annette.persons.api.person.{CreatePersonPayload, PersonAlreadyExist, UpdatePersonPayload}
-import com.typesafe.config.Config
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Reads
 
@@ -32,34 +31,34 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class PersonEntityLoader(
   service: PersonService,
-  val config: Config,
-  val principal: AnnettePrincipal
+  val config: DefaultEntityLoaderConfig
 )(implicit val ec: ExecutionContext, val materializer: Materializer)
-    extends EntityLoader[PersonData] {
+    extends EntityLoader[PersonData, DefaultEntityLoaderConfig] {
 
   override implicit val reads: Reads[PersonData] = PersonData.format
 
-  def loadItem(item: PersonData, mode: String): Future[Either[Throwable, Done.type]] = {
+  def loadItem(item: PersonData): Future[LoadStatus] = {
     val createPayload = item
       .into[CreatePersonPayload]
-      .withFieldConst(_.createdBy, principal)
+      .withFieldComputed(_.createdBy, _.updatedBy.getOrElse(SystemPrincipal()))
       .transform
     service
       .createPerson(createPayload)
-      .map(_ => Right(Done))
+      .map(_ => LoadOk)
       .recoverWith {
-        case PersonAlreadyExist(_) if mode == MODE_UPSERT =>
+        case PersonAlreadyExist(_) if config.mode == UpsertMode =>
           val updatePayload = createPayload
             .into[UpdatePersonPayload]
             .withFieldComputed(_.updatedBy, _.createdBy)
             .transform
           service
             .updatePerson(updatePayload)
-            .map(_ => Right(Done))
-            .recover(th => Left(th))
-        case th                                           => Future.failed(th)
+            .map(_ => LoadOk)
+            .recover(th => LoadFailed(th.getMessage))
+        case th                                                 => Future.failed(th)
       }
 
   }
 
+  override val name: String = "person"
 }

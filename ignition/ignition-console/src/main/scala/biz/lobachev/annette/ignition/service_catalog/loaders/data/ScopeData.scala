@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.ignition.service_catalog.loaders.data
 
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.CategoryId
 import biz.lobachev.annette.service_catalog.api.item.ServiceItemId
 import biz.lobachev.annette.service_catalog.api.scope.ScopeId
@@ -26,7 +27,8 @@ case class ScopeData(
   name: String,
   description: String,
   categoryId: CategoryId,
-  children: Seq[ServiceItemId]
+  children: Seq[ServiceItemId],
+  updatedBy: Option[AnnettePrincipal]
 )
 
 object ScopeData {

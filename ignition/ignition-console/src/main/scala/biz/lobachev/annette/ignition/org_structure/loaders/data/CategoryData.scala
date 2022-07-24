@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.ignition.org_structure.loaders.data
 
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.Json
 
@@ -24,7 +25,8 @@ case class CategoryData(
   name: String,
   forOrganization: Option[Boolean] = None,
   forUnit: Option[Boolean] = None,
-  forPosition: Option[Boolean] = None
+  forPosition: Option[Boolean] = None,
+  updatedBy: Option[AnnettePrincipal]
 )
 
 object CategoryData {

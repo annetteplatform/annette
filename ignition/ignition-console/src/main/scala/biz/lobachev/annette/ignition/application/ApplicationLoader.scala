@@ -17,7 +17,6 @@
 package biz.lobachev.annette.ignition.application
 
 import biz.lobachev.annette.application.client.http.{ApplicationServiceLagomApi, ApplicationServiceLagomImpl}
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.ignition.application.loaders.{
   ApplicationEntityLoader,
   LanguageEntityLoader,
@@ -26,19 +25,31 @@ import biz.lobachev.annette.ignition.application.loaders.{
 }
 import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionLagomClient, ServiceLoader}
 import com.softwaremill.macwire.wire
-import com.typesafe.config.Config
 
-class ApplicationLoader(val client: IgnitionLagomClient, val config: Config, val principal: AnnettePrincipal)
-    extends ServiceLoader {
+class ApplicationLoader(
+  val client: IgnitionLagomClient,
+  val config: ApplicationLoaderConfig
+) extends ServiceLoader[ApplicationLoaderConfig] {
 
   lazy val serviceApi = client.serviceClient.implement[ApplicationServiceLagomApi]
   lazy val service    = wire[ApplicationServiceLagomImpl]
 
-  override def createEntityLoader(entity: String, entityConfig: Config, principal: AnnettePrincipal): EntityLoader[_] =
+  override val name: String = "application"
+
+  override def createEntityLoader(entity: String): EntityLoader[_, _] =
     entity match {
-      case "language"         => new LanguageEntityLoader(service, entityConfig, principal)
-      case "translation"      => new TranslationEntityLoader(service, entityConfig, principal)
-      case "translation-json" => new TranslationJsonEntityLoader(service, entityConfig, principal)
-      case "application"      => new ApplicationEntityLoader(service, entityConfig, principal)
+      case ApplicationLoader.Language        => new LanguageEntityLoader(service, config.language.get)
+      case ApplicationLoader.Translation     => new TranslationEntityLoader(service, config.translation.get)
+      case ApplicationLoader.TranslationJson => new TranslationJsonEntityLoader(service, config.translationJson.get)
+      case ApplicationLoader.Application     => new ApplicationEntityLoader(service, config.application.get)
     }
+
+}
+
+object ApplicationLoader {
+  val Language        = "language"
+  val Translation     = "translation"
+  val TranslationJson = "translation-json"
+  val Application     = "application"
+
 }

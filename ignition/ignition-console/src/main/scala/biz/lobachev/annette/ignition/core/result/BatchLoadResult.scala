@@ -19,11 +19,10 @@ package biz.lobachev.annette.ignition.core.result
 case class BatchLoadResult(
   name: String,
   status: LoadStatus,
-  quantity: Option[Int]
+  success: Int,
+  errors: Int
 ) {
-  override def toString: String = {
-    val quantityString = quantity.map(_.toString).getOrElse("")
-    s"    $name $quantityString $status"
-  }
+  override def toString: String =
+    s"    $name: success = $success, errors = $errors - $status"
 
 }

@@ -18,6 +18,7 @@ package biz.lobachev.annette.ignition.persons.loaders.data
 
 import biz.lobachev.annette.core.attribute.AttributeValues
 import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.CategoryId
 import play.api.libs.json.Json
 
@@ -31,7 +32,8 @@ case class PersonData(
   email: Option[String],      // email
   source: Option[String] = None,
   externalId: Option[String] = None,
-  attributes: Option[AttributeValues] = None
+  attributes: Option[AttributeValues] = None,
+  updatedBy: Option[AnnettePrincipal]
 )
 
 object PersonData {

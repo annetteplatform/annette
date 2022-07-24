@@ -16,14 +16,15 @@
 
 package biz.lobachev.annette.ignition.application.loaders
 
-import akka.Done
 import akka.stream.Materializer
 import biz.lobachev.annette.application.api.ApplicationService
 import biz.lobachev.annette.application.api.translation.UpdateTranslationJsonPayload
-import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.auth.SystemPrincipal
+import biz.lobachev.annette.ignition.application.ApplicationLoader
 import biz.lobachev.annette.ignition.application.loaders.data.TranslationJsonData
 import biz.lobachev.annette.ignition.core.EntityLoader
-import com.typesafe.config.Config
+import biz.lobachev.annette.ignition.core.config.DefaultEntityLoaderConfig
+import biz.lobachev.annette.ignition.core.result.{LoadFailed, LoadOk, LoadStatus}
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Reads
 
@@ -31,22 +32,23 @@ import scala.concurrent.{ExecutionContext, Future}
 
 class TranslationJsonEntityLoader(
   service: ApplicationService,
-  val config: Config,
-  val principal: AnnettePrincipal
+  val config: DefaultEntityLoaderConfig
 )(implicit val ec: ExecutionContext, val materializer: Materializer)
-    extends EntityLoader[TranslationJsonData] {
+    extends EntityLoader[TranslationJsonData, DefaultEntityLoaderConfig] {
 
   override implicit val reads: Reads[TranslationJsonData] = TranslationJsonData.format
 
-  def loadItem(item: TranslationJsonData, mode: String): Future[Either[Throwable, Done.type]] = {
+  override val name: String = ApplicationLoader.TranslationJson
+
+  def loadItem(item: TranslationJsonData): Future[LoadStatus] = {
     val updatePayload = item
       .into[UpdateTranslationJsonPayload]
-      .withFieldConst(_.updatedBy, principal)
+      .withFieldComputed(_.updatedBy, _.updatedBy.getOrElse(SystemPrincipal()))
       .transform
     service
       .updateTranslationJson(updatePayload)
-      .map(_ => Right(Done))
-      .recover(th => Left(th))
+      .map(_ => LoadOk)
+      .recover(th => LoadFailed(th.getMessage))
 
   }
 
