@@ -31,7 +31,8 @@ import biz.lobachev.annette.principal_group.api.group.{
   UnassignPrincipalPayload,
   UpdatePrincipalGroupCategoryPayload,
   UpdatePrincipalGroupDescriptionPayload,
-  UpdatePrincipalGroupNamePayload
+  UpdatePrincipalGroupNamePayload,
+  UpdatePrincipalGroupPayload
 }
 import biz.lobachev.annette.principal_group.impl.category.CategoryEntityService
 import biz.lobachev.annette.principal_group.impl.group.PrincipalGroupEntityService
@@ -45,6 +46,11 @@ class PrincipalGroupServiceApiImpl(
   override def createPrincipalGroup: ServiceCall[CreatePrincipalGroupPayload, Done] =
     ServiceCall { payload =>
       groupEntityService.createPrincipalGroup(payload)
+    }
+
+  override def updatePrincipalGroup: ServiceCall[UpdatePrincipalGroupPayload, Done] =
+    ServiceCall { payload =>
+      groupEntityService.updatePrincipalGroup(payload)
     }
 
   override def updatePrincipalGroupName: ServiceCall[UpdatePrincipalGroupNamePayload, Done] =

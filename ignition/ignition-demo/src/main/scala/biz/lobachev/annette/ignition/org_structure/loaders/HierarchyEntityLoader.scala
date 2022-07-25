@@ -67,8 +67,10 @@ class HierarchyEntityLoader(
                       }
             _      <- loadChiefs(org, org.id)
           } yield LoadOk
-        )
-          .recover(th => LoadFailed(th.getMessage))
+        ).recover { th =>
+          log.error("loadItem failed", th)
+          LoadFailed(th.getMessage)
+        }
       case _: PositionData => Future.successful(LoadFailed("Unit required for root item"))
     }
 

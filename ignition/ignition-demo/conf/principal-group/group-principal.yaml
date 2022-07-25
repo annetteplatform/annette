@@ -1,0 +1,4 @@
+- id: admin
+  principal:
+    principalType: person
+    principalId: P0001

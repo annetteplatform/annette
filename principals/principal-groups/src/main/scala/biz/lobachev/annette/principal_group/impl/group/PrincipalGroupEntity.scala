@@ -44,6 +44,14 @@ object PrincipalGroupEntity {
     createdBy: AnnettePrincipal,
     replyTo: ActorRef[Confirmation]
   )                                                                                         extends Command
+  final case class UpdatePrincipalGroup(
+    id: PrincipalGroupId,
+    name: Option[String],
+    description: Option[String],
+    categoryId: Option[CategoryId],
+    updatedBy: AnnettePrincipal,
+    replyTo: ActorRef[Confirmation]
+  )                                                                                         extends Command
   final case class UpdatePrincipalGroupName(
     id: PrincipalGroupId,
     name: String,
@@ -183,6 +191,7 @@ final case class PrincipalGroupEntity(maybeState: Option[PrincipalGroupState]) {
   def applyCommand(cmd: Command): ReplyEffect[Event, PrincipalGroupEntity] =
     cmd match {
       case cmd: CreatePrincipalGroup            => createPrincipalGroup(cmd)
+      case cmd: UpdatePrincipalGroup            => updatePrincipalGroup(cmd)
       case cmd: UpdatePrincipalGroupName        => updatePrincipalGroupName(cmd)
       case cmd: UpdatePrincipalGroupDescription => updatePrincipalGroupDescription(cmd)
       case cmd: UpdatePrincipalGroupCategory    => updatePrincipalGroupCategory(cmd)
@@ -202,6 +211,55 @@ final case class PrincipalGroupEntity(maybeState: Option[PrincipalGroupState]) {
           .persist(event)
           .thenReply(cmd.replyTo)(_ => Success)
       case Some(_) => Effect.reply(cmd.replyTo)(AlreadyExist)
+    }
+
+  def updatePrincipalGroup(
+    cmd: UpdatePrincipalGroup
+  ): ReplyEffect[Event, PrincipalGroupEntity] =
+    maybeState match {
+      case None        => Effect.reply(cmd.replyTo)(NotFound)
+      case Some(state) =>
+        val events = Seq(
+          cmd.name
+            .map(name =>
+              if (name != state.name)
+                Some(
+                  cmd
+                    .into[PrincipalGroupNameUpdated]
+                    .withFieldConst(_.name, name)
+                    .transform
+                )
+              else None
+            )
+            .getOrElse(None),
+          cmd.description
+            .map(description =>
+              if (description != state.description)
+                Some(
+                  cmd
+                    .into[PrincipalGroupDescriptionUpdated]
+                    .withFieldConst(_.description, description)
+                    .transform
+                )
+              else None
+            )
+            .getOrElse(None),
+          cmd.categoryId
+            .map(categoryId =>
+              if (categoryId != state.categoryId)
+                Some(
+                  cmd
+                    .into[PrincipalGroupCategoryUpdated]
+                    .withFieldConst(_.categoryId, categoryId)
+                    .transform
+                )
+              else None
+            )
+            .getOrElse(None)
+        ).flatten
+        Effect
+          .persist(events)
+          .thenReply(cmd.replyTo)(_ => Success)
     }
 
   def updatePrincipalGroupName(

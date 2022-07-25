@@ -31,6 +31,9 @@ class PrincipalGroupServiceImpl(api: PrincipalGroupServiceApi, implicit val ec: 
   override def createPrincipalGroup(payload: CreatePrincipalGroupPayload): Future[Done] =
     api.createPrincipalGroup.invoke(payload)
 
+  override def updatePrincipalGroup(payload: UpdatePrincipalGroupPayload): Future[Done] =
+    api.updatePrincipalGroup.invoke(payload)
+
   override def updatePrincipalGroupName(payload: UpdatePrincipalGroupNamePayload): Future[Done] =
     api.updatePrincipalGroupName.invoke(payload)
 

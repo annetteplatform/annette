@@ -22,6 +22,7 @@ import biz.lobachev.annette.ignition.authorization.AuthorizationLoaderFactory
 import biz.lobachev.annette.ignition.core.{Ignition, IgnitionLagomClient, ServiceLoaderFactory}
 import biz.lobachev.annette.ignition.org_structure.OrgStructureLoaderFactory
 import biz.lobachev.annette.ignition.persons.PersonLoaderFactory
+import biz.lobachev.annette.ignition.principal_group.PrincipalGroupLoaderFactory
 import biz.lobachev.annette.ignition.service_catalog.ServiceCatalogLoaderFactory
 
 import scala.concurrent.Await
@@ -36,7 +37,8 @@ object ConsoleIgnitionApp extends App {
     "application"     -> ApplicationLoaderFactory,
     "authorization"   -> AuthorizationLoaderFactory,
     "person"          -> PersonLoaderFactory,
-    "org-structure"   -> OrgStructureLoaderFactory
+    "org-structure"   -> OrgStructureLoaderFactory,
+    "principal-group" -> PrincipalGroupLoaderFactory
   )
 
   val ignition = new Ignition(client, factories)

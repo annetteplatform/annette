@@ -26,6 +26,7 @@ import scala.concurrent.Future
 trait PrincipalGroupService {
 
   def createPrincipalGroup(payload: CreatePrincipalGroupPayload): Future[Done]
+  def updatePrincipalGroup(payload: UpdatePrincipalGroupPayload): Future[Done]
   def updatePrincipalGroupName(payload: UpdatePrincipalGroupNamePayload): Future[Done]
   def updatePrincipalGroupDescription(payload: UpdatePrincipalGroupDescriptionPayload): Future[Done]
   def updatePrincipalGroupCategory(payload: UpdatePrincipalGroupCategoryPayload): Future[Done]
