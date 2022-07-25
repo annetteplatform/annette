@@ -1,0 +1,7 @@
+- id: annette.core
+  name: Annette core translation
+- id: annette.services
+  name: Annette Services translation
+- id: annette.console
+  name: Annette Console translation
+

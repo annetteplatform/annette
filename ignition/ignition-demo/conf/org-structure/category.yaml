@@ -1,0 +1,19 @@
+- id: ORG
+  name: Organization
+  forOrganization: true
+
+- id: VIRTUAL-ORG
+  name: Virtual Organization
+  forOrganization: true
+
+- id: UNIT
+  name: Unit
+  forUnit: true
+
+- id: DISPOSED-UNIT
+  name: Disposed items unit
+  forUnit: true
+
+- id: POSITION
+  name: Position
+  forPosition: true

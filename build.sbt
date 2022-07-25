@@ -79,9 +79,7 @@ lazy val root = (project in file("."))
     `api-gateway-core`,
     `api-gateway`,
     // initialization application
-    `ignition-core`,
-    `demo-ignition`,
-    `ignition-console`,
+    `ignition-demo`,
     `camunda`,
     // API gateways
     `application-api-gateway`,
@@ -201,55 +199,7 @@ lazy val `api-gateway` = (project in file("api-gateway/api-gateway"))
     `bpm-api-gateway`
   )
 
-lazy val `ignition-core` = (project in file("core/ignition-core"))
-  .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslApi,
-      lagomScaladslPersistenceCassandra,
-      lagomScaladslServer % Optional,
-      lagomScaladslTestKit,
-      Dependencies.playJsonExt,
-//      Dependencies.logstashEncoder,
-      Dependencies.macwire
-    ) ++ Dependencies.tests
-      ++ Dependencies.elastic
-      ++ Dependencies.lagomAkkaDiscovery
-  )
-  .settings(annetteSettings: _*)
-  .dependsOn(
-    `api-gateway-core`,
-    `application-api`,
-    `authorization-api`,
-    `org-structure-api`,
-    `persons-api`,
-    `cms-api`,
-    `subscriptions-api`
-  )
-
-def demoIgnitionProject(pr: Project) =
-  pr
-    .enablePlugins(LagomPlay, LagomScala)
-    .settings(
-      // To disable Unused import error for routes
-      RoutesKeys.routesImport := Seq.empty,
-      libraryDependencies ++= Seq(
-        lagomScaladslServer,
-        ws,
-        Dependencies.macwire,
-        Dependencies.playJsonExt,
-        Dependencies.pureConfig,
-        Dependencies.chimney
-      ) ++
-        Dependencies.tests
-    )
-    .settings(confDirSettings: _*)
-    .settings(annetteSettings: _*)
-    .settings(dockerSettings: _*)
-    .dependsOn(
-      `ignition-core`
-    )
-
-def ignitionConsoleProject(pr: Project) =
+def ignitionDemoProject(pr: Project) =
   pr
     .enablePlugins(UniversalPlugin)
     .enablePlugins(JavaAppPackaging)
@@ -275,8 +225,14 @@ def ignitionConsoleProject(pr: Project) =
       dockerUsername := Some("annetteplatform")
     )
     .dependsOn(
-//      `ignition-core`
-      `service-catalog-api`
+      `service-catalog-api`,
+      `application-api`,
+      `authorization-api`,
+      `org-structure-api`,
+      `persons-api`,
+      `cms-api`,
+      `principal-groups-api`,
+      `subscriptions-api`
     )
 
 lazy val `application-api` = (project in file("application/application-api"))
@@ -702,8 +658,7 @@ def subscriptionsProject(pr: Project) =
     .settings(dockerSettings: _*)
     .dependsOn(`subscriptions-api`, `microservice-core`)
 
-lazy val `demo-ignition`    = demoIgnitionProject(project in file("ignition/ignition-demo"))
-lazy val `ignition-console` = ignitionConsoleProject(project in file("ignition/ignition-console"))
+lazy val `ignition-demo`    = ignitionDemoProject(project in file("ignition/ignition-demo"))
 lazy val `application`      = applicationProject(project in file("application/application"))
 lazy val `service-catalog`  = serviceCatalogProject(project in file("application/service-catalog"))
 lazy val `authorization`    = authorizationProject(project in file("authorization/authorization"))

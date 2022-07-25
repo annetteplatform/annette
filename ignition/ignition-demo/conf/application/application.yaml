@@ -1,0 +1,20 @@
+- id: ANNETTE-CONSOLE
+  name: Annette Console Application
+  icon:
+    type: file
+    url: https://annetteplatform.github.io/annette_logo.svg
+  label:
+    en: Annette Console
+    ru: Annette Console
+    pl: Annette Console
+  labelDescription:
+    en: Annette Platform management application
+    ru: Приложение для управления платформой Annette
+    pl: Aplikacja do zarządzania platformą Annette
+  translations:
+    - annette.core
+    - annette.services
+    - annette.console
+  frontendUrl: ""
+  backendUrl: ""
+

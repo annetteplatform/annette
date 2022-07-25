@@ -25,4 +25,7 @@ trait CassandraQuillDao extends QuillEncoders {
 
   lazy val ctx: CassandraLagomAsyncContext[SnakeCase.type] = new CassandraLagomAsyncContext(SnakeCase, session)
 
+  @annotation.nowarn
+  def touch(obj: Any) = ()
+
 }

@@ -1,0 +1,6 @@
+- id: PERSON
+  name: Person
+- id: USER
+  name: User
+- id: CONTACT
+  name: Contact person

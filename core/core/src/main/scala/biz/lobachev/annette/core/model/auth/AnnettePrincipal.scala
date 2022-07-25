@@ -100,3 +100,14 @@ object AnonymousPrincipal {
       case _                                              => None
     }
 }
+
+object SystemPrincipal {
+  val PRINCIPAL_TYPE: String                             = "tech"
+  val PRINCIPAL_ID: String                               = "SYSTEM"
+  def apply(): AnnettePrincipal                          = AnnettePrincipal(PRINCIPAL_TYPE, PRINCIPAL_ID)
+  def unapply(principal: AnnettePrincipal): Option[Unit] =
+    principal match {
+      case AnnettePrincipal(PRINCIPAL_TYPE, PRINCIPAL_ID) => Some(())
+      case _                                              => None
+    }
+}

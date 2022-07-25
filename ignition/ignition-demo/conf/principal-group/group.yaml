@@ -1,0 +1,5 @@
+- id:  admin
+  name: Administrator's group
+  description: Group of users to maintain administrative tasks
+  categoryId: MAIN
+

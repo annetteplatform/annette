@@ -34,6 +34,7 @@ import com.lightbend.lagom.scaladsl.api.{Service, ServiceCall}
 trait PrincipalGroupServiceApi extends Service {
 
   def createPrincipalGroup: ServiceCall[CreatePrincipalGroupPayload, Done]
+  def updatePrincipalGroup: ServiceCall[UpdatePrincipalGroupPayload, Done]
   def updatePrincipalGroupName: ServiceCall[UpdatePrincipalGroupNamePayload, Done]
   def updatePrincipalGroupDescription: ServiceCall[UpdatePrincipalGroupDescriptionPayload, Done]
   def updatePrincipalGroupCategory: ServiceCall[UpdatePrincipalGroupCategoryPayload, Done]
@@ -63,6 +64,7 @@ trait PrincipalGroupServiceApi extends Service {
     named("principal-groups")
       .withCalls(
         pathCall("/api/principal-groups/v1/createPrincipalGroup",                    createPrincipalGroup),
+        pathCall("/api/principal-groups/v1/updatePrincipalGroup",                    updatePrincipalGroup),
         pathCall("/api/principal-groups/v1/updatePrincipalGroupName",                updatePrincipalGroupName),
         pathCall("/api/principal-groups/v1/updatePrincipalGroupDescription",         updatePrincipalGroupDescription),
         pathCall("/api/principal-groups/v1/updatePrincipalGroupCategory",            updatePrincipalGroupCategory),

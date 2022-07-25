@@ -34,7 +34,7 @@ services:
       ELASTICSEARCH_HOSTS: https://odfe-node1:9200
 
   cassandra:
-    image: cassandra:3.11.12
+    image: cassandra:3.11.13
     ports:
       - 9042:9042
     volumes:

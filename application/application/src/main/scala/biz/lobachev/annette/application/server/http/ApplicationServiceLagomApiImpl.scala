@@ -190,7 +190,9 @@ class ApplicationServiceLagomApiImpl(
       for {
         application      <- applicationEntityService.getApplicationById(id, true)
         translationJsons <- translationJsonEntityService.getTranslationJsons(application.translations, languageId)
-        json              = translationJsons.map(_.json).reduceRight((obj, acc) => acc.deepMerge(obj))
+        json              = if (translationJsons.nonEmpty)
+                              translationJsons.map(_.json).reduceRight((obj, acc) => acc.deepMerge(obj))
+                            else JsObject.empty
       } yield json
     }
 

@@ -1,0 +1,29 @@
+- roleId: admin-role
+  principal:
+    principalType: principal-group
+    principalId: admin
+
+- roleId: admin-role
+  principal:
+    principalType: person
+    principalId: P0001
+
+- roleId: cms-view-role
+  principal:
+    principalType: descendant-unit
+    principalId: ANN-RETAIL
+
+- roleId: cms-view-role
+  principal:
+    principalType: descendant-unit
+    principalId: ANSOFT
+
+- roleId: anonymous-space-view-role
+  principal:
+    principalType: person
+    principalId: ANONYMOUS
+
+- roleId: cms-editor-role
+  principal:
+    principalType: person
+    principalId: P0030

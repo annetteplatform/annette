@@ -78,6 +78,16 @@ class PrincipalGroupEntityService(
       )
       .map(res => convertSuccess(payload.id, res))
 
+  def updatePrincipalGroup(payload: UpdatePrincipalGroupPayload): Future[Done] =
+    refFor(payload.id)
+      .ask[Confirmation](replyTo =>
+        payload
+          .into[UpdatePrincipalGroup]
+          .withFieldConst(_.replyTo, replyTo)
+          .transform
+      )
+      .map(res => convertSuccess(payload.id, res))
+
   def updatePrincipalGroupName(payload: UpdatePrincipalGroupNamePayload): Future[Done] =
     refFor(payload.id)
       .ask[Confirmation](replyTo =>
