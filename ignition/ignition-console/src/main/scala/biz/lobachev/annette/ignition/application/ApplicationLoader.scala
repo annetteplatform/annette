@@ -23,13 +23,14 @@ import biz.lobachev.annette.ignition.application.loaders.{
   TranslationEntityLoader,
   TranslationJsonEntityLoader
 }
+import biz.lobachev.annette.ignition.core.config.{DefaultEntityLoaderConfig, DefaultServiceLoaderConfig}
 import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionLagomClient, ServiceLoader}
 import com.softwaremill.macwire.wire
 
 class ApplicationLoader(
   val client: IgnitionLagomClient,
-  val config: ApplicationLoaderConfig
-) extends ServiceLoader[ApplicationLoaderConfig] {
+  val config: DefaultServiceLoaderConfig
+) extends ServiceLoader[DefaultServiceLoaderConfig] {
 
   lazy val serviceApi = client.serviceClient.implement[ApplicationServiceLagomApi]
   lazy val service    = wire[ApplicationServiceLagomImpl]
@@ -38,10 +39,14 @@ class ApplicationLoader(
 
   override def createEntityLoader(entity: String): EntityLoader[_, _] =
     entity match {
-      case ApplicationLoader.Language        => new LanguageEntityLoader(service, config.language.get)
-      case ApplicationLoader.Translation     => new TranslationEntityLoader(service, config.translation.get)
-      case ApplicationLoader.TranslationJson => new TranslationJsonEntityLoader(service, config.translationJson.get)
-      case ApplicationLoader.Application     => new ApplicationEntityLoader(service, config.application.get)
+      case ApplicationLoader.Language        =>
+        new LanguageEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
+      case ApplicationLoader.Translation     =>
+        new TranslationEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
+      case ApplicationLoader.TranslationJson =>
+        new TranslationJsonEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
+      case ApplicationLoader.Application     =>
+        new ApplicationEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
     }
 
 }

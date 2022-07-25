@@ -24,6 +24,7 @@ import scala.util.Try
 trait ServiceLoaderConfig {
   val entities: Seq[String]
   val onError: ErrorMode
+  val config: Config
 }
 
 object ServiceLoaderConfig {

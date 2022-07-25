@@ -18,11 +18,12 @@ package biz.lobachev.annette.ignition.authorization
 
 import biz.lobachev.annette.authorization.api.{AuthorizationServiceApi, AuthorizationServiceImpl}
 import biz.lobachev.annette.ignition.authorization.loaders.{RoleAssignmentEntityLoader, RoleEntityLoader}
+import biz.lobachev.annette.ignition.core.config.{DefaultEntityLoaderConfig, DefaultServiceLoaderConfig}
 import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionLagomClient, ServiceLoader}
 import com.softwaremill.macwire.wire
 
-class AuthorizationLoader(val client: IgnitionLagomClient, val config: AuthorizationLoaderConfig)
-    extends ServiceLoader[AuthorizationLoaderConfig] {
+class AuthorizationLoader(val client: IgnitionLagomClient, val config: DefaultServiceLoaderConfig)
+    extends ServiceLoader[DefaultServiceLoaderConfig] {
 
   lazy val serviceApi = client.serviceClient.implement[AuthorizationServiceApi]
   lazy val service    = wire[AuthorizationServiceImpl]
@@ -31,8 +32,10 @@ class AuthorizationLoader(val client: IgnitionLagomClient, val config: Authoriza
 
   override def createEntityLoader(entity: String): EntityLoader[_, _] =
     entity match {
-      case AuthorizationLoader.Role           => new RoleEntityLoader(service, config.role.get)
-      case AuthorizationLoader.RoleAssignment => new RoleAssignmentEntityLoader(service, config.roleAssignment.get)
+      case AuthorizationLoader.Role           =>
+        new RoleEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
+      case AuthorizationLoader.RoleAssignment =>
+        new RoleAssignmentEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
     }
 }
 

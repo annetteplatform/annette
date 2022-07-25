@@ -20,9 +20,10 @@ case class BatchLoadResult(
   name: String,
   status: LoadStatus,
   success: Int,
-  errors: Int
+  errors: Int,
+  duration: Long
 ) {
   override def toString: String =
-    s"    $name: success = $success, errors = $errors - $status"
+    s"    $name: success: $success, errors: $errors, duration: $duration ms - $status"
 
 }

@@ -23,6 +23,7 @@ import biz.lobachev.annette.ignition.core.result.{EntityLoadResult, LoadFailed, 
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success}
 
 trait ServiceLoader[C <: ServiceLoaderConfig] {
   val name: String
@@ -33,16 +34,19 @@ trait ServiceLoader[C <: ServiceLoaderConfig] {
 
   protected val log: Logger = LoggerFactory.getLogger(this.getClass)
 
-  println(config)
-
   def createEntityLoader(entity: String): EntityLoader[_, _]
 
   def run(): Future[ServiceLoadResult] =
     Source(config.entities)
       .mapAsync(1) { entity =>
+        log.info(s"Processing $name started")
         val entityLoader = createEntityLoader(entity)
-        println(entityLoader.name)
-        entityLoader.run()
+        val future       = entityLoader.run()
+        future.onComplete {
+          case Success(r)  => log.info(s"Processing $name completed: ${r.status}")
+          case Failure(th) => log.info(s"Processing $name failed: ${th.getMessage}")
+        }
+        future
       }
       .takeWhile(
         {

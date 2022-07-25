@@ -16,17 +16,19 @@
 
 package biz.lobachev.annette.ignition.org_structure
 
+import biz.lobachev.annette.ignition.core.config.{DefaultEntityLoaderConfig, DefaultServiceLoaderConfig}
 import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionLagomClient, ServiceLoader}
 import biz.lobachev.annette.ignition.org_structure.loaders.{
   CategoryEntityLoader,
   HierarchyEntityLoader,
+  HierarchyEntityLoaderConfig,
   OrgRoleEntityLoader
 }
 import biz.lobachev.annette.org_structure.api.{OrgStructureServiceApi, OrgStructureServiceImpl}
 import com.softwaremill.macwire.wire
 
-class OrgStructureLoader(val client: IgnitionLagomClient, val config: OrgStructureLoaderConfig)
-    extends ServiceLoader[OrgStructureLoaderConfig] {
+class OrgStructureLoader(val client: IgnitionLagomClient, val config: DefaultServiceLoaderConfig)
+    extends ServiceLoader[DefaultServiceLoaderConfig] {
 
   lazy val serviceApi = client.serviceClient.implement[OrgStructureServiceApi]
   lazy val service    = wire[OrgStructureServiceImpl]
@@ -35,9 +37,12 @@ class OrgStructureLoader(val client: IgnitionLagomClient, val config: OrgStructu
 
   override def createEntityLoader(entity: String): EntityLoader[_, _] =
     entity match {
-      case OrgStructureLoader.Category  => new CategoryEntityLoader(service, config.category.get)
-      case OrgStructureLoader.OrgRole   => new OrgRoleEntityLoader(service, config.orgRole.get)
-      case OrgStructureLoader.Hierarchy => new HierarchyEntityLoader(service, config.hierarchy.get)
+      case OrgStructureLoader.Category  =>
+        new CategoryEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
+      case OrgStructureLoader.OrgRole   =>
+        new OrgRoleEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
+      case OrgStructureLoader.Hierarchy =>
+        new HierarchyEntityLoader(service, HierarchyEntityLoaderConfig(config.config.getConfig(entity)))
     }
 }
 

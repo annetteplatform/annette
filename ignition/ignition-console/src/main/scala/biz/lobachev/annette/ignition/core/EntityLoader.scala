@@ -46,16 +46,19 @@ trait EntityLoader[A, C <: EntityLoaderConfig] {
   def run(): Future[EntityLoadResult] =
     Source(config.data)
       .mapAsync(1) { file =>
-        println(file)
+        log.info(s"Batch $file started")
         val data   = loadFromFile(file)
         val future = runBatch(file, data)
-        future.foreach(r => log.info(s"Batch completed: ${r.toString}"))
+        future.onComplete {
+          case Success(r)  => log.info(s"Batch $file completed: ${r.toString.trim}")
+          case Failure(th) => log.info(s"Batch $file failed: ${th.getMessage}")
+        }
         future
       }
       .takeWhile(
         {
-          case BatchLoadResult(_, LoadFailed(_), _, _) if config.onError == StopOnError => false
-          case _                                                                        => true
+          case BatchLoadResult(_, LoadFailed(_), _, _, _) if config.onError == StopOnError => false
+          case _                                                                           => true
         },
         true
       )
@@ -70,20 +73,28 @@ trait EntityLoader[A, C <: EntityLoaderConfig] {
   def runBatch(
     name: String,
     data: Seq[A]
-  ): Future[BatchLoadResult] =
-    Source(data)
-      .mapAsync(config.parallelism) { item =>
-        for {
-          res <- runWithBackOff(() =>
-                   loadItem(item).recoverWith {
-                     case th: IllegalStateException       => Future.failed(th)
-                     case th: ConnectException            => Future.failed(th)
-                     case th: TimeoutException            => Future.failed(th)
-                     case th: CircuitBreakerOpenException => Future.failed(th)
-                     case th                              => Future.successful(LoadFailed(th.getMessage))
-                   }
-                 )
-        } yield res
+  ): Future[BatchLoadResult] = {
+    val start = System.currentTimeMillis()
+    val size  = data.size
+    Source(data.zipWithIndex)
+      .mapAsync(config.parallelism) {
+        case item -> index =>
+          for {
+            res <- runWithBackOff(() =>
+                     loadItem(item).recoverWith {
+                       case th: IllegalStateException       => Future.failed(th)
+                       case th: ConnectException            => Future.failed(th)
+                       case th: TimeoutException            => Future.failed(th)
+                       case th: CircuitBreakerOpenException => Future.failed(th)
+                       case th                              => Future.successful(LoadFailed(th.getMessage))
+                     }
+                   )
+          } yield {
+            val processed = index + 1
+            val done      = processed * 100 / size
+            if (processed % 100 == 0) log.info(s"Batch $name processed $processed items, $done% done")
+            res
+          }
       }
       .takeWhile(
         {
@@ -96,19 +107,21 @@ trait EntityLoader[A, C <: EntityLoaderConfig] {
       )
       .runWith(Sink.seq)
       .map { seq =>
-        val success = seq.count {
+        val success  = seq.count {
           case LoadOk => true
           case _      => false
         }
-        val errors  = seq.count {
+        val errors   = seq.count {
           case LoadFailed(_) => true
           case _             => false
         }
+        val duration = System.currentTimeMillis() - start
         if (config.onError == StopOnError)
-          BatchLoadResult(name, seq.last, success, errors)
+          BatchLoadResult(name, seq.last, success, errors, duration)
         else
-          BatchLoadResult(name, LoadOk, success, errors)
+          BatchLoadResult(name, LoadOk, success, errors, duration)
       }
+  }
 
   protected def loadFromFile(filename: String): Seq[A] = {
 

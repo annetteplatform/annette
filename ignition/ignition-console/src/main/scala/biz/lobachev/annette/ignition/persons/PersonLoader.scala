@@ -16,21 +16,26 @@
 
 package biz.lobachev.annette.ignition.persons
 
+import biz.lobachev.annette.ignition.core.config.{DefaultEntityLoaderConfig, DefaultServiceLoaderConfig}
 import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionLagomClient, ServiceLoader}
 import biz.lobachev.annette.ignition.persons.loaders.{CategoryEntityLoader, PersonEntityLoader}
 import biz.lobachev.annette.persons.api.{PersonServiceApi, PersonServiceImpl}
 import com.softwaremill.macwire.wire
 
-class PersonLoader(val client: IgnitionLagomClient, val config: PersonLoaderConfig)
-    extends ServiceLoader[PersonLoaderConfig] {
+class PersonLoader(
+  val client: IgnitionLagomClient,
+  val config: DefaultServiceLoaderConfig
+) extends ServiceLoader[DefaultServiceLoaderConfig] {
 
   lazy val serviceApi = client.serviceClient.implement[PersonServiceApi]
   lazy val service    = wire[PersonServiceImpl]
 
   override def createEntityLoader(entity: String): EntityLoader[_, _] =
     entity match {
-      case PersonLoader.Category => new CategoryEntityLoader(service, config.category.get)
-      case PersonLoader.Person   => new PersonEntityLoader(service, config.person.get)
+      case PersonLoader.Category =>
+        new CategoryEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
+      case PersonLoader.Person   =>
+        new PersonEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
     }
 
   override val name: String = "person"

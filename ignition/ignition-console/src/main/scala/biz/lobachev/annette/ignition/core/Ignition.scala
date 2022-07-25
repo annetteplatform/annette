@@ -55,6 +55,7 @@ class Ignition(
       )
       .runWith(Sink.seq)
       .map { seq =>
+        seq.flatMap(_.toStrings()).foreach(log.info)
         println()
         println()
         println()
@@ -62,7 +63,6 @@ class Ignition(
         println()
         println()
         println()
-        seq.flatMap(_.toStrings()).foreach(log.info)
       }
   }
 

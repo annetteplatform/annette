@@ -16,10 +16,11 @@
 
 package biz.lobachev.annette.ignition.org_structure
 
+import biz.lobachev.annette.ignition.core.config.DefaultServiceLoaderConfig
 import biz.lobachev.annette.ignition.core.{IgnitionLagomClient, ServiceLoader, ServiceLoaderFactory}
 import com.typesafe.config.Config
 
 object OrgStructureLoaderFactory extends ServiceLoaderFactory {
   override def create(client: IgnitionLagomClient, config: Config): ServiceLoader[_] =
-    new OrgStructureLoader(client, OrgStructureLoaderConfig(config))
+    new OrgStructureLoader(client, DefaultServiceLoaderConfig(config))
 }

@@ -16,10 +16,11 @@
 
 package biz.lobachev.annette.ignition.application
 
+import biz.lobachev.annette.ignition.core.config.DefaultServiceLoaderConfig
 import biz.lobachev.annette.ignition.core.{IgnitionLagomClient, ServiceLoader, ServiceLoaderFactory}
 import com.typesafe.config.Config
 
 object ApplicationLoaderFactory extends ServiceLoaderFactory {
   override def create(client: IgnitionLagomClient, config: Config): ServiceLoader[_] =
-    new ApplicationLoader(client, ApplicationLoaderConfig(config))
+    new ApplicationLoader(client, DefaultServiceLoaderConfig(config))
 }
