@@ -60,14 +60,14 @@ private[impl] class PostDbDao(
   private implicit val updatePostMeta       = updateMeta[PostRecord](_.id)
   private implicit val insertPostTargetMeta = insertMeta[PostTargetRecord]()
   private implicit val updatePostViewMeta   = updateMeta[PostViewRecord](_.postId, _.principal)
-  println(publicationStatusEncoder.toString)
-  println(publicationStatusDecoder.toString)
-  println(contentTypeEncoder.toString)
-  println(contentTypeDecoder.toString)
-  println(insertPostMeta.toString)
-  println(updatePostMeta.toString)
-  println(insertPostTargetMeta.toString)
-  println(updatePostViewMeta.toString)
+  touch(publicationStatusEncoder)
+  touch(publicationStatusDecoder)
+  touch(contentTypeEncoder)
+  touch(contentTypeDecoder)
+  touch(insertPostMeta)
+  touch(updatePostMeta)
+  touch(insertPostTargetMeta)
+  touch(updatePostViewMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._

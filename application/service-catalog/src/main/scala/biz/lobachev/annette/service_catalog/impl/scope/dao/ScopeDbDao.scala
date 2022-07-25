@@ -46,8 +46,8 @@ private[service_catalog] class ScopeDbDao(override val session: CassandraSession
 
   private implicit val insertScopeMeta = insertMeta[ScopeRecord]()
   private implicit val updateScopeMeta = updateMeta[ScopeRecord](_.id)
-  println(insertScopeMeta.toString)
-  println(updateScopeMeta.toString)
+  touch(insertScopeMeta)
+  touch(updateScopeMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._

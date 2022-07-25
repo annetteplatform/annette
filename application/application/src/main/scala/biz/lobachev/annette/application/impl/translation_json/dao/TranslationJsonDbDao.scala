@@ -41,10 +41,10 @@ private[application] class TranslationJsonDbDao(
   private implicit val jsDecoder        = genericJsonDecoder[JsObject]
   private implicit val insertEntityMeta = insertMeta[TranslationJson]()
   private implicit val updateEntityMeta = updateMeta[TranslationJson](_.translationId, _.languageId)
-  println(jsEncoder.toString)
-  println(jsDecoder.toString)
-  println(insertEntityMeta.toString)
-  println(updateEntityMeta.toString)
+  touch(jsEncoder)
+  touch(jsDecoder)
+  touch(insertEntityMeta)
+  touch(updateEntityMeta)
 
   def createTables() = {
     import CassandraTableBuilder.types._

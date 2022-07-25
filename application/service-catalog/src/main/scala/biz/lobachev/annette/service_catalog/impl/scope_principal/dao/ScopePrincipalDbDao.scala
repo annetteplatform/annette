@@ -34,7 +34,7 @@ private[service_catalog] class ScopePrincipalDbDao(
   private val schema = quote(querySchema[ScopePrincipalRecord]("scope_principals"))
 
   private implicit val insertEntityMeta = insertMeta[ScopePrincipalRecord]()
-  println(insertEntityMeta.toString)
+  touch(insertEntityMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._

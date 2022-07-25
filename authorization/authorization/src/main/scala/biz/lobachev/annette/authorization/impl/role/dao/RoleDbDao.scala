@@ -43,10 +43,10 @@ private[impl] class RoleDbDao(
   private implicit val updateRoleEntityMeta           = updateMeta[AuthRoleRecord](_.id)
   private implicit val insertRolePermissionEntityMeta = insertMeta[RolePermissionRecord]()
   private implicit val insertRolePrincipalEntityMeta  = insertMeta[RolePrincipalRecord]()
-  println(insertRoleEntityMeta.toString)
-  println(updateRoleEntityMeta.toString)
-  println(insertRolePermissionEntityMeta.toString)
-  println(insertRolePrincipalEntityMeta.toString)
+  touch(insertRoleEntityMeta)
+  touch(updateRoleEntityMeta)
+  touch(insertRolePermissionEntityMeta)
+  touch(insertRolePrincipalEntityMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._

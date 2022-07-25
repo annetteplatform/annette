@@ -44,9 +44,9 @@ private[impl] class FileDbDao(
 
   private implicit val updateFileMeta = updateMeta[FileDescriptor](_.objectId, _.fileType, _.fileId)
 
-  println(fileTypeEncoder.toString)
-  println(fileTypeDecoder.toString)
-  println(updateFileMeta.toString)
+  touch(fileTypeEncoder)
+  touch(fileTypeDecoder)
+  touch(updateFileMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._

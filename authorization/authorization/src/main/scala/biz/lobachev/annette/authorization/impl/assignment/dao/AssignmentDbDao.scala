@@ -39,9 +39,9 @@ private[impl] class AssignmentDbDao(
   private implicit val sourceDecoder: MappedEncoding[String, AuthSource] =
     MappedEncoding[String, AuthSource](AuthSource.fromCode)
   private implicit val insertEntityMeta                                  = insertMeta[AssignmentRecord]()
-  println(sourceEncoder.toString)
-  println(sourceDecoder.toString)
-  println(insertEntityMeta.toString)
+  touch(sourceEncoder)
+  touch(sourceDecoder)
+  touch(insertEntityMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._

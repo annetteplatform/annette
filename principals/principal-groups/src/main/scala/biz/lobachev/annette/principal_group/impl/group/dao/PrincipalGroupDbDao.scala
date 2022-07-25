@@ -49,8 +49,8 @@ private[impl] class PrincipalGroupDbDao(
 
   private implicit val insertGroupMeta = insertMeta[PrincipalGroup]()
   private implicit val updateGroupMeta = updateMeta[PrincipalGroup](_.id)
-  println(insertGroupMeta.toString)
-  println(updateGroupMeta.toString)
+  touch(insertGroupMeta)
+  touch(updateGroupMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._

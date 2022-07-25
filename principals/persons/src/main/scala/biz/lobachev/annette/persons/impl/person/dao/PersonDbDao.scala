@@ -50,8 +50,8 @@ private[impl] class PersonDbDao(override val session: CassandraSession)(implicit
 
   private implicit val insertPersonMeta = insertMeta[PersonRecord]()
   private implicit val updatePersonMeta = updateMeta[PersonRecord](_.id)
-  println(insertPersonMeta.toString)
-  println(updatePersonMeta.toString)
+  touch(insertPersonMeta)
+  touch(updatePersonMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._

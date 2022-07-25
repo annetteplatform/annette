@@ -37,8 +37,8 @@ private[application] class LanguageDbDao(
 
   private implicit val insertEntityMeta = insertMeta[Language]()
   private implicit val updateEntityMeta = updateMeta[Language](_.id)
-  println(insertEntityMeta.toString)
-  println(updateEntityMeta.toString)
+  touch(insertEntityMeta)
+  touch(updateEntityMeta)
 
   def createTables() = {
     import CassandraTableBuilder.types._

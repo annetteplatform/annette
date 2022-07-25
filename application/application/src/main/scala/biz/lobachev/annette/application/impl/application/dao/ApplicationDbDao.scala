@@ -36,8 +36,8 @@ class ApplicationDbDao(
 
   private implicit val insertApplicationMeta = insertMeta[Application]()
   private implicit val updateApplicationMeta = updateMeta[Application](_.id)
-  println(insertApplicationMeta.toString)
-  println(updateApplicationMeta.toString)
+  touch(insertApplicationMeta)
+  touch(updateApplicationMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._

@@ -34,8 +34,8 @@ private[impl] class SubscriptionTypeDbDao(override val session: CassandraSession
 
   private implicit val insertEntityMeta = insertMeta[SubscriptionType]()
   private implicit val updateEntityMeta = updateMeta[SubscriptionType](_.id)
-  println(insertEntityMeta.toString)
-  println(updateEntityMeta.toString)
+  touch(insertEntityMeta)
+  touch(updateEntityMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._

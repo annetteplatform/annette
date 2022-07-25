@@ -38,8 +38,8 @@ private[impl] class CategoryDbDao(override val session: CassandraSession)(implic
   private val entitySchema              = quote(querySchema[OrgCategory]("categories"))
   private implicit val insertEntityMeta = insertMeta[OrgCategory]()
   private implicit val updateEntityMeta = updateMeta[OrgCategory](_.id)
-  println(insertEntityMeta.toString)
-  println(updateEntityMeta.toString)
+  touch(insertEntityMeta)
+  touch(updateEntityMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._

@@ -36,8 +36,8 @@ class BlogCategoryDbDao(
 
   private implicit val insertCategoryMeta = insertMeta[Category]()
   private implicit val updateCategoryMeta = updateMeta[Category](_.id)
-  println(insertCategoryMeta.toString)
-  println(updateCategoryMeta.toString)
+  touch(insertCategoryMeta)
+  touch(updateCategoryMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._

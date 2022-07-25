@@ -52,8 +52,8 @@ private[service_catalog] class ServiceItemDbDao(override val session: CassandraS
 
   private implicit val insertServiceMeta = insertMeta[ServiceItemRecord]()
   private implicit val updateServiceMeta = updateMeta[ServiceItemRecord](_.id)
-  println(insertServiceMeta.toString)
-  println(updateServiceMeta.toString)
+  touch(insertServiceMeta)
+  touch(updateServiceMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._

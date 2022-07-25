@@ -40,7 +40,7 @@ private[impl] class SubscriptionDbDao(
   private val subscriptionByObjectIdSchema  = quote(querySchema[Subscription]("subscription_by_object_ids"))
 
   private implicit val insertSubscriptionMeta = insertMeta[Subscription]()
-  println(insertSubscriptionMeta.toString)
+  touch(insertSubscriptionMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._

@@ -46,10 +46,10 @@ class SpaceDbDao(
   private implicit val updateSpaceMeta       = updateMeta[SpaceRecord](_.id)
   private implicit val insertSpaceTargetMeta = insertMeta[SpaceTargetRecord]()
   private implicit val insertSpaceAuthorMeta = insertMeta[SpaceAuthorRecord]()
-  println(insertSpaceMeta.toString)
-  println(updateSpaceMeta.toString)
-  println(insertSpaceTargetMeta.toString)
-  println(insertSpaceAuthorMeta.toString)
+  touch(insertSpaceMeta)
+  touch(updateSpaceMeta)
+  touch(insertSpaceTargetMeta)
+  touch(insertSpaceAuthorMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._

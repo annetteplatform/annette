@@ -45,8 +45,8 @@ private[impl] class HierarchyDbDao(
 
   private implicit val itemTypeEncoder = genericStringEncoder[ItemType]
   private implicit val itemTypeDecoder = genericStringDecoder[ItemType](ItemTypes.withName)
-  println(itemTypeEncoder.toString)
-  println(itemTypeDecoder.toString)
+  touch(itemTypeEncoder)
+  touch(itemTypeDecoder)
 
   private val itemSchema                                               = quote(querySchema[ItemRecord]("org_items"))
   private val personPositionSchema                                     = quote(querySchema[PersonPosition]("person_positions"))
@@ -59,8 +59,8 @@ private[impl] class HierarchyDbDao(
   private implicit val insertItemMeta = insertMeta[ItemRecord]()
   private implicit val updateItemMeta = updateMeta[ItemRecord](_.id)
 
-  println(insertItemMeta.toString)
-  println(updateItemMeta.toString)
+  touch(insertItemMeta)
+  touch(updateItemMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._

@@ -46,10 +46,10 @@ private[impl] class BlogDbDao(
   private implicit val updateBlogMeta       = updateMeta[BlogRecord](_.id)
   private implicit val insertBlogTargetMeta = insertMeta[BlogTargetRecord]()
   private implicit val insertBlogAuthorMeta = insertMeta[BlogAuthorRecord]()
-  println(insertBlogMeta.toString)
-  println(updateBlogMeta.toString)
-  println(insertBlogTargetMeta.toString)
-  println(insertBlogAuthorMeta.toString)
+  touch(insertBlogMeta)
+  touch(updateBlogMeta)
+  touch(insertBlogTargetMeta)
+  touch(insertBlogAuthorMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._

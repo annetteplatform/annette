@@ -40,8 +40,8 @@ class HomePageDbDao(
 
   private implicit val insertHomePageMeta = insertMeta[HomePage]()
   private implicit val updateHomePageMeta = updateMeta[HomePage](_.id)
-  println(insertHomePageMeta.toString)
-  println(updateHomePageMeta.toString)
+  touch(insertHomePageMeta)
+  touch(updateHomePageMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._

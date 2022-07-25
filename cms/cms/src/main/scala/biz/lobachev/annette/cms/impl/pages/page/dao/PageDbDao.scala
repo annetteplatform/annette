@@ -55,12 +55,12 @@ private[impl] class PageDbDao(
   private implicit val updatePageMeta       = updateMeta[PageRecord](_.id)
   private implicit val insertPageTargetMeta = insertMeta[PageTargetRecord]()
   private implicit val updatePageViewMeta   = updateMeta[PageViewRecord](_.pageId, _.principal)
-  println(publicationStatusEncoder.toString)
-  println(publicationStatusDecoder.toString)
-  println(insertPageMeta.toString)
-  println(updatePageMeta.toString)
-  println(insertPageTargetMeta.toString)
-  println(updatePageViewMeta.toString)
+  touch(publicationStatusEncoder)
+  touch(publicationStatusDecoder)
+  touch(insertPageMeta)
+  touch(updatePageMeta)
+  touch(insertPageTargetMeta)
+  touch(updatePageViewMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._

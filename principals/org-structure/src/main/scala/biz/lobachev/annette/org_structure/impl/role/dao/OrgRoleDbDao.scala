@@ -35,8 +35,8 @@ private[impl] class OrgRoleDbDao(
   private val entitySchema              = quote(querySchema[OrgRole]("org_roles"))
   private implicit val insertEntityMeta = insertMeta[OrgRole]()
   private implicit val updateEntityMeta = updateMeta[OrgRole](_.id)
-  println(insertEntityMeta.toString)
-  println(updateEntityMeta.toString)
+  touch(insertEntityMeta)
+  touch(updateEntityMeta)
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
