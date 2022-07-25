@@ -14,18 +14,21 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.ignition.core.model
+package biz.lobachev.annette.ignition.core.config
 
-case class EntityLoadResult(
-  name: String,
-  status: LoadStatus,
-  quantity: Int,
-  batches: Seq[BatchLoadResult]
-) {
-  def toStrings(): Seq[String] = {
-    val res = for {
-      batchResult <- batches
-    } yield batchResult.toString()
-    s"  $name $quantity $status" +: res
-  }
+import com.typesafe.config.Config
+
+case class DefaultServiceLoaderConfig(
+  entities: Seq[String],
+  onError: ErrorMode,
+  config: Config
+) extends ServiceLoaderConfig
+
+object DefaultServiceLoaderConfig {
+  def apply(config: Config): DefaultServiceLoaderConfig =
+    DefaultServiceLoaderConfig(
+      entities = ServiceLoaderConfig.entities(config),
+      onError = ErrorMode.fromConfig(config),
+      config = config
+    )
 }
