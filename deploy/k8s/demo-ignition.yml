@@ -13,8 +13,6 @@ spec:
           image: "annetteplatform/demo-ignition:0.4.2"
           imagePullPolicy: Always
           ports:
-            - containerPort: 9000
-              name: http
             - containerPort: 2552
               name: remoting
             - containerPort: 8558

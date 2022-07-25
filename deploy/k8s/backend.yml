@@ -699,3 +699,77 @@ spec:
       targetPort: 8080
   selector:
     app: camunda
+---
+apiVersion: "apps/v1"
+kind: Deployment
+metadata:
+  name: service-catalog
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: service-catalog
+  template:
+    metadata:
+      labels:
+        app: service-catalog
+    spec:
+      containers:
+        - name: service-catalog
+          image: "annetteplatform/service-catalog:0.4.2"
+          imagePullPolicy: Always
+          envFrom:
+            - configMapRef:
+                name: multi-instance-config
+            - configMapRef:
+                name: elastic-config
+            - secretRef:
+                name: elastic-secret
+            - configMapRef:
+                name: cassandra-config
+            - secretRef:
+                name: cassandra-secret
+            - secretRef:
+                name: play-secret
+          ports:
+            - containerPort: 9000
+              name: http
+            - containerPort: 2552
+              name: remoting
+            - containerPort: 8558
+              name: management
+          readinessProbe:
+            httpGet:
+              path: "/ready"
+              port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
+          livenessProbe:
+            httpGet:
+              path: "/alive"
+              port: management
+            periodSeconds: 10
+            failureThreshold: 10
+            initialDelaySeconds: 20
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-catalog
+spec:
+  ports:
+    - name: http
+      port: 9000
+      protocol: TCP
+      targetPort: 9000
+    - name: remoting
+      port: 2552
+      protocol: TCP
+      targetPort: 2552
+    - name: management
+      port: 8558
+      protocol: TCP
+      targetPort: 8558
+  selector:
+    app: service-catalog
