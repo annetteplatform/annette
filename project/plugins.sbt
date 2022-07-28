@@ -1,5 +1,5 @@
 // The Lagom plugin
-addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.6.6")
+addSbtPlugin("com.lightbend.lagom" % "lagom-sbt-plugin" % "1.6.7")
 
 // Copyright headers
 addSbtPlugin("de.heikoseeberger" % "sbt-header" % "5.6.0")
