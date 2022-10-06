@@ -550,6 +550,7 @@ def personsProject(pr: Project) =
     .settings(
       libraryDependencies ++= Seq(
         lagomScaladslPersistenceCassandra,
+        lagomScaladslPersistenceJdbc,
         lagomScaladslKafkaClient,
         lagomScaladslTestKit,
         Dependencies.macwire,

@@ -6,7 +6,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.persons.api.PersonServiceApi
 import biz.lobachev.annette.persons.api.person.{DeletePersonPayload, PersonNotFound}
-import biz.lobachev.annette.persons.impl.PersonServiceApplication
+import biz.lobachev.annette.persons.impl.PersonServiceCasApplication
 import biz.lobachev.annette.persons.impl.person.PersonEntity
 import biz.lobachev.annette.persons.impl.person.PersonEntity.PersonDeleted
 import com.lightbend.lagom.scaladsl.api.AdditionalConfiguration
@@ -37,7 +37,7 @@ class PersonServiceApiSpec
     ServiceTest.defaultSetup
       .withCassandra(true)
   ) { ctx =>
-    new PersonServiceApplication(ctx) with LocalServiceLocator {
+    new PersonServiceCasApplication(ctx) with LocalServiceLocator {
       override def additionalConfiguration: AdditionalConfiguration =
         super.additionalConfiguration ++ ConfigFactory
           .parseString(

@@ -14,26 +14,23 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.impl.person
+package biz.lobachev.annette.persons.impl.person.dao.pg
 
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import biz.lobachev.annette.persons.impl.person.dao.PersonDbDao
+import biz.lobachev.annette.persons.impl.PgEventHandler
+import biz.lobachev.annette.persons.impl.person.PersonEntity
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
+import com.lightbend.lagom.scaladsl.persistence.slick.SlickReadSide
 
-import scala.concurrent.ExecutionContext
-
-private[impl] class PersonDbEventProcessor(
-  readSide: CassandraReadSide,
-  dbDao: PersonDbDao
-)(implicit ec: ExecutionContext)
-    extends ReadSideProcessor[PersonEntity.Event]
-    with SimpleEventHandling {
+private[impl] class PersonPgDbEventProcessor(
+  readSide: SlickReadSide,
+  dbDao: PersonPgDbDao
+) extends ReadSideProcessor[PersonEntity.Event]
+    with PgEventHandler {
 
   def buildHandler() =
     readSide
       .builder[PersonEntity.Event]("person-cassandra")
-      .setGlobalPrepare(dbDao.createTables)
+      .setGlobalPrepare(globalPrepare(dbDao.createTables))
       .setEventHandler[PersonEntity.PersonCreated](handle(dbDao.createPerson))
       .setEventHandler[PersonEntity.PersonUpdated](handle(dbDao.updatePerson))
       .setEventHandler[PersonEntity.PersonDeleted](handle(dbDao.deletePerson))

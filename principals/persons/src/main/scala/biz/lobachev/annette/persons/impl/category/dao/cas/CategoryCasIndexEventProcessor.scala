@@ -14,15 +14,16 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.impl.category
+package biz.lobachev.annette.persons.impl.category.dao.cas
 
 import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
+import biz.lobachev.annette.persons.impl.category.{CategoryEntity, dao}
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
 
 import scala.concurrent.ExecutionContext
 
-class CategoryIndexEventProcessor(
+class CategoryCasIndexEventProcessor(
   readSide: CassandraReadSide,
   indexDao: dao.CategoryIndexDao,
   readSideId: String

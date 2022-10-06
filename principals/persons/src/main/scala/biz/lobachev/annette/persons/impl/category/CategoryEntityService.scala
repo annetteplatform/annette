@@ -24,6 +24,7 @@ import akka.util.Timeout
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.persons.impl.category.CategoryEntity.Command
+import biz.lobachev.annette.persons.impl.category.dao.CategoryDbDao
 import com.typesafe.config.Config
 import io.scalaland.chimney.dsl._
 
@@ -34,7 +35,7 @@ import scala.util.Try
 
 class CategoryEntityService(
   clusterSharding: ClusterSharding,
-  dbDao: dao.CategoryDbDao,
+  dbDao: CategoryDbDao,
   indexDao: dao.CategoryIndexDao,
   config: Config,
   typeKey: EntityTypeKey[Command]

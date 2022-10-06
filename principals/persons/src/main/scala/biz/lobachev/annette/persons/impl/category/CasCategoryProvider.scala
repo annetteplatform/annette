@@ -19,13 +19,15 @@ package biz.lobachev.annette.persons.impl.category
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityTypeKey}
 import akka.stream.Materializer
 import biz.lobachev.annette.persons.impl.category.CategoryEntity.Command
+import biz.lobachev.annette.persons.impl.category.dao.CategoryDbDao
+import biz.lobachev.annette.persons.impl.category.dao.cas.{CategoryCasDbDao, CategoryCasDbEventProcessor, CategoryCasIndexEventProcessor}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.{CassandraReadSide, CassandraSession}
 import com.sksamuel.elastic4s.ElasticClient
 import com.typesafe.config.Config
 
 import scala.concurrent.ExecutionContext
 
-class CategoryProvider(
+class CasCategoryProvider(
   typeKeyName: String,
   dbReadSideId: String,
   configPath: String,
@@ -34,15 +36,15 @@ class CategoryProvider(
 
   val typeKey: EntityTypeKey[Command] = EntityTypeKey[Command](typeKeyName)
 
-  def createDbDao(session: CassandraSession, ec: ExecutionContext): dao.CategoryDbDao =
-    new dao.CategoryDbDao(session)(ec)
+  def createDbDao(session: CassandraSession, ec: ExecutionContext): CategoryCasDbDao =
+    new CategoryCasDbDao(session)(ec)
 
   def createDbProcessor(
-    readSide: CassandraReadSide,
-    dbDao: dao.CategoryDbDao,
-    ec: ExecutionContext
-  ): CategoryDbEventProcessor =
-    new CategoryDbEventProcessor(readSide, dbDao, dbReadSideId)(ec)
+                         readSide: CassandraReadSide,
+                         dbDao: CategoryCasDbDao,
+                         ec: ExecutionContext
+  ): CategoryCasDbEventProcessor =
+    new CategoryCasDbEventProcessor(readSide, dbDao, dbReadSideId)(ec)
 
   def createIndexDao(
     elasticClient: ElasticClient,
@@ -54,16 +56,16 @@ class CategoryProvider(
     readSide: CassandraReadSide,
     indexDao: dao.CategoryIndexDao,
     ec: ExecutionContext
-  ): CategoryIndexEventProcessor =
-    new CategoryIndexEventProcessor(readSide, indexDao, indexReadSideId)(ec)
+  ): CategoryCasIndexEventProcessor =
+    new CategoryCasIndexEventProcessor(readSide, indexDao, indexReadSideId)(ec)
 
   def createEntityService(
-    clusterSharding: ClusterSharding,
-    dbDao: dao.CategoryDbDao,
-    indexDao: dao.CategoryIndexDao,
-    config: Config,
-    ec: ExecutionContext,
-    materializer: Materializer
+                           clusterSharding: ClusterSharding,
+                           dbDao: CategoryDbDao,
+                           indexDao: dao.CategoryIndexDao,
+                           config: Config,
+                           ec: ExecutionContext,
+                           materializer: Materializer
   ): CategoryEntityService =
     new CategoryEntityService(clusterSharding, dbDao, indexDao, config, typeKey)(ec, materializer)
 }

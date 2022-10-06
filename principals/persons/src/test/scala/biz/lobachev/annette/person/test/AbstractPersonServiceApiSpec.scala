@@ -1,7 +1,7 @@
 package biz.lobachev.annette.person.test
 
 import akka.actor.ActorSystem
-import biz.lobachev.annette.persons.impl.PersonServiceApplication
+import biz.lobachev.annette.persons.impl.PersonServiceCasApplication
 import biz.lobachev.annette.persons.impl.person.model.PersonSerializerRegistry
 import com.lightbend.lagom.scaladsl.api.AdditionalConfiguration
 import com.lightbend.lagom.scaladsl.playjson.JsonSerializerRegistry
@@ -25,7 +25,7 @@ abstract class AbstractPersonServiceApiSpec extends AsyncWordSpec with BeforeAnd
     ServiceTest.defaultSetup
       .withCassandra(true)
   ) { ctx =>
-    new PersonServiceApplication(ctx) with LocalServiceLocator {
+    new PersonServiceCasApplication(ctx) with LocalServiceLocator {
       override def additionalConfiguration: AdditionalConfiguration =
         super.additionalConfiguration ++ ConfigFactory
           .parseString(

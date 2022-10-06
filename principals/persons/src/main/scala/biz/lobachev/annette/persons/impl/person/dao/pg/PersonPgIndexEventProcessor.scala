@@ -14,27 +14,24 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.persons.impl.person
+package biz.lobachev.annette.persons.impl.person.dao.pg
 
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
+import biz.lobachev.annette.persons.impl.PgEventHandler
+import biz.lobachev.annette.persons.impl.person.PersonEntity
 import biz.lobachev.annette.persons.impl.person.dao.PersonIndexDao
 import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
+import com.lightbend.lagom.scaladsl.persistence.slick.SlickReadSide
 
-import scala.concurrent.ExecutionContext
-
-private[impl] class PersonIndexEventProcessor(
-  readSide: CassandraReadSide,
+private[impl] class PersonPgIndexEventProcessor(
+  readSide: SlickReadSide,
   indexDao: PersonIndexDao
-)(implicit
-  ec: ExecutionContext
 ) extends ReadSideProcessor[PersonEntity.Event]
-    with SimpleEventHandling {
+    with PgEventHandler {
 
   def buildHandler() =
     readSide
       .builder[PersonEntity.Event]("person-indexing")
-      .setGlobalPrepare(indexDao.createEntityIndex)
+      .setGlobalPrepare(globalPrepare(indexDao.createEntityIndex))
       .setEventHandler[PersonEntity.PersonCreated](handle(indexDao.createPerson))
       .setEventHandler[PersonEntity.PersonUpdated](handle(indexDao.updatePerson))
       .setEventHandler[PersonEntity.PersonDeleted](handle(indexDao.deletePerson))
