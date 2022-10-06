@@ -22,7 +22,12 @@ import biz.lobachev.annette.core.attribute.AttributeValues
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.persons.api.person.Person
-import biz.lobachev.annette.persons.impl.person.PersonEntity.{PersonAttributesUpdated, PersonCreated, PersonDeleted, PersonUpdated}
+import biz.lobachev.annette.persons.impl.person.PersonEntity.{
+  PersonAttributesUpdated,
+  PersonCreated,
+  PersonDeleted,
+  PersonUpdated
+}
 import biz.lobachev.annette.persons.impl.person.dao.PersonDbDao
 import slick.jdbc.PostgresProfile.api._
 
@@ -147,11 +152,11 @@ private[impl] class PersonPgDbDao(database: Database)(implicit
 //        .toMap
 
   def updateAttributes(
-                        id: String,
-                        values: AttributeValues,
-                        updatedAt: OffsetDateTime,
-                        updatedBy: AnnettePrincipal
-                      ): Future[Done] = ???
+    id: String,
+    values: AttributeValues,
+    updatedAt: OffsetDateTime,
+    updatedBy: AnnettePrincipal
+  ): Future[Done] = ???
 //    Source(values)
 //      .mapAsync(1) {
 //        case attribute -> value if value.length == 0 =>
@@ -192,7 +197,8 @@ private[impl] class PersonPgDbDao(database: Database)(implicit
 //      .run(attributesSchema.filter(r => r.id == lift(id) && liftQuery(attributes).contains(r.attribute)))
 //      .map(_.map(_.toAttributeValue).toMap)
 
-  protected def getAttributesById(ids: Set[PersonId], attributes: Seq[String]): Future[Map[String, AttributeValues]] = ???
+  protected def getAttributesById(ids: Set[PersonId], attributes: Seq[String]): Future[Map[String, AttributeValues]] =
+    ???
 //    ctx
 //      .run(
 //        attributesSchema.filter(r =>
