@@ -209,7 +209,7 @@ private[impl] class PostDbDao(
 
   def updateContentSettings(event: PostEntity.ContentSettingsUpdated) =
     for {
-      _ <- event.contentType match {
+      _ <- (event.contentType: @unchecked) match {
              case ContentTypes.Intro =>
                ctx.run(
                  postSchema
@@ -241,7 +241,7 @@ private[impl] class PostDbDao(
       .withFieldComputed(_.widgetId, _.id)
       .transform
     for {
-      _ <- event.contentType match {
+      _ <- (event.contentType: @unchecked) match {
              case ContentTypes.Intro =>
                ctx.run(
                  postSchema
@@ -269,7 +269,7 @@ private[impl] class PostDbDao(
 
   def changeWidgetOrder(event: PostEntity.WidgetOrderChanged) =
     for {
-      _ <- event.contentType match {
+      _ <- (event.contentType: @unchecked) match {
              case ContentTypes.Intro =>
                ctx.run(
                  postSchema
@@ -295,7 +295,7 @@ private[impl] class PostDbDao(
 
   def deleteWidget(event: PostEntity.WidgetDeleted) =
     for {
-      _ <- event.contentType match {
+      _ <- (event.contentType: @unchecked) match {
              case ContentTypes.Intro =>
                ctx.run(
                  postSchema

@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.microservice_core.indexing.dao
 
-trait ValidationStatus
+sealed trait ValidationStatus
 
 case object IndexNotExist                           extends ValidationStatus
 case object IndexValid                              extends ValidationStatus

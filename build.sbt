@@ -2,10 +2,10 @@ import com.typesafe.sbt.SbtNativePackager.autoImport.NativePackagerHelper._
 import com.typesafe.sbt.packager.docker.DockerChmodType
 import play.sbt.routes.RoutesKeys
 
-scalaVersion := "2.13.3"
+scalaVersion := "2.13.9"
 
 ThisBuild / version := "0.4.3-SNAPSHOT"
-ThisBuild / scalaVersion := "2.13.3"
+ThisBuild / scalaVersion := "2.13.9"
 
 ThisBuild / organization := "biz.lobachev.annette"
 ThisBuild / organizationName := "Valery Lobachev"
@@ -51,7 +51,7 @@ def annetteSettings: Seq[Setting[_]] =
   Seq(
     organizationName := "Valery Lobachev",
     startYear := Some(2013),
-    scalaVersion := "2.13.3"
+    scalaVersion := "2.13.9"
   )
 
 def confDirSettings: Seq[Setting[_]] =
@@ -145,7 +145,9 @@ lazy val `microservice-core` = (project in file("core/microservice-core"))
       ++ Dependencies.quill
   )
   .settings(annetteSettings: _*)
-  //.settings(depSchemes: _*)
+  .settings(
+    scalacOptions += "-Wconf:cat=unused-nowarn:s"
+  )
   .dependsOn(
     `core`
   )

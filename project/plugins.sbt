@@ -8,6 +8,6 @@ addSbtPlugin("de.heikoseeberger" % "sbt-header" % "5.6.0")
 addSbtPlugin("com.github.sbt" % "sbt-native-packager" % "1.9.7")
 
 // Compiler options
-addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.1.16")
+addSbtPlugin("io.github.davidgregory084" % "sbt-tpolecat" % "0.4.1")
 
 addDependencyTreePlugin

@@ -47,6 +47,8 @@ class ApplicationLoader(
         new TranslationJsonEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
       case ApplicationLoader.Application     =>
         new ApplicationEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
+      case _                                 =>
+        throw new IllegalArgumentException(s"Invalid entity: $entity ")
     }
 
 }

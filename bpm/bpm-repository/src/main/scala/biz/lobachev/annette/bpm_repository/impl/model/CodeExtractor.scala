@@ -27,7 +27,7 @@ trait CodeExtractor {
   def extractCode(notation: Notation.Notation, xmlStr: String): String =
     Try {
       val xml     = XML.loadString(xmlStr)
-      val nodeSeq = notation match {
+      val nodeSeq = (notation: @unchecked) match {
         case Notation.BPMN => xml \\ "definitions" \ "process" \ "@id"
         case Notation.DMN  => xml \\ "definitions" \ "decision" \ "@id"
         case Notation.CMMN => xml \\ "definitions" \ "case" \ "@id"

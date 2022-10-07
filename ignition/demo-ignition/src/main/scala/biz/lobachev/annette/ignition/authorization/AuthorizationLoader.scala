@@ -36,6 +36,8 @@ class AuthorizationLoader(val client: IgnitionLagomClient, val config: DefaultSe
         new RoleEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
       case AuthorizationLoader.RoleAssignment =>
         new RoleAssignmentEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
+      case _                                  =>
+        throw new IllegalArgumentException(s"Invalid entity: $entity ")
     }
 }
 

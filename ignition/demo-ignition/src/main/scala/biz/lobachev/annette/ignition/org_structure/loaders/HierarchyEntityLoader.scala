@@ -259,6 +259,8 @@ class HierarchyEntityLoader(
                        case currentPosition: OrgPosition if item.isInstanceOf[PositionData] =>
                          log.debug("Merging position {} - {}", item.id, item.name)
                          mergeCurrentPosition(currentPosition, item.asInstanceOf[PositionData], parentId, updatedBy)
+                       case currentItem                                                     =>
+                         log.error("Merge item failure: item: {}, currentItem: {}", item, currentItem)
                      }.getOrElse {
                        if (item.isInstanceOf[UnitData]) {
                          log.debug("Creating new unit {} - {}", item.id, item.name)

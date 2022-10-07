@@ -36,6 +36,8 @@ class PrincipalGroupLoader(val client: IgnitionLagomClient, val config: DefaultS
         new GroupEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
       case PrincipalGroupLoader.GroupPrincipal =>
         new GroupPrincipalEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
+      case _ =>
+        throw new IllegalArgumentException(s"Invalid entity: $entity ")
     }
 
   override val name: String = "principal-group"

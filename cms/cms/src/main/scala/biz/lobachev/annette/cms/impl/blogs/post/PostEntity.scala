@@ -407,7 +407,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
       case Some(state)
           if (cmd.contentType == ContentTypes.Intro && state.introContent.widgets.contains(cmd.widget.id)) ||
             (cmd.contentType == ContentTypes.Post && state.content.widgets.contains(cmd.widget.id)) =>
-        val contentMap          = cmd.contentType match {
+        val contentMap          = (cmd.contentType: @unchecked) match {
           case ContentTypes.Intro => state.introContent
           case ContentTypes.Post  => state.content
         }
@@ -443,7 +443,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
 
       // create
       case Some(state) =>
-        val contentMap          = cmd.contentType match {
+        val contentMap          = (cmd.contentType: @unchecked) match {
           case ContentTypes.Intro => state.introContent
           case ContentTypes.Post  => state.content
         }
@@ -478,7 +478,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
       case Some(state)
           if (cmd.contentType == ContentTypes.Intro && state.introContent.widgets.contains(cmd.widgetId)) ||
             (cmd.contentType == ContentTypes.Post && state.content.widgets.contains(cmd.widgetId)) =>
-        val (contentMap, contentOrder) = cmd.contentType match {
+        val (contentMap, contentOrder) = (cmd.contentType: @unchecked) match {
           case ContentTypes.Intro => state.introContent -> state.introContent.widgetOrder
           case ContentTypes.Post  => state.content      -> state.content.widgetOrder
         }
@@ -512,7 +512,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
       case Some(state)
           if (cmd.contentType == ContentTypes.Intro && state.introContent.widgets.contains(cmd.widgetId)) ||
             (cmd.contentType == ContentTypes.Post && state.content.widgets.contains(cmd.widgetId)) =>
-        val contentOrder = cmd.contentType match {
+        val contentOrder = (cmd.contentType: @unchecked) match {
           case ContentTypes.Intro => state.introContent.widgetOrder
           case ContentTypes.Post  => state.content.widgetOrder
         }
@@ -679,54 +679,58 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
 
   def onContentSettingsUpdated(event: ContentSettingsUpdated): PostEntity =
     PostEntity(
-      maybeState.map {
-        case state if event.contentType == ContentTypes.Intro =>
-          state.copy(
-            introContent = state.introContent.copy(
-              settings = event.settings
-            ),
-            updatedBy = event.updatedBy,
-            updatedAt = event.updatedAt
-          )
+      maybeState.map(state =>
+        (state: @unchecked) match {
+          case state if event.contentType == ContentTypes.Intro =>
+            state.copy(
+              introContent = state.introContent.copy(
+                settings = event.settings
+              ),
+              updatedBy = event.updatedBy,
+              updatedAt = event.updatedAt
+            )
 
-        case state if event.contentType == ContentTypes.Post  =>
-          state.copy(
-            content = state.content.copy(
-              settings = event.settings
-            ),
-            updatedBy = event.updatedBy,
-            updatedAt = event.updatedAt
-          )
-      }
+          case state if event.contentType == ContentTypes.Post  =>
+            state.copy(
+              content = state.content.copy(
+                settings = event.settings
+              ),
+              updatedBy = event.updatedBy,
+              updatedAt = event.updatedAt
+            )
+        }
+      )
     )
 
   def onPostWidgetUpdated(event: PostWidgetUpdated): PostEntity =
     PostEntity(
-      maybeState.map {
-        case state if event.contentType == ContentTypes.Intro =>
-          state.copy(
-            introContent = state.introContent.copy(
-              widgetOrder = event.widgetOrder,
-              widgets = state.introContent.widgets + (event.widget.id -> event.widget)
-            ),
-            updatedBy = event.updatedBy,
-            updatedAt = event.updatedAt
-          )
+      maybeState.map(state =>
+        (state: @unchecked) match {
+          case state if event.contentType == ContentTypes.Intro =>
+            state.copy(
+              introContent = state.introContent.copy(
+                widgetOrder = event.widgetOrder,
+                widgets = state.introContent.widgets + (event.widget.id -> event.widget)
+              ),
+              updatedBy = event.updatedBy,
+              updatedAt = event.updatedAt
+            )
 
-        case state if event.contentType == ContentTypes.Post  =>
-          state.copy(
-            content = state.content.copy(
-              widgetOrder = event.widgetOrder,
-              widgets = state.content.widgets + (event.widget.id -> event.widget)
-            ),
-            updatedBy = event.updatedBy,
-            updatedAt = event.updatedAt
-          )
-      }
+          case state if event.contentType == ContentTypes.Post  =>
+            state.copy(
+              content = state.content.copy(
+                widgetOrder = event.widgetOrder,
+                widgets = state.content.widgets + (event.widget.id -> event.widget)
+              ),
+              updatedBy = event.updatedBy,
+              updatedAt = event.updatedAt
+            )
+        }
+      )
     )
 
   def onWidgetOrderChanged(event: WidgetOrderChanged): PostEntity =
-    event.contentType match {
+    (event.contentType: @unchecked) match {
       case ContentTypes.Intro =>
         PostEntity(
           maybeState.map { state =>
@@ -750,7 +754,7 @@ final case class PostEntity(maybeState: Option[PostState] = None) {
     }
 
   def onWidgetDeleted(event: WidgetDeleted): PostEntity =
-    event.contentType match {
+    (event.contentType: @unchecked) match {
       case ContentTypes.Intro =>
         PostEntity(
           maybeState.map(state =>

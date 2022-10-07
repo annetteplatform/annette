@@ -36,6 +36,8 @@ class PersonLoader(
         new CategoryEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
       case PersonLoader.Person   =>
         new PersonEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
+      case _ =>
+        throw new IllegalArgumentException(s"Invalid entity: $entity ")
     }
 
   override val name: String = "person"

@@ -18,7 +18,7 @@ package biz.lobachev.annette.cms.gateway.files
 
 import akka.http.scaladsl.model.headers.ByteRange
 
-trait RangeHeader
+sealed trait RangeHeader
 
 case class SatisfiableRange(range: ByteRange) extends RangeHeader
 case object UnsatisfiableRange                extends RangeHeader

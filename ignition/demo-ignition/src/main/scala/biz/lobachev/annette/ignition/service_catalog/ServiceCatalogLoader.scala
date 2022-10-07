@@ -42,6 +42,8 @@ class ServiceCatalogLoader(val client: IgnitionLagomClient, val config: DefaultS
         new ServiceEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
       case ServiceCatalogLoader.ServicePrincipal =>
         new ServicePrincipalEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
+      case _                                     =>
+        throw new IllegalArgumentException(s"Invalid entity: $entity ")
     }
 
   override val name: String = "service-catalog"

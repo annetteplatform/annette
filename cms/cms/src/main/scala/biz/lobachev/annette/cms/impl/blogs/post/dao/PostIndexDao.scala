@@ -99,7 +99,7 @@ class PostIndexDao(client: ElasticClient)(implicit
     )
 
   def changePostIndex(event: PostEntity.PostIndexChanged) = {
-    val alias = event.contentType match {
+    val alias = (event.contentType: @unchecked) match {
       case ContentTypes.Intro => "intro"
       case ContentTypes.Post  => "content"
     }

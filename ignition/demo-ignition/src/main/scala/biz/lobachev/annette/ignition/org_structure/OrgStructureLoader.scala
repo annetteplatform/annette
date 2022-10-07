@@ -43,6 +43,8 @@ class OrgStructureLoader(val client: IgnitionLagomClient, val config: DefaultSer
         new OrgRoleEntityLoader(service, DefaultEntityLoaderConfig(config.config.getConfig(entity)))
       case OrgStructureLoader.Hierarchy =>
         new HierarchyEntityLoader(service, HierarchyEntityLoaderConfig(config.config.getConfig(entity)))
+      case _ =>
+        throw new IllegalArgumentException(s"Invalid entity: $entity ")
     }
 }
 
