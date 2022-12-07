@@ -71,33 +71,33 @@ services:
       PGADMIN_DEFAULT_EMAIL: postgres@example.com
 
   keycloak:
-    image: quay.io/keycloak/keycloak:16.1.1
+    image: quay.io/keycloak/keycloak:20.0.1
     environment:
-      DB_VENDOR: POSTGRES
-      DB_ADDR: postgres
-      DB_DATABASE: keycloak
-      DB_USER: keycloak
-      DB_SCHEMA: public
-      DB_PASSWORD: keycloak
-      KEYCLOAK_USER: admin
-      KEYCLOAK_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command:  start-dev --hostname-port=3080
     ports:
       - 3080:8080
     depends_on:
       - postgres
 
+
   camunda:
     build: ./camunda/
     environment:
-        - DB_DRIVER=org.postgresql.Driver
-        - DB_URL=jdbc:postgresql://postgres:5432/camunda
-        - DB_USERNAME=camunda
-        - DB_PASSWORD=camunda
-        - WAIT_FOR=postgres:5432
+      - DB_DRIVER=org.postgresql.Driver
+      - DB_URL=jdbc:postgresql://postgres:5432/camunda
+      - DB_USERNAME=camunda
+      - DB_PASSWORD=camunda
+      - WAIT_FOR=postgres:5432
     links:
-        - postgres
+      - postgres
     ports:
-        - "3090:8080"
+      - "3090:8080"
 
 volumes:
   odfe-data1:
