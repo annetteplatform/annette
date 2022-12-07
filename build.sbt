@@ -100,6 +100,7 @@ lazy val root = (project in file("."))
     `persons-api`,
     `principal-groups-api`,
     `subscriptions-api`,
+    `db-repository-api`,
     // microservices
     `application`,
     `service-catalog`,
@@ -391,6 +392,16 @@ lazy val `camunda` = (project in file("bpm/camunda"))
   .dependsOn(`core`)
 
 lazy val `bpm-repository-api` = (project in file("bpm/bpm-repository-api"))
+  .settings(
+    libraryDependencies ++= Seq(
+      lagomScaladslApi,
+      Dependencies.chimney
+    )
+  )
+  .settings(annetteSettings: _*)
+  .dependsOn(`core`)
+
+lazy val `db-repository-api` = (project in file("data/db-repository-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
