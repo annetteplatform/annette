@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.service_catalog.impl.scope_principal.dao
 
+import akka.Done
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
 import biz.lobachev.annette.service_catalog.api.scope_principal.FindScopePrincipalQuery
@@ -50,6 +51,14 @@ class ScopePrincipalIndexDao(client: ElasticClient)(implicit
     val id = ScopePrincipalEntity.scopePrincipalId(event.scopeId, event.principal)
     deleteIndexDoc(id)
   }
+
+  def deleteScopePrincipals(scopeId: String): Future[Done] =
+    client.execute {
+      deleteByQuery(indexName, matchQuery(alias2FieldName("scopeId"), scopeId))
+    }.map { res =>
+      processResponse(res)
+      Done
+    }
 
   def findScopePrincipals(query: FindScopePrincipalQuery): Future[FindResult] = {
     val scopeQuery             =

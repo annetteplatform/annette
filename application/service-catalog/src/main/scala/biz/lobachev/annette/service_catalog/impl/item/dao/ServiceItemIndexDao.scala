@@ -42,7 +42,7 @@ class ServiceItemIndexDao(client: ElasticClient)(implicit
       "description"      -> event.description,
       "label"            -> event.label.values.mkString(" "),
       "labelDescription" -> event.labelDescription.values.mkString(" "),
-      "itemType"         -> "group",
+      "type"             -> "group",
       "active"           -> true,
       "updatedAt"        -> event.createdAt
     )
@@ -68,7 +68,6 @@ class ServiceItemIndexDao(client: ElasticClient)(implicit
       "description"      -> event.description,
       "label"            -> event.label.values.mkString(" "),
       "labelDescription" -> event.labelDescription.values.mkString(" "),
-      "itemType"         -> "service",
       "active"           -> true,
       "updatedAt"        -> event.createdAt
     )
@@ -82,6 +81,7 @@ class ServiceItemIndexDao(client: ElasticClient)(implicit
       event.description.map(v => "description" -> v),
       event.label.map(v => "label" -> v.values.mkString(" ")),
       event.labelDescription.map(v => "labelDescription" -> v.values.mkString(" ")),
+      Some("type"      -> "service"),
       Some("updatedAt" -> event.updatedAt)
     ).flatten
     updateIndexDoc(event.id, doc)

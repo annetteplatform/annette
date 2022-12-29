@@ -16,10 +16,12 @@
 
 package biz.lobachev.annette.service_catalog.impl.scope.dao
 
+import akka.Done
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
 import biz.lobachev.annette.service_catalog.api.scope._
 import biz.lobachev.annette.service_catalog.impl.scope.ScopeEntity
+import biz.lobachev.annette.service_catalog.impl.scope_principal.dao.ScopePrincipalIndexDao
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s._
 import com.sksamuel.elastic4s.requests.searches.sort.FieldSort
@@ -27,7 +29,7 @@ import org.slf4j.LoggerFactory
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ScopeIndexDao(client: ElasticClient)(implicit
+class ScopeIndexDao(client: ElasticClient, scopePrincipalIndexDao: ScopePrincipalIndexDao)(implicit
   override val ec: ExecutionContext
 ) extends AbstractIndexDao(client) {
 
@@ -77,7 +79,10 @@ class ScopeIndexDao(client: ElasticClient)(implicit
   }
 
   def deleteScope(event: ScopeEntity.ScopeDeleted) =
-    deleteIndexDoc(event.id)
+    for {
+      _ <- deleteIndexDoc(event.id)
+      _ <- scopePrincipalIndexDao.deleteScopePrincipals(event.id)
+    } yield Done
 
   // *************************** Search API ***************************
 
