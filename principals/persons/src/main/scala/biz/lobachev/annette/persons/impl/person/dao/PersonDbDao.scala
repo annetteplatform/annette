@@ -120,19 +120,19 @@ private[impl] class PersonDbDao(override val session: CassandraSession)(implicit
       _ <- deleteAttributes(event.id)
     } yield Done
 
-  def getPersonById(id: PersonId, attributes: Seq[String]): Future[Option[Person]] =
+  def getPerson(id: PersonId, attributes: Seq[String]): Future[Option[Person]] =
     for {
       maybePerson      <- ctx
                             .run(personSchema.filter(_.id == lift(id)))
                             .map(_.headOption.map(_.toPerson))
-      personAttributes <- if (maybePerson.isDefined && attributes.nonEmpty) getAttributesById(id, attributes)
+      personAttributes <- if (maybePerson.isDefined && attributes.nonEmpty) getAttributes(id, attributes)
                           else Future.successful(Map.empty[String, String])
     } yield maybePerson.map(_.copy(attributes = personAttributes))
 
-  def getPersonsById(ids: Set[PersonId], attributes: Seq[String]): Future[Seq[Person]] =
+  def getPersons(ids: Set[PersonId], attributes: Seq[String]): Future[Seq[Person]] =
     for {
       persons       <- ctx.run(personSchema.filter(b => liftQuery(ids).contains(b.id))).map(_.map(_.toPerson))
-      attributesMap <- getAttributesById(ids, attributes)
+      attributesMap <- getAttributes(ids, attributes)
     } yield
       if (attributes.isEmpty) persons
       else
@@ -146,7 +146,7 @@ private[impl] class PersonDbDao(override val session: CassandraSession)(implicit
                             .run(personSchema.filter(_.id == lift(id)).map(_.id))
                             .map(_.headOption)
       personAttributes <- if (maybePerson.isDefined)
-                            getAttributesById(id, attributes)
+                            getAttributes(id, attributes)
                           else Future.successful(Map.empty[String, String])
     } yield maybePerson.map(_ => personAttributes)
 
@@ -155,7 +155,7 @@ private[impl] class PersonDbDao(override val session: CassandraSession)(implicit
     else
       for {
         foundPersons  <- ctx.run(personSchema.filter(b => liftQuery(ids).contains(b.id)).map(_.id))
-        attributesMap <- getAttributesById(ids, attributes)
+        attributesMap <- getAttributes(ids, attributes)
       } yield foundPersons
         .map(personId => personId -> attributesMap.get(personId).getOrElse(Map.empty[String, String]))
         .toMap

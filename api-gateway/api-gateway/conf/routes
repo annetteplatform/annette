@@ -148,8 +148,8 @@ POST    /api/annette/v1/person/updatePerson            biz.lobachev.annette.pers
 POST    /api/annette/v1/person/updatePersonAttributes  biz.lobachev.annette.person.gateway.PersonController.updatePersonAttributes
 POST    /api/annette/v1/person/deletePerson            biz.lobachev.annette.person.gateway.PersonController.deletePerson
 POST    /api/annette/v1/person/findPersons             biz.lobachev.annette.person.gateway.PersonController.findPersons
-GET     /api/annette/v1/person/getPersonById/:id/:fromReadSide    biz.lobachev.annette.person.gateway.PersonController.getPersonById(id: String, fromReadSide: Boolean, withAttributes: Option[String])
-POST    /api/annette/v1/person/getPersonsById/:fromReadSide       biz.lobachev.annette.person.gateway.PersonController.getPersonsById(fromReadSide: Boolean, withAttributes: Option[String])
+GET     /api/annette/v1/person/getPerson/:id/:fromReadSide    biz.lobachev.annette.person.gateway.PersonController.getPerson(id: String, fromReadSide: Boolean, withAttributes: Option[String])
+POST    /api/annette/v1/person/getPersons/:fromReadSide       biz.lobachev.annette.person.gateway.PersonController.getPersons(fromReadSide: Boolean, withAttributes: Option[String])
 GET     /api/annette/v1/person/getPersonMetadata       biz.lobachev.annette.person.gateway.PersonController.getPersonMetadata
 GET     /api/annette/v1/person/getPersonAttributes/:id/:fromReadSide  biz.lobachev.annette.person.gateway.PersonController.getPersonAttributes(id: String, fromReadSide: Boolean, attributes: Option[String])
 POST    /api/annette/v1/person/getPersonsAttributes/:fromReadSide     biz.lobachev.annette.person.gateway.PersonController.getPersonsAttributes(fromReadSide: Boolean, attributes: Option[String])
@@ -159,8 +159,8 @@ GET     /api/annette/v1/person/profile                             biz.lobachev.
 POST    /api/annette/v1/person/createCategory                      biz.lobachev.annette.person.gateway.PersonController.createCategory
 POST    /api/annette/v1/person/updateCategory                      biz.lobachev.annette.person.gateway.PersonController.updateCategory
 POST    /api/annette/v1/person/deleteCategory                      biz.lobachev.annette.person.gateway.PersonController.deleteCategory
-GET     /api/annette/v1/person/getCategoryById/:id/:fromReadSide   biz.lobachev.annette.person.gateway.PersonController.getCategoryById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/person/getCategoriesById/:fromReadSide     biz.lobachev.annette.person.gateway.PersonController.getCategoriesById(fromReadSide: Boolean)
+GET     /api/annette/v1/person/getCategory/:id/:fromReadSide   biz.lobachev.annette.person.gateway.PersonController.getCategory(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/person/getCategories/:fromReadSide     biz.lobachev.annette.person.gateway.PersonController.getCategories(fromReadSide: Boolean)
 POST    /api/annette/v1/person/findCategories                      biz.lobachev.annette.person.gateway.PersonController.findCategories
 
 # ************************************** Principal Group API **************************************

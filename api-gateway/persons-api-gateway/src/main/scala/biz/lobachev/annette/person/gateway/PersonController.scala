@@ -63,7 +63,7 @@ class PersonController @Inject() (
           attributes     = payload.attributes.map(_.keys.toSeq).getOrElse(Seq.empty)
           withAttributes = if (attributes.nonEmpty) Some(attributes.mkString(","))
                            else None
-          person        <- personService.getPersonById(payload.id, false, withAttributes)
+          person        <- personService.getPerson(payload.id, false, withAttributes)
         } yield Ok(Json.toJson(person))
       }
     }
@@ -80,7 +80,7 @@ class PersonController @Inject() (
           attributes     = payload.attributes.map(_.keys.toSeq).getOrElse(Seq.empty)
           withAttributes = if (attributes.nonEmpty) Some(attributes.mkString(","))
                            else None
-          person        <- personService.getPersonById(payload.id, false, withAttributes)
+          person        <- personService.getPerson(payload.id, false, withAttributes)
         } yield Ok(Json.toJson(person))
       }
     }
@@ -97,7 +97,7 @@ class PersonController @Inject() (
           _             <- personService.updatePersonAttributes(payload)
           withAttributes = if (attributes.nonEmpty) Some(attributes.mkString(","))
                            else None
-          person        <- personService.getPersonById(payload.id, false, withAttributes)
+          person        <- personService.getPerson(payload.id, false, withAttributes)
         } yield Ok(Json.toJson(person))
       }
     }
@@ -115,11 +115,11 @@ class PersonController @Inject() (
       }
     }
 
-  def getPersonById(id: PersonId, fromReadSide: Boolean, withAttributes: Option[String] = None) =
+  def getPerson(id: PersonId, fromReadSide: Boolean, withAttributes: Option[String] = None) =
     authenticated.async { implicit request =>
       def action =
         for {
-          person <- personService.getPersonById(id, fromReadSide, withAttributes)
+          person <- personService.getPerson(id, fromReadSide, withAttributes)
         } yield Ok(Json.toJson(person))
 
       if (fromReadSide) authorizer.performCheck(canViewOrMaintainPerson(id))(action)
@@ -127,11 +127,11 @@ class PersonController @Inject() (
 
     }
 
-  def getPersonsById(fromReadSide: Boolean, withAttributes: Option[String] = None) =
+  def getPersons(fromReadSide: Boolean, withAttributes: Option[String] = None) =
     authenticated.async(parse.json[Set[PersonId]]) { implicit request =>
       def action =
         for {
-          persons <- personService.getPersonsById(request.body, fromReadSide, withAttributes)
+          persons <- personService.getPersons(request.body, fromReadSide, withAttributes)
         } yield Ok(Json.toJson(persons))
       if (fromReadSide) authorizer.performCheckAny(VIEW_ALL_PERSON, MAINTAIN_ALL_PERSON)(action)
       else authorizer.performCheckAny(MAINTAIN_ALL_PERSON)(action)
@@ -151,7 +151,7 @@ class PersonController @Inject() (
     authenticated.async { implicit request =>
       val id = request.subject.principals.head.principalId
       for {
-        person <- personService.getPersonById(id, true)
+        person <- personService.getPerson(id, true)
       } yield Ok(Json.toJson(person))
     }
 
@@ -193,7 +193,7 @@ class PersonController @Inject() (
           .transform
         for {
           _    <- personService.createCategory(payload)
-          role <- personService.getCategoryById(payload.id, false)
+          role <- personService.getCategory(payload.id, false)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -207,7 +207,7 @@ class PersonController @Inject() (
           .transform
         for {
           _    <- personService.updateCategory(payload)
-          role <- personService.getCategoryById(payload.id, false)
+          role <- personService.getCategory(payload.id, false)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -225,19 +225,19 @@ class PersonController @Inject() (
       }
     }
 
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean) =
+  def getCategory(id: CategoryId, fromReadSide: Boolean) =
     authenticated.async { implicit request =>
       val rules =
         if (fromReadSide) Seq(VIEW_ALL_PERSON_CATEGORIES, MAINTAIN_ALL_PERSON_CATEGORIES)
         else Seq(MAINTAIN_ALL_PERSON_CATEGORIES)
       authorizer.performCheckAny(rules: _*) {
         for {
-          role <- personService.getCategoryById(id, fromReadSide)
+          role <- personService.getCategory(id, fromReadSide)
         } yield Ok(Json.toJson(role))
       }
     }
 
-  def getCategoriesById(fromReadSide: Boolean) =
+  def getCategories(fromReadSide: Boolean) =
     authenticated.async(parse.json[Set[CategoryId]]) { implicit request =>
       val ids   = request.body
       val rules =
@@ -245,7 +245,7 @@ class PersonController @Inject() (
         else Seq(MAINTAIN_ALL_PERSON_CATEGORIES)
       authorizer.performCheckAny(rules: _*) {
         for {
-          roles <- personService.getCategoriesById(ids, fromReadSide)
+          roles <- personService.getCategories(ids, fromReadSide)
         } yield Ok(Json.toJson(roles))
       }
     }

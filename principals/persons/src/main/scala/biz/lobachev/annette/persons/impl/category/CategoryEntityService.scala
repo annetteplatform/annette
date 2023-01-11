@@ -89,10 +89,10 @@ class CategoryEntityService(
       }
       .map(res => convertSuccess(payload.id, res))
 
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category] =
+  def getCategory(id: CategoryId, fromReadSide: Boolean): Future[Category] =
     if (fromReadSide)
       for {
-        maybeCategory <- dbDao.getCategoryById(id)
+        maybeCategory <- dbDao.getCategory(id)
       } yield maybeCategory match {
         case Some(category) => category
         case None           => throw CategoryNotFound(id)
@@ -105,11 +105,11 @@ class CategoryEntityService(
           case _                                      => throw CategoryNotFound(id)
         }
 
-  def getCategoriesById(
+  def getCategories(
     ids: Set[CategoryId],
     fromReadSide: Boolean
   ): Future[Seq[Category]] =
-    if (fromReadSide) dbDao.getCategoriesById(ids)
+    if (fromReadSide) dbDao.getCategories(ids)
     else
       Source(ids)
         .mapAsync(1) { id =>

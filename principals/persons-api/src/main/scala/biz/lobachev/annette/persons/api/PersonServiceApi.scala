@@ -66,7 +66,7 @@ trait PersonServiceApi extends Service {
    * @param id
    * @return
    */
-  def getPersonById(
+  def getPerson(
     id: PersonId,
     fromReadSide: Boolean = true,
     withAttributes: Option[String] = None
@@ -77,7 +77,7 @@ trait PersonServiceApi extends Service {
    *
    * @return
    */
-  def getPersonsById(
+  def getPersons(
     fromReadSide: Boolean = true,
     withAttributes: Option[String] = None
   ): ServiceCall[Set[PersonId], Seq[Person]]
@@ -109,8 +109,8 @@ trait PersonServiceApi extends Service {
   def createCategory: ServiceCall[CreateCategoryPayload, Done]
   def updateCategory: ServiceCall[UpdateCategoryPayload, Done]
   def deleteCategory: ServiceCall[DeleteCategoryPayload, Done]
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, Category]
-  def getCategoriesById(
+  def getCategory(id: CategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, Category]
+  def getCategories(
     fromReadSide: Boolean
   ): ServiceCall[Set[CategoryId], Seq[Category]]
   def findCategories: ServiceCall[CategoryFindQuery, FindResult]
@@ -123,8 +123,8 @@ trait PersonServiceApi extends Service {
         pathCall("/api/persons/v1/createPerson",                     createPerson),
         pathCall("/api/persons/v1/updatePerson",                     updatePerson),
         pathCall("/api/persons/v1/deletePerson",                     deletePerson),
-        pathCall("/api/persons/v1/getPersonById/:id/:fromReadSide?withAttributes",  getPersonById _),
-        pathCall("/api/persons/v1/getPersonsById/:fromReadSide?withAttributes",     getPersonsById _),
+        pathCall("/api/persons/v1/getPerson/:id/:fromReadSide?withAttributes",  getPerson _),
+        pathCall("/api/persons/v1/getPersons/:fromReadSide?withAttributes",     getPersons _),
         pathCall("/api/persons/v1/findPersons",                      findPersons),
         pathCall("/api/persons/v1/getPersonMetadata",                getPersonMetadata),
         pathCall("/api/persons/v1/updatePersonAttributes",           updatePersonAttributes),
@@ -134,8 +134,8 @@ trait PersonServiceApi extends Service {
         pathCall("/api/persons/v1/createCategory",                 createCategory),
         pathCall("/api/persons/v1/updateCategory",                 updateCategory),
         pathCall("/api/persons/v1/deleteCategory",                 deleteCategory),
-        pathCall("/api/persons/v1/getCategoryById/:id/:readSide",  getCategoryById _),
-        pathCall("/api/persons/v1/getCategoriesById/:readSide",    getCategoriesById _) ,
+        pathCall("/api/persons/v1/getCategory/:id/:readSide",  getCategory _),
+        pathCall("/api/persons/v1/getCategories/:readSide",    getCategories _) ,
         pathCall("/api/persons/v1/findCategories",                 findCategories),
       )
       .withExceptionSerializer(new AnnetteTransportExceptionSerializer())

@@ -37,8 +37,8 @@ trait PersonService {
   def updatePerson(payload: UpdatePersonPayload): Future[Done]
   def createOrUpdatePerson(payload: CreatePersonPayload): Future[Done]
   def deletePerson(payload: DeletePersonPayload): Future[Done]
-  def getPersonById(id: PersonId, fromReadSide: Boolean, withAttributes: Option[String] = None): Future[Person]
-  def getPersonsById(
+  def getPerson(id: PersonId, fromReadSide: Boolean, withAttributes: Option[String] = None): Future[Person]
+  def getPersons(
     ids: Set[PersonId],
     fromReadSide: Boolean,
     withAttributes: Option[String] = None
@@ -63,7 +63,7 @@ trait PersonService {
   def createOrUpdateCategory(payload: CreateCategoryPayload): Future[Done]
   def updateCategory(payload: UpdateCategoryPayload): Future[Done]
   def deleteCategory(payload: DeleteCategoryPayload): Future[Done]
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category]
-  def getCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean): Future[Seq[Category]]
+  def getCategory(id: CategoryId, fromReadSide: Boolean): Future[Category]
+  def getCategories(ids: Set[CategoryId], fromReadSide: Boolean): Future[Seq[Category]]
   def findCategories(query: CategoryFindQuery): Future[FindResult]
 }

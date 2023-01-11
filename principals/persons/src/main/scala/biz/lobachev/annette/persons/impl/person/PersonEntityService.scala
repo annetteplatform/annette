@@ -103,11 +103,11 @@ class PersonEntityService(
       .ask[Confirmation](GetPerson(id, withAttributes, _))
       .map(res => convertSuccessPerson(id, res))
 
-  def getPersonById(id: PersonId, fromReadSide: Boolean, withAttributes: Option[String] = None): Future[Person] = {
+  def getPerson(id: PersonId, fromReadSide: Boolean, withAttributes: Option[String] = None): Future[Person] = {
     val attributes = extractAttributes(withAttributes)
     if (fromReadSide)
       dbDao
-        .getPersonById(id, attributes)
+        .getPerson(id, attributes)
         .map(_.getOrElse(throw PersonNotFound(id)))
     else {
       val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attributes)
@@ -123,14 +123,14 @@ class PersonEntityService(
     }
   }
 
-  def getPersonsById(
+  def getPersons(
     ids: Set[PersonId],
     fromReadSide: Boolean,
     withAttributes: Option[String] = None
   ): Future[Seq[Person]] = {
     val attributes = extractAttributes(withAttributes)
     if (fromReadSide)
-      dbDao.getPersonsById(ids, attributes)
+      dbDao.getPersons(ids, attributes)
     else {
       val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attributes)
       val attributeMapFuture                        =

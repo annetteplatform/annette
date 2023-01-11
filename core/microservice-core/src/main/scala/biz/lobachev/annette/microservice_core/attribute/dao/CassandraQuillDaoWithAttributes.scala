@@ -93,12 +93,12 @@ trait CassandraQuillDaoWithAttributes extends CassandraQuillDao {
       )
       .map(_ => Done)
 
-  protected def getAttributesById(id: PersonId, attributes: Seq[String]): Future[AttributeValues] =
+  protected def getAttributes(id: PersonId, attributes: Seq[String]): Future[AttributeValues] =
     ctx
       .run(attributesSchema.filter(r => r.id == lift(id) && liftQuery(attributes).contains(r.attribute)))
       .map(_.map(_.toAttributeValue).toMap)
 
-  protected def getAttributesById(ids: Set[PersonId], attributes: Seq[String]): Future[Map[String, AttributeValues]] =
+  protected def getAttributes(ids: Set[PersonId], attributes: Seq[String]): Future[Map[String, AttributeValues]] =
     ctx
       .run(
         attributesSchema.filter(r =>

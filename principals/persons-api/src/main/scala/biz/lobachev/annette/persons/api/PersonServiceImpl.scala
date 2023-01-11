@@ -52,19 +52,19 @@ class PersonServiceImpl(api: PersonServiceApi, implicit val ec: ExecutionContext
 
   override def deletePerson(payload: DeletePersonPayload): Future[Done] = api.deletePerson.invoke(payload)
 
-  override def getPersonById(
+  override def getPerson(
     id: PersonId,
     fromReadSide: Boolean,
     withAttributes: Option[String] = None
   ): Future[Person] =
-    api.getPersonById(id, fromReadSide, withAttributes).invoke()
+    api.getPerson(id, fromReadSide, withAttributes).invoke()
 
-  override def getPersonsById(
+  override def getPersons(
     ids: Set[PersonId],
     fromReadSide: Boolean,
     withAttributes: Option[String] = None
   ): Future[Seq[Person]] =
-    api.getPersonsById(fromReadSide, withAttributes).invoke(ids)
+    api.getPersons(fromReadSide, withAttributes).invoke(ids)
 
   override def findPersons(query: PersonFindQuery): Future[FindResult] = api.findPersons.invoke(query)
 
@@ -109,11 +109,11 @@ class PersonServiceImpl(api: PersonServiceApi, implicit val ec: ExecutionContext
   def deleteCategory(payload: DeleteCategoryPayload): Future[Done] =
     api.deleteCategory.invoke(payload)
 
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category] =
-    api.getCategoryById(id, fromReadSide).invoke()
+  def getCategory(id: CategoryId, fromReadSide: Boolean): Future[Category] =
+    api.getCategory(id, fromReadSide).invoke()
 
-  def getCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean): Future[Seq[Category]] =
-    api.getCategoriesById(fromReadSide).invoke(ids)
+  def getCategories(ids: Set[CategoryId], fromReadSide: Boolean): Future[Seq[Category]] =
+    api.getCategories(fromReadSide).invoke(ids)
 
   def findCategories(query: CategoryFindQuery): Future[FindResult] =
     api.findCategories.invoke(query)
