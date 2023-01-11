@@ -54,17 +54,17 @@ class PersonServiceImpl(api: PersonServiceApi, implicit val ec: ExecutionContext
 
   override def getPerson(
     id: PersonId,
-    fromReadSide: Boolean,
+    source: Option[String] = None,
     withAttributes: Option[String] = None
   ): Future[Person] =
-    api.getPerson(id, fromReadSide, withAttributes).invoke()
+    api.getPerson(id, source, withAttributes).invoke()
 
   override def getPersons(
     ids: Set[PersonId],
-    fromReadSide: Boolean,
+    source: Option[String] = None,
     withAttributes: Option[String] = None
   ): Future[Seq[Person]] =
-    api.getPersons(fromReadSide, withAttributes).invoke(ids)
+    api.getPersons(source, withAttributes).invoke(ids)
 
   override def findPersons(query: PersonFindQuery): Future[FindResult] = api.findPersons.invoke(query)
 
@@ -75,17 +75,17 @@ class PersonServiceImpl(api: PersonServiceApi, implicit val ec: ExecutionContext
 
   override def getPersonAttributes(
     id: PersonId,
-    fromReadSide: Boolean,
+    source: Option[String] = None,
     attributes: Option[String]
   ): Future[AttributeValues] =
-    api.getPersonAttributes(id, fromReadSide, attributes).invoke()
+    api.getPersonAttributes(id, source, attributes).invoke()
 
   override def getPersonsAttributes(
     ids: Set[PersonId],
-    fromReadSide: Boolean,
+    source: Option[String] = None,
     attributes: Option[String]
   ): Future[Map[String, AttributeValues]] =
-    api.getPersonsAttributes(fromReadSide, attributes).invoke(ids)
+    api.getPersonsAttributes(source, attributes).invoke(ids)
 
   // org category methods
 
@@ -109,11 +109,11 @@ class PersonServiceImpl(api: PersonServiceApi, implicit val ec: ExecutionContext
   def deleteCategory(payload: DeleteCategoryPayload): Future[Done] =
     api.deleteCategory.invoke(payload)
 
-  def getCategory(id: CategoryId, fromReadSide: Boolean): Future[Category] =
-    api.getCategory(id, fromReadSide).invoke()
+  def getCategory(id: CategoryId, source: Option[String] = None): Future[Category] =
+    api.getCategory(id, source).invoke()
 
-  def getCategories(ids: Set[CategoryId], fromReadSide: Boolean): Future[Seq[Category]] =
-    api.getCategories(fromReadSide).invoke(ids)
+  def getCategories(ids: Set[CategoryId], source: Option[String] = None): Future[Seq[Category]] =
+    api.getCategories(source).invoke(ids)
 
   def findCategories(query: CategoryFindQuery): Future[FindResult] =
     api.findCategories.invoke(query)

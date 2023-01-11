@@ -56,19 +56,19 @@ class PersonServiceApiImpl(
 
   override def getPerson(
     id: PersonId,
-    fromReadSide: Boolean = true,
+    source: Option[String] = None,
     withAttributes: Option[String] = None
   ): ServiceCall[NotUsed, Person] =
     ServiceCall { _ =>
-      personEntityService.getPerson(id, fromReadSide, withAttributes)
+      personEntityService.getPerson(id, source, withAttributes)
     }
 
   override def getPersons(
-    fromReadSide: Boolean,
+    source: Option[String] = None,
     withAttributes: Option[String] = None
   ): ServiceCall[Set[PersonId], Seq[Person]] =
     ServiceCall { ids =>
-      personEntityService.getPersons(ids, fromReadSide, withAttributes)
+      personEntityService.getPersons(ids, source, withAttributes)
     }
 
   override def findPersons: ServiceCall[PersonFindQuery, FindResult]                   =
@@ -87,19 +87,19 @@ class PersonServiceApiImpl(
 
   override def getPersonAttributes(
     id: PersonId,
-    fromReadSide: Boolean,
+    source: Option[String] = None,
     attributes: Option[String]
   ): ServiceCall[NotUsed, AttributeValues] =
     ServiceCall { _ =>
-      personEntityService.getPersonAttributes(id, fromReadSide, attributes)
+      personEntityService.getPersonAttributes(id, source, attributes)
     }
 
   override def getPersonsAttributes(
-    fromReadSide: Boolean,
+    source: Option[String] = None,
     attributes: Option[String]
   ): ServiceCall[Set[PersonId], Map[String, AttributeValues]] =
     ServiceCall { ids =>
-      personEntityService.getPersonsAttributes(ids, fromReadSide, attributes)
+      personEntityService.getPersonsAttributes(ids, source, attributes)
     }
 
   // ****************************** Category methods ******************************
@@ -119,16 +119,16 @@ class PersonServiceApiImpl(
       categoryEntityService.deleteCategory(payload)
     }
 
-  override def getCategory(id: CategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, Category] =
+  override def getCategory(id: CategoryId, source: Option[String] = None): ServiceCall[NotUsed, Category] =
     ServiceCall { _ =>
-      categoryEntityService.getCategory(id, fromReadSide)
+      categoryEntityService.getCategory(id, source)
     }
 
   override def getCategories(
-    fromReadSide: Boolean
+    source: Option[String] = None
   ): ServiceCall[Set[CategoryId], Seq[Category]] =
     ServiceCall { ids =>
-      categoryEntityService.getCategories(ids, fromReadSide)
+      categoryEntityService.getCategories(ids, source)
     }
 
   override def findCategories: ServiceCall[CategoryFindQuery, FindResult] =
