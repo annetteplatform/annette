@@ -35,7 +35,7 @@ services:
       ELASTICSEARCH_HOSTS: https://odfe-node1:9200
 
   cassandra:
-    image: cassandra:4.1.0
+    image: cassandra:3.11.14
     ports:
       - 9042:9042
     volumes:
@@ -118,7 +118,7 @@ services:
       - "8501:8080"
     labels:
       - traefik.enable=true
-      - "traefik.http.routers.front.rule=Host(`local`)"
+      - "traefik.http.routers.front.rule=PathPrefix(`/`)"
       - "traefik.http.services.front.loadbalancer.server.port=8080"
 
   api-gateway:
@@ -132,7 +132,7 @@ services:
       - "8502:9000"
     labels:
       - traefik.enable=true
-      - "traefik.http.routers.back.rule=Host(`local`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.back.rule=PathPrefix(`/api`)"
       - "traefik.http.services.back.loadbalancer.server.port=9000"
 #      - traefik.http.routers.back.port=9000
 

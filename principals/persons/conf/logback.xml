@@ -31,7 +31,7 @@
     <logger name="biz.lobachev" level="DEBUG" />
     <logger name="biz.lobachev.annette.microservice_core.category" level="TRACE" />
 
-    <root level="INFO">
+    <root level="${LOG_LEVEL:-INFO}">
         <appender-ref ref="STDOUT" />
     </root>
 

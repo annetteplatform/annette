@@ -4,7 +4,7 @@
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%date{"HH:mm:ss.SSS"} %coloredLevel %logger [%mdc] - %msg%n</pattern>
+            <pattern>%date{yyyy-MM-dd HH:mm:ss.SSS} %coloredLevel %logger [%mdc] - %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -30,7 +30,7 @@
 
     <logger name="biz.lobachev" level="DEBUG" />
 
-    <root level="DEBUG">
+    <root level="${LOG_LEVEL:-INFO}">
         <appender-ref ref="STDOUT" />
     </root>
 
