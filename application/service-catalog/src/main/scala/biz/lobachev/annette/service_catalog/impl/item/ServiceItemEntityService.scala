@@ -21,6 +21,7 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.service_catalog.api.item._
 import biz.lobachev.annette.service_catalog.impl.item.ServiceItemEntity._
@@ -115,34 +116,36 @@ class ServiceItemEntityService(
       .ask[Confirmation](DeleteServiceItem(payload, _))
       .map(res => convertSuccess(payload.id, res))
 
-  def getServiceItem(id: ServiceItemId, fromReadSide: Boolean): Future[ServiceItem] =
-    if (fromReadSide)
-      dbDao
-        .getServiceItem(id)
-        .map(_.getOrElse(throw ServiceItemNotFound(id)))
-    else
+  def getServiceItem(id: ServiceItemId, source: Option[String]): Future[ServiceItem] =
+    if (DataSource.fromOrigin(source)) {
       refFor(id)
         .ask[Confirmation](GetServiceItem(id, _))
         .map(res => convertSuccessService(id, res))
+    } else {
+      dbDao
+        .getServiceItem(id)
+        .map(_.getOrElse(throw ServiceItemNotFound(id)))
+    }
 
   def getServiceItems(
     ids: Set[ServiceItemId],
-    fromReadSide: Boolean
+    source: Option[String]
   ): Future[Seq[ServiceItem]] =
-    if (fromReadSide)
-      dbDao.getServiceItems(ids)
-    else
+    if (DataSource.fromOrigin(source)) {
       Source(ids)
         .mapAsync(1) { id =>
           refFor(id)
             .ask[Confirmation](GetServiceItem(id, _))
             .map {
               case ServiceItemEntity.SuccessServiceItem(service) => Some(service)
-              case _                                             => None
+              case _ => None
             }
         }
         .runWith(Sink.seq)
         .map(_.flatten)
+    } else {
+      dbDao.getServiceItems(ids)
+    }
 
   def findServiceItems(query: FindServiceItemsQuery): Future[FindResult] =
     indexDao.findService(query)

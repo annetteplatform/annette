@@ -44,8 +44,8 @@ POST    /api/annette/v1/application/getTranslationJsons/:languageId     biz.loba
 POST    /api/annette/v1/serviceCatalog/createCategory     biz.lobachev.annette.service_catalog.gateway.CategoryController.createCategory
 POST    /api/annette/v1/serviceCatalog/updateCategory     biz.lobachev.annette.service_catalog.gateway.CategoryController.updateCategory
 POST    /api/annette/v1/serviceCatalog/deleteCategory     biz.lobachev.annette.service_catalog.gateway.CategoryController.deleteCategory
-GET     /api/annette/v1/serviceCatalog/getCategory/:id/:fromReadSide biz.lobachev.annette.service_catalog.gateway.CategoryController.getCategory(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/serviceCatalog/getCategories/:fromReadSide    biz.lobachev.annette.service_catalog.gateway.CategoryController.getCategories(fromReadSide: Boolean)
+GET     /api/annette/v1/serviceCatalog/getCategory/:id biz.lobachev.annette.service_catalog.gateway.CategoryController.getCategory(id: String, source: Option[String])
+POST    /api/annette/v1/serviceCatalog/getCategories    biz.lobachev.annette.service_catalog.gateway.CategoryController.getCategories(source: Option[String])
 POST    /api/annette/v1/serviceCatalog/findCategories            biz.lobachev.annette.service_catalog.gateway.CategoryController.findCategories
 # Scope
 POST    /api/annette/v1/serviceCatalog/createScope     biz.lobachev.annette.service_catalog.gateway.ScopeController.createScope
@@ -53,8 +53,8 @@ POST    /api/annette/v1/serviceCatalog/updateScope     biz.lobachev.annette.serv
 POST    /api/annette/v1/serviceCatalog/activateScope     biz.lobachev.annette.service_catalog.gateway.ScopeController.activateScope
 POST    /api/annette/v1/serviceCatalog/deactivateScope     biz.lobachev.annette.service_catalog.gateway.ScopeController.deactivateScope
 POST    /api/annette/v1/serviceCatalog/deleteScope     biz.lobachev.annette.service_catalog.gateway.ScopeController.deleteScope
-GET     /api/annette/v1/serviceCatalog/getScope/:id/:fromReadSide biz.lobachev.annette.service_catalog.gateway.ScopeController.getScope(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/serviceCatalog/getScopes/:fromReadSide    biz.lobachev.annette.service_catalog.gateway.ScopeController.getScopes(fromReadSide: Boolean)
+GET     /api/annette/v1/serviceCatalog/getScope/:id biz.lobachev.annette.service_catalog.gateway.ScopeController.getScope(id: String, source: Option[String])
+POST    /api/annette/v1/serviceCatalog/getScopes    biz.lobachev.annette.service_catalog.gateway.ScopeController.getScopes(source: Option[String])
 POST    /api/annette/v1/serviceCatalog/findScopes            biz.lobachev.annette.service_catalog.gateway.ScopeController.findScopes
 # Scope principal
 POST    /api/annette/v1/serviceCatalog/assignScopePrincipal     biz.lobachev.annette.service_catalog.gateway.ScopePrincipalController.assignScopePrincipal
@@ -69,8 +69,8 @@ POST    /api/annette/v1/serviceCatalog/updateService     biz.lobachev.annette.se
 POST    /api/annette/v1/serviceCatalog/activateServiceItem    biz.lobachev.annette.service_catalog.gateway.ServiceItemController.activateServiceItem
 POST    /api/annette/v1/serviceCatalog/deactivateServiceItem  biz.lobachev.annette.service_catalog.gateway.ServiceItemController.deactivateServiceItem
 POST    /api/annette/v1/serviceCatalog/deleteServiceItem      biz.lobachev.annette.service_catalog.gateway.ServiceItemController.deleteServiceItem
-GET     /api/annette/v1/serviceCatalog/getServiceItem/:id/:fromReadSide biz.lobachev.annette.service_catalog.gateway.ServiceItemController.getServiceItem(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/serviceCatalog/getServiceItems/:fromReadSide    biz.lobachev.annette.service_catalog.gateway.ServiceItemController.getServiceItems(fromReadSide: Boolean)
+GET     /api/annette/v1/serviceCatalog/getServiceItem/:id biz.lobachev.annette.service_catalog.gateway.ServiceItemController.getServiceItem(id: String, source: Option[String])
+POST    /api/annette/v1/serviceCatalog/getServiceItems    biz.lobachev.annette.service_catalog.gateway.ServiceItemController.getServiceItems(source: Option[String])
 POST    /api/annette/v1/serviceCatalog/findServiceItems       biz.lobachev.annette.service_catalog.gateway.ServiceItemController.findServiceItems
 # Service principal
 POST    /api/annette/v1/serviceCatalog/assignServicePrincipal     biz.lobachev.annette.service_catalog.gateway.ServicePrincipalController.assignServicePrincipal

@@ -18,6 +18,7 @@ package biz.lobachev.annette.service_catalog.gateway
 
 import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.service_catalog.api.ServiceCatalogService
 import biz.lobachev.annette.service_catalog.api.scope._
 import biz.lobachev.annette.service_catalog.gateway.Permissions.MAINTAIN_SERVICE_CATALOG
@@ -47,7 +48,7 @@ class ScopeController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.createScope(payload)
-          result <- serviceCatalogService.getScope(payload.id, false)
+          result <- serviceCatalogService.getScope(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -61,7 +62,7 @@ class ScopeController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.updateScope(payload)
-          result <- serviceCatalogService.getScope(payload.id, false)
+          result <- serviceCatalogService.getScope(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -75,7 +76,7 @@ class ScopeController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.activateScope(payload)
-          result <- serviceCatalogService.getScope(payload.id, false)
+          result <- serviceCatalogService.getScope(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -89,7 +90,7 @@ class ScopeController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.deactivateScope(payload)
-          result <- serviceCatalogService.getScope(payload.id, false)
+          result <- serviceCatalogService.getScope(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -107,21 +108,21 @@ class ScopeController @Inject() (
       }
     }
 
-  def getScope(id: ScopeId, fromReadSide: Boolean = true) =
+  def getScope(id: ScopeId, source: Option[String] = None) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
         for {
-          result <- serviceCatalogService.getScope(id, fromReadSide)
+          result <- serviceCatalogService.getScope(id, source)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def getScopes(fromReadSide: Boolean = true) =
+  def getScopes(source: Option[String] = None) =
     authenticated.async(parse.json[Set[ScopeId]]) { implicit request =>
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
         val ids = request.body
         for {
-          result <- serviceCatalogService.getScopes(ids, fromReadSide)
+          result <- serviceCatalogService.getScopes(ids, source)
         } yield Ok(Json.toJson(result))
       }
     }

@@ -21,6 +21,7 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.service_catalog.api.scope._
 import biz.lobachev.annette.service_catalog.impl.scope.ScopeEntity._
@@ -99,34 +100,36 @@ class ScopeEntityService(
       .ask[Confirmation](DeleteScope(payload, _))
       .map(res => convertSuccess(payload.id, res))
 
-  def getScope(id: ScopeId, fromReadSide: Boolean): Future[Scope] =
-    if (fromReadSide)
-      dbDao
-        .getScope(id)
-        .map(_.getOrElse(throw ScopeNotFound(id)))
-    else
+  def getScope(id: ScopeId, source: Option[String]): Future[Scope] =
+    if (DataSource.fromOrigin(source)) {
       refFor(id)
         .ask[Confirmation](GetScope(id, _))
         .map(res => convertSuccessScope(id, res))
+    } else {
+      dbDao
+        .getScope(id)
+        .map(_.getOrElse(throw ScopeNotFound(id)))
+    }
 
   def getScopes(
     ids: Set[ScopeId],
-    fromReadSide: Boolean
+    source: Option[String]
   ): Future[Seq[Scope]] =
-    if (fromReadSide)
-      dbDao.getScopes(ids)
-    else
+    if (DataSource.fromOrigin(source)) {
       Source(ids)
         .mapAsync(1) { id =>
           refFor(id)
             .ask[Confirmation](GetScope(id, _))
             .map {
               case ScopeEntity.SuccessScope(scope) => Some(scope)
-              case _                               => None
+              case _ => None
             }
         }
         .runWith(Sink.seq)
         .map(_.flatten)
+    } else {
+      dbDao.getScopes(ids)
+    }
 
   def findScopes(query: FindScopeQuery): Future[FindResult] =
     indexDao.findScope(query)
