@@ -287,7 +287,7 @@ class CmsPostController @Inject() (
       }
     }
 
-  def getPostsById(
+  def getPosts(
     fromReadSide: Boolean,
     withIntro: Option[Boolean] = None,
     withContent: Option[Boolean] = None,
@@ -298,7 +298,7 @@ class CmsPostController @Inject() (
       authorizer.performCheck(filteredPostsFuture.map(_.nonEmpty)) {
         for {
           filteredPosts <- filteredPostsFuture
-          result        <- cmsService.getPostsById(filteredPosts, fromReadSide, withIntro, withContent, withTargets)
+          result        <- cmsService.getPosts(filteredPosts, fromReadSide, withIntro, withContent, withTargets)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -310,7 +310,7 @@ class CmsPostController @Inject() (
         a.flatMap { case id -> f => if (f) acc.map(_ + id) else acc }
       }
 
-  def getPostById(
+  def getPost(
     id: PostId,
     fromReadSide: Boolean,
     withIntro: Option[Boolean] = None,
@@ -320,7 +320,7 @@ class CmsPostController @Inject() (
     authenticated.async { implicit request =>
       authorizer.performCheck(canEditPostByPostId(id)) {
         for {
-          result <- cmsService.getPostById(id, fromReadSide, withIntro, withContent, withTargets)
+          result <- cmsService.getPost(id, fromReadSide, withIntro, withContent, withTargets)
         } yield Ok(Json.toJson(result))
       }
     }

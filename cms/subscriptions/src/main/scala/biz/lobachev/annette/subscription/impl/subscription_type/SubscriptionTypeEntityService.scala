@@ -72,11 +72,11 @@ class SubscriptionTypeEntityService(
       .ask[SubscriptionTypeEntity.Confirmation](SubscriptionTypeEntity.DeleteSubscriptionType(payload, _))
       .map(res => convertSuccess(payload.id, res))
 
-  def getSubscriptionTypeById(id: SubscriptionTypeId, fromReadSide: Boolean): Future[SubscriptionType] =
-    if (fromReadSide) getSubscriptionTypeByIdFromReadSide(id)
-    else getSubscriptionTypeById(id)
+  def getSubscriptionType(id: SubscriptionTypeId, fromReadSide: Boolean): Future[SubscriptionType] =
+    if (fromReadSide) getSubscriptionTypeFromReadSide(id)
+    else getSubscriptionType(id)
 
-  def getSubscriptionTypeById(id: SubscriptionTypeId): Future[SubscriptionType] =
+  def getSubscriptionType(id: SubscriptionTypeId): Future[SubscriptionType] =
     refFor(id)
       .ask[SubscriptionTypeEntity.Confirmation](SubscriptionTypeEntity.GetSubscriptionType(id, _))
       .map {
@@ -84,19 +84,19 @@ class SubscriptionTypeEntityService(
         case _                                                      => throw SubscriptionTypeNotFound(id)
       }
 
-  def getSubscriptionTypeByIdFromReadSide(id: SubscriptionTypeId): Future[SubscriptionType] =
+  def getSubscriptionTypeFromReadSide(id: SubscriptionTypeId): Future[SubscriptionType] =
     for {
-      maybeSubscriptionType <- dbDao.getSubscriptionTypeById(id)
+      maybeSubscriptionType <- dbDao.getSubscriptionType(id)
     } yield maybeSubscriptionType match {
       case Some(subscriptionType) => subscriptionType
       case None                   => throw SubscriptionTypeNotFound(id)
     }
 
-  def getSubscriptionTypesById(
+  def getSubscriptionTypes(
     ids: Set[SubscriptionTypeId],
     fromReadSide: Boolean
   ): Future[Seq[SubscriptionType]] =
-    if (fromReadSide) dbDao.getSubscriptionTypesById(ids)
+    if (fromReadSide) dbDao.getSubscriptionTypes(ids)
     else
       Source(ids)
         .mapAsync(1) { id =>

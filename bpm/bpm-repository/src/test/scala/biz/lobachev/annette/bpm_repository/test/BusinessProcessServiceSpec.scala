@@ -58,7 +58,7 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
       )
       for {
         businessProcess1 <- businessProcessService.createBusinessProcess(payload)
-        businessProcess2 <- businessProcessService.getBusinessProcessById(id.value, true)
+        businessProcess2 <- businessProcessService.getBusinessProcess(id.value, true)
       } yield {
         businessProcessService.deleteBusinessProcess(DeleteBusinessProcessPayload(id, payload.updatedBy))
         val targetSchema = payload
@@ -98,7 +98,7 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         _ <- dataSchemaService.createDataSchema(dataSchemaPayload)
         businessProcess1 <- businessProcessService.createBusinessProcess(payload)
-        businessProcess2 <- businessProcessService.getBusinessProcessById(id.value, true)
+        businessProcess2 <- businessProcessService.getBusinessProcess(id.value, true)
       } yield {
         businessProcessService
           .deleteBusinessProcess(DeleteBusinessProcessPayload(id, payload.updatedBy))
@@ -168,7 +168,7 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         _ <- bpmModelService.createBpmModel(bpmModelPayload)
         businessProcess1 <- businessProcessService.createBusinessProcess(payload)
-        businessProcess2 <- businessProcessService.getBusinessProcessById(id.value, true)
+        businessProcess2 <- businessProcessService.getBusinessProcess(id.value, true)
       } yield {
         businessProcessService
           .deleteBusinessProcess(DeleteBusinessProcessPayload(id, payload.updatedBy))
@@ -240,7 +240,7 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         businessProcess0 <- businessProcessService.createBusinessProcess(createPayload)
         businessProcess1 <- businessProcessService.updateBusinessProcess(updatePayload)
-        businessProcess2 <- businessProcessService.getBusinessProcessById(id.value, true)
+        businessProcess2 <- businessProcessService.getBusinessProcess(id.value, true)
 
       } yield {
         businessProcessService.deleteBusinessProcess(DeleteBusinessProcessPayload(id, createPayload.updatedBy))
@@ -299,7 +299,7 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         _ <- dataSchemaService.createDataSchema(dataSchemaPayload)
         _                <- businessProcessService.createBusinessProcess(createPayload)
         businessProcess1 <- businessProcessService.updateBusinessProcess(updatePayload)
-        businessProcess2 <- businessProcessService.getBusinessProcessById(id.value, true)
+        businessProcess2 <- businessProcessService.getBusinessProcess(id.value, true)
       } yield {
         businessProcessService
           .deleteBusinessProcess(DeleteBusinessProcessPayload(id, createPayload.updatedBy))
@@ -403,7 +403,7 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         _ <- bpmModelService.createBpmModel(bpmModelPayload)
         _                <- businessProcessService.createBusinessProcess(createPayload)
         businessProcess1 <- businessProcessService.updateBusinessProcess(updatePayload)
-        businessProcess2 <- businessProcessService.getBusinessProcessById(id.value, true)
+        businessProcess2 <- businessProcessService.getBusinessProcess(id.value, true)
       } yield {
         businessProcessService
           .deleteBusinessProcess(DeleteBusinessProcessPayload(id, createPayload.updatedBy))
@@ -485,7 +485,7 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         businessProcess0 <- businessProcessService.createBusinessProcess(createPayload)
         businessProcess1 <- businessProcessService.updateBusinessProcessName(updatePayload)
-        businessProcess2 <- businessProcessService.getBusinessProcessById(id.value, true)
+        businessProcess2 <- businessProcessService.getBusinessProcess(id.value, true)
 
       } yield {
         businessProcessService.deleteBusinessProcess(DeleteBusinessProcessPayload(id, createPayload.updatedBy))
@@ -526,7 +526,7 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         businessProcess0 <- businessProcessService.createBusinessProcess(createPayload)
         businessProcess1 <- businessProcessService.updateBusinessProcessDescription(updatePayload)
-        businessProcess2 <- businessProcessService.getBusinessProcessById(id.value, true)
+        businessProcess2 <- businessProcessService.getBusinessProcess(id.value, true)
 
       } yield {
         businessProcessService.deleteBusinessProcess(DeleteBusinessProcessPayload(id, createPayload.updatedBy))
@@ -807,7 +807,7 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         businessProcess0 <- businessProcessService.createBusinessProcess(createPayload)
         businessProcess1 <- businessProcessService.storeBusinessProcessVariable(updatePayload)
-        businessProcess2 <- businessProcessService.getBusinessProcessById(id.value, true)
+        businessProcess2 <- businessProcessService.getBusinessProcess(id.value, true)
 
       } yield {
         businessProcessService.deleteBusinessProcess(DeleteBusinessProcessPayload(id, createPayload.updatedBy))
@@ -855,7 +855,7 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         businessProcess0 <- businessProcessService.createBusinessProcess(createPayload)
         businessProcess1 <- businessProcessService.storeBusinessProcessVariable(updatePayload)
-        businessProcess2 <- businessProcessService.getBusinessProcessById(id.value, true)
+        businessProcess2 <- businessProcessService.getBusinessProcess(id.value, true)
 
       } yield {
         businessProcessService.deleteBusinessProcess(DeleteBusinessProcessPayload(id, createPayload.updatedBy))
@@ -904,7 +904,7 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         businessProcess0 <- businessProcessService.createBusinessProcess(createPayload)
         businessProcess1 <- businessProcessService.storeBusinessProcessVariable(updatePayload)
-        businessProcess2 <- businessProcessService.getBusinessProcessById(id.value, true)
+        businessProcess2 <- businessProcessService.getBusinessProcess(id.value, true)
 
       } yield {
         businessProcessService.deleteBusinessProcess(DeleteBusinessProcessPayload(id, createPayload.updatedBy))
@@ -968,7 +968,7 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         businessProcess0 <- businessProcessService.createBusinessProcess(createPayload)
         businessProcess1 <- businessProcessService.deleteBusinessProcessVariable(updatePayload)
-        businessProcess2 <- businessProcessService.getBusinessProcessById(id.value, true)
+        businessProcess2 <- businessProcessService.getBusinessProcess(id.value, true)
 
       } yield {
         businessProcessService.deleteBusinessProcess(DeleteBusinessProcessPayload(id, createPayload.updatedBy))
@@ -1022,7 +1022,7 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         businessProcess1 <- businessProcessService.createBusinessProcess(payload)
         done <- businessProcessService.deleteBusinessProcess(DeleteBusinessProcessPayload(id, payload.updatedBy))
         ex   <-
-          recoverToExceptionIf[AnnetteTransportException](businessProcessService.getBusinessProcessById(id.value, true))
+          recoverToExceptionIf[AnnetteTransportException](businessProcessService.getBusinessProcess(id.value, true))
       } yield {
         val targetSchema = payload
           .into[BusinessProcess]
@@ -1049,8 +1049,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
       )
       for {
         businessProcess1 <- businessProcessService.createBusinessProcess(payload)
-        businessProcess2 <- businessProcessService.getBusinessProcessById(id.value, true)
-        businessProcess3 <- businessProcessService.getBusinessProcessById(id.value, false)
+        businessProcess2 <- businessProcessService.getBusinessProcess(id.value, true)
+        businessProcess3 <- businessProcessService.getBusinessProcess(id.value, false)
       } yield {
         businessProcessService.deleteBusinessProcess(DeleteBusinessProcessPayload(id, payload.updatedBy))
         val targetSchema = payload

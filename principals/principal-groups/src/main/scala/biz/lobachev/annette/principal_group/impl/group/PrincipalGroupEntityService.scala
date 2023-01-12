@@ -153,20 +153,20 @@ class PrincipalGroupEntityService(
       .ask[Confirmation](GetPrincipalGroup(id, _))
       .map(res => convertSuccessPrincipalGroup(id, res))
 
-  def getPrincipalGroupById(id: PrincipalGroupId, fromReadSide: Boolean): Future[PrincipalGroup] =
+  def getPrincipalGroup(id: PrincipalGroupId, fromReadSide: Boolean): Future[PrincipalGroup] =
     if (fromReadSide)
       dbDao
-        .getPrincipalGroupById(id)
+        .getPrincipalGroup(id)
         .map(_.getOrElse(throw PrincipalGroupNotFound(id)))
     else
       getPrincipalGroup(id)
 
-  def getPrincipalGroupsById(
+  def getPrincipalGroups(
     ids: Set[PrincipalGroupId],
     fromReadSide: Boolean
   ): Future[Seq[PrincipalGroup]] =
     if (fromReadSide)
-      dbDao.getPrincipalGroupsById(ids)
+      dbDao.getPrincipalGroups(ids)
     else
       Source(ids)
         .mapAsync(1) { id =>

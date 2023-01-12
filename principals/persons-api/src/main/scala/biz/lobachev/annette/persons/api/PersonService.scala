@@ -37,11 +37,11 @@ trait PersonService {
   def updatePerson(payload: UpdatePersonPayload): Future[Done]
   def createOrUpdatePerson(payload: CreatePersonPayload): Future[Done]
   def deletePerson(payload: DeletePersonPayload): Future[Done]
-  def getPerson(id: PersonId, source: Option[String] = None, withAttributes: Option[String] = None): Future[Person]
+  def getPerson(id: PersonId, source: Option[String] = None, attributes: Option[String] = None): Future[Person]
   def getPersons(
     ids: Set[PersonId],
     source: Option[String] = None,
-    withAttributes: Option[String] = None
+    attributes: Option[String] = None
   ): Future[Seq[Person]]
   def findPersons(query: PersonFindQuery): Future[FindResult]
   def getPersonMetadata: Future[Map[String, AttributeMetadata]]

@@ -33,8 +33,8 @@ trait BpmRepositoryService {
   def updateBpmModelDescription(payload: UpdateBpmModelDescriptionPayload): Future[BpmModel]
   def updateBpmModelXml(payload: UpdateBpmModelXmlPayload): Future[BpmModel]
   def deleteBpmModel(payload: DeleteBpmModelPayload): Future[Done]
-  def getBpmModelById(id: String, withXml: Option[Boolean]): Future[BpmModel]
-  def getBpmModelsById(ids: Seq[BpmModelId], withXml: Option[Boolean]): Future[Seq[BpmModel]]
+  def getBpmModel(id: String, withXml: Option[Boolean]): Future[BpmModel]
+  def getBpmModels(ids: Seq[BpmModelId], withXml: Option[Boolean]): Future[Seq[BpmModel]]
   def findBpmModels(query: BpmModelFindQuery): Future[FindResult]
 
   def createDataSchema(payload: CreateDataSchemaPayload): Future[DataSchema]
@@ -44,8 +44,8 @@ trait BpmRepositoryService {
   def storeDataSchemaVariable(payload: StoreDataSchemaVariablePayload): Future[DataSchema]
   def deleteDataSchemaVariable(payload: DeleteDataSchemaVariablePayload): Future[DataSchema]
   def deleteDataSchema(payload: DeleteDataSchemaPayload): Future[Done]
-  def getDataSchemaById(id: String, withVariables: Option[Boolean]): Future[DataSchema]
-  def getDataSchemasById(ids: Seq[DataSchemaId], withVariables: Option[Boolean]): Future[Seq[DataSchema]]
+  def getDataSchema(id: String, withVariables: Option[Boolean]): Future[DataSchema]
+  def getDataSchemas(ids: Seq[DataSchemaId], withVariables: Option[Boolean]): Future[Seq[DataSchema]]
   def findDataSchemas(query: DataSchemaFindQuery): Future[FindResult]
 
   def createBusinessProcess(payload: CreateBusinessProcessPayload): Future[BusinessProcess]
@@ -60,8 +60,8 @@ trait BpmRepositoryService {
   def storeBusinessProcessVariable(payload: StoreBusinessProcessVariablePayload): Future[BusinessProcess]
   def deleteBusinessProcessVariable(payload: DeleteBusinessProcessVariablePayload): Future[BusinessProcess]
   def deleteBusinessProcess(payload: DeleteBusinessProcessPayload): Future[Done]
-  def getBusinessProcessById(id: String, withVariables: Option[Boolean]): Future[BusinessProcess]
-  def getBusinessProcessesById(
+  def getBusinessProcess(id: String, withVariables: Option[Boolean]): Future[BusinessProcess]
+  def getBusinessProcesses(
     ids: Seq[BusinessProcessId],
     withVariables: Option[Boolean]
   ): Future[Seq[BusinessProcess]]

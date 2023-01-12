@@ -52,7 +52,7 @@ class BpmModelServiceSpec extends AsyncWordSpecLike with Matchers {
       )
       for {
         bpmModel1 <- bpmModelService.createBpmModel(payload)
-        bpmModel2 <- bpmModelService.getBpmModelById(id.value, true)
+        bpmModel2 <- bpmModelService.getBpmModel(id.value, true)
 
       } yield {
         bpmModelService.deleteBpmModel(DeleteBpmModelPayload(id, payload.updatedBy))
@@ -87,7 +87,7 @@ class BpmModelServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         bpmModel0 <- bpmModelService.createBpmModel(createPayload)
         bpmModel1 <- bpmModelService.updateBpmModel(updatePayload)
-        bpmModel2 <- bpmModelService.getBpmModelById(id.value, true)
+        bpmModel2 <- bpmModelService.getBpmModel(id.value, true)
 
       } yield {
         bpmModelService.deleteBpmModel(DeleteBpmModelPayload(id, createPayload.updatedBy))
@@ -125,7 +125,7 @@ class BpmModelServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         bpmModel0 <- bpmModelService.createBpmModel(createPayload)
         bpmModel1 <- bpmModelService.updateBpmModelName(updatePayload)
-        bpmModel2 <- bpmModelService.getBpmModelById(id.value, true)
+        bpmModel2 <- bpmModelService.getBpmModel(id.value, true)
 
       } yield {
         bpmModelService.deleteBpmModel(DeleteBpmModelPayload(id, createPayload.updatedBy))
@@ -165,7 +165,7 @@ class BpmModelServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         bpmModel0 <- bpmModelService.createBpmModel(createPayload)
         bpmModel1 <- bpmModelService.updateBpmModelDescription(updatePayload)
-        bpmModel2 <- bpmModelService.getBpmModelById(id.value, true)
+        bpmModel2 <- bpmModelService.getBpmModel(id.value, true)
 
       } yield {
         bpmModelService.deleteBpmModel(DeleteBpmModelPayload(id, createPayload.updatedBy))
@@ -206,7 +206,7 @@ class BpmModelServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         bpmModel0 <- bpmModelService.createBpmModel(createPayload)
         bpmModel1 <- bpmModelService.updateBpmModelXml(updatePayload)
-        bpmModel2 <- bpmModelService.getBpmModelById(id.value, true)
+        bpmModel2 <- bpmModelService.getBpmModel(id.value, true)
 
       } yield {
         bpmModelService.deleteBpmModel(DeleteBpmModelPayload(id, createPayload.updatedBy))
@@ -241,7 +241,7 @@ class BpmModelServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         bpmModel1 <- bpmModelService.createBpmModel(payload)
         done      <- bpmModelService.deleteBpmModel(DeleteBpmModelPayload(id, payload.updatedBy))
-        ex        <- recoverToExceptionIf[AnnetteTransportException](bpmModelService.getBpmModelById(id.value, true))
+        ex        <- recoverToExceptionIf[AnnetteTransportException](bpmModelService.getBpmModel(id.value, true))
 
       } yield {
         val targetModel = payload
@@ -305,8 +305,8 @@ class BpmModelServiceSpec extends AsyncWordSpecLike with Matchers {
       )
       for {
         bpmModel1 <- bpmModelService.createBpmModel(payload)
-        bpmModel2 <- bpmModelService.getBpmModelById(id.value, true)
-        bpmModel3 <- bpmModelService.getBpmModelById(id.value, false)
+        bpmModel2 <- bpmModelService.getBpmModel(id.value, true)
+        bpmModel3 <- bpmModelService.getBpmModel(id.value, false)
 
       } yield {
         bpmModelService.deleteBpmModel(DeleteBpmModelPayload(id, payload.updatedBy))

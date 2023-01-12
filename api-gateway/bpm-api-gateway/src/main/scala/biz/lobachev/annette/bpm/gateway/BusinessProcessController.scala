@@ -170,20 +170,20 @@ class BusinessProcessController @Inject() (
       }
     }
 
-  def getBusinessProcessById(id: String, withVariables: Option[Boolean] = None) =
+  def getBusinessProcess(id: String, withVariables: Option[Boolean] = None) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_BPM) {
         for {
-          businessProcess <- bpmRepositoryService.getBusinessProcessById(id, withVariables)
+          businessProcess <- bpmRepositoryService.getBusinessProcess(id, withVariables)
         } yield Ok(Json.toJson(businessProcess))
       }
     }
 
-  def getBusinessProcessesById(withVariables: Option[Boolean] = None) =
+  def getBusinessProcesses(withVariables: Option[Boolean] = None) =
     authenticated.async(parse.json[Set[BusinessProcessId]]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_BPM) {
         for {
-          businessProcesses <- bpmRepositoryService.getBusinessProcessesById(request.body.toSeq, withVariables)
+          businessProcesses <- bpmRepositoryService.getBusinessProcesses(request.body.toSeq, withVariables)
         } yield Ok(Json.toJson(businessProcesses))
       }
     }

@@ -99,22 +99,22 @@ class ScopeEntityService(
       .ask[Confirmation](DeleteScope(payload, _))
       .map(res => convertSuccess(payload.id, res))
 
-  def getScopeById(id: ScopeId, fromReadSide: Boolean): Future[Scope] =
+  def getScope(id: ScopeId, fromReadSide: Boolean): Future[Scope] =
     if (fromReadSide)
       dbDao
-        .getScopeById(id)
+        .getScope(id)
         .map(_.getOrElse(throw ScopeNotFound(id)))
     else
       refFor(id)
         .ask[Confirmation](GetScope(id, _))
         .map(res => convertSuccessScope(id, res))
 
-  def getScopesById(
+  def getScopes(
     ids: Set[ScopeId],
     fromReadSide: Boolean
   ): Future[Seq[Scope]] =
     if (fromReadSide)
-      dbDao.getScopesById(ids)
+      dbDao.getScopes(ids)
     else
       Source(ids)
         .mapAsync(1) { id =>

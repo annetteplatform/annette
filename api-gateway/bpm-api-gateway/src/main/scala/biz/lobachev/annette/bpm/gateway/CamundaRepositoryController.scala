@@ -53,7 +53,7 @@ class CamundaRepositoryController @Inject() (
     authenticated.async(parse.json[CamundaDeployPayload]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_BPM) {
         for {
-          bpmModel   <- bpmRepositoryService.getBpmModelById(request.body.bpmModelId.value, Some(true))
+          bpmModel   <- bpmRepositoryService.getBpmModel(request.body.bpmModelId.value, Some(true))
           deployment <- camundaRepositoryService.createDeployment(
                           CreateDeploymentPayload(
                             xml = bpmModel.xml.get,

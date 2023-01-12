@@ -151,12 +151,12 @@ class ApplicationDbDao(
   def deleteApplication(event: ApplicationEntity.ApplicationDeleted): Future[Done] =
     ctx.run(applicationSchema.filter(_.id == lift(event.id)).delete)
 
-  def getApplicationById(id: ApplicationId): Future[Option[Application]] =
+  def getApplication(id: ApplicationId): Future[Option[Application]] =
     ctx
       .run(applicationSchema.filter(_.id == lift(id)))
       .map(_.headOption)
 
-  def getApplicationsById(ids: Set[ApplicationId]): Future[Seq[Application]] =
+  def getApplications(ids: Set[ApplicationId]): Future[Seq[Application]] =
     ctx.run(applicationSchema.filter(b => liftQuery(ids).contains(b.id)))
 
   def getAllApplications(): Future[Seq[Application]] =

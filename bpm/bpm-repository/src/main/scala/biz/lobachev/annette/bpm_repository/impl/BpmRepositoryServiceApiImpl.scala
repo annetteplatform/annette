@@ -66,14 +66,14 @@ class BpmRepositoryServiceApiImpl(
       bpmModelService.deleteBpmModel(payload)
     }
 
-  override def getBpmModelById(id: String, withXml: Option[Boolean]): ServiceCall[NotUsed, BpmModel] =
+  override def getBpmModel(id: String, withXml: Option[Boolean]): ServiceCall[NotUsed, BpmModel] =
     ServiceCall { _ =>
-      bpmModelService.getBpmModelById(id, withXml.getOrElse(true))
+      bpmModelService.getBpmModel(id, withXml.getOrElse(true))
     }
 
-  override def getBpmModelsById(withXml: Option[Boolean]): ServiceCall[Seq[BpmModelId], Seq[BpmModel]] =
+  override def getBpmModels(withXml: Option[Boolean]): ServiceCall[Seq[BpmModelId], Seq[BpmModel]] =
     ServiceCall { ids =>
-      bpmModelService.getBpmModelsById(ids, withXml.getOrElse(true))
+      bpmModelService.getBpmModels(ids, withXml.getOrElse(true))
     }
 
   override def findBpmModels: ServiceCall[BpmModelFindQuery, FindResult] =
@@ -116,14 +116,14 @@ class BpmRepositoryServiceApiImpl(
       dataSchemaService.deleteDataSchema(payload)
     }
 
-  override def getDataSchemaById(id: String, withVariables: Option[Boolean]): ServiceCall[NotUsed, DataSchema] =
+  override def getDataSchema(id: String, withVariables: Option[Boolean]): ServiceCall[NotUsed, DataSchema] =
     ServiceCall { _ =>
-      dataSchemaService.getDataSchemaById(id, withVariables.getOrElse(true))
+      dataSchemaService.getDataSchema(id, withVariables.getOrElse(true))
     }
 
-  override def getDataSchemasById(withVariables: Option[Boolean]): ServiceCall[Seq[DataSchemaId], Seq[DataSchema]] =
+  override def getDataSchemas(withVariables: Option[Boolean]): ServiceCall[Seq[DataSchemaId], Seq[DataSchema]] =
     ServiceCall { ids =>
-      dataSchemaService.getDataSchemasById(ids, withVariables.getOrElse(true))
+      dataSchemaService.getDataSchemas(ids, withVariables.getOrElse(true))
     }
 
   override def findDataSchemas: ServiceCall[DataSchemaFindQuery, FindResult] =
@@ -182,19 +182,19 @@ class BpmRepositoryServiceApiImpl(
       businessProcessService.deleteBusinessProcess(payload)
     }
 
-  override def getBusinessProcessById(
+  override def getBusinessProcess(
     id: String,
     withVariables: Option[Boolean]
   ): ServiceCall[NotUsed, BusinessProcess] =
     ServiceCall { _ =>
-      businessProcessService.getBusinessProcessById(id, withVariables.getOrElse(true))
+      businessProcessService.getBusinessProcess(id, withVariables.getOrElse(true))
     }
 
-  override def getBusinessProcessesById(
+  override def getBusinessProcesses(
     withVariables: Option[Boolean]
   ): ServiceCall[Seq[BusinessProcessId], Seq[BusinessProcess]] =
     ServiceCall { ids =>
-      businessProcessService.getBusinessProcessesById(ids, withVariables.getOrElse(true))
+      businessProcessService.getBusinessProcesses(ids, withVariables.getOrElse(true))
     }
 
   override def findBusinessProcesses: ServiceCall[BusinessProcessFindQuery, FindResult] =

@@ -68,12 +68,12 @@ private[impl] class SubscriptionTypeDbDao(override val session: CassandraSession
   def deleteSubscriptionType(event: SubscriptionTypeEntity.SubscriptionTypeDeleted) =
     ctx.run(entitySchema.filter(_.id == lift(event.id)).delete)
 
-  def getSubscriptionTypeById(id: SubscriptionTypeId): Future[Option[SubscriptionType]] =
+  def getSubscriptionType(id: SubscriptionTypeId): Future[Option[SubscriptionType]] =
     ctx
       .run(entitySchema.filter(_.id == lift(id)))
       .map(_.headOption)
 
-  def getSubscriptionTypesById(ids: Set[SubscriptionTypeId]): Future[Seq[SubscriptionType]] =
+  def getSubscriptionTypes(ids: Set[SubscriptionTypeId]): Future[Seq[SubscriptionType]] =
     ctx.run(entitySchema.filter(b => liftQuery(ids).contains(b.id)))
 
 }

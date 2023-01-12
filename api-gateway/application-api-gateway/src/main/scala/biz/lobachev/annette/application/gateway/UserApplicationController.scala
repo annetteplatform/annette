@@ -20,7 +20,7 @@ import biz.lobachev.annette.application.api.ApplicationService
 import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.api.translation.TranslationId
 import biz.lobachev.annette.application.gateway.user.{UserApplication, UserLanguage}
-import biz.lobachev.annette.core.model.LanguageId
+import biz.lobachev.annette.core.model.{DataSource, LanguageId}
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}
 
@@ -54,7 +54,7 @@ class UserApplicationController @Inject() (
   def getApplication(id: ApplicationId) =
     Action.async {
       for {
-        result <- applicationService.getApplicationById(id, true)
+        result <- applicationService.getApplication(id, DataSource.FROM_READ_SIDE)
       } yield Ok(Json.toJson(UserApplication(result)))
     }
 

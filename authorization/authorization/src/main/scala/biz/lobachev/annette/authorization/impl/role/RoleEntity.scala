@@ -39,7 +39,7 @@ object RoleEntity {
   final case class DeleteRole(payload: DeleteRolePayload, replyTo: ActorRef[Confirmation])               extends Command
   final case class AssignPrincipal(payload: AssignPrincipalPayload, replyTo: ActorRef[Confirmation])     extends Command
   final case class UnassignPrincipal(payload: UnassignPrincipalPayload, replyTo: ActorRef[Confirmation]) extends Command
-  final case class GetRoleById(id: AuthRoleId, replyTo: ActorRef[Confirmation])                          extends Command
+  final case class GetRole(id: AuthRoleId, replyTo: ActorRef[Confirmation])                          extends Command
   final case class GetRolePrincipals(id: AuthRoleId, replyTo: ActorRef[Confirmation])                    extends Command
 
   sealed trait Confirmation
@@ -155,7 +155,7 @@ final case class RoleEntity(maybeRole: Option[RoleState] = None) {
       case cmd: DeleteRole        => deleteRole(cmd)
       case cmd: AssignPrincipal   => assignPrincipal(cmd)
       case cmd: UnassignPrincipal => unassignPrincipal(cmd)
-      case cmd: GetRoleById       => getRoleById(cmd)
+      case cmd: GetRole       => getRole(cmd)
       case cmd: GetRolePrincipals => getRolePrincipals(cmd)
     }
 
@@ -282,7 +282,7 @@ final case class RoleEntity(maybeRole: Option[RoleState] = None) {
           .thenReply(cmd.replyTo)(_ => Success)
     }
 
-  def getRoleById(cmd: GetRoleById): ReplyEffect[Event, RoleEntity] =
+  def getRole(cmd: GetRole): ReplyEffect[Event, RoleEntity] =
     maybeRole match {
       case Some(role) => Effect.reply(cmd.replyTo)(SuccessRole(role.transformInto[AuthRole]))
       case None       => Effect.reply(cmd.replyTo)(RoleNotFound)

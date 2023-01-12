@@ -67,7 +67,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.createBlog(payload)
-          blog <- cmsService.getBlogById(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, false)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -81,7 +81,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.updateBlogName(payload)
-          blog <- cmsService.getBlogById(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, false)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -95,7 +95,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.updateBlogDescription(payload)
-          blog <- cmsService.getBlogById(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, false)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -109,7 +109,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.updateBlogCategoryId(payload)
-          blog <- cmsService.getBlogById(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, false)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -123,7 +123,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.assignBlogAuthorPrincipal(payload)
-          blog <- cmsService.getBlogById(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, false)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -137,7 +137,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.unassignBlogAuthorPrincipal(payload)
-          blog <- cmsService.getBlogById(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, false)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -151,7 +151,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.assignBlogTargetPrincipal(payload)
-          blog <- cmsService.getBlogById(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, false)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -165,7 +165,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.unassignBlogTargetPrincipal(payload)
-          blog <- cmsService.getBlogById(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, false)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -179,7 +179,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.activateBlog(payload)
-          blog <- cmsService.getBlogById(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, false)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -193,7 +193,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.deactivateBlog(payload)
-          blog <- cmsService.getBlogById(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, false)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -211,22 +211,22 @@ class CmsBlogController @Inject() (
       }
     }
 
-  def getBlogById(id: BlogId, fromReadSide: Boolean) =
+  def getBlog(id: BlogId, fromReadSide: Boolean) =
     authenticated.async { implicit request =>
       authorizer.performCheck(canEditBlog(id)) {
         for {
-          blog <- cmsService.getBlogById(id, fromReadSide)
+          blog <- cmsService.getBlog(id, fromReadSide)
         } yield Ok(Json.toJson(blog))
       }
     }
 
-  def getBlogsById(fromReadSide: Boolean) =
+  def getBlogs(fromReadSide: Boolean) =
     authenticated.async(parse.json[Set[BlogId]]) { implicit request =>
       val filteredBlogsFuture = filterBlogs(request.request.body)
       authorizer.performCheck(filteredBlogsFuture.map(_.nonEmpty)) {
         for {
           filteredBlogs <- filteredBlogsFuture
-          blogs         <- cmsService.getBlogsById(filteredBlogs, fromReadSide)
+          blogs         <- cmsService.getBlogs(filteredBlogs, fromReadSide)
         } yield Ok(Json.toJson(blogs))
       }
     }

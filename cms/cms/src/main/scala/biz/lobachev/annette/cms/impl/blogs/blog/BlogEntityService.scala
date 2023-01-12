@@ -175,17 +175,17 @@ class BlogEntityService(
       .ask[BlogEntity.Confirmation](BlogEntity.GetBlog(id, _))
       .map(convertSuccessBlog(_, id))
 
-  def getBlogById(id: BlogId, fromReadSide: Boolean): Future[Blog] =
+  def getBlog(id: BlogId, fromReadSide: Boolean): Future[Blog] =
     if (fromReadSide)
       dbDao
-        .getBlogById(id)
+        .getBlog(id)
         .map(_.getOrElse(throw BlogNotFound(id)))
     else
       getBlog(id)
 
-  def getBlogsById(ids: Set[BlogId], fromReadSide: Boolean): Future[Seq[Blog]] =
+  def getBlogs(ids: Set[BlogId], fromReadSide: Boolean): Future[Seq[Blog]] =
     if (fromReadSide)
-      dbDao.getBlogsById(ids)
+      dbDao.getBlogs(ids)
     else
       Future
         .traverse(ids) { id =>

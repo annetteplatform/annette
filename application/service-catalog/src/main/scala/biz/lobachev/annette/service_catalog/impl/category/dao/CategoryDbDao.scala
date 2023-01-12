@@ -71,12 +71,12 @@ class CategoryDbDao(
   def deleteCategory(event: CategoryEntity.CategoryDeleted): Future[Done] =
     ctx.run(categorySchema.filter(_.id == lift(event.id)).delete)
 
-  def getCategoryById(id: CategoryId): Future[Option[Category]] =
+  def getCategory(id: CategoryId): Future[Option[Category]] =
     ctx
       .run(categorySchema.filter(_.id == lift(id)))
       .map(_.headOption)
 
-  def getCategoriesById(ids: Set[CategoryId]): Future[Seq[Category]] =
+  def getCategories(ids: Set[CategoryId]): Future[Seq[Category]] =
     ctx.run(categorySchema.filter(b => liftQuery(ids).contains(b.id)))
 
 }

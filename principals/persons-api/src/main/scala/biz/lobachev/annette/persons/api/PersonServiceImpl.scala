@@ -55,16 +55,16 @@ class PersonServiceImpl(api: PersonServiceApi, implicit val ec: ExecutionContext
   override def getPerson(
     id: PersonId,
     source: Option[String] = None,
-    withAttributes: Option[String] = None
+    attributes: Option[String] = None
   ): Future[Person] =
-    api.getPerson(id, source, withAttributes).invoke()
+    api.getPerson(id, source, attributes).invoke()
 
   override def getPersons(
     ids: Set[PersonId],
     source: Option[String] = None,
-    withAttributes: Option[String] = None
+    attributes: Option[String] = None
   ): Future[Seq[Person]] =
-    api.getPersons(source, withAttributes).invoke(ids)
+    api.getPersons(source, attributes).invoke(ids)
 
   override def findPersons(query: PersonFindQuery): Future[FindResult] = api.findPersons.invoke(query)
 

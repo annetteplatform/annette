@@ -39,8 +39,8 @@ trait ServiceCatalogService {
   def createCategory(payload: CreateCategoryPayload): Future[Done]
   def updateCategory(payload: UpdateCategoryPayload): Future[Done]
   def deleteCategory(payload: DeleteCategoryPayload): Future[Done]
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category]
-  def getCategoriesById(
+  def getCategory(id: CategoryId, fromReadSide: Boolean): Future[Category]
+  def getCategories(
     ids: Set[CategoryId],
     fromReadSide: Boolean
   ): Future[Seq[Category]]
@@ -51,8 +51,8 @@ trait ServiceCatalogService {
   def activateScope(payload: ActivateScopePayload): Future[Done]
   def deactivateScope(payload: DeactivateScopePayload): Future[Done]
   def deleteScope(payload: DeleteScopePayload): Future[Done]
-  def getScopeById(id: ScopeId, fromReadSide: Boolean = true): Future[Scope]
-  def getScopesById(ids: Set[ScopeId], fromReadSide: Boolean = true): Future[Seq[Scope]]
+  def getScope(id: ScopeId, fromReadSide: Boolean = true): Future[Scope]
+  def getScopes(ids: Set[ScopeId], fromReadSide: Boolean = true): Future[Seq[Scope]]
   def findScopes(payload: FindScopeQuery): Future[FindResult]
 
   def assignScopePrincipal(payload: AssignScopePrincipalPayload): Future[Done]
@@ -67,8 +67,8 @@ trait ServiceCatalogService {
   def activateServiceItem(payload: ActivateServiceItemPayload): Future[Done]
   def deactivateServiceItem(payload: DeactivateServiceItemPayload): Future[Done]
   def deleteServiceItem(payload: DeleteServiceItemPayload): Future[Done]
-  def getServiceItemById(id: ServiceItemId, fromReadSide: Boolean = true): Future[ServiceItem]
-  def getServiceItemsById(ids: Set[ServiceItemId], fromReadSide: Boolean = true): Future[Seq[ServiceItem]]
+  def getServiceItem(id: ServiceItemId, fromReadSide: Boolean = true): Future[ServiceItem]
+  def getServiceItems(ids: Set[ServiceItemId], fromReadSide: Boolean = true): Future[Seq[ServiceItem]]
   def findServiceItems(payload: FindServiceItemsQuery): Future[FindResult]
 
   def assignServicePrincipal(payload: AssignServicePrincipalPayload): Future[Done]

@@ -54,7 +54,7 @@ class BpmModelActions(implicit executionContext: ExecutionContext) extends BpmRe
              .delete
     } yield Done
 
-  def getBpmModelByIdWithXmlAction(id: BpmModelId) =
+  def getBpmModelWithXmlAction(id: BpmModelId) =
     for {
       res <- BpmModelQueries.getBpmModelWithXmlQuery(id)
     } yield res.headOption.map(
@@ -63,7 +63,7 @@ class BpmModelActions(implicit executionContext: ExecutionContext) extends BpmRe
         .transform
     )
 
-  def getBpmModelByIdWithoutXmlAction(id: BpmModelId) =
+  def getBpmModelWithoutXmlAction(id: BpmModelId) =
     for {
       res <- BpmRepositorySchema.bpmModels
                .filter(_.id === id)
@@ -71,7 +71,7 @@ class BpmModelActions(implicit executionContext: ExecutionContext) extends BpmRe
                .result
     } yield res.headOption.map(r => BpmModel(r._1, r._2, r._3, r._4, r._5, None, r._6.atOffset(ZoneOffset.UTC), r._7))
 
-  def getBpmModelsByIdWithXmlAction(ids: Seq[BpmModelId]) =
+  def getBpmModelsWithXmlAction(ids: Seq[BpmModelId]) =
     for {
       res <- BpmRepositorySchema.bpmModels
                .filter(_.id.inSet(ids))
@@ -82,7 +82,7 @@ class BpmModelActions(implicit executionContext: ExecutionContext) extends BpmRe
         .transform
     )
 
-  def getBpmModelsByIdWithoutXmlAction(ids: Seq[BpmModelId]) =
+  def getBpmModelsWithoutXmlAction(ids: Seq[BpmModelId]) =
     for {
       res <- BpmRepositorySchema.bpmModels
                .filter(_.id.inSet(ids))

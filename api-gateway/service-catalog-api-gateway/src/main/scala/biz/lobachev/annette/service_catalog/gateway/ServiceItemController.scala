@@ -47,7 +47,7 @@ class ServiceItemController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.createGroup(payload)
-          result <- serviceCatalogService.getServiceItemById(payload.id, false)
+          result <- serviceCatalogService.getServiceItem(payload.id, false)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -61,7 +61,7 @@ class ServiceItemController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.updateGroup(payload)
-          result <- serviceCatalogService.getServiceItemById(payload.id, false)
+          result <- serviceCatalogService.getServiceItem(payload.id, false)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -75,7 +75,7 @@ class ServiceItemController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.createService(payload)
-          result <- serviceCatalogService.getServiceItemById(payload.id, false)
+          result <- serviceCatalogService.getServiceItem(payload.id, false)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -89,7 +89,7 @@ class ServiceItemController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.updateService(payload)
-          result <- serviceCatalogService.getServiceItemById(payload.id, false)
+          result <- serviceCatalogService.getServiceItem(payload.id, false)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -103,7 +103,7 @@ class ServiceItemController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.activateServiceItem(payload)
-          result <- serviceCatalogService.getServiceItemById(payload.id, false)
+          result <- serviceCatalogService.getServiceItem(payload.id, false)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -117,7 +117,7 @@ class ServiceItemController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.deactivateServiceItem(payload)
-          result <- serviceCatalogService.getServiceItemById(payload.id, false)
+          result <- serviceCatalogService.getServiceItem(payload.id, false)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -135,21 +135,21 @@ class ServiceItemController @Inject() (
       }
     }
 
-  def getServiceItemById(id: ServiceItemId, fromReadSide: Boolean = true) =
+  def getServiceItem(id: ServiceItemId, fromReadSide: Boolean = true) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
         for {
-          result <- serviceCatalogService.getServiceItemById(id, fromReadSide)
+          result <- serviceCatalogService.getServiceItem(id, fromReadSide)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def getServiceItemsById(fromReadSide: Boolean = true) =
+  def getServiceItems(fromReadSide: Boolean = true) =
     authenticated.async(parse.json[Set[ServiceItemId]]) { implicit request =>
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
         val ids = request.body
         for {
-          result <- serviceCatalogService.getServiceItemsById(ids, fromReadSide)
+          result <- serviceCatalogService.getServiceItems(ids, fromReadSide)
         } yield Ok(Json.toJson(result))
       }
     }

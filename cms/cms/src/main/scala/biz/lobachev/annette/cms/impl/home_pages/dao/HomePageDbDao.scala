@@ -80,14 +80,14 @@ class HomePageDbDao(
            )
     } yield Done
 
-  def getHomePageById(id: HomePageId): Future[Option[HomePage]] =
+  def getHomePage(id: HomePageId): Future[Option[HomePage]] =
     for {
       maybeHomePageRecord <- ctx
                                .run(homePageSchema.filter(_.id == lift(id)))
                                .map(_.headOption)
     } yield maybeHomePageRecord
 
-  def getHomePagesById(ids: Set[HomePageId]): Future[Seq[HomePage]] =
+  def getHomePages(ids: Set[HomePageId]): Future[Seq[HomePage]] =
     for {
       homePages <- ctx
                      .run(homePageSchema.filter(b => liftQuery(ids).contains(b.id)))

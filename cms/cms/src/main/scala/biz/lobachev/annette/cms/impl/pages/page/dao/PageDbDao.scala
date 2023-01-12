@@ -326,7 +326,7 @@ private[impl] class PageDbDao(
       _ <- ctx.run(pageViewSchema.filter(_.pageId == lift(event.id)).delete)
     } yield Done
 
-  def getPageById(
+  def getPage(
     id: PageId,
     withContent: Boolean,
     withTargets: Boolean
@@ -362,13 +362,13 @@ private[impl] class PageDbDao(
       .run(pageTargetSchema.filter(_.pageId == lift(id)).map(_.principal))
       .map(_.toSet)
 
-  def getPagesById(
+  def getPages(
     ids: Set[PageId],
     withContent: Boolean,
     withTargets: Boolean
   ): Future[Seq[Page]] =
     Source(ids)
-      .mapAsync(1)(id => getPageById(id, withContent, withTargets))
+      .mapAsync(1)(id => getPage(id, withContent, withTargets))
       .runWith(Sink.seq)
       .map(_.flatten)
 
@@ -385,15 +385,15 @@ private[impl] class PageDbDao(
                       )
     } yield maybeCount.map(_ > 0).getOrElse(false)
 
-  def getPageViewsById(payload: GetPageViewsPayload): Future[Seq[Page]] =
+  def getPageViews(payload: GetPageViewsPayload): Future[Seq[Page]] =
     for {
       allowedPageIds    <- getAllowedPageIds(payload.ids, payload.principals + payload.directPrincipal)
-      pageViews         <- getPagesById(allowedPageIds, true, false)
+      pageViews         <- getPages(allowedPageIds, true, false)
       publishedPageViews = pageViews.filter(page =>
                              page.publicationStatus == PublicationStatus.Published &&
                                page.publicationTimestamp.map(_.compareTo(OffsetDateTime.now) <= 0).getOrElse(true)
                            )
-      metrics           <- getPageMetricsById(publishedPageViews.map(_.id), payload.directPrincipal)
+      metrics           <- getPageMetrics(publishedPageViews.map(_.id), payload.directPrincipal)
       metricsMap         = metrics.map(a => a.id -> a).toMap
 
     } yield publishedPageViews
@@ -440,19 +440,19 @@ private[impl] class PageDbDao(
 
   // ***************************** metrics *****************************
 
-  def getPageMetricsById(ids: Seq[PageId], principal: AnnettePrincipal): Future[Seq[Metric]] =
+  def getPageMetrics(ids: Seq[PageId], principal: AnnettePrincipal): Future[Seq[Metric]] =
     Source(ids)
-      .mapAsync(1)(id => getPageMetricById(id, principal))
+      .mapAsync(1)(id => getPageMetric(id, principal))
       .runWith(Sink.seq)
 
-  def getPageMetricById(id: PageId, principal: AnnettePrincipal): Future[Metric] =
+  def getPageMetric(id: PageId, principal: AnnettePrincipal): Future[Metric] =
     for {
-      views     <- getPageViewsCountById(id)
-      likes     <- getPageLikesCountById(id)
-      likedByMe <- getPageLikedByMeById(id, principal)
+      views     <- getPageViewsCount(id)
+      likes     <- getPageLikesCount(id)
+      likedByMe <- getPageLikedByMe(id, principal)
     } yield Metric(id, views, likes, likedByMe)
 
-  private def getPageViewsCountById(id: PageId): Future[Int] =
+  private def getPageViewsCount(id: PageId): Future[Int] =
     for {
       maybeCount <- ctx
                       .run(
@@ -462,7 +462,7 @@ private[impl] class PageDbDao(
                       )
     } yield maybeCount.map(_.toInt).getOrElse(0)
 
-  private def getPageLikesCountById(id: PageId): Future[Int] =
+  private def getPageLikesCount(id: PageId): Future[Int] =
     for {
       maybeCount <- ctx
                       .run(
@@ -472,7 +472,7 @@ private[impl] class PageDbDao(
                       )
     } yield maybeCount.map(_.toInt).getOrElse(0)
 
-  private def getPageLikedByMeById(id: PageId, principal: AnnettePrincipal): Future[Boolean] =
+  private def getPageLikedByMe(id: PageId, principal: AnnettePrincipal): Future[Boolean] =
     for {
       maybeLike <- ctx
                      .run(

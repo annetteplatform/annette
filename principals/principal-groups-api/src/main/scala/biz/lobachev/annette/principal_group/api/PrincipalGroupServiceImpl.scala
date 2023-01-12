@@ -52,14 +52,14 @@ class PrincipalGroupServiceImpl(api: PrincipalGroupServiceApi, implicit val ec: 
   override def unassignPrincipal(payload: UnassignPrincipalPayload): Future[Done] =
     api.unassignPrincipal.invoke(payload)
 
-  override def getPrincipalGroupById(id: PrincipalGroupId, fromReadSide: Boolean): Future[PrincipalGroup] =
-    api.getPrincipalGroupById(id, fromReadSide).invoke()
+  override def getPrincipalGroup(id: PrincipalGroupId, fromReadSide: Boolean): Future[PrincipalGroup] =
+    api.getPrincipalGroup(id, fromReadSide).invoke()
 
-  override def getPrincipalGroupsById(
+  override def getPrincipalGroups(
     ids: Set[PrincipalGroupId],
     fromReadSide: Boolean
   ): Future[Seq[PrincipalGroup]] =
-    api.getPrincipalGroupsById(fromReadSide).invoke(ids)
+    api.getPrincipalGroups(fromReadSide).invoke(ids)
 
   override def findPrincipalGroups(query: PrincipalGroupFindQuery): Future[FindResult] =
     api.findPrincipalGroups.invoke(query)
@@ -92,11 +92,11 @@ class PrincipalGroupServiceImpl(api: PrincipalGroupServiceApi, implicit val ec: 
   def deleteCategory(payload: DeleteCategoryPayload): Future[Done] =
     api.deleteCategory.invoke(payload)
 
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category] =
-    api.getCategoryById(id, fromReadSide).invoke()
+  def getCategory(id: CategoryId, fromReadSide: Boolean): Future[Category] =
+    api.getCategory(id, fromReadSide).invoke()
 
-  def getCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean): Future[Seq[Category]] =
-    api.getCategoriesById(fromReadSide).invoke(ids)
+  def getCategories(ids: Set[CategoryId], fromReadSide: Boolean): Future[Seq[Category]] =
+    api.getCategories(fromReadSide).invoke(ids)
 
   def findCategories(query: CategoryFindQuery): Future[FindResult] =
     api.findCategories.invoke(query)

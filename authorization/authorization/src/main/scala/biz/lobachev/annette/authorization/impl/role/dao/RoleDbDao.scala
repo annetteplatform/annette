@@ -214,7 +214,7 @@ private[impl] class RoleDbDao(
            )
     } yield Done
 
-  def getRoleById(id: AuthRoleId): Future[Option[AuthRole]] =
+  def getRole(id: AuthRoleId): Future[Option[AuthRole]] =
     for {
       maybeRoleRecord <- ctx
                            .run(roleSchema.filter(_.id == lift(id)))
@@ -229,7 +229,7 @@ private[impl] class RoleDbDao(
       principals <- ctx.run(rolePrincipalSchema.filter(_.roleId == lift(id)))
     } yield maybeRole.map(_ => principals.map(_.toPrincipal).toSet)
 
-  def getRolesById(ids: Set[AuthRoleId]): Future[Seq[AuthRole]] =
+  def getRoles(ids: Set[AuthRoleId]): Future[Seq[AuthRole]] =
     for {
       roles       <- ctx
                        .run(roleSchema.filter(b => liftQuery(ids).contains(b.id)))

@@ -23,6 +23,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.impl.application.dao.{ApplicationDbDao, ApplicationIndexDao}
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.indexing.FindResult
 import com.typesafe.config.Config
 import io.scalaland.chimney.dsl._
@@ -99,23 +100,18 @@ class ApplicationEntityService(
       }
       .map(convertSuccess)
 
-  def getApplication(id: ApplicationId): Future[Application] =
-    refFor(id)
-      .ask[ApplicationEntity.Confirmation](ApplicationEntity.GetApplication(id, _))
-      .map(convertSuccessApplication)
-
-  def getApplicationById(id: ApplicationId, fromReadSide: Boolean): Future[Application] =
-    if (fromReadSide)
+  def getApplication(id: ApplicationId, source: Option[String]): Future[Application] =
+    if (DataSource.fromOrigin(source))
+      refFor(id)
+        .ask[ApplicationEntity.Confirmation](ApplicationEntity.GetApplication(id, _))
+        .map(convertSuccessApplication)
+    else
       dbDao
-        .getApplicationById(id)
+        .getApplication(id)
         .map(_.getOrElse(throw ApplicationNotFound()))
-    else
-      getApplication(id)
 
-  def getApplicationsById(ids: Set[ApplicationId], fromReadSide: Boolean): Future[Seq[Application]] =
-    if (fromReadSide)
-      dbDao.getApplicationsById(ids)
-    else
+  def getApplications(ids: Set[ApplicationId], source: Option[String]): Future[Seq[Application]] =
+    if (DataSource.fromOrigin(source))
       Source(ids)
         .mapAsync(1) { id =>
           refFor(id)
@@ -127,6 +123,8 @@ class ApplicationEntityService(
         }
         .runWith(Sink.seq)
         .map(_.flatten)
+    else
+      dbDao.getApplications(ids)
 
   def getAllApplications(): Future[Seq[Application]] =
     dbDao.getAllApplications()

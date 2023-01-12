@@ -26,7 +26,7 @@ import biz.lobachev.annette.application.impl.application._
 import biz.lobachev.annette.application.impl.language._
 import biz.lobachev.annette.application.impl.translation._
 import biz.lobachev.annette.application.impl.translation_json.TranslationJsonEntityService
-import biz.lobachev.annette.core.model.LanguageId
+import biz.lobachev.annette.core.model.{DataSource, LanguageId}
 import biz.lobachev.annette.core.model.indexing.FindResult
 import com.typesafe.config.Config
 import play.api.libs.json.JsObject
@@ -59,11 +59,11 @@ class ApplicationServiceImpl(
   override def deleteLanguage(payload: DeleteLanguagePayload): Future[Done] =
     languageEntityService.deleteLanguage(payload)
 
-  override def getLanguageById(id: LanguageId, fromReadSide: Boolean): Future[Language] =
-    languageEntityService.getLanguageById(id, fromReadSide)
+  override def getLanguage(id: LanguageId, source: Option[String] = None): Future[Language] =
+    languageEntityService.getLanguage(id, source)
 
-  override def getLanguagesById(ids: Set[LanguageId], fromReadSide: Boolean): Future[Seq[Language]] =
-    languageEntityService.getLanguagesById(ids, fromReadSide)
+  override def getLanguages(ids: Set[LanguageId], source: Option[String] = None): Future[Seq[Language]] =
+    languageEntityService.getLanguages(ids, source)
 
   override def findLanguages(query: FindLanguageQuery): Future[FindResult] =
     languageEntityService.findLanguages(query)
@@ -83,11 +83,11 @@ class ApplicationServiceImpl(
       _ <- translationJsonEntityService.deleteTranslationJsons(payload)
     } yield Done
 
-  override def getTranslationById(id: TranslationId, fromReadSide: Boolean): Future[Translation] =
-    translationEntityService.getTranslationById(id, fromReadSide)
+  override def getTranslation(id: TranslationId, source: Option[String] = None): Future[Translation] =
+    translationEntityService.getTranslation(id, source)
 
-  override def getTranslationsById(ids: Set[TranslationId], fromReadSide: Boolean): Future[Seq[Translation]] =
-    translationEntityService.getTranslationsById(ids, fromReadSide)
+  override def getTranslations(ids: Set[TranslationId], source: Option[String] = None): Future[Seq[Translation]] =
+    translationEntityService.getTranslations(ids, source)
 
   override def findTranslations(query: FindTranslationQuery): Future[FindResult] =
     translationEntityService.findTranslations(query)
@@ -116,11 +116,11 @@ class ApplicationServiceImpl(
   override def deleteApplication(payload: DeleteApplicationPayload): Future[Done] =
     applicationEntityService.deleteApplication(payload)
 
-  override def getApplicationById(id: ApplicationId, fromReadSide: Boolean): Future[Application] =
-    applicationEntityService.getApplicationById(id, fromReadSide)
+  override def getApplication(id: ApplicationId, source: Option[String] = None): Future[Application] =
+    applicationEntityService.getApplication(id, source)
 
-  override def getApplicationsById(ids: Set[ApplicationId], fromReadSide: Boolean): Future[Seq[Application]] =
-    applicationEntityService.getApplicationsById(ids, fromReadSide)
+  override def getApplications(ids: Set[ApplicationId], source: Option[String] = None): Future[Seq[Application]] =
+    applicationEntityService.getApplications(ids, source)
 
   override def getAllApplications(): Future[Seq[Application]] =
     applicationEntityService.getAllApplications()
@@ -130,7 +130,7 @@ class ApplicationServiceImpl(
 
   override def getApplicationTranslations(id: ApplicationId, languageId: LanguageId): Future[JsObject] =
     for {
-      application      <- applicationEntityService.getApplicationById(id, true)
+      application      <- applicationEntityService.getApplication(id, DataSource.FROM_READ_SIDE)
       translationJsons <- translationJsonEntityService.getTranslationJsons(application.translations, languageId)
       json              = translationJsons.map(_.json).reduceRight((obj, acc) => acc.deepMerge(obj))
     } yield json

@@ -22,7 +22,7 @@ import biz.lobachev.annette.application.api.ApplicationService
 import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.application.gateway.Permissions.MAINTAIN_ALL_TRANSLATIONS
 import biz.lobachev.annette.application.gateway.translation._
-import biz.lobachev.annette.core.model.LanguageId
+import biz.lobachev.annette.core.model.{DataSource, LanguageId}
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}
@@ -48,7 +48,7 @@ class TranslationController @Inject() (
       authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
         for {
           _      <- applicationService.createTranslation(payload)
-          result <- applicationService.getTranslationById(payload.id, false)
+          result <- applicationService.getTranslation(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -62,7 +62,7 @@ class TranslationController @Inject() (
           .transform
         for {
           _      <- applicationService.updateTranslation(payload)
-          result <- applicationService.getTranslationById(payload.id, false)
+          result <- applicationService.getTranslation(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -80,21 +80,21 @@ class TranslationController @Inject() (
       }
     }
 
-  def getTranslationById(id: TranslationId, fromReadSide: Boolean = true) =
+  def getTranslation(id: TranslationId, source: Option[String] = None) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
         for {
-          result <- applicationService.getTranslationById(id, fromReadSide)
+          result <- applicationService.getTranslation(id, source)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def getTranslationsById(fromReadSide: Boolean = true) =
+  def getTranslations(source: Option[String] = None) =
     authenticated.async(parse.json[Set[TranslationId]]) { implicit request =>
       authorizer.performCheckAny(MAINTAIN_ALL_TRANSLATIONS) {
         val ids = request.body
         for {
-          result <- applicationService.getTranslationsById(ids, fromReadSide)
+          result <- applicationService.getTranslations(ids, source)
         } yield Ok(Json.toJson(result))
       }
     }

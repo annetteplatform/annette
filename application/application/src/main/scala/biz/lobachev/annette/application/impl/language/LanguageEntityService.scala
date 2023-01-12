@@ -23,7 +23,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.application.api.language._
 import biz.lobachev.annette.application.impl.language.dao.{LanguageDbDao, LanguageIndexDao}
-import biz.lobachev.annette.core.model.LanguageId
+import biz.lobachev.annette.core.model.{DataSource, LanguageId}
 import biz.lobachev.annette.core.model.indexing.FindResult
 import com.typesafe.config.Config
 import io.scalaland.chimney.dsl._
@@ -100,32 +100,34 @@ class LanguageEntityService(
       }
       .map(convertSuccess)
 
-  def getLanguageById(id: LanguageId, fromReadSide: Boolean = true): Future[Language] =
-    if (fromReadSide)
-      dbDao
-        .getLanguageById(id)
-        .map(_.getOrElse(throw LanguageNotFound()))
-    else
+  def getLanguage(id: LanguageId, source: Option[String]): Future[Language] =
+    if (DataSource.fromOrigin(source)) {
       refFor(id)
         .ask[LanguageEntity.Confirmation](LanguageEntity.GetLanguage(id, _))
         .map(convertSuccessLanguage)
-
-  def getLanguagesById(ids: Set[LanguageId], fromReadSide: Boolean): Future[Seq[Language]] =
-    if (fromReadSide)
+    } else {
       dbDao
-        .getLanguagesById(ids)
-    else
+        .getLanguage(id)
+        .map(_.getOrElse(throw LanguageNotFound()))
+    }
+
+  def getLanguages(ids: Set[LanguageId], source: Option[String]): Future[Seq[Language]] =
+    if (DataSource.fromOrigin(source)) {
       Source(ids)
         .mapAsync(1) { id =>
           refFor(id)
             .ask[LanguageEntity.Confirmation](LanguageEntity.GetLanguage(id, _))
             .map {
               case LanguageEntity.SuccessLanguage(language) => Some(language)
-              case _                                        => None
+              case _ => None
             }
         }
         .runWith(Sink.seq)
         .map(_.flatten)
+    } else {
+      dbDao
+        .getLanguages(ids)
+    }
 
   def findLanguages(query: FindLanguageQuery): Future[FindResult] =
     indexDao.findLanguages(query)

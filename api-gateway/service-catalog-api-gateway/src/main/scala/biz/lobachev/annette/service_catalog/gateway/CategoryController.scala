@@ -51,7 +51,7 @@ class CategoryController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.createCategory(payload)
-          result <- serviceCatalogService.getCategoryById(payload.id, false)
+          result <- serviceCatalogService.getCategory(payload.id, false)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -65,7 +65,7 @@ class CategoryController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.updateCategory(payload)
-          result <- serviceCatalogService.getCategoryById(payload.id, false)
+          result <- serviceCatalogService.getCategory(payload.id, false)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -83,21 +83,21 @@ class CategoryController @Inject() (
       }
     }
 
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean = true) =
+  def getCategory(id: CategoryId, fromReadSide: Boolean = true) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
         for {
-          result <- serviceCatalogService.getCategoryById(id, fromReadSide)
+          result <- serviceCatalogService.getCategory(id, fromReadSide)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def getCategoriesById(fromReadSide: Boolean = true) =
+  def getCategories(fromReadSide: Boolean = true) =
     authenticated.async(parse.json[Set[CategoryId]]) { implicit request =>
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
         val ids = request.body
         for {
-          result <- serviceCatalogService.getCategoriesById(ids, fromReadSide)
+          result <- serviceCatalogService.getCategories(ids, fromReadSide)
         } yield Ok(Json.toJson(result))
       }
     }

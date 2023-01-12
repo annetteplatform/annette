@@ -91,7 +91,7 @@ class CmsPostViewController @Inject() (
       }
     }
 
-  def getPostViewAnnotationsById =
+  def getPostViewAnnotations =
     maybeAuthenticated.async(parse.json[Set[PostId]]) { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         val ids = request.request.body
@@ -108,7 +108,7 @@ class CmsPostViewController @Inject() (
       }
     }
 
-  def getPostViewsById =
+  def getPostViews =
     maybeAuthenticated.async(parse.json[Set[PostId]]) { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         val ids = request.request.body
@@ -125,7 +125,7 @@ class CmsPostViewController @Inject() (
       }
     }
 
-  def getPostViewById(postId: PostId) =
+  def getPostView(postId: PostId) =
     maybeAuthenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         for {
@@ -155,7 +155,7 @@ class CmsPostViewController @Inject() (
           _         <- if (canAccess)
                          cmsService.viewPost(ViewPayload(id, request.subject.principals.head))
                        else Future.failed(PostNotFound(id))
-          result    <- cmsService.getPostMetricById(GetMetricPayload(id, request.subject.principals.head))
+          result    <- cmsService.getPostMetric(GetMetricPayload(id, request.subject.principals.head))
         } yield Ok(Json.toJson(result))
       }
     }
@@ -173,7 +173,7 @@ class CmsPostViewController @Inject() (
           _         <- if (canAccess)
                          cmsService.likePost(LikePayload(id, request.subject.principals.head))
                        else Future.failed(PostNotFound(id))
-          result    <- cmsService.getPostMetricById(GetMetricPayload(id, request.subject.principals.head))
+          result    <- cmsService.getPostMetric(GetMetricPayload(id, request.subject.principals.head))
         } yield Ok(Json.toJson(result))
       }
     }
@@ -191,7 +191,7 @@ class CmsPostViewController @Inject() (
           _         <- if (canAccess)
                          cmsService.unlikePost(UnlikePayload(id, request.subject.principals.head))
                        else Future.failed(PostNotFound(id))
-          result    <- cmsService.getPostMetricById(GetMetricPayload(id, request.subject.principals.head))
+          result    <- cmsService.getPostMetric(GetMetricPayload(id, request.subject.principals.head))
         } yield Ok(Json.toJson(result))
       }
     }

@@ -49,7 +49,7 @@ class CmsSpaceCategoryController @Inject() (
           .transform
         for {
           _    <- cmsService.createSpaceCategory(payload)
-          role <- cmsService.getSpaceCategoryById(payload.id, false)
+          role <- cmsService.getSpaceCategory(payload.id, false)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -63,7 +63,7 @@ class CmsSpaceCategoryController @Inject() (
           .transform
         for {
           _    <- cmsService.updateSpaceCategory(payload)
-          role <- cmsService.getSpaceCategoryById(payload.id, false)
+          role <- cmsService.getSpaceCategory(payload.id, false)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -81,26 +81,26 @@ class CmsSpaceCategoryController @Inject() (
       }
     }
 
-  def getSpaceCategoryById(id: CategoryId, fromReadSide: Boolean) =
+  def getSpaceCategory(id: CategoryId, fromReadSide: Boolean) =
     authenticated.async { implicit request =>
       val rules =
         if (fromReadSide) Seq(VIEW_ALL_SPACE_CATEGORIES, MAINTAIN_ALL_SPACE_CATEGORIES)
         else Seq(MAINTAIN_ALL_SPACE_CATEGORIES)
       authorizer.performCheckAny(rules: _*) {
         for {
-          role <- cmsService.getSpaceCategoryById(id, fromReadSide)
+          role <- cmsService.getSpaceCategory(id, fromReadSide)
         } yield Ok(Json.toJson(role))
       }
     }
 
-  def getSpaceCategoriesById(fromReadSide: Boolean) =
+  def getSpaceCategories(fromReadSide: Boolean) =
     authenticated.async(parse.json[Set[CategoryId]]) { implicit request =>
       val rules =
         if (fromReadSide) Seq(VIEW_ALL_SPACE_CATEGORIES, MAINTAIN_ALL_SPACE_CATEGORIES)
         else Seq(MAINTAIN_ALL_SPACE_CATEGORIES)
       authorizer.performCheckAny(rules: _*) {
         for {
-          result <- cmsService.getSpaceCategoriesById(request.request.body, fromReadSide)
+          result <- cmsService.getSpaceCategories(request.request.body, fromReadSide)
         } yield Ok(Json.toJson(result))
       }
     }

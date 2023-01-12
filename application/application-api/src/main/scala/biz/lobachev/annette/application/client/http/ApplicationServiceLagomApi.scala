@@ -31,16 +31,16 @@ trait ApplicationServiceLagomApi extends Service {
   def createLanguage: ServiceCall[CreateLanguagePayload, Done]
   def updateLanguage: ServiceCall[UpdateLanguagePayload, Done]
   def deleteLanguage: ServiceCall[DeleteLanguagePayload, Done]
-  def getLanguageById(id: LanguageId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Language]
-  def getLanguagesById(fromReadSide: Boolean = true): ServiceCall[Set[LanguageId], Seq[Language]]
+  def getLanguage(id: LanguageId, source: Option[String] = None): ServiceCall[NotUsed, Language]
+  def getLanguages(source: Option[String] = None): ServiceCall[Set[LanguageId], Seq[Language]]
   def findLanguages: ServiceCall[FindLanguageQuery, FindResult]
   def getAllLanguages: ServiceCall[NotUsed, Seq[Language]]
 
   def createTranslation: ServiceCall[CreateTranslationPayload, Done]
   def updateTranslation: ServiceCall[UpdateTranslationPayload, Done]
   def deleteTranslation: ServiceCall[DeleteTranslationPayload, Done]
-  def getTranslationById(id: TranslationId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Translation]
-  def getTranslationsById(fromReadSide: Boolean = true): ServiceCall[Set[TranslationId], Seq[Translation]]
+  def getTranslation(id: TranslationId, source: Option[String] = None): ServiceCall[NotUsed, Translation]
+  def getTranslations(source: Option[String] = None): ServiceCall[Set[TranslationId], Seq[Translation]]
   def findTranslations: ServiceCall[FindTranslationQuery, FindResult]
 
   def updateTranslationJson: ServiceCall[UpdateTranslationJsonPayload, Done]
@@ -52,8 +52,8 @@ trait ApplicationServiceLagomApi extends Service {
   def createApplication: ServiceCall[CreateApplicationPayload, Done]
   def updateApplication: ServiceCall[UpdateApplicationPayload, Done]
   def deleteApplication: ServiceCall[DeleteApplicationPayload, Done]
-  def getApplicationById(id: ApplicationId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Application]
-  def getApplicationsById(fromReadSide: Boolean = true): ServiceCall[Set[ApplicationId], Seq[Application]]
+  def getApplication(id: ApplicationId, source: Option[String] = None): ServiceCall[NotUsed, Application]
+  def getApplications(source: Option[String] = None): ServiceCall[Set[ApplicationId], Seq[Application]]
   def getAllApplications: ServiceCall[NotUsed, Seq[Application]]
   def findApplications: ServiceCall[FindApplicationQuery, FindResult]
   def getApplicationTranslations(id: ApplicationId, languageId: LanguageId): ServiceCall[NotUsed, JsObject]
@@ -65,15 +65,15 @@ trait ApplicationServiceLagomApi extends Service {
         pathCall("/api/application/v1/createLanguage", createLanguage),
         pathCall("/api/application/v1/updateLanguage", updateLanguage),
         pathCall("/api/application/v1/deleteLanguage", deleteLanguage),
-        pathCall("/api/application/v1/getLanguageById/:id/:fromReadSide", getLanguageById _),
-        pathCall("/api/application/v1/getLanguagesById/:fromReadSide", getLanguagesById _),
+        pathCall("/api/application/v1/getLanguage/:id?source", getLanguage _),
+        pathCall("/api/application/v1/getLanguages?source", getLanguages _),
         pathCall("/api/application/v1/findLanguages", findLanguages),
         pathCall("/api/application/v1/getAllLanguages", getAllLanguages),
         pathCall("/api/application/v1/createTranslation", createTranslation),
         pathCall("/api/application/v1/updateTranslation", updateTranslation),
         pathCall("/api/application/v1/deleteTranslation", deleteTranslation),
-        pathCall("/api/application/v1/getTranslationById/:id/:fromReadSide", getTranslationById _),
-        pathCall("/api/application/v1/getTranslationsById/:fromReadSide", getTranslationsById _),
+        pathCall("/api/application/v1/getTranslation/:id?source", getTranslation _),
+        pathCall("/api/application/v1/getTranslations?source", getTranslations _),
         pathCall("/api/application/v1/findTranslations", findTranslations),
         pathCall("/api/application/v1/updateTranslationJson", updateTranslationJson),
         pathCall("/api/application/v1/deleteTranslationJson", deleteTranslationJson),
@@ -83,8 +83,8 @@ trait ApplicationServiceLagomApi extends Service {
         pathCall("/api/application/v1/createApplication", createApplication),
         pathCall("/api/application/v1/updateApplication", updateApplication),
         pathCall("/api/application/v1/deleteApplication", deleteApplication),
-        pathCall("/api/application/v1/getApplicationById/:id/:fromReadSide", getApplicationById _),
-        pathCall("/api/application/v1/getApplicationsById/:fromReadSide", getApplicationsById _),
+        pathCall("/api/application/v1/getApplication/:id?source", getApplication _),
+        pathCall("/api/application/v1/getApplications?source", getApplications _),
         pathCall("/api/application/v1/getAllApplications", getAllApplications),
         pathCall("/api/application/v1/findApplications", findApplications),
         pathCall("/api/application/v1/getApplicationTranslations/:id/:languageId", getApplicationTranslations _)

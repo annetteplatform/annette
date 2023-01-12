@@ -488,7 +488,7 @@ private[impl] class HierarchyDbDao(
            )
     } yield Done
 
-  def getOrgItemById(id: CompositeOrgItemId, attributes: Seq[String]): Future[Option[OrgItem]] =
+  def getOrgItem(id: CompositeOrgItemId, attributes: Seq[String]): Future[Option[OrgItem]] =
     for {
       maybeEntity      <- ctx
                             .run(itemSchema.filter(_.id == lift(id)))
@@ -497,7 +497,7 @@ private[impl] class HierarchyDbDao(
                           else Future.successful(Map.empty[String, String])
     } yield maybeEntity.map(_.withAttributes(entityAttributes))
 
-  def getOrgItemsById(ids: Set[CompositeOrgItemId], attributes: Seq[String]): Future[Seq[OrgItem]] =
+  def getOrgItems(ids: Set[CompositeOrgItemId], attributes: Seq[String]): Future[Seq[OrgItem]] =
     for {
       entities      <- ctx
                          .run(itemSchema.filter(b => liftQuery(ids).contains(b.id)))

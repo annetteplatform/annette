@@ -70,12 +70,12 @@ private[application] class LanguageDbDao(
   def deleteLanguage(event: LanguageEntity.LanguageDeleted) =
     ctx.run(schema.filter(_.id == lift(event.id)).delete)
 
-  def getLanguageById(id: LanguageId): Future[Option[Language]] =
+  def getLanguage(id: LanguageId): Future[Option[Language]] =
     ctx
       .run(schema.filter(_.id == lift(id)))
       .map(_.headOption)
 
-  def getLanguagesById(ids: Set[LanguageId]): Future[Seq[Language]] =
+  def getLanguages(ids: Set[LanguageId]): Future[Seq[Language]] =
     ctx.run(schema.filter(b => liftQuery(ids).contains(b.id)))
 
   def getAllLanguages(): Future[Seq[Language]] =

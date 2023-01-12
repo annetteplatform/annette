@@ -45,7 +45,7 @@ class DataSchemaServiceSpec extends AsyncWordSpecLike with Matchers {
       )
       for {
         dataSchema1 <- dataSchemaService.createDataSchema(payload)
-        dataSchema2 <- dataSchemaService.getDataSchemaById(id.value, true)
+        dataSchema2 <- dataSchemaService.getDataSchema(id.value, true)
       } yield {
         dataSchemaService.deleteDataSchema(DeleteDataSchemaPayload(id, payload.updatedBy))
         val targetSchema = payload
@@ -85,7 +85,7 @@ class DataSchemaServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         dataSchema0 <- dataSchemaService.createDataSchema(createPayload)
         dataSchema1 <- dataSchemaService.updateDataSchema(updatePayload)
-        dataSchema2 <- dataSchemaService.getDataSchemaById(id.value, true)
+        dataSchema2 <- dataSchemaService.getDataSchema(id.value, true)
 
       } yield {
         dataSchemaService.deleteDataSchema(DeleteDataSchemaPayload(id, createPayload.updatedBy))
@@ -124,7 +124,7 @@ class DataSchemaServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         dataSchema0 <- dataSchemaService.createDataSchema(createPayload)
         dataSchema1 <- dataSchemaService.updateDataSchemaName(updatePayload)
-        dataSchema2 <- dataSchemaService.getDataSchemaById(id.value, true)
+        dataSchema2 <- dataSchemaService.getDataSchema(id.value, true)
 
       } yield {
         dataSchemaService.deleteDataSchema(DeleteDataSchemaPayload(id, createPayload.updatedBy))
@@ -165,7 +165,7 @@ class DataSchemaServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         dataSchema0 <- dataSchemaService.createDataSchema(createPayload)
         dataSchema1 <- dataSchemaService.updateDataSchemaDescription(updatePayload)
-        dataSchema2 <- dataSchemaService.getDataSchemaById(id.value, true)
+        dataSchema2 <- dataSchemaService.getDataSchema(id.value, true)
 
       } yield {
         dataSchemaService.deleteDataSchema(DeleteDataSchemaPayload(id, createPayload.updatedBy))
@@ -210,7 +210,7 @@ class DataSchemaServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         dataSchema0 <- dataSchemaService.createDataSchema(createPayload)
         dataSchema1 <- dataSchemaService.storeDataSchemaVariable(updatePayload)
-        dataSchema2 <- dataSchemaService.getDataSchemaById(id.value, true)
+        dataSchema2 <- dataSchemaService.getDataSchema(id.value, true)
 
       } yield {
         dataSchemaService.deleteDataSchema(DeleteDataSchemaPayload(id, createPayload.updatedBy))
@@ -258,7 +258,7 @@ class DataSchemaServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         dataSchema0 <- dataSchemaService.createDataSchema(createPayload)
         dataSchema1 <- dataSchemaService.storeDataSchemaVariable(updatePayload)
-        dataSchema2 <- dataSchemaService.getDataSchemaById(id.value, true)
+        dataSchema2 <- dataSchemaService.getDataSchema(id.value, true)
 
       } yield {
         dataSchemaService.deleteDataSchema(DeleteDataSchemaPayload(id, createPayload.updatedBy))
@@ -307,7 +307,7 @@ class DataSchemaServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         dataSchema0 <- dataSchemaService.createDataSchema(createPayload)
         dataSchema1 <- dataSchemaService.storeDataSchemaVariable(updatePayload)
-        dataSchema2 <- dataSchemaService.getDataSchemaById(id.value, true)
+        dataSchema2 <- dataSchemaService.getDataSchema(id.value, true)
 
       } yield {
         dataSchemaService.deleteDataSchema(DeleteDataSchemaPayload(id, createPayload.updatedBy))
@@ -369,7 +369,7 @@ class DataSchemaServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         dataSchema0 <- dataSchemaService.createDataSchema(createPayload)
         dataSchema1 <- dataSchemaService.deleteDataSchemaVariable(updatePayload)
-        dataSchema2 <- dataSchemaService.getDataSchemaById(id.value, true)
+        dataSchema2 <- dataSchemaService.getDataSchema(id.value, true)
 
       } yield {
         dataSchemaService.deleteDataSchema(DeleteDataSchemaPayload(id, createPayload.updatedBy))
@@ -420,7 +420,7 @@ class DataSchemaServiceSpec extends AsyncWordSpecLike with Matchers {
       for {
         dataSchema1 <- dataSchemaService.createDataSchema(payload)
         done <- dataSchemaService.deleteDataSchema(DeleteDataSchemaPayload(id, payload.updatedBy))
-        ex   <- recoverToExceptionIf[AnnetteTransportException](dataSchemaService.getDataSchemaById(id.value, true))
+        ex   <- recoverToExceptionIf[AnnetteTransportException](dataSchemaService.getDataSchema(id.value, true))
       } yield {
         val targetSchema = payload
           .into[DataSchema]
@@ -487,8 +487,8 @@ class DataSchemaServiceSpec extends AsyncWordSpecLike with Matchers {
       )
       for {
         dataSchema1 <- dataSchemaService.createDataSchema(payload)
-        dataSchema2 <- dataSchemaService.getDataSchemaById(id.value, true)
-        dataSchema3 <- dataSchemaService.getDataSchemaById(id.value, false)
+        dataSchema2 <- dataSchemaService.getDataSchema(id.value, true)
+        dataSchema3 <- dataSchemaService.getDataSchema(id.value, false)
       } yield {
         dataSchemaService.deleteDataSchema(DeleteDataSchemaPayload(id, payload.updatedBy))
         val targetSchema = payload

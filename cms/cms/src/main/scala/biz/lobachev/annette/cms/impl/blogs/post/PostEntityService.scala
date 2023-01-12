@@ -254,7 +254,7 @@ class PostEntityService(
   def canAccessToPost(payload: CanAccessToEntityPayload): Future[Boolean] =
     dbDao.canAccessToPost(payload.id, payload.principals)
 
-  def getPostById(
+  def getPost(
     id: PostId,
     fromReadSide: Boolean,
     withIntro: Boolean,
@@ -263,12 +263,12 @@ class PostEntityService(
   ): Future[Post] =
     if (fromReadSide)
       dbDao
-        .getPostById(id, withIntro, withContent, withTargets)
+        .getPost(id, withIntro, withContent, withTargets)
         .map(_.getOrElse(throw PostNotFound(id)))
     else
       getPost(id, withIntro, withContent, withTargets)
 
-  def getPostsById(
+  def getPosts(
     ids: Set[PostId],
     fromReadSide: Boolean,
     withIntro: Boolean,
@@ -276,7 +276,7 @@ class PostEntityService(
     withTargets: Boolean
   ): Future[Seq[Post]] =
     if (fromReadSide)
-      dbDao.getPostsById(ids, withIntro, withContent, withTargets)
+      dbDao.getPosts(ids, withIntro, withContent, withTargets)
     else
       Future
         .traverse(ids) { id =>
@@ -290,7 +290,7 @@ class PostEntityService(
         .map(_.flatten.toSeq)
 
   def getPostViews(payload: GetPostViewsPayload): Future[Seq[Post]] =
-    dbDao.getPostViewsById(payload)
+    dbDao.getPostViews(payload)
 
   def findPosts(query: PostFindQuery): Future[FindResult] = indexDao.findPosts(query)
 
@@ -300,10 +300,10 @@ class PostEntityService(
 
   def unlikePost(payload: UnlikePayload): Future[Done] = dbDao.unlikePost(payload.id, payload.updatedBy)
 
-  def getPostMetricById(payload: GetMetricPayload): Future[Metric] =
-    dbDao.getPostMetricById(payload.id, payload.principal)
+  def getPostMetric(payload: GetMetricPayload): Future[Metric] =
+    dbDao.getPostMetric(payload.id, payload.principal)
 
-  def getPostMetricsById(payload: GetMetricsPayload): Future[Seq[Metric]] =
-    dbDao.getPostMetricsById(payload.ids, payload.principal)
+  def getPostMetrics(payload: GetMetricsPayload): Future[Seq[Metric]] =
+    dbDao.getPostMetrics(payload.ids, payload.principal)
 
 }

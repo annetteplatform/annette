@@ -99,14 +99,14 @@ class RoleEntityService(
       .ask[RoleEntity.Confirmation](RoleEntity.UnassignPrincipal(payload, _))
       .map(convertSuccess)
 
-  def getRoleById(id: AuthRoleId, fromReadSide: Boolean): Future[AuthRole] =
+  def getRole(id: AuthRoleId, fromReadSide: Boolean): Future[AuthRole] =
     if (fromReadSide)
       dbDao
-        .getRoleById(id)
+        .getRole(id)
         .map(_.getOrElse(throw RoleNotFound()))
     else
       refFor(id)
-        .ask[RoleEntity.Confirmation](RoleEntity.GetRoleById(id, _))
+        .ask[RoleEntity.Confirmation](RoleEntity.GetRole(id, _))
         .map(convertSuccessRole)
 
   def getRolePrincipals(id: AuthRoleId, fromReadSide: Boolean): Future[Set[AnnettePrincipal]] =
@@ -124,16 +124,16 @@ class RoleEntityService(
       .ask[RoleEntity.Confirmation](RoleEntity.GetRolePrincipals(id, _))
       .map(convertSuccessPrincipals)
 
-  def getRolesById(ids: Set[AuthRoleId], fromReadSide: Boolean): Future[Seq[AuthRole]] =
+  def getRoles(ids: Set[AuthRoleId], fromReadSide: Boolean): Future[Seq[AuthRole]] =
     if (fromReadSide)
       dbDao
-        .getRolesById(ids)
+        .getRoles(ids)
     else
       for {
         roles <- Source(ids)
                    .mapAsync(1) { id =>
                      refFor(id)
-                       .ask[RoleEntity.Confirmation](RoleEntity.GetRoleById(id, _))
+                       .ask[RoleEntity.Confirmation](RoleEntity.GetRole(id, _))
                        .map {
                          case RoleEntity.SuccessRole(role) => Some(role)
                          case _                            => None

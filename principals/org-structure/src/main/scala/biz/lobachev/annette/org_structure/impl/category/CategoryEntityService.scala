@@ -72,11 +72,11 @@ class CategoryEntityService(
       .ask[CategoryEntity.Confirmation](CategoryEntity.DeleteCategory(payload, _))
       .map(res => convertSuccess(payload.id, res))
 
-  def getCategoryById(id: OrgCategoryId, fromReadSide: Boolean): Future[OrgCategory] =
-    if (fromReadSide) getCategoryByIdFromReadSide(id)
-    else getCategoryById(id)
+  def getCategory(id: OrgCategoryId, fromReadSide: Boolean): Future[OrgCategory] =
+    if (fromReadSide) getCategoryFromReadSide(id)
+    else getCategory(id)
 
-  def getCategoryById(id: OrgCategoryId): Future[OrgCategory] =
+  def getCategory(id: OrgCategoryId): Future[OrgCategory] =
     refFor(id)
       .ask[CategoryEntity.Confirmation](CategoryEntity.GetCategory(id, _))
       .map {
@@ -84,16 +84,16 @@ class CategoryEntityService(
         case _                                      => throw OrgCategoryNotFound(id)
       }
 
-  def getCategoryByIdFromReadSide(id: OrgCategoryId): Future[OrgCategory] =
+  def getCategoryFromReadSide(id: OrgCategoryId): Future[OrgCategory] =
     for {
-      maybeCategory <- dbDao.getCategoryById(id)
+      maybeCategory <- dbDao.getCategory(id)
     } yield maybeCategory match {
       case Some(category) => category
       case None           => throw OrgCategoryNotFound(id)
     }
 
-  def getCategoriesById(ids: Set[OrgCategoryId], fromReadSide: Boolean): Future[Seq[OrgCategory]] =
-    if (fromReadSide) dbDao.getCategoriesById(ids)
+  def getCategories(ids: Set[OrgCategoryId], fromReadSide: Boolean): Future[Seq[OrgCategory]] =
+    if (fromReadSide) dbDao.getCategories(ids)
     else
       Source(ids)
         .mapAsync(1) { id =>
