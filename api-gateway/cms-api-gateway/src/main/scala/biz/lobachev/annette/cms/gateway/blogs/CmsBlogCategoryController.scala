@@ -49,7 +49,7 @@ class CmsBlogCategoryController @Inject() (
           .transform
         for {
           _    <- cmsService.createBlogCategory(payload)
-          role <- cmsService.getBlogCategoryById(payload.id, false)
+          role <- cmsService.getBlogCategory(payload.id, false)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -63,7 +63,7 @@ class CmsBlogCategoryController @Inject() (
           .transform
         for {
           _    <- cmsService.updateBlogCategory(payload)
-          role <- cmsService.getBlogCategoryById(payload.id, false)
+          role <- cmsService.getBlogCategory(payload.id, false)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -81,26 +81,26 @@ class CmsBlogCategoryController @Inject() (
       }
     }
 
-  def getBlogCategoryById(id: CategoryId, fromReadSide: Boolean) =
+  def getBlogCategory(id: CategoryId, fromReadSide: Boolean) =
     authenticated.async { implicit request =>
       val rules =
         if (fromReadSide) Seq(VIEW_ALL_BLOG_CATEGORIES, MAINTAIN_ALL_BLOG_CATEGORIES)
         else Seq(MAINTAIN_ALL_BLOG_CATEGORIES)
       authorizer.performCheckAny(rules: _*) {
         for {
-          role <- cmsService.getBlogCategoryById(id, fromReadSide)
+          role <- cmsService.getBlogCategory(id, fromReadSide)
         } yield Ok(Json.toJson(role))
       }
     }
 
-  def getBlogCategoriesById(fromReadSide: Boolean) =
+  def getBlogCategories(fromReadSide: Boolean) =
     authenticated.async(parse.json[Set[CategoryId]]) { implicit request =>
       val rules =
         if (fromReadSide) Seq(VIEW_ALL_BLOG_CATEGORIES, MAINTAIN_ALL_BLOG_CATEGORIES)
         else Seq(MAINTAIN_ALL_BLOG_CATEGORIES)
       authorizer.performCheckAny(rules: _*) {
         for {
-          result <- cmsService.getBlogCategoriesById(request.request.body, fromReadSide)
+          result <- cmsService.getBlogCategories(request.request.body, fromReadSide)
         } yield Ok(Json.toJson(result))
       }
     }

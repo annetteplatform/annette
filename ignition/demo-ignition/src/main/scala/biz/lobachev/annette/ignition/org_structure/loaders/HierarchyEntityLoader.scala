@@ -190,7 +190,7 @@ class HierarchyEntityLoader(
     val timestamp        = LocalDateTime.now().toString
     val disposedUnitName = s"[DISPOSED $timestamp]"
     for {
-      currentOrg        <- service.getOrgItemById(orgId, false).map(_.asInstanceOf[OrgUnit])
+      currentOrg        <- service.getOrgItem(orgId, false).map(_.asInstanceOf[OrgUnit])
       _                 <- if (currentOrg.name != org.name)
                              service.updateName(UpdateNamePayload(orgId, org.name, org.updatedBy.getOrElse(SystemPrincipal())))
                            else Future.successful(())
@@ -274,7 +274,7 @@ class HierarchyEntityLoader(
 
   private def getCurrentItem(item: OrgItemData) =
     service
-      .getOrgItemById(item.id, false, Some("all"))
+      .getOrgItem(item.id, false, Some("all"))
       .map {
         case currentUnit: OrgUnit if item.isInstanceOf[PositionData]     =>
           throw new IllegalArgumentException(
@@ -386,7 +386,7 @@ class HierarchyEntityLoader(
     for {
       _ <- unit.chief.map { chiefId =>
              for {
-               currentItem <- service.getOrgItemById(unit.id, false)
+               currentItem <- service.getOrgItem(unit.id, false)
                _           <- currentItem match {
                                 case currentUnit: OrgUnit if currentUnit.chief.isEmpty          =>
                                   service

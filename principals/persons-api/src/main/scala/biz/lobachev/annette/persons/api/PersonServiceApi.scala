@@ -69,7 +69,7 @@ trait PersonServiceApi extends Service {
   def getPerson(
     id: PersonId,
     source: Option[String] = None,
-    withAttributes: Option[String] = None
+    attributes: Option[String] = None
   ): ServiceCall[NotUsed, Person]
 
   /**
@@ -79,7 +79,7 @@ trait PersonServiceApi extends Service {
    */
   def getPersons(
     source: Option[String] = None,
-    withAttributes: Option[String] = None
+    attributes: Option[String] = None
   ): ServiceCall[Set[PersonId], Seq[Person]]
 
   /**
@@ -123,8 +123,8 @@ trait PersonServiceApi extends Service {
         pathCall("/api/persons/v1/createPerson",                     createPerson),
         pathCall("/api/persons/v1/updatePerson",                     updatePerson),
         pathCall("/api/persons/v1/deletePerson",                     deletePerson),
-        pathCall("/api/persons/v1/getPerson/:id?withAttributes&source",  getPerson _),
-        pathCall("/api/persons/v1/getPersons?withAttributes&source",     getPersons _),
+        pathCall("/api/persons/v1/getPerson/:id?attributes&source",  getPerson _),
+        pathCall("/api/persons/v1/getPersons?attributes&source",     getPersons _),
         pathCall("/api/persons/v1/findPersons",                      findPersons),
         pathCall("/api/persons/v1/getPersonMetadata",                getPersonMetadata),
         pathCall("/api/persons/v1/updatePersonAttributes",           updatePersonAttributes),

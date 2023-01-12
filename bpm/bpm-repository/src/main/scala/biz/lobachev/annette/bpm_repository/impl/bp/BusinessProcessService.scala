@@ -193,7 +193,7 @@ class BusinessProcessService(db: PostgresDatabase, actions: BusinessProcessActio
     db.run(action.transactionally)
   }
 
-  def getBusinessProcessById(id: String, withVariables: Boolean): Future[BusinessProcess] = {
+  def getBusinessProcess(id: String, withVariables: Boolean): Future[BusinessProcess] = {
     val businessProcessId = BusinessProcessId(id)
     val action            = actions.getBusinessProcessAction(businessProcessId, withVariables)
     for {
@@ -201,7 +201,7 @@ class BusinessProcessService(db: PostgresDatabase, actions: BusinessProcessActio
     } yield res.getOrElse(throw BusinessProcessNotFound(id))
   }
 
-  def getBusinessProcessesById(ids: Seq[BusinessProcessId], withVariables: Boolean): Future[Seq[BusinessProcess]] = {
+  def getBusinessProcesses(ids: Seq[BusinessProcessId], withVariables: Boolean): Future[Seq[BusinessProcess]] = {
     val action = actions.getBusinessProcessesAction(ids, withVariables)
     db.run(action.transactionally)
   }

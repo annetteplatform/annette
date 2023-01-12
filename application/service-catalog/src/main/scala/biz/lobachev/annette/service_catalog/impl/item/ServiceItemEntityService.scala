@@ -115,22 +115,22 @@ class ServiceItemEntityService(
       .ask[Confirmation](DeleteServiceItem(payload, _))
       .map(res => convertSuccess(payload.id, res))
 
-  def getServiceItemById(id: ServiceItemId, fromReadSide: Boolean): Future[ServiceItem] =
+  def getServiceItem(id: ServiceItemId, fromReadSide: Boolean): Future[ServiceItem] =
     if (fromReadSide)
       dbDao
-        .getServiceItemById(id)
+        .getServiceItem(id)
         .map(_.getOrElse(throw ServiceItemNotFound(id)))
     else
       refFor(id)
         .ask[Confirmation](GetServiceItem(id, _))
         .map(res => convertSuccessService(id, res))
 
-  def getServiceItemsById(
+  def getServiceItems(
     ids: Set[ServiceItemId],
     fromReadSide: Boolean
   ): Future[Seq[ServiceItem]] =
     if (fromReadSide)
-      dbDao.getServiceItemsById(ids)
+      dbDao.getServiceItems(ids)
     else
       Source(ids)
         .mapAsync(1) { id =>

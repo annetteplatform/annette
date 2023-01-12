@@ -43,8 +43,8 @@ trait SubscriptionServiceApi extends Service {
 
   def createSubscription: ServiceCall[CreateSubscriptionPayload, Done]
   def deleteSubscription: ServiceCall[DeleteSubscriptionPayload, Done]
-  def getSubscriptionById(fromReadSide: Boolean): ServiceCall[SubscriptionKey, Subscription]
-  def getSubscriptionsById(fromReadSide: Boolean): ServiceCall[Set[SubscriptionKey], Set[Subscription]]
+  def getSubscription(fromReadSide: Boolean): ServiceCall[SubscriptionKey, Subscription]
+  def getSubscriptions(fromReadSide: Boolean): ServiceCall[Set[SubscriptionKey], Set[Subscription]]
   def getSubscriptionsByPrincipals(
     subscriptionType: SubscriptionTypeId
   ): ServiceCall[Set[AnnettePrincipal], Set[SubscriptionKey]]
@@ -58,8 +58,8 @@ trait SubscriptionServiceApi extends Service {
   def createSubscriptionType: ServiceCall[CreateSubscriptionTypePayload, Done]
   def updateSubscriptionType: ServiceCall[UpdateSubscriptionTypePayload, Done]
   def deleteSubscriptionType: ServiceCall[DeleteSubscriptionTypePayload, Done]
-  def getSubscriptionTypeById(id: SubscriptionTypeId, fromReadSide: Boolean): ServiceCall[NotUsed, SubscriptionType]
-  def getSubscriptionTypesById(
+  def getSubscriptionType(id: SubscriptionTypeId, fromReadSide: Boolean): ServiceCall[NotUsed, SubscriptionType]
+  def getSubscriptionTypes(
     fromReadSide: Boolean
   ): ServiceCall[Set[SubscriptionTypeId], Seq[SubscriptionType]]
   def findSubscriptionTypes: ServiceCall[SubscriptionTypeFindQuery, FindResult]
@@ -71,8 +71,8 @@ trait SubscriptionServiceApi extends Service {
       .withCalls(
         pathCall("/api/subscriptions/v1/createSubscription",                             createSubscription),
         pathCall("/api/subscriptions/v1/deleteSubscription",                             deleteSubscription),
-        pathCall("/api/subscriptions/v1/getSubscriptionById/:fromReadSide",              getSubscriptionById _),
-        pathCall("/api/subscriptions/v1/getSubscriptionsById/:fromReadSide",             getSubscriptionsById _),
+        pathCall("/api/subscriptions/v1/getSubscription/:fromReadSide",              getSubscription _),
+        pathCall("/api/subscriptions/v1/getSubscriptions/:fromReadSide",             getSubscriptions _),
         pathCall("/api/subscriptions/v1/findSubscriptions",                              findSubscriptions),
         pathCall("/api/subscriptions/v1/getSubscriptionsByPrincipals/:subscriptionType", getSubscriptionsByPrincipals _),
         pathCall("/api/subscriptions/v1/getSubscriptionsByObjects/:subscriptionType",    getSubscriptionsByObjects _),
@@ -80,8 +80,8 @@ trait SubscriptionServiceApi extends Service {
         pathCall("/api/subscriptions/v1/createSubscriptionType",                createSubscriptionType),
         pathCall("/api/subscriptions/v1/updateSubscriptionType",                updateSubscriptionType),
         pathCall("/api/subscriptions/v1/deleteSubscriptionType",                deleteSubscriptionType),
-        pathCall("/api/subscriptions/v1/getSubscriptionTypeById/:id/:readSide", getSubscriptionTypeById _),
-        pathCall("/api/subscriptions/v1/getSubscriptionTypesById/:readSide",    getSubscriptionTypesById _) ,
+        pathCall("/api/subscriptions/v1/getSubscriptionType/:id/:readSide", getSubscriptionType _),
+        pathCall("/api/subscriptions/v1/getSubscriptionTypes/:readSide",    getSubscriptionTypes _) ,
         pathCall("/api/subscriptions/v1/findSubscriptionTypes",                 findSubscriptionTypes),
       )
       .withExceptionSerializer(new AnnetteTransportExceptionSerializer())

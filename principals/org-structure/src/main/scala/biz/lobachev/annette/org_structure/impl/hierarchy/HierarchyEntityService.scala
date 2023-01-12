@@ -262,7 +262,7 @@ class HierarchyEntityService(
       )
       .map(convertSuccess)
 
-  def getOrganizationById(orgId: CompositeOrgItemId): Future[Organization] =
+  def getOrganization(orgId: CompositeOrgItemId): Future[Organization] =
     refFor(orgId)
       .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrganization(orgId, _))
       .map {
@@ -291,7 +291,7 @@ class HierarchyEntityService(
         case _                                           => throw new RuntimeException("Match fail")
       }
 
-  def getOrgItemById(
+  def getOrgItem(
     id: CompositeOrgItemId,
     fromReadSide: Boolean,
     withAttributes: Option[String] = None
@@ -299,7 +299,7 @@ class HierarchyEntityService(
     val attributes = extractAttributes(withAttributes)
     if (fromReadSide)
       dbDao
-        .getOrgItemById(id, attributes)
+        .getOrgItem(id, attributes)
         .map(_.getOrElse(throw ItemNotFound()))
     else {
       val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attributes)
@@ -315,14 +315,14 @@ class HierarchyEntityService(
     }
   }
 
-  def getOrgItemsById(
+  def getOrgItems(
     ids: Set[CompositeOrgItemId],
     fromReadSide: Boolean,
     withAttributes: Option[String] = None
   ): Future[Seq[OrgItem]] = {
     val attributes = extractAttributes(withAttributes)
     if (fromReadSide)
-      dbDao.getOrgItemsById(ids, attributes)
+      dbDao.getOrgItems(ids, attributes)
     else {
       val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attributes)
       val attributeMapFuture                        =

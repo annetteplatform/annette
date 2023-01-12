@@ -53,15 +53,15 @@ trait OrgStructureService {
 
   def deleteOrgItem(payload: DeleteOrgItemPayload): Future[Done]
 
-  def getOrganizationById(orgId: CompositeOrgItemId): Future[Organization]
+  def getOrganization(orgId: CompositeOrgItemId): Future[Organization]
   def getOrganizationTree(itemId: CompositeOrgItemId): Future[OrganizationTree]
 
-  def getOrgItemById(
+  def getOrgItem(
     itemId: CompositeOrgItemId,
     fromReadSide: Boolean = true,
     withAttributes: Option[String] = None
   ): Future[OrgItem]
-  def getOrgItemsById(
+  def getOrgItems(
     ids: Set[CompositeOrgItemId],
     fromReadSide: Boolean = true,
     withAttributes: Option[String] = None
@@ -94,8 +94,8 @@ trait OrgStructureService {
   def createOrUpdateOrgRole(payload: CreateOrgRolePayload): Future[Done]
   def updateOrgRole(payload: UpdateOrgRolePayload): Future[Done]
   def deleteOrgRole(payload: DeleteOrgRolePayload): Future[Done]
-  def getOrgRoleById(id: OrgRoleId, fromReadSide: Boolean): Future[OrgRole]
-  def getOrgRolesById(ids: Set[OrgRoleId], fromReadSide: Boolean): Future[Seq[OrgRole]]
+  def getOrgRole(id: OrgRoleId, fromReadSide: Boolean): Future[OrgRole]
+  def getOrgRoles(ids: Set[OrgRoleId], fromReadSide: Boolean): Future[Seq[OrgRole]]
   def findOrgRoles(query: OrgRoleFindQuery): Future[FindResult]
 
   // category methods
@@ -104,8 +104,8 @@ trait OrgStructureService {
   def createOrUpdateCategory(payload: CreateCategoryPayload): Future[Done]
   def updateCategory(payload: UpdateCategoryPayload): Future[Done]
   def deleteCategory(payload: DeleteCategoryPayload): Future[Done]
-  def getCategoryById(id: OrgCategoryId, fromReadSide: Boolean): Future[OrgCategory]
-  def getCategoriesById(ids: Set[OrgCategoryId], fromReadSide: Boolean): Future[Seq[OrgCategory]]
+  def getCategory(id: OrgCategoryId, fromReadSide: Boolean): Future[OrgCategory]
+  def getCategories(ids: Set[OrgCategoryId], fromReadSide: Boolean): Future[Seq[OrgCategory]]
   def findCategories(query: OrgCategoryFindQuery): Future[FindResult]
 
 }

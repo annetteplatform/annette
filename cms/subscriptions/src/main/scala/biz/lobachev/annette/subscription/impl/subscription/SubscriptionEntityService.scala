@@ -110,22 +110,22 @@ class SubscriptionEntityService(
       .ask[Confirmation](GetSubscription(key, _))
       .map(res => convertSuccessSubscription(key.subscriptionType, key.objectId, key.principal, res))
 
-  def getSubscriptionById(key: SubscriptionKey, fromReadSide: Boolean): Future[Subscription] =
+  def getSubscription(key: SubscriptionKey, fromReadSide: Boolean): Future[Subscription] =
     if (fromReadSide)
       dbDao
-        .getSubscriptionById(key)
+        .getSubscription(key)
         .map(_.getOrElse(throw SubscriptionNotFound(key.subscriptionType, key.objectId, key.principal.code)))
     else
       getSubscription(key)
 
-  def getSubscriptionsById(
+  def getSubscriptions(
     keys: Set[SubscriptionKey],
     fromReadSide: Boolean
   ): Future[Set[Subscription]] =
     Source(keys)
       .mapAsync(1) { key =>
         if (fromReadSide)
-          dbDao.getSubscriptionById(key)
+          dbDao.getSubscription(key)
         else
           refFor(key.subscriptionType, key.objectId, key.principal)
             .ask[Confirmation](GetSubscription(key, _))

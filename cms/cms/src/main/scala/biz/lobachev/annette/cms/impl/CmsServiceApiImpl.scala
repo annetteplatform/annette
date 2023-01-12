@@ -129,16 +129,16 @@ class CmsServiceApiImpl(
       blogCategoryEntityService.deleteCategory(payload)
     }
 
-  override def getBlogCategoryById(id: CategoryId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Category] =
+  override def getBlogCategory(id: CategoryId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Category] =
     ServiceCall { _ =>
-      blogCategoryEntityService.getCategoryById(id, fromReadSide)
+      blogCategoryEntityService.getCategory(id, fromReadSide)
     }
 
-  override def getBlogCategoriesById(
+  override def getBlogCategories(
     fromReadSide: Boolean = true
   ): ServiceCall[Set[CategoryId], Seq[Category]] =
     ServiceCall { ids =>
-      blogCategoryEntityService.getCategoriesById(ids, fromReadSide)
+      blogCategoryEntityService.getCategories(ids, fromReadSide)
     }
 
   override def findBlogCategories: ServiceCall[CategoryFindQuery, FindResult] =
@@ -202,14 +202,14 @@ class CmsServiceApiImpl(
       blogEntityService.deleteBlog(payload)
     }
 
-  override def getBlogById(id: BlogId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Blog] =
+  override def getBlog(id: BlogId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Blog] =
     ServiceCall { _ =>
-      blogEntityService.getBlogById(id, fromReadSide)
+      blogEntityService.getBlog(id, fromReadSide)
     }
 
-  override def getBlogsById(fromReadSide: Boolean = true): ServiceCall[Set[BlogId], Seq[Blog]] =
+  override def getBlogs(fromReadSide: Boolean = true): ServiceCall[Set[BlogId], Seq[Blog]] =
     ServiceCall { ids =>
-      blogEntityService.getBlogsById(ids, fromReadSide)
+      blogEntityService.getBlogs(ids, fromReadSide)
     }
 
   override def getBlogViews: ServiceCall[GetBlogViewsPayload, Seq[BlogView]] =
@@ -236,7 +236,7 @@ class CmsServiceApiImpl(
       for {
         // validate if blog exist
         // TODO: create isBlogExist method
-        blog    <- blogEntityService.getBlogById(payload.blogId, false)
+        blog    <- blogEntityService.getBlog(payload.blogId, false)
         updated <- postEntityService
                      .createPost(payload, blog.targets)
 
@@ -315,7 +315,7 @@ class CmsServiceApiImpl(
       } yield updated
     }
 
-  override def getPostById(
+  override def getPost(
     id: PostId,
     fromReadSide: Boolean = true,
     withIntro: Option[Boolean] = None,
@@ -323,7 +323,7 @@ class CmsServiceApiImpl(
     withTargets: Option[Boolean] = None
   ): ServiceCall[NotUsed, Post] =
     ServiceCall { _ =>
-      postEntityService.getPostById(
+      postEntityService.getPost(
         id,
         fromReadSide,
         withIntro.getOrElse(false),
@@ -332,14 +332,14 @@ class CmsServiceApiImpl(
       )
     }
 
-  override def getPostsById(
+  override def getPosts(
     fromReadSide: Boolean = true,
     withIntro: Option[Boolean] = None,
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
   ): ServiceCall[Set[PostId], Seq[Post]] =
     ServiceCall { ids =>
-      postEntityService.getPostsById(
+      postEntityService.getPosts(
         ids,
         fromReadSide,
         withIntro.getOrElse(false),
@@ -356,7 +356,7 @@ class CmsServiceApiImpl(
   override def canEditPost: ServiceCall[CanAccessToEntityPayload, Boolean] =
     ServiceCall { payload =>
       for {
-        post   <- postEntityService.getPostById(payload.id, false, false, false, false)
+        post   <- postEntityService.getPost(payload.id, false, false, false, false)
         result <- blogEntityService.canEditBlogPosts(payload.copy(id = post.blogId))
       } yield result
     }
@@ -386,14 +386,14 @@ class CmsServiceApiImpl(
       postEntityService.unlikePost(payload)
     }
 
-  override def getPostMetricById: ServiceCall[GetMetricPayload, Metric] =
+  override def getPostMetric: ServiceCall[GetMetricPayload, Metric] =
     ServiceCall { payload =>
-      postEntityService.getPostMetricById(payload)
+      postEntityService.getPostMetric(payload)
     }
 
-  override def getPostMetricsById: ServiceCall[GetMetricsPayload, Seq[Metric]] =
+  override def getPostMetrics: ServiceCall[GetMetricsPayload, Seq[Metric]] =
     ServiceCall { payload =>
-      postEntityService.getPostMetricsById(payload)
+      postEntityService.getPostMetrics(payload)
     }
 
   // ************************** CMS Pages **************************
@@ -413,16 +413,16 @@ class CmsServiceApiImpl(
       spaceCategoryEntityService.deleteCategory(payload)
     }
 
-  override def getSpaceCategoryById(id: CategoryId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Category] =
+  override def getSpaceCategory(id: CategoryId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Category] =
     ServiceCall { _ =>
-      spaceCategoryEntityService.getCategoryById(id, fromReadSide)
+      spaceCategoryEntityService.getCategory(id, fromReadSide)
     }
 
-  override def getSpaceCategoriesById(
+  override def getSpaceCategories(
     fromReadSide: Boolean = true
   ): ServiceCall[Set[CategoryId], Seq[Category]] =
     ServiceCall { ids =>
-      spaceCategoryEntityService.getCategoriesById(ids, fromReadSide)
+      spaceCategoryEntityService.getCategories(ids, fromReadSide)
     }
 
   override def findSpaceCategories: ServiceCall[CategoryFindQuery, FindResult] =
@@ -486,14 +486,14 @@ class CmsServiceApiImpl(
       spaceEntityService.deleteSpace(payload)
     }
 
-  override def getSpaceById(id: SpaceId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Space] =
+  override def getSpace(id: SpaceId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Space] =
     ServiceCall { _ =>
-      spaceEntityService.getSpaceById(id, fromReadSide)
+      spaceEntityService.getSpace(id, fromReadSide)
     }
 
-  override def getSpacesById(fromReadSide: Boolean = true): ServiceCall[Set[SpaceId], Seq[Space]] =
+  override def getSpaces(fromReadSide: Boolean = true): ServiceCall[Set[SpaceId], Seq[Space]] =
     ServiceCall { ids =>
-      spaceEntityService.getSpacesById(ids, fromReadSide)
+      spaceEntityService.getSpaces(ids, fromReadSide)
     }
 
   override def getSpaceViews: ServiceCall[GetSpaceViewsPayload, Seq[SpaceView]] =
@@ -521,7 +521,7 @@ class CmsServiceApiImpl(
       for {
         // validate if space exist
         // TODO: create isSpaceExist method
-        space <- spaceEntityService.getSpaceById(payload.spaceId, false)
+        space <- spaceEntityService.getSpace(payload.spaceId, false)
         page  <- pageEntityService
                    .createPage(payload, space.targets)
 
@@ -596,14 +596,14 @@ class CmsServiceApiImpl(
       } yield updated
     }
 
-  override def getPageById(
+  override def getPage(
     id: PageId,
     fromReadSide: Boolean = true,
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
   ): ServiceCall[NotUsed, Page] =
     ServiceCall { _ =>
-      pageEntityService.getPageById(
+      pageEntityService.getPage(
         id,
         fromReadSide,
         withContent.getOrElse(false),
@@ -611,13 +611,13 @@ class CmsServiceApiImpl(
       )
     }
 
-  override def getPagesById(
+  override def getPages(
     fromReadSide: Boolean = true,
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
   ): ServiceCall[Set[PageId], Seq[Page]] =
     ServiceCall { ids =>
-      pageEntityService.getPagesById(
+      pageEntityService.getPages(
         ids,
         fromReadSide,
         withContent.getOrElse(false),
@@ -633,7 +633,7 @@ class CmsServiceApiImpl(
   override def canEditPage: ServiceCall[CanAccessToEntityPayload, Boolean] =
     ServiceCall { payload =>
       for {
-        page   <- pageEntityService.getPageById(payload.id, false, false, false)
+        page   <- pageEntityService.getPage(payload.id, false, false, false)
         result <- spaceEntityService.canEditSpacePages(payload.copy(id = page.spaceId))
       } yield result
     }
@@ -663,14 +663,14 @@ class CmsServiceApiImpl(
       pageEntityService.unlikePage(payload)
     }
 
-  override def getPageMetricById: ServiceCall[GetMetricPayload, Metric] =
+  override def getPageMetric: ServiceCall[GetMetricPayload, Metric] =
     ServiceCall { payload =>
-      pageEntityService.getPageMetricById(payload)
+      pageEntityService.getPageMetric(payload)
     }
 
-  override def getPageMetricsById: ServiceCall[GetMetricsPayload, Seq[Metric]] =
+  override def getPageMetrics: ServiceCall[GetMetricsPayload, Seq[Metric]] =
     ServiceCall { payload =>
-      pageEntityService.getPageMetricsById(payload)
+      pageEntityService.getPageMetrics(payload)
     }
 
   // ************************** CMS Home Page  **************************
@@ -685,17 +685,17 @@ class CmsServiceApiImpl(
       homePageEntityService.unassignHomePage(payload)
     }
 
-  override def getHomePageById(
+  override def getHomePage(
     id: HomePageId,
     fromReadSide: Boolean
   ): ServiceCall[NotUsed, HomePage] =
     ServiceCall { _ =>
-      homePageEntityService.getHomePageById(id, fromReadSide)
+      homePageEntityService.getHomePage(id, fromReadSide)
     }
 
-  override def getHomePagesById(fromReadSide: Boolean): ServiceCall[Set[HomePageId], Seq[HomePage]] =
+  override def getHomePages(fromReadSide: Boolean): ServiceCall[Set[HomePageId], Seq[HomePage]] =
     ServiceCall { ids =>
-      homePageEntityService.getHomePagesById(ids, fromReadSide)
+      homePageEntityService.getHomePages(ids, fromReadSide)
     }
 
   override def getHomePageByPrincipalCodes(applicationId: String): ServiceCall[Seq[String], PageId] =

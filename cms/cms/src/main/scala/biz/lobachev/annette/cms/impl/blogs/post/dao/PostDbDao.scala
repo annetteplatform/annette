@@ -415,7 +415,7 @@ private[impl] class PostDbDao(
       _ <- ctx.run(postViewSchema.filter(_.postId == lift(event.id)).delete)
     } yield Done
 
-  def getPostById(
+  def getPost(
     id: PostId,
     withIntro: Boolean,
     withContent: Boolean,
@@ -479,14 +479,14 @@ private[impl] class PostDbDao(
       .run(postTargetSchema.filter(_.postId == lift(id)).map(_.principal))
       .map(_.toSet)
 
-  def getPostsById(
+  def getPosts(
     ids: Set[PostId],
     withIntro: Boolean,
     withContent: Boolean,
     withTargets: Boolean
   ): Future[Seq[Post]] =
     Source(ids)
-      .mapAsync(1)(id => getPostById(id, withIntro, withContent, withTargets))
+      .mapAsync(1)(id => getPost(id, withIntro, withContent, withTargets))
       .runWith(Sink.seq)
       .map(_.flatten)
 
@@ -503,16 +503,16 @@ private[impl] class PostDbDao(
                       )
     } yield maybeCount.map(_ > 0).getOrElse(false)
 
-  def getPostViewsById(payload: GetPostViewsPayload): Future[Seq[Post]] =
+  def getPostViews(payload: GetPostViewsPayload): Future[Seq[Post]] =
     for {
       allowedPostIds    <- getAllowedPostIds(payload.ids, payload.principals + payload.directPrincipal)
-      postViews         <- if (payload.withContent) getPostsById(allowedPostIds, true, true, false)
-                           else getPostsById(allowedPostIds, true, false, false)
+      postViews         <- if (payload.withContent) getPosts(allowedPostIds, true, true, false)
+                           else getPosts(allowedPostIds, true, false, false)
       publishedPostViews = postViews.filter(post =>
                              post.publicationStatus == PublicationStatus.Published &&
                                post.publicationTimestamp.map(_.compareTo(OffsetDateTime.now) <= 0).getOrElse(true)
                            )
-      metrics           <- getPostMetricsById(publishedPostViews.map(_.id), payload.directPrincipal)
+      metrics           <- getPostMetrics(publishedPostViews.map(_.id), payload.directPrincipal)
       metricsMap         = metrics.map(a => a.id -> a).toMap
 
     } yield publishedPostViews
@@ -559,19 +559,19 @@ private[impl] class PostDbDao(
 
   // ***************************** metrics *****************************
 
-  def getPostMetricsById(ids: Seq[PostId], principal: AnnettePrincipal): Future[Seq[Metric]] =
+  def getPostMetrics(ids: Seq[PostId], principal: AnnettePrincipal): Future[Seq[Metric]] =
     Source(ids)
-      .mapAsync(1)(id => getPostMetricById(id, principal))
+      .mapAsync(1)(id => getPostMetric(id, principal))
       .runWith(Sink.seq)
 
-  def getPostMetricById(id: PostId, principal: AnnettePrincipal): Future[Metric] =
+  def getPostMetric(id: PostId, principal: AnnettePrincipal): Future[Metric] =
     for {
-      views     <- getPostViewsCountById(id)
-      likes     <- getPostLikesCountById(id)
-      likedByMe <- getPostLikedByMeById(id, principal)
+      views     <- getPostViewsCount(id)
+      likes     <- getPostLikesCount(id)
+      likedByMe <- getPostLikedByMe(id, principal)
     } yield Metric(id, views, likes, likedByMe)
 
-  private def getPostViewsCountById(id: PostId): Future[Int] =
+  private def getPostViewsCount(id: PostId): Future[Int] =
     for {
       maybeCount <- ctx
                       .run(
@@ -581,7 +581,7 @@ private[impl] class PostDbDao(
                       )
     } yield maybeCount.map(_.toInt).getOrElse(0)
 
-  private def getPostLikesCountById(id: PostId): Future[Int] =
+  private def getPostLikesCount(id: PostId): Future[Int] =
     for {
       maybeCount <- ctx
                       .run(
@@ -591,7 +591,7 @@ private[impl] class PostDbDao(
                       )
     } yield maybeCount.map(_.toInt).getOrElse(0)
 
-  private def getPostLikedByMeById(id: PostId, principal: AnnettePrincipal): Future[Boolean] =
+  private def getPostLikedByMe(id: PostId, principal: AnnettePrincipal): Future[Boolean] =
     for {
       maybeLike <- ctx
                      .run(

@@ -121,7 +121,7 @@ class DataSchemaService(db: PostgresDatabase, actions: DataSchemaActions)(implic
       )
   }
 
-  def getDataSchemaById(id: String, withVariables: Boolean): Future[DataSchema] = {
+  def getDataSchema(id: String, withVariables: Boolean): Future[DataSchema] = {
     val dataSchemaId = DataSchemaId(id)
     val action       = actions.getDataSchemaAction(dataSchemaId, withVariables)
     for {
@@ -129,7 +129,7 @@ class DataSchemaService(db: PostgresDatabase, actions: DataSchemaActions)(implic
     } yield res.getOrElse(throw DataSchemaNotFound(id))
   }
 
-  def getDataSchemasById(ids: Seq[DataSchemaId], withVariables: Boolean): Future[Seq[DataSchema]] = {
+  def getDataSchemas(ids: Seq[DataSchemaId], withVariables: Boolean): Future[Seq[DataSchema]] = {
     val action = actions.getDataSchemasAction(ids, withVariables)
     db.run(action.transactionally)
   }

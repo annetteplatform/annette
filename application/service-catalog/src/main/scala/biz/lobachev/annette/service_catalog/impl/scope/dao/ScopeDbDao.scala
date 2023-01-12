@@ -127,7 +127,7 @@ private[service_catalog] class ScopeDbDao(override val session: CassandraSession
       _ <- ctx.run(scopeSchema.filter(_.id == lift(event.id)).delete)
     } yield Done
 
-  def getScopeById(id: ScopeId): Future[Option[Scope]] =
+  def getScope(id: ScopeId): Future[Option[Scope]] =
     for {
       maybeScope <- ctx
                       .run(scopeSchema.filter(_.id == lift(id)))
@@ -135,7 +135,7 @@ private[service_catalog] class ScopeDbDao(override val session: CassandraSession
 
     } yield maybeScope
 
-  def getScopesById(ids: Set[ScopeId]): Future[Seq[Scope]] =
+  def getScopes(ids: Set[ScopeId]): Future[Seq[Scope]] =
     for {
       scopes <- ctx.run(scopeSchema.filter(b => liftQuery(ids).contains(b.id))).map(_.map(_.toScope))
     } yield scopes

@@ -102,7 +102,7 @@ private[impl] class SubscriptionDbDao(
            )
     } yield Done
 
-  def getSubscriptionById(key: SubscriptionKey): Future[Option[Subscription]] =
+  def getSubscription(key: SubscriptionKey): Future[Option[Subscription]] =
     ctx
       .run(
         subscriptionByPrincipalSchema.filter(r =>

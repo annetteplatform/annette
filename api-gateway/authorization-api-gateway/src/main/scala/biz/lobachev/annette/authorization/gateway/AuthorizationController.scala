@@ -50,7 +50,7 @@ class AuthorizationController @Inject() (
           .transform
         for {
           _    <- authorizationService.createRole(payload)
-          role <- authorizationService.getRoleById(payload.id, false)
+          role <- authorizationService.getRole(payload.id, false)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -64,7 +64,7 @@ class AuthorizationController @Inject() (
           .transform
         for {
           _    <- authorizationService.updateRole(payload)
-          role <- authorizationService.getRoleById(payload.id, false)
+          role <- authorizationService.getRole(payload.id, false)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -92,12 +92,12 @@ class AuthorizationController @Inject() (
       }
     }
 
-  def getRoleById(id: AuthRoleId, fromReadSide: Boolean) =
+  def getRole(id: AuthRoleId, fromReadSide: Boolean) =
     if (fromReadSide)
       authenticated.async { implicit request =>
         authorizer.performCheckAny(VIEW_AUTHORIZATION_ROLE) {
           for {
-            role <- authorizationService.getRoleById(id, fromReadSide)
+            role <- authorizationService.getRole(id, fromReadSide)
           } yield Ok(Json.toJson(role))
         }
       }
@@ -105,18 +105,18 @@ class AuthorizationController @Inject() (
       authenticated.async { implicit request =>
         authorizer.performCheckAny(MAINTAIN_AUTHORIZATION_ROLE) {
           for {
-            role <- authorizationService.getRoleById(id, fromReadSide)
+            role <- authorizationService.getRole(id, fromReadSide)
           } yield Ok(Json.toJson(role))
         }
       }
 
-  def getRolesById(fromReadSide: Boolean) =
+  def getRoles(fromReadSide: Boolean) =
     if (fromReadSide)
       authenticated.async(parse.json[Set[AuthRoleId]]) { implicit request =>
         authorizer.performCheckAny(VIEW_AUTHORIZATION_ROLE) {
           val payload = request.body
           for {
-            roles <- authorizationService.getRolesById(payload, fromReadSide)
+            roles <- authorizationService.getRoles(payload, fromReadSide)
           } yield Ok(Json.toJson(roles))
         }
       }
@@ -125,7 +125,7 @@ class AuthorizationController @Inject() (
         authorizer.performCheckAny(MAINTAIN_AUTHORIZATION_ROLE) {
           val payload = request.body
           for {
-            roles <- authorizationService.getRolesById(payload, fromReadSide)
+            roles <- authorizationService.getRoles(payload, fromReadSide)
           } yield Ok(Json.toJson(roles))
         }
       }

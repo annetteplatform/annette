@@ -38,11 +38,11 @@ class ApplicationServiceLagomImpl(api: ApplicationServiceLagomApi) extends Appli
   def deleteLanguage(payload: DeleteLanguagePayload): Future[Done] =
     api.deleteLanguage.invoke(payload)
 
-  def getLanguageById(id: LanguageId, fromReadSide: Boolean = true): Future[Language] =
-    api.getLanguageById(id, fromReadSide).invoke()
+  def getLanguage(id: LanguageId, source: Option[String] = None): Future[Language] =
+    api.getLanguage(id, source).invoke()
 
-  def getLanguagesById(ids: Set[LanguageId], fromReadSide: Boolean = true): Future[Seq[Language]] =
-    api.getLanguagesById(fromReadSide).invoke(ids)
+  def getLanguages(ids: Set[LanguageId], source: Option[String] = None): Future[Seq[Language]] =
+    api.getLanguages(source).invoke(ids)
 
   def findLanguages(query: FindLanguageQuery): Future[FindResult] =
     api.findLanguages.invoke(query)
@@ -59,11 +59,11 @@ class ApplicationServiceLagomImpl(api: ApplicationServiceLagomApi) extends Appli
   def deleteTranslation(payload: DeleteTranslationPayload): Future[Done] =
     api.deleteTranslation.invoke(payload)
 
-  def getTranslationById(id: TranslationId, fromReadSide: Boolean = true): Future[Translation] =
-    api.getTranslationById(id, fromReadSide).invoke()
+  def getTranslation(id: TranslationId, source: Option[String] = None): Future[Translation] =
+    api.getTranslation(id, source).invoke()
 
-  def getTranslationsById(ids: Set[TranslationId], fromReadSide: Boolean = true): Future[Seq[Translation]] =
-    api.getTranslationsById(fromReadSide).invoke(ids)
+  def getTranslations(ids: Set[TranslationId], source: Option[String] = None): Future[Seq[Translation]] =
+    api.getTranslations(source).invoke(ids)
 
   def findTranslations(query: FindTranslationQuery): Future[FindResult] =
     api.findTranslations.invoke(query)
@@ -98,11 +98,11 @@ class ApplicationServiceLagomImpl(api: ApplicationServiceLagomApi) extends Appli
   def deleteApplication(payload: DeleteApplicationPayload): Future[Done] =
     api.deleteApplication.invoke(payload)
 
-  def getApplicationById(id: ApplicationId, fromReadSide: Boolean = true): Future[Application] =
-    api.getApplicationById(id, fromReadSide).invoke()
+  def getApplication(id: ApplicationId, source: Option[String] = None): Future[Application] =
+    api.getApplication(id, source).invoke()
 
-  def getApplicationsById(ids: Set[ApplicationId], fromReadSide: Boolean = true): Future[Seq[Application]] =
-    api.getApplicationsById(fromReadSide).invoke(ids)
+  def getApplications(ids: Set[ApplicationId], source: Option[String] = None): Future[Seq[Application]] =
+    api.getApplications(source).invoke(ids)
 
   override def getAllApplications(): Future[Seq[Application]] =
     api.getAllApplications.invoke()

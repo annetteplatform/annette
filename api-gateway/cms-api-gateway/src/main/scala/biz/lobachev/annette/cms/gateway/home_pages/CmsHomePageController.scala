@@ -55,7 +55,7 @@ class CmsHomePageController @Inject() (
           .transform
         for {
           _      <- cmsService.assignHomePage(payload)
-          result <- cmsService.getHomePageById(HomePage.toCompositeId(payload.applicationId, payload.principal), false)
+          result <- cmsService.getHomePage(HomePage.toCompositeId(payload.applicationId, payload.principal), false)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -83,21 +83,21 @@ class CmsHomePageController @Inject() (
       }
     }
 
-  def getHomePageById(id: PageId, fromReadSide: Boolean) =
+  def getHomePage(id: PageId, fromReadSide: Boolean) =
     maybeAuthenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_HOME_PAGES) {
         for {
-          result <- cmsService.getHomePageById(id, fromReadSide)
+          result <- cmsService.getHomePage(id, fromReadSide)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def getHomePagesById(fromReadSide: Boolean) =
+  def getHomePages(fromReadSide: Boolean) =
     maybeAuthenticated.async(parse.json[Set[String]]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_HOME_PAGES) {
         val ids = request.request.body
         for {
-          result <- cmsService.getHomePagesById(ids, fromReadSide)
+          result <- cmsService.getHomePages(ids, fromReadSide)
         } yield Ok(Json.toJson(result))
       }
     }

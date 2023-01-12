@@ -115,11 +115,11 @@ class PersonController @Inject() (
       }
     }
 
-  def getPerson(id: PersonId, source: Option[String], withAttributes: Option[String] = None) =
+  def getPerson(id: PersonId, source: Option[String], attributes: Option[String] = None) =
     authenticated.async { implicit request =>
       def action =
         for {
-          person <- personService.getPerson(id, source, withAttributes)
+          person <- personService.getPerson(id, source, attributes)
         } yield Ok(Json.toJson(person))
 
       if (DataSource.fromOrigin(source))
@@ -129,11 +129,11 @@ class PersonController @Inject() (
 
     }
 
-  def getPersons(source: Option[String], withAttributes: Option[String] = None) =
+  def getPersons(source: Option[String], attributes: Option[String] = None) =
     authenticated.async(parse.json[Set[PersonId]]) { implicit request =>
       def action =
         for {
-          persons <- personService.getPersons(request.body, source, withAttributes)
+          persons <- personService.getPersons(request.body, source, attributes)
         } yield Ok(Json.toJson(persons))
       if (DataSource.fromOrigin(source))
         authorizer.performCheckAny(MAINTAIN_ALL_PERSON)(action)

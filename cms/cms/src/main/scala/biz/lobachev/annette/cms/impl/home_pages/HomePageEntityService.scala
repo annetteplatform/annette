@@ -107,10 +107,10 @@ class HomePageEntityService(
       .ask[HomePageEntity.Confirmation](HomePageEntity.GetHomePage(id, _))
       .map(convertSuccessHomePage(_, id))
 
-  def getHomePageById(id: HomePageId, fromReadSide: Boolean): Future[HomePage] =
+  def getHomePage(id: HomePageId, fromReadSide: Boolean): Future[HomePage] =
     if (fromReadSide)
       dbDao
-        .getHomePageById(id)
+        .getHomePage(id)
         .map(_.getOrElse {
           val (applicationId, principal) = HomePage.fromCompositeId(id)
           throw HomePageNotFound(applicationId, principal.code)
@@ -118,9 +118,9 @@ class HomePageEntityService(
     else
       getHomePage(id)
 
-  def getHomePagesById(ids: Set[HomePageId], fromReadSide: Boolean): Future[Seq[HomePage]] =
+  def getHomePages(ids: Set[HomePageId], fromReadSide: Boolean): Future[Seq[HomePage]] =
     if (fromReadSide)
-      dbDao.getHomePagesById(ids)
+      dbDao.getHomePages(ids)
     else
       Future
         .traverse(ids) { id =>

@@ -57,18 +57,18 @@ class PersonServiceApiImpl(
   override def getPerson(
     id: PersonId,
     source: Option[String] = None,
-    withAttributes: Option[String] = None
+    attributes: Option[String] = None
   ): ServiceCall[NotUsed, Person] =
     ServiceCall { _ =>
-      personEntityService.getPerson(id, source, withAttributes)
+      personEntityService.getPerson(id, source, attributes)
     }
 
   override def getPersons(
-    source: Option[String] = None,
-    withAttributes: Option[String] = None
+                           source: Option[String] = None,
+                           attributes: Option[String] = None
   ): ServiceCall[Set[PersonId], Seq[Person]] =
     ServiceCall { ids =>
-      personEntityService.getPersons(ids, source, withAttributes)
+      personEntityService.getPersons(ids, source, attributes)
     }
 
   override def findPersons: ServiceCall[PersonFindQuery, FindResult]                   =

@@ -65,7 +65,7 @@ class CmsBlogViewController @Inject() (
       }
     }
 
-  def getBlogViewsById =
+  def getBlogViews =
     authenticated.async(parse.json[Set[BlogId]]) { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_BLOGS) {
         val ids                = request.request.body

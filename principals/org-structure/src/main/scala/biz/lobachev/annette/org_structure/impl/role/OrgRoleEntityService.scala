@@ -72,11 +72,11 @@ class OrgRoleEntityService(
       .ask[OrgRoleEntity.Confirmation](OrgRoleEntity.DeleteOrgRole(payload, _))
       .map(res => convertSuccess(payload.id, res))
 
-  def getOrgRoleById(id: OrgRoleId, fromReadSide: Boolean): Future[OrgRole] =
-    if (fromReadSide) getOrgRoleByIdFromReadSide(id)
-    else getOrgRoleById(id)
+  def getOrgRole(id: OrgRoleId, fromReadSide: Boolean): Future[OrgRole] =
+    if (fromReadSide) getOrgRoleFromReadSide(id)
+    else getOrgRole(id)
 
-  def getOrgRoleById(id: OrgRoleId): Future[OrgRole] =
+  def getOrgRole(id: OrgRoleId): Future[OrgRole] =
     refFor(id)
       .ask[OrgRoleEntity.Confirmation](OrgRoleEntity.GetOrgRole(id, _))
       .map {
@@ -84,16 +84,16 @@ class OrgRoleEntityService(
         case _                                    => throw OrgRoleNotFound(id)
       }
 
-  def getOrgRoleByIdFromReadSide(id: OrgRoleId): Future[OrgRole] =
+  def getOrgRoleFromReadSide(id: OrgRoleId): Future[OrgRole] =
     for {
-      maybeOrgRole <- dbDao.getOrgRoleById(id)
+      maybeOrgRole <- dbDao.getOrgRole(id)
     } yield maybeOrgRole match {
       case Some(orgRole) => orgRole
       case None          => throw OrgRoleNotFound(id)
     }
 
-  def getOrgRolesById(ids: Set[OrgRoleId], fromReadSide: Boolean): Future[Seq[OrgRole]] =
-    if (fromReadSide) dbDao.getOrgRolesById(ids)
+  def getOrgRoles(ids: Set[OrgRoleId], fromReadSide: Boolean): Future[Seq[OrgRole]] =
+    if (fromReadSide) dbDao.getOrgRoles(ids)
     else
       Source(ids)
         .mapAsync(1) { id =>

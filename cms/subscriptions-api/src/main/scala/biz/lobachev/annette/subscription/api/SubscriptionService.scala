@@ -35,8 +35,8 @@ trait SubscriptionService {
 
   def createSubscription(payload: CreateSubscriptionPayload): Future[Done]
   def deleteSubscription(payload: DeleteSubscriptionPayload): Future[Done]
-  def getSubscriptionById(key: SubscriptionKey, fromReadSide: Boolean): Future[Subscription]
-  def getSubscriptionsById(keys: Set[SubscriptionKey], fromReadSide: Boolean): Future[Set[Subscription]]
+  def getSubscription(key: SubscriptionKey, fromReadSide: Boolean): Future[Subscription]
+  def getSubscriptions(keys: Set[SubscriptionKey], fromReadSide: Boolean): Future[Set[Subscription]]
   def getSubscriptionsByPrincipals(
     principals: Set[AnnettePrincipal],
     subscriptionType: SubscriptionTypeId
@@ -53,7 +53,7 @@ trait SubscriptionService {
   def createOrUpdateSubscriptionType(payload: CreateSubscriptionTypePayload): Future[Done]
   def updateSubscriptionType(payload: UpdateSubscriptionTypePayload): Future[Done]
   def deleteSubscriptionType(payload: DeleteSubscriptionTypePayload): Future[Done]
-  def getSubscriptionTypeById(id: SubscriptionTypeId, fromReadSide: Boolean): Future[SubscriptionType]
-  def getSubscriptionTypesById(ids: Set[SubscriptionTypeId], fromReadSide: Boolean): Future[Seq[SubscriptionType]]
+  def getSubscriptionType(id: SubscriptionTypeId, fromReadSide: Boolean): Future[SubscriptionType]
+  def getSubscriptionTypes(ids: Set[SubscriptionTypeId], fromReadSide: Boolean): Future[Seq[SubscriptionType]]
   def findSubscriptionTypes(query: SubscriptionTypeFindQuery): Future[FindResult]
 }

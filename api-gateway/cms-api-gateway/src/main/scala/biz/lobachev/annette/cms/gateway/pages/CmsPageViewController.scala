@@ -76,7 +76,7 @@ class CmsPageViewController @Inject() (
       }
     }
 
-  def getPageViewsById =
+  def getPageViews =
     maybeAuthenticated.async(parse.json[Set[PageId]]) { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_SPACES) {
         val ids = request.request.body
@@ -92,7 +92,7 @@ class CmsPageViewController @Inject() (
       }
     }
 
-  def getPageViewById(pageId: PageId) =
+  def getPageView(pageId: PageId) =
     maybeAuthenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_SPACES) {
         for {
@@ -121,7 +121,7 @@ class CmsPageViewController @Inject() (
           _         <- if (canAccess)
                          cmsService.viewPage(ViewPayload(id, request.subject.principals.head))
                        else Future.failed(PageNotFound(id))
-          result    <- cmsService.getPageMetricById(GetMetricPayload(id, request.subject.principals.head))
+          result    <- cmsService.getPageMetric(GetMetricPayload(id, request.subject.principals.head))
         } yield Ok(Json.toJson(result))
       }
     }
@@ -139,7 +139,7 @@ class CmsPageViewController @Inject() (
           _         <- if (canAccess)
                          cmsService.likePage(LikePayload(id, request.subject.principals.head))
                        else Future.failed(PageNotFound(id))
-          result    <- cmsService.getPageMetricById(GetMetricPayload(id, request.subject.principals.head))
+          result    <- cmsService.getPageMetric(GetMetricPayload(id, request.subject.principals.head))
         } yield Ok(Json.toJson(result))
       }
     }
@@ -157,7 +157,7 @@ class CmsPageViewController @Inject() (
           _         <- if (canAccess)
                          cmsService.unlikePage(UnlikePayload(id, request.subject.principals.head))
                        else Future.failed(PageNotFound(id))
-          result    <- cmsService.getPageMetricById(GetMetricPayload(id, request.subject.principals.head))
+          result    <- cmsService.getPageMetric(GetMetricPayload(id, request.subject.principals.head))
         } yield Ok(Json.toJson(result))
       }
     }

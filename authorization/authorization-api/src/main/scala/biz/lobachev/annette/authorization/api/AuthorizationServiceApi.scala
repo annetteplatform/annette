@@ -29,8 +29,8 @@ trait AuthorizationServiceApi extends Service {
   def createRole: ServiceCall[CreateRolePayload, Done]
   def updateRole: ServiceCall[UpdateRolePayload, Done]
   def deleteRole: ServiceCall[DeleteRolePayload, Done]
-  def getRoleById(id: AuthRoleId, fromReadSide: Boolean = true): ServiceCall[NotUsed, AuthRole]
-  def getRolesById(fromReadSide: Boolean = true): ServiceCall[Set[AuthRoleId], Seq[AuthRole]]
+  def getRole(id: AuthRoleId, fromReadSide: Boolean = true): ServiceCall[NotUsed, AuthRole]
+  def getRoles(fromReadSide: Boolean = true): ServiceCall[Set[AuthRoleId], Seq[AuthRole]]
   def findRoles: ServiceCall[AuthRoleFindQuery, FindResult]
 
   def assignPrincipal: ServiceCall[AssignPrincipalPayload, Done]
@@ -52,8 +52,8 @@ trait AuthorizationServiceApi extends Service {
         pathCall("/api/authorization/v1/createRole",                   createRole ),
         pathCall("/api/authorization/v1/updateRole",                   updateRole ),
         pathCall("/api/authorization/v1/deleteRole",                   deleteRole ),
-        pathCall("/api/authorization/v1/getRoleById/:id/:fromReadSide",getRoleById _),
-        pathCall("/api/authorization/v1/getRolesById/:fromReadSide",   getRolesById _),
+        pathCall("/api/authorization/v1/getRole/:id/:fromReadSide",getRole _),
+        pathCall("/api/authorization/v1/getRoles/:fromReadSide",   getRoles _),
         pathCall("/api/authorization/v1/findRoles",                    findRoles ),
         pathCall("/api/authorization/v1/assignPrincipal",              assignPrincipal ),
         pathCall("/api/authorization/v1/unassignPrincipal",            unassignPrincipal ),

@@ -10,15 +10,15 @@ GET    /api/annette/v1/auth/error2          biz.lobachev.annette.api_gateway_cor
 POST    /api/annette/v1/application/createLanguage     biz.lobachev.annette.application.gateway.LanguageController.createLanguage
 POST    /api/annette/v1/application/updateLanguage     biz.lobachev.annette.application.gateway.LanguageController.updateLanguage
 POST    /api/annette/v1/application/deleteLanguage     biz.lobachev.annette.application.gateway.LanguageController.deleteLanguage
-GET     /api/annette/v1/application/getLanguageById/:id/:fromReadSide biz.lobachev.annette.application.gateway.LanguageController.getLanguageById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/application/getLanguagesById/:fromReadSide    biz.lobachev.annette.application.gateway.LanguageController.getLanguagesById(fromReadSide: Boolean)
+GET     /api/annette/v1/application/getLanguage/:id biz.lobachev.annette.application.gateway.LanguageController.getLanguage(id: String, source: Option[String])
+POST    /api/annette/v1/application/getLanguages    biz.lobachev.annette.application.gateway.LanguageController.getLanguages(source: Option[String])
 POST    /api/annette/v1/application/findLanguages            biz.lobachev.annette.application.gateway.LanguageController.findLanguages
 # Translation
 POST    /api/annette/v1/application/createTranslation        biz.lobachev.annette.application.gateway.TranslationController.createTranslation
 POST    /api/annette/v1/application/updateTranslation        biz.lobachev.annette.application.gateway.TranslationController.updateTranslation
 POST    /api/annette/v1/application/deleteTranslation        biz.lobachev.annette.application.gateway.TranslationController.deleteTranslation
-GET     /api/annette/v1/application/getTranslationById/:id/:fromReadSide biz.lobachev.annette.application.gateway.TranslationController.getTranslationById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/application/getTranslationsById/:fromReadSide    biz.lobachev.annette.application.gateway.TranslationController.getTranslationsById(fromReadSide: Boolean)
+GET     /api/annette/v1/application/getTranslation/:id biz.lobachev.annette.application.gateway.TranslationController.getTranslation(id: String, source: Option[String])
+POST    /api/annette/v1/application/getTranslations    biz.lobachev.annette.application.gateway.TranslationController.getTranslations(source: Option[String])
 POST    /api/annette/v1/application/findTranslations         biz.lobachev.annette.application.gateway.TranslationController.findTranslations
 POST    /api/annette/v1/application/updateTranslationJson    biz.lobachev.annette.application.gateway.TranslationController.updateTranslationJson
 POST    /api/annette/v1/application/deleteTranslationJson    biz.lobachev.annette.application.gateway.TranslationController.deleteTranslationJson
@@ -28,8 +28,8 @@ GET     /api/annette/v1/application/getTranslationJson/:id/:languageId  biz.loba
 POST    /api/annette/v1/application/createApplication        biz.lobachev.annette.application.gateway.ApplicationController.createApplication
 POST    /api/annette/v1/application/updateApplication        biz.lobachev.annette.application.gateway.ApplicationController.updateApplication
 POST    /api/annette/v1/application/deleteApplication        biz.lobachev.annette.application.gateway.ApplicationController.deleteApplication
-GET     /api/annette/v1/application/getApplicationById/:id/:fromReadSide  biz.lobachev.annette.application.gateway.ApplicationController.getApplicationById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/application/getApplicationsById/:fromReadSide     biz.lobachev.annette.application.gateway.ApplicationController.getApplicationsById(fromReadSide: Boolean)
+GET     /api/annette/v1/application/getApplication/:id  biz.lobachev.annette.application.gateway.ApplicationController.getApplication(id: String, source: Option[String])
+POST    /api/annette/v1/application/getApplications     biz.lobachev.annette.application.gateway.ApplicationController.getApplications(source: Option[String])
 POST    /api/annette/v1/application/findApplications         biz.lobachev.annette.application.gateway.ApplicationController.findApplications
 # User Application
 GET     /api/annette/v1/application/getAllLanguages       biz.lobachev.annette.application.gateway.UserApplicationController.getAllLanguages
@@ -44,8 +44,8 @@ POST    /api/annette/v1/application/getTranslationJsons/:languageId     biz.loba
 POST    /api/annette/v1/serviceCatalog/createCategory     biz.lobachev.annette.service_catalog.gateway.CategoryController.createCategory
 POST    /api/annette/v1/serviceCatalog/updateCategory     biz.lobachev.annette.service_catalog.gateway.CategoryController.updateCategory
 POST    /api/annette/v1/serviceCatalog/deleteCategory     biz.lobachev.annette.service_catalog.gateway.CategoryController.deleteCategory
-GET     /api/annette/v1/serviceCatalog/getCategoryById/:id/:fromReadSide biz.lobachev.annette.service_catalog.gateway.CategoryController.getCategoryById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/serviceCatalog/getCategoriesById/:fromReadSide    biz.lobachev.annette.service_catalog.gateway.CategoryController.getCategoriesById(fromReadSide: Boolean)
+GET     /api/annette/v1/serviceCatalog/getCategory/:id/:fromReadSide biz.lobachev.annette.service_catalog.gateway.CategoryController.getCategory(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/serviceCatalog/getCategories/:fromReadSide    biz.lobachev.annette.service_catalog.gateway.CategoryController.getCategories(fromReadSide: Boolean)
 POST    /api/annette/v1/serviceCatalog/findCategories            biz.lobachev.annette.service_catalog.gateway.CategoryController.findCategories
 # Scope
 POST    /api/annette/v1/serviceCatalog/createScope     biz.lobachev.annette.service_catalog.gateway.ScopeController.createScope
@@ -53,8 +53,8 @@ POST    /api/annette/v1/serviceCatalog/updateScope     biz.lobachev.annette.serv
 POST    /api/annette/v1/serviceCatalog/activateScope     biz.lobachev.annette.service_catalog.gateway.ScopeController.activateScope
 POST    /api/annette/v1/serviceCatalog/deactivateScope     biz.lobachev.annette.service_catalog.gateway.ScopeController.deactivateScope
 POST    /api/annette/v1/serviceCatalog/deleteScope     biz.lobachev.annette.service_catalog.gateway.ScopeController.deleteScope
-GET     /api/annette/v1/serviceCatalog/getScopeById/:id/:fromReadSide biz.lobachev.annette.service_catalog.gateway.ScopeController.getScopeById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/serviceCatalog/getScopesById/:fromReadSide    biz.lobachev.annette.service_catalog.gateway.ScopeController.getScopesById(fromReadSide: Boolean)
+GET     /api/annette/v1/serviceCatalog/getScope/:id/:fromReadSide biz.lobachev.annette.service_catalog.gateway.ScopeController.getScope(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/serviceCatalog/getScopes/:fromReadSide    biz.lobachev.annette.service_catalog.gateway.ScopeController.getScopes(fromReadSide: Boolean)
 POST    /api/annette/v1/serviceCatalog/findScopes            biz.lobachev.annette.service_catalog.gateway.ScopeController.findScopes
 # Scope principal
 POST    /api/annette/v1/serviceCatalog/assignScopePrincipal     biz.lobachev.annette.service_catalog.gateway.ScopePrincipalController.assignScopePrincipal
@@ -69,8 +69,8 @@ POST    /api/annette/v1/serviceCatalog/updateService     biz.lobachev.annette.se
 POST    /api/annette/v1/serviceCatalog/activateServiceItem    biz.lobachev.annette.service_catalog.gateway.ServiceItemController.activateServiceItem
 POST    /api/annette/v1/serviceCatalog/deactivateServiceItem  biz.lobachev.annette.service_catalog.gateway.ServiceItemController.deactivateServiceItem
 POST    /api/annette/v1/serviceCatalog/deleteServiceItem      biz.lobachev.annette.service_catalog.gateway.ServiceItemController.deleteServiceItem
-GET     /api/annette/v1/serviceCatalog/getServiceItemById/:id/:fromReadSide biz.lobachev.annette.service_catalog.gateway.ServiceItemController.getServiceItemById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/serviceCatalog/getServiceItemsById/:fromReadSide    biz.lobachev.annette.service_catalog.gateway.ServiceItemController.getServiceItemsById(fromReadSide: Boolean)
+GET     /api/annette/v1/serviceCatalog/getServiceItem/:id/:fromReadSide biz.lobachev.annette.service_catalog.gateway.ServiceItemController.getServiceItem(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/serviceCatalog/getServiceItems/:fromReadSide    biz.lobachev.annette.service_catalog.gateway.ServiceItemController.getServiceItems(fromReadSide: Boolean)
 POST    /api/annette/v1/serviceCatalog/findServiceItems       biz.lobachev.annette.service_catalog.gateway.ServiceItemController.findServiceItems
 # Service principal
 POST    /api/annette/v1/serviceCatalog/assignServicePrincipal     biz.lobachev.annette.service_catalog.gateway.ServicePrincipalController.assignServicePrincipal
@@ -88,8 +88,8 @@ POST    /api/annette/v1/authorization/createRole          biz.lobachev.annette.a
 POST    /api/annette/v1/authorization/updateRole          biz.lobachev.annette.authorization.gateway.AuthorizationController.updateRole
 POST    /api/annette/v1/authorization/deleteRole          biz.lobachev.annette.authorization.gateway.AuthorizationController.deleteRole
 POST    /api/annette/v1/authorization/findRoles           biz.lobachev.annette.authorization.gateway.AuthorizationController.findRoles
-GET     /api/annette/v1/authorization/getRoleById/:id/:fromReadSide        biz.lobachev.annette.authorization.gateway.AuthorizationController.getRoleById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/authorization/getRolesById/:fromReadSide           biz.lobachev.annette.authorization.gateway.AuthorizationController.getRolesById(fromReadSide: Boolean)
+GET     /api/annette/v1/authorization/getRole/:id/:fromReadSide        biz.lobachev.annette.authorization.gateway.AuthorizationController.getRole(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/authorization/getRoles/:fromReadSide           biz.lobachev.annette.authorization.gateway.AuthorizationController.getRoles(fromReadSide: Boolean)
 POST    /api/annette/v1/authorization/assignPrincipal     biz.lobachev.annette.authorization.gateway.AuthorizationController.assignPrincipal
 POST    /api/annette/v1/authorization/unassignPrincipal   biz.lobachev.annette.authorization.gateway.AuthorizationController.unassignPrincipal
 GET     /api/annette/v1/authorization/getRolePrincipals/:id/:fromReadSide  biz.lobachev.annette.authorization.gateway.AuthorizationController.getRolePrincipals(id: String, fromReadSide: Boolean)
@@ -115,10 +115,10 @@ POST    /api/annette/v1/orgStructure/unassignPerson                      biz.lob
 POST    /api/annette/v1/orgStructure/assignOrgRole                       biz.lobachev.annette.org_structure.gateway.OrgStructureController.assignOrgRole(withAttributes: Option[String])
 POST    /api/annette/v1/orgStructure/unassignOrgRole                     biz.lobachev.annette.org_structure.gateway.OrgStructureController.unassignOrgRole(withAttributes: Option[String])
 POST    /api/annette/v1/orgStructure/deleteOrgItem                       biz.lobachev.annette.org_structure.gateway.OrgStructureController.deleteOrgItem
-GET     /api/annette/v1/orgStructure/getOrganizationById/:orgId          biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrganizationById(orgId: String)
+GET     /api/annette/v1/orgStructure/getOrganization/:orgId          biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrganization(orgId: String)
 GET     /api/annette/v1/orgStructure/getOrganizationTree/:itemId         biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrganizationTree(itemId: String)
-GET     /api/annette/v1/orgStructure/getOrgItemById/:id/:fromReadSide    biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgItemById(id: String, fromReadSide: Boolean, withAttributes: Option[String])
-POST    /api/annette/v1/orgStructure/getOrgItemsById/:fromReadSide       biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgItemsById(fromReadSide: Boolean, withAttributes: Option[String])
+GET     /api/annette/v1/orgStructure/getOrgItem/:id/:fromReadSide    biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgItem(id: String, fromReadSide: Boolean, withAttributes: Option[String])
+POST    /api/annette/v1/orgStructure/getOrgItems/:fromReadSide       biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgItems(fromReadSide: Boolean, withAttributes: Option[String])
 GET     /api/annette/v1/orgStructure/getPersonPrincipals/:personId       biz.lobachev.annette.org_structure.gateway.OrgStructureController.getPersonPrincipals(personId: String)
 GET     /api/annette/v1/orgStructure/getPersonPositions/:personId        biz.lobachev.annette.org_structure.gateway.OrgStructureController.getPersonPositions(personId: String)
 POST    /api/annette/v1/orgStructure/findOrgItems                        biz.lobachev.annette.org_structure.gateway.OrgStructureController.findOrgItems
@@ -130,15 +130,15 @@ POST    /api/annette/v1/orgStructure/getOrgItemsAttributes/:fromReadSide     biz
 POST    /api/annette/v1/orgStructure/createOrgRole                       biz.lobachev.annette.org_structure.gateway.OrgStructureController.createOrgRole
 POST    /api/annette/v1/orgStructure/updateOrgRole                       biz.lobachev.annette.org_structure.gateway.OrgStructureController.updateOrgRole
 POST    /api/annette/v1/orgStructure/deleteOrgRole                       biz.lobachev.annette.org_structure.gateway.OrgStructureController.deleteOrgRole
-GET     /api/annette/v1/orgStructure/getOrgRoleById/:id/:fromReadSide    biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgRoleById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/orgStructure/getOrgRolesById/:fromReadSide       biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgRolesById(fromReadSide: Boolean)
+GET     /api/annette/v1/orgStructure/getOrgRole/:id/:fromReadSide    biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgRole(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/orgStructure/getOrgRoles/:fromReadSide       biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgRoles(fromReadSide: Boolean)
 POST    /api/annette/v1/orgStructure/findOrgRoles                        biz.lobachev.annette.org_structure.gateway.OrgStructureController.findOrgRoles
 # OrgStructure Category
 POST    /api/annette/v1/orgStructure/createCategory                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.createCategory
 POST    /api/annette/v1/orgStructure/updateCategory                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.updateCategory
 POST    /api/annette/v1/orgStructure/deleteCategory                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.deleteCategory
-GET     /api/annette/v1/orgStructure/getCategoryById/:id/:fromReadSide   biz.lobachev.annette.org_structure.gateway.OrgStructureController.getCategoryById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/orgStructure/getCategoriesById/:fromReadSide     biz.lobachev.annette.org_structure.gateway.OrgStructureController.getCategoriesById(fromReadSide: Boolean)
+GET     /api/annette/v1/orgStructure/getCategory/:id/:fromReadSide   biz.lobachev.annette.org_structure.gateway.OrgStructureController.getCategory(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/orgStructure/getCategories/:fromReadSide     biz.lobachev.annette.org_structure.gateway.OrgStructureController.getCategories(fromReadSide: Boolean)
 POST    /api/annette/v1/orgStructure/findCategories                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.findCategories
 
 # ************************************** Person API **************************************
@@ -148,8 +148,8 @@ POST    /api/annette/v1/person/updatePerson            biz.lobachev.annette.pers
 POST    /api/annette/v1/person/updatePersonAttributes  biz.lobachev.annette.person.gateway.PersonController.updatePersonAttributes
 POST    /api/annette/v1/person/deletePerson            biz.lobachev.annette.person.gateway.PersonController.deletePerson
 POST    /api/annette/v1/person/findPersons             biz.lobachev.annette.person.gateway.PersonController.findPersons
-GET     /api/annette/v1/person/getPerson/:id    biz.lobachev.annette.person.gateway.PersonController.getPerson(id: String, source: Option[String], withAttributes: Option[String])
-POST    /api/annette/v1/person/getPersons       biz.lobachev.annette.person.gateway.PersonController.getPersons(source: Option[String], withAttributes: Option[String])
+GET     /api/annette/v1/person/getPerson/:id    biz.lobachev.annette.person.gateway.PersonController.getPerson(id: String, source: Option[String], attributes: Option[String])
+POST    /api/annette/v1/person/getPersons       biz.lobachev.annette.person.gateway.PersonController.getPersons(source: Option[String], attributes: Option[String])
 GET     /api/annette/v1/person/getPersonMetadata       biz.lobachev.annette.person.gateway.PersonController.getPersonMetadata
 GET     /api/annette/v1/person/getPersonAttributes/:id  biz.lobachev.annette.person.gateway.PersonController.getPersonAttributes(id: String, source: Option[String], attributes: Option[String])
 POST    /api/annette/v1/person/getPersonsAttributes     biz.lobachev.annette.person.gateway.PersonController.getPersonsAttributes(source: Option[String], attributes: Option[String])
@@ -173,15 +173,15 @@ POST    /api/annette/v1/principalGroup/assignPrincipal                 biz.lobac
 POST    /api/annette/v1/principalGroup/unassignPrincipal               biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.unassignPrincipal
 POST    /api/annette/v1/principalGroup/deletePrincipalGroup            biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.deletePrincipalGroup
 POST    /api/annette/v1/principalGroup/findPrincipalGroups             biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.findPrincipalGroups
-GET     /api/annette/v1/principalGroup/getPrincipalGroupById/:id/:fromReadSide biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getPrincipalGroupById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/principalGroup/getPrincipalGroupsById/:fromReadSide    biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getPrincipalGroupsById(fromReadSide: Boolean)
+GET     /api/annette/v1/principalGroup/getPrincipalGroup/:id/:fromReadSide biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getPrincipalGroup(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/principalGroup/getPrincipalGroups/:fromReadSide    biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getPrincipalGroups(fromReadSide: Boolean)
 GET     /api/annette/v1/principalGroup/getAssignments/:id                  biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getAssignments(id: String)
 # Principal Group Category
 POST    /api/annette/v1/principalGroup/createCategory                      biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.createCategory
 POST    /api/annette/v1/principalGroup/updateCategory                      biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.updateCategory
 POST    /api/annette/v1/principalGroup/deleteCategory                      biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.deleteCategory
-GET     /api/annette/v1/principalGroup/getCategoryById/:id/:fromReadSide   biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getCategoryById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/principalGroup/getCategoriesById/:fromReadSide     biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getCategoriesById(fromReadSide: Boolean)
+GET     /api/annette/v1/principalGroup/getCategory/:id/:fromReadSide   biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getCategory(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/principalGroup/getCategories/:fromReadSide     biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getCategories(fromReadSide: Boolean)
 POST    /api/annette/v1/principalGroup/findCategories                      biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.findCategories
 
 # ************************************** CMS Blogs API **************************************
@@ -189,8 +189,8 @@ POST    /api/annette/v1/principalGroup/findCategories                      biz.l
 POST    /api/annette/v1/cms/createBlogCategory                  biz.lobachev.annette.cms.gateway.blogs.CmsBlogCategoryController.createBlogCategory
 POST    /api/annette/v1/cms/updateBlogCategory                  biz.lobachev.annette.cms.gateway.blogs.CmsBlogCategoryController.updateBlogCategory
 POST    /api/annette/v1/cms/deleteBlogCategory                  biz.lobachev.annette.cms.gateway.blogs.CmsBlogCategoryController.deleteBlogCategory
-GET     /api/annette/v1/cms/getBlogCategoryById/:id/:fromReadSide biz.lobachev.annette.cms.gateway.blogs.CmsBlogCategoryController.getBlogCategoryById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/cms/getBlogCategoriesById/:fromReadSide   biz.lobachev.annette.cms.gateway.blogs.CmsBlogCategoryController.getBlogCategoriesById(fromReadSide: Boolean)
+GET     /api/annette/v1/cms/getBlogCategory/:id/:fromReadSide biz.lobachev.annette.cms.gateway.blogs.CmsBlogCategoryController.getBlogCategory(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/cms/getBlogCategories/:fromReadSide   biz.lobachev.annette.cms.gateway.blogs.CmsBlogCategoryController.getBlogCategories(fromReadSide: Boolean)
 POST    /api/annette/v1/cms/findBlogCategories                  biz.lobachev.annette.cms.gateway.blogs.CmsBlogCategoryController.findBlogCategories
 # CMS Blog
 POST    /api/annette/v1/cms/createBlog                     biz.lobachev.annette.cms.gateway.blogs.CmsBlogController.createBlog
@@ -204,8 +204,8 @@ POST    /api/annette/v1/cms/unassignBlogTargetPrincipal    biz.lobachev.annette.
 POST    /api/annette/v1/cms/activateBlog                   biz.lobachev.annette.cms.gateway.blogs.CmsBlogController.activateBlog
 POST    /api/annette/v1/cms/deactivateBlog                 biz.lobachev.annette.cms.gateway.blogs.CmsBlogController.deactivateBlog
 POST    /api/annette/v1/cms/deleteBlog                     biz.lobachev.annette.cms.gateway.blogs.CmsBlogController.deleteBlog
-GET     /api/annette/v1/cms/getBlogById/:id/:fromReadSide  biz.lobachev.annette.cms.gateway.blogs.CmsBlogController.getBlogById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/cms/getBlogsById/:fromReadSide     biz.lobachev.annette.cms.gateway.blogs.CmsBlogController.getBlogsById(fromReadSide: Boolean)
+GET     /api/annette/v1/cms/getBlog/:id/:fromReadSide  biz.lobachev.annette.cms.gateway.blogs.CmsBlogController.getBlog(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/cms/getBlogs/:fromReadSide     biz.lobachev.annette.cms.gateway.blogs.CmsBlogController.getBlogs(fromReadSide: Boolean)
 POST    /api/annette/v1/cms/findBlogs                      biz.lobachev.annette.cms.gateway.blogs.CmsBlogController.findBlogs
 # CMS Post
 POST    /api/annette/v1/cms/createPost                      biz.lobachev.annette.cms.gateway.blogs.CmsPostController.createPost
@@ -223,22 +223,22 @@ POST    /api/annette/v1/cms/assignPostTargetPrincipal       biz.lobachev.annette
 POST    /api/annette/v1/cms/unassignPostTargetPrincipal     biz.lobachev.annette.cms.gateway.blogs.CmsPostController.unassignPostTargetPrincipal
 POST    /api/annette/v1/cms/deletePost                      biz.lobachev.annette.cms.gateway.blogs.CmsPostController.deletePost
 POST    /api/annette/v1/cms/findPosts                       biz.lobachev.annette.cms.gateway.blogs.CmsPostController.findPosts
-GET     /api/annette/v1/cms/getPostById/:id/:fromReadSide   biz.lobachev.annette.cms.gateway.blogs.CmsPostController.getPostById(id: String, fromReadSide: Boolean, withIntro: Option[Boolean], withContent: Option[Boolean], withTargets: Option[Boolean])
-POST    /api/annette/v1/cms/getPostsById/:fromReadSide      biz.lobachev.annette.cms.gateway.blogs.CmsPostController.getPostsById(fromReadSide: Boolean, withIntro: Option[Boolean], withContent: Option[Boolean], withTargets: Option[Boolean])
+GET     /api/annette/v1/cms/getPost/:id/:fromReadSide   biz.lobachev.annette.cms.gateway.blogs.CmsPostController.getPost(id: String, fromReadSide: Boolean, withIntro: Option[Boolean], withContent: Option[Boolean], withTargets: Option[Boolean])
+POST    /api/annette/v1/cms/getPosts/:fromReadSide      biz.lobachev.annette.cms.gateway.blogs.CmsPostController.getPosts(fromReadSide: Boolean, withIntro: Option[Boolean], withContent: Option[Boolean], withTargets: Option[Boolean])
 POST    /api/annette/v1/cms/uploadPostFile/:postId/:fileType   biz.lobachev.annette.cms.gateway.blogs.CmsPostController.uploadPostFile(postId: String, fileType: String)
 POST    /api/annette/v1/cms/removePostFile/:postId/:fileType/:fileId   biz.lobachev.annette.cms.gateway.blogs.CmsPostController.removePostFile(postId: String, fileType: String, fileId: String)
 GET     /api/annette/v1/cms/getPostFiles/:postId                       biz.lobachev.annette.cms.gateway.blogs.CmsPostController.getPostFiles(postId: String)
 # ************************************** CMS Blog View API **************************************
 # CMS Blog View
 POST    /api/annette/v1/cms/findBlogViews                  biz.lobachev.annette.cms.gateway.blogs.CmsBlogViewController.findBlogViews
-POST    /api/annette/v1/cms/getBlogViewsById               biz.lobachev.annette.cms.gateway.blogs.CmsBlogViewController.getBlogViewsById
+POST    /api/annette/v1/cms/getBlogViews               biz.lobachev.annette.cms.gateway.blogs.CmsBlogViewController.getBlogViews
 POST    /api/annette/v1/cms/subscribeToBlog/:blogId       biz.lobachev.annette.cms.gateway.blogs.CmsBlogViewController.subscribeToBlog(blogId: String)
 POST    /api/annette/v1/cms/unsubscribeFromBlog/:blogId   biz.lobachev.annette.cms.gateway.blogs.CmsBlogViewController.unsubscribeFromBlog(blogId: String)
 # CMS Post View
 POST    /api/annette/v1/cms/findPostViews                   biz.lobachev.annette.cms.gateway.blogs.CmsPostViewController.findPostViews
-POST    /api/annette/v1/cms/getPostViewAnnotationsById      biz.lobachev.annette.cms.gateway.blogs.CmsPostViewController.getPostViewAnnotationsById
-POST    /api/annette/v1/cms/getPostViewsById                biz.lobachev.annette.cms.gateway.blogs.CmsPostViewController.getPostViewsById
-GET     /api/annette/v1/cms/getPostViewById/:postId         biz.lobachev.annette.cms.gateway.blogs.CmsPostViewController.getPostViewById(postId: String)
+POST    /api/annette/v1/cms/getPostViewAnnotations      biz.lobachev.annette.cms.gateway.blogs.CmsPostViewController.getPostViewAnnotations
+POST    /api/annette/v1/cms/getPostViews                biz.lobachev.annette.cms.gateway.blogs.CmsPostViewController.getPostViews
+GET     /api/annette/v1/cms/getPostView/:postId         biz.lobachev.annette.cms.gateway.blogs.CmsPostViewController.getPostView(postId: String)
 POST    /api/annette/v1/cms/viewPost/:postId                biz.lobachev.annette.cms.gateway.blogs.CmsPostViewController.viewPost(postId: String)
 POST    /api/annette/v1/cms/likePost/:postId                biz.lobachev.annette.cms.gateway.blogs.CmsPostViewController.likePost(postId: String)
 POST    /api/annette/v1/cms/unlikePost/:postId              biz.lobachev.annette.cms.gateway.blogs.CmsPostViewController.unlikePost(postId: String)
@@ -248,8 +248,8 @@ POST    /api/annette/v1/cms/unlikePost/:postId              biz.lobachev.annette
 POST    /api/annette/v1/cms/createSpaceCategory                  biz.lobachev.annette.cms.gateway.pages.CmsSpaceCategoryController.createSpaceCategory
 POST    /api/annette/v1/cms/updateSpaceCategory                  biz.lobachev.annette.cms.gateway.pages.CmsSpaceCategoryController.updateSpaceCategory
 POST    /api/annette/v1/cms/deleteSpaceCategory                  biz.lobachev.annette.cms.gateway.pages.CmsSpaceCategoryController.deleteSpaceCategory
-GET     /api/annette/v1/cms/getSpaceCategoryById/:id/:fromReadSide biz.lobachev.annette.cms.gateway.pages.CmsSpaceCategoryController.getSpaceCategoryById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/cms/getSpaceCategoriesById/:fromReadSide   biz.lobachev.annette.cms.gateway.pages.CmsSpaceCategoryController.getSpaceCategoriesById(fromReadSide: Boolean)
+GET     /api/annette/v1/cms/getSpaceCategory/:id/:fromReadSide biz.lobachev.annette.cms.gateway.pages.CmsSpaceCategoryController.getSpaceCategory(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/cms/getSpaceCategories/:fromReadSide   biz.lobachev.annette.cms.gateway.pages.CmsSpaceCategoryController.getSpaceCategories(fromReadSide: Boolean)
 POST    /api/annette/v1/cms/findSpaceCategories                  biz.lobachev.annette.cms.gateway.pages.CmsSpaceCategoryController.findSpaceCategories
 # CMS Space
 POST    /api/annette/v1/cms/createSpace                     biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.createSpace
@@ -263,8 +263,8 @@ POST    /api/annette/v1/cms/unassignSpaceTargetPrincipal    biz.lobachev.annette
 POST    /api/annette/v1/cms/activateSpace                   biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.activateSpace
 POST    /api/annette/v1/cms/deactivateSpace                 biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.deactivateSpace
 POST    /api/annette/v1/cms/deleteSpace                     biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.deleteSpace
-GET     /api/annette/v1/cms/getSpaceById/:id/:fromReadSide  biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.getSpaceById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/cms/getSpacesById/:fromReadSide     biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.getSpacesById(fromReadSide: Boolean)
+GET     /api/annette/v1/cms/getSpace/:id/:fromReadSide  biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.getSpace(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/cms/getSpaces/:fromReadSide     biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.getSpaces(fromReadSide: Boolean)
 POST    /api/annette/v1/cms/findSpaces                      biz.lobachev.annette.cms.gateway.pages.CmsSpaceController.findSpaces
 # CMS Page
 POST    /api/annette/v1/cms/createPage                      biz.lobachev.annette.cms.gateway.pages.CmsPageController.createPage
@@ -281,21 +281,21 @@ POST    /api/annette/v1/cms/assignPageTargetPrincipal       biz.lobachev.annette
 POST    /api/annette/v1/cms/unassignPageTargetPrincipal     biz.lobachev.annette.cms.gateway.pages.CmsPageController.unassignPageTargetPrincipal
 POST    /api/annette/v1/cms/deletePage                      biz.lobachev.annette.cms.gateway.pages.CmsPageController.deletePage
 POST    /api/annette/v1/cms/findPages                       biz.lobachev.annette.cms.gateway.pages.CmsPageController.findPages
-GET     /api/annette/v1/cms/getPageById/:id/:fromReadSide   biz.lobachev.annette.cms.gateway.pages.CmsPageController.getPageById(id: String, fromReadSide: Boolean,  withContent: Option[Boolean], withTargets: Option[Boolean])
-POST    /api/annette/v1/cms/getPagesById/:fromReadSide      biz.lobachev.annette.cms.gateway.pages.CmsPageController.getPagesById(fromReadSide: Boolean,  withContent: Option[Boolean], withTargets: Option[Boolean])
+GET     /api/annette/v1/cms/getPage/:id/:fromReadSide   biz.lobachev.annette.cms.gateway.pages.CmsPageController.getPage(id: String, fromReadSide: Boolean,  withContent: Option[Boolean], withTargets: Option[Boolean])
+POST    /api/annette/v1/cms/getPages/:fromReadSide      biz.lobachev.annette.cms.gateway.pages.CmsPageController.getPages(fromReadSide: Boolean,  withContent: Option[Boolean], withTargets: Option[Boolean])
 POST    /api/annette/v1/cms/uploadPageFile/:pageId/:fileType   biz.lobachev.annette.cms.gateway.pages.CmsPageController.uploadPageFile(pageId: String, fileType: String)
 POST    /api/annette/v1/cms/removePageFile/:pageId/:fileType/:fileId   biz.lobachev.annette.cms.gateway.pages.CmsPageController.removePageFile(pageId: String, fileType: String, fileId: String)
 GET     /api/annette/v1/cms/getPageFiles/:pageId                       biz.lobachev.annette.cms.gateway.pages.CmsPageController.getPageFiles(pageId: String)
 # ************************************** CMS Space View API **************************************
 # CMS Space View
 POST    /api/annette/v1/cms/findSpaceViews                  biz.lobachev.annette.cms.gateway.pages.CmsSpaceViewController.findSpaceViews
-POST    /api/annette/v1/cms/getSpaceViewsById               biz.lobachev.annette.cms.gateway.pages.CmsSpaceViewController.getSpaceViewsById
+POST    /api/annette/v1/cms/getSpaceViews               biz.lobachev.annette.cms.gateway.pages.CmsSpaceViewController.getSpaceViews
 POST    /api/annette/v1/cms/subscribeToSpace/:spaceId       biz.lobachev.annette.cms.gateway.pages.CmsSpaceViewController.subscribeToSpace(spaceId: String)
 POST    /api/annette/v1/cms/unsubscribeFromSpace/:spaceId   biz.lobachev.annette.cms.gateway.pages.CmsSpaceViewController.unsubscribeFromSpace(spaceId: String)
 # CMS Page View
 POST    /api/annette/v1/cms/findPageViews                   biz.lobachev.annette.cms.gateway.pages.CmsPageViewController.findPageViews
-POST    /api/annette/v1/cms/getPageViewsById                biz.lobachev.annette.cms.gateway.pages.CmsPageViewController.getPageViewsById
-GET     /api/annette/v1/cms/getPageViewById/:pageId         biz.lobachev.annette.cms.gateway.pages.CmsPageViewController.getPageViewById(pageId: String)
+POST    /api/annette/v1/cms/getPageViews                biz.lobachev.annette.cms.gateway.pages.CmsPageViewController.getPageViews
+GET     /api/annette/v1/cms/getPageView/:pageId         biz.lobachev.annette.cms.gateway.pages.CmsPageViewController.getPageView(pageId: String)
 POST    /api/annette/v1/cms/viewPage/:pageId                biz.lobachev.annette.cms.gateway.pages.CmsPageViewController.viewPage(pageId: String)
 POST    /api/annette/v1/cms/likePage/:pageId                biz.lobachev.annette.cms.gateway.pages.CmsPageViewController.likePage(pageId: String)
 POST    /api/annette/v1/cms/unlikePage/:pageId              biz.lobachev.annette.cms.gateway.pages.CmsPageViewController.unlikePage(pageId: String)
@@ -304,8 +304,8 @@ GET    /api/annette/v1/cms/file/:objectId/:fileType/:fileId    biz.lobachev.anne
 # ************************************** CMS Home Page **************************************
 POST    /api/annette/v1/cms/assignHomePage                     biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController.assignHomePage
 POST    /api/annette/v1/cms/unassignHomePage                   biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController.unassignHomePage
-GET     /api/annette/v1/cms/getHomePageById/:id/:fromReadSide  biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController.getHomePageById(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/cms/getHomePagesById/:fromReadSide     biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController.getHomePagesById(fromReadSide: Boolean)
+GET     /api/annette/v1/cms/getHomePage/:id/:fromReadSide  biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController.getHomePage(id: String, fromReadSide: Boolean)
+POST    /api/annette/v1/cms/getHomePages/:fromReadSide     biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController.getHomePages(fromReadSide: Boolean)
 POST    /api/annette/v1/cms/findHomePages                      biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController.findHomePages
 GET     /api/annette/v1/cms/getMyHomePage/:applicationId       biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController.getMyHomePage(applicationId: String)
 
@@ -318,8 +318,8 @@ POST    /api/annette/v1/bpm/updateBpmModelDescription  biz.lobachev.annette.bpm.
 POST    /api/annette/v1/bpm/updateBpmModelXml   biz.lobachev.annette.bpm.gateway.BpmModelController.updateBpmModelXml
 POST    /api/annette/v1/bpm/deleteBpmModel      biz.lobachev.annette.bpm.gateway.BpmModelController.deleteBpmModel
 POST    /api/annette/v1/bpm/findBpmModels       biz.lobachev.annette.bpm.gateway.BpmModelController.findBpmModels
-GET     /api/annette/v1/bpm/getBpmModelById/:id biz.lobachev.annette.bpm.gateway.BpmModelController.getBpmModelById(id: String, withXml: Option[Boolean])
-POST    /api/annette/v1/bpm/getBpmModelsById    biz.lobachev.annette.bpm.gateway.BpmModelController.getBpmModelsById(withXml: Option[Boolean])
+GET     /api/annette/v1/bpm/getBpmModel/:id biz.lobachev.annette.bpm.gateway.BpmModelController.getBpmModel(id: String, withXml: Option[Boolean])
+POST    /api/annette/v1/bpm/getBpmModels    biz.lobachev.annette.bpm.gateway.BpmModelController.getBpmModels(withXml: Option[Boolean])
 
 # Data Schema
 POST    /api/annette/v1/bpm/createDataSchema      biz.lobachev.annette.bpm.gateway.DataSchemaController.createDataSchema
@@ -330,8 +330,8 @@ POST    /api/annette/v1/bpm/storeDataSchemaVariable   biz.lobachev.annette.bpm.g
 POST    /api/annette/v1/bpm/deleteDataSchemaVariable  biz.lobachev.annette.bpm.gateway.DataSchemaController.deleteDataSchemaVariable
 POST    /api/annette/v1/bpm/deleteDataSchema      biz.lobachev.annette.bpm.gateway.DataSchemaController.deleteDataSchema
 POST    /api/annette/v1/bpm/findDataSchemas       biz.lobachev.annette.bpm.gateway.DataSchemaController.findDataSchemas
-GET     /api/annette/v1/bpm/getDataSchemaById/:id biz.lobachev.annette.bpm.gateway.DataSchemaController.getDataSchemaById(id: String, withVariables: Option[Boolean])
-POST    /api/annette/v1/bpm/getDataSchemasById    biz.lobachev.annette.bpm.gateway.DataSchemaController.getDataSchemasById(withVariables: Option[Boolean])
+GET     /api/annette/v1/bpm/getDataSchema/:id biz.lobachev.annette.bpm.gateway.DataSchemaController.getDataSchema(id: String, withVariables: Option[Boolean])
+POST    /api/annette/v1/bpm/getDataSchemas    biz.lobachev.annette.bpm.gateway.DataSchemaController.getDataSchemas(withVariables: Option[Boolean])
 
 # Business Process
 POST    /api/annette/v1/bpm/createBusinessProcess      biz.lobachev.annette.bpm.gateway.BusinessProcessController.createBusinessProcess
@@ -345,8 +345,8 @@ POST    /api/annette/v1/bpm/storeBusinessProcessVariable   biz.lobachev.annette.
 POST    /api/annette/v1/bpm/deleteBusinessProcessVariable  biz.lobachev.annette.bpm.gateway.BusinessProcessController.deleteBusinessProcessVariable
 POST    /api/annette/v1/bpm/deleteBusinessProcess      biz.lobachev.annette.bpm.gateway.BusinessProcessController.deleteBusinessProcess
 POST    /api/annette/v1/bpm/findBusinessProcesses       biz.lobachev.annette.bpm.gateway.BusinessProcessController.findBusinessProcesses
-GET     /api/annette/v1/bpm/getBusinessProcessById/:id biz.lobachev.annette.bpm.gateway.BusinessProcessController.getBusinessProcessById(id: String, withVariables: Option[Boolean])
-POST    /api/annette/v1/bpm/getBusinessProcessesById    biz.lobachev.annette.bpm.gateway.BusinessProcessController.getBusinessProcessesById(withVariables: Option[Boolean])
+GET     /api/annette/v1/bpm/getBusinessProcess/:id biz.lobachev.annette.bpm.gateway.BusinessProcessController.getBusinessProcess(id: String, withVariables: Option[Boolean])
+POST    /api/annette/v1/bpm/getBusinessProcesses    biz.lobachev.annette.bpm.gateway.BusinessProcessController.getBusinessProcesses(withVariables: Option[Boolean])
 
 # Camunda repository
 POST    /api/annette/v1/bpm/deployBpmModel      biz.lobachev.annette.bpm.gateway.CamundaRepositoryController.deployBpmModel

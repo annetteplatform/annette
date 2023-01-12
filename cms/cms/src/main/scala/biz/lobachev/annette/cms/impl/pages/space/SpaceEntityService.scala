@@ -185,17 +185,17 @@ class SpaceEntityService(
       .ask[SpaceEntity.Confirmation](SpaceEntity.GetSpace(id, _))
       .map(convertSuccessSpace(_, id))
 
-  def getSpaceById(id: SpaceId, fromReadSide: Boolean): Future[Space] =
+  def getSpace(id: SpaceId, fromReadSide: Boolean): Future[Space] =
     if (fromReadSide)
       dbDao
-        .getSpaceById(id)
+        .getSpace(id)
         .map(_.getOrElse(throw SpaceNotFound(id)))
     else
       getSpace(id)
 
-  def getSpacesById(ids: Set[SpaceId], fromReadSide: Boolean): Future[Seq[Space]] =
+  def getSpaces(ids: Set[SpaceId], fromReadSide: Boolean): Future[Seq[Space]] =
     if (fromReadSide)
-      dbDao.getSpacesById(ids)
+      dbDao.getSpaces(ids)
     else
       Future
         .traverse(ids) { id =>

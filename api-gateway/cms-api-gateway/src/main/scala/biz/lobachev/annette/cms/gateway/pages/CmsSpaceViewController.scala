@@ -65,7 +65,7 @@ class CmsSpaceViewController @Inject() (
       }
     }
 
-  def getSpaceViewsById =
+  def getSpaceViews =
     authenticated.async(parse.json[Set[SpaceId]]) { implicit request =>
       authorizer.performCheckAny(Permissions.VIEW_SPACES) {
         val ids                = request.request.body

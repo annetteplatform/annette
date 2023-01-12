@@ -75,7 +75,7 @@ class UserServiceController @Inject() (
                              case _                                                             => None
                            }.toSet
           applications  <- if (applicationIds.nonEmpty)
-                             appllicationService.getApplicationsById(applicationIds)
+                             appllicationService.getApplications(applicationIds)
                            else Future.successful(Seq.empty)
         } yield Ok(
           Json.toJson(
@@ -107,7 +107,7 @@ class UserServiceController @Inject() (
                              )
                              .toSet
           applications  <- if (applicationIds.nonEmpty)
-                             appllicationService.getApplicationsById(applicationIds)
+                             appllicationService.getApplications(applicationIds)
                            else Future.successful(Seq.empty)
         } yield Ok(
           Json.toJson(

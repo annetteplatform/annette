@@ -67,7 +67,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.createSpace(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, false)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -81,7 +81,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.updateSpaceName(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, false)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -95,7 +95,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.updateSpaceDescription(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, false)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -109,7 +109,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.updateSpaceCategoryId(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, false)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -123,7 +123,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.assignSpaceAuthorPrincipal(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, false)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -137,7 +137,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.unassignSpaceAuthorPrincipal(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, false)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -151,7 +151,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.assignSpaceTargetPrincipal(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, false)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -165,7 +165,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.unassignSpaceTargetPrincipal(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, false)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -179,7 +179,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.activateSpace(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, false)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -193,7 +193,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.deactivateSpace(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, false)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -211,22 +211,22 @@ class CmsSpaceController @Inject() (
       }
     }
 
-  def getSpaceById(id: SpaceId, fromReadSide: Boolean) =
+  def getSpace(id: SpaceId, fromReadSide: Boolean) =
     authenticated.async { implicit request =>
       authorizer.performCheck(canEditSpace(id)) {
         for {
-          space <- cmsService.getSpaceById(id, fromReadSide)
+          space <- cmsService.getSpace(id, fromReadSide)
         } yield Ok(Json.toJson(space))
       }
     }
 
-  def getSpacesById(fromReadSide: Boolean) =
+  def getSpaces(fromReadSide: Boolean) =
     authenticated.async(parse.json[Set[SpaceId]]) { implicit request =>
       val filteredSpacesFuture = filterSpaces(request.request.body)
       authorizer.performCheck(filteredSpacesFuture.map(_.nonEmpty)) {
         for {
           filteredSpaces <- filteredSpacesFuture
-          spaces         <- cmsService.getSpacesById(filteredSpaces, fromReadSide)
+          spaces         <- cmsService.getSpaces(filteredSpaces, fromReadSide)
         } yield Ok(Json.toJson(spaces))
       }
     }

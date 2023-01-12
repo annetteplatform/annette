@@ -258,7 +258,7 @@ private[impl] class BlogDbDao(
       _ <- ctx.run(blogTargetSchema.filter(_.blogId == lift(event.id)).delete)
     } yield Done
 
-  def getBlogById(id: BlogId): Future[Option[Blog]] =
+  def getBlog(id: BlogId): Future[Option[Blog]] =
     for {
       maybeBlogRecord <- ctx
                            .run(blogSchema.filter(_.id == lift(id)))
@@ -269,7 +269,7 @@ private[impl] class BlogDbDao(
                            .run(blogTargetSchema.filter(_.blogId == lift(id)).map(_.principal))
     } yield maybeBlogRecord.map(_.toBlog.copy(authors = authors.toSet, targets = targets.toSet))
 
-  def getBlogsById(ids: Set[BlogId]): Future[Seq[Blog]] =
+  def getBlogs(ids: Set[BlogId]): Future[Seq[Blog]] =
     for {
       blogs   <- ctx
                    .run(blogSchema.filter(b => liftQuery(ids).contains(b.id)))

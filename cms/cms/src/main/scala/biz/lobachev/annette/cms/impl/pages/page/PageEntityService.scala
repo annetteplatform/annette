@@ -238,7 +238,7 @@ class PageEntityService(
   def canAccessToPage(payload: CanAccessToEntityPayload): Future[Boolean] =
     dbDao.canAccessToPage(payload.id, payload.principals)
 
-  def getPageById(
+  def getPage(
     id: PageId,
     fromReadSide: Boolean,
     withContent: Boolean,
@@ -246,19 +246,19 @@ class PageEntityService(
   ): Future[Page] =
     if (fromReadSide)
       dbDao
-        .getPageById(id, withContent, withTargets)
+        .getPage(id, withContent, withTargets)
         .map(_.getOrElse(throw PageNotFound(id)))
     else
       getPage(id, withContent, withTargets)
 
-  def getPagesById(
+  def getPages(
     ids: Set[PageId],
     fromReadSide: Boolean,
     withContent: Boolean,
     withTargets: Boolean
   ): Future[Seq[Page]] =
     if (fromReadSide)
-      dbDao.getPagesById(ids, withContent, withTargets)
+      dbDao.getPages(ids, withContent, withTargets)
     else
       Future
         .traverse(ids) { id =>
@@ -272,7 +272,7 @@ class PageEntityService(
         .map(_.flatten.toSeq)
 
   def getPageViews(payload: GetPageViewsPayload): Future[Seq[Page]] =
-    dbDao.getPageViewsById(payload)
+    dbDao.getPageViews(payload)
 
   def findPages(query: PageFindQuery): Future[FindResult] = indexDao.findPages(query)
 
@@ -282,10 +282,10 @@ class PageEntityService(
 
   def unlikePage(payload: UnlikePayload): Future[Done] = dbDao.unlikePage(payload.id, payload.updatedBy)
 
-  def getPageMetricById(payload: GetMetricPayload): Future[Metric] =
-    dbDao.getPageMetricById(payload.id, payload.principal)
+  def getPageMetric(payload: GetMetricPayload): Future[Metric] =
+    dbDao.getPageMetric(payload.id, payload.principal)
 
-  def getPageMetricsById(payload: GetMetricsPayload): Future[Seq[Metric]] =
-    dbDao.getPageMetricsById(payload.ids, payload.principal)
+  def getPageMetrics(payload: GetMetricsPayload): Future[Seq[Metric]] =
+    dbDao.getPageMetrics(payload.ids, payload.principal)
 
 }

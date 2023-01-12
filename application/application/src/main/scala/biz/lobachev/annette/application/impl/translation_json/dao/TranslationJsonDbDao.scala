@@ -89,7 +89,7 @@ private[application] class TranslationJsonDbDao(
         _.groupMap(_._1)(_._2).map { case (k, v) => k -> v.sorted }
       )
 
-  def getTranslationJsonById(id: TranslationId, languageId: LanguageId): Future[Option[TranslationJson]] =
+  def getTranslationJson(id: TranslationId, languageId: LanguageId): Future[Option[TranslationJson]] =
     ctx
       .run(
         schema.filter(e =>

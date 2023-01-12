@@ -273,7 +273,7 @@ class CmsPageController @Inject() (
       }
     }
 
-  def getPagesById(
+  def getPages(
     fromReadSide: Boolean,
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
@@ -283,7 +283,7 @@ class CmsPageController @Inject() (
       authorizer.performCheck(filteredPagesFuture.map(_.nonEmpty)) {
         for {
           filteredPages <- filteredPagesFuture
-          result        <- cmsService.getPagesById(filteredPages, fromReadSide, withContent, withTargets)
+          result        <- cmsService.getPages(filteredPages, fromReadSide, withContent, withTargets)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -295,7 +295,7 @@ class CmsPageController @Inject() (
         a.flatMap { case id -> f => if (f) acc.map(_ + id) else acc }
       }
 
-  def getPageById(
+  def getPage(
     id: PageId,
     fromReadSide: Boolean,
     withContent: Option[Boolean] = None,
@@ -304,7 +304,7 @@ class CmsPageController @Inject() (
     authenticated.async { implicit request =>
       authorizer.performCheck(canEditPageByPageId(id)) {
         for {
-          result <- cmsService.getPageById(id, fromReadSide, withContent, withTargets)
+          result <- cmsService.getPage(id, fromReadSide, withContent, withTargets)
         } yield Ok(Json.toJson(result))
       }
     }
