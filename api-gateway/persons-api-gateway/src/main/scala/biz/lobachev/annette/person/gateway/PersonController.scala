@@ -19,7 +19,7 @@ package biz.lobachev.annette.person.gateway
 import biz.lobachev.annette.api_gateway_core.authentication.{AuthenticatedAction, AuthenticatedRequest}
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.core.attribute.{UpdateAttributesPayload, UpdateAttributesPayloadDto}
-import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.core.model.{DataSource, PersonId}
 import biz.lobachev.annette.core.model.auth.{DescendantUnitPrincipal, DirectUnitPrincipal, UnitChiefPrincipal}
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.org_structure.api.OrgStructureService
@@ -63,7 +63,7 @@ class PersonController @Inject() (
           attributes     = payload.attributes.map(_.keys.toSeq).getOrElse(Seq.empty)
           withAttributes = if (attributes.nonEmpty) Some(attributes.mkString(","))
                            else None
-          person        <- personService.getPersonById(payload.id, false, withAttributes)
+          person        <- personService.getPerson(payload.id, DataSource.FROM_ORIGIN, withAttributes)
         } yield Ok(Json.toJson(person))
       }
     }
@@ -80,7 +80,7 @@ class PersonController @Inject() (
           attributes     = payload.attributes.map(_.keys.toSeq).getOrElse(Seq.empty)
           withAttributes = if (attributes.nonEmpty) Some(attributes.mkString(","))
                            else None
-          person        <- personService.getPersonById(payload.id, false, withAttributes)
+          person        <- personService.getPerson(payload.id, DataSource.FROM_ORIGIN, withAttributes)
         } yield Ok(Json.toJson(person))
       }
     }
@@ -97,7 +97,7 @@ class PersonController @Inject() (
           _             <- personService.updatePersonAttributes(payload)
           withAttributes = if (attributes.nonEmpty) Some(attributes.mkString(","))
                            else None
-          person        <- personService.getPersonById(payload.id, false, withAttributes)
+          person        <- personService.getPerson(payload.id, DataSource.FROM_ORIGIN, withAttributes)
         } yield Ok(Json.toJson(person))
       }
     }
@@ -115,26 +115,30 @@ class PersonController @Inject() (
       }
     }
 
-  def getPersonById(id: PersonId, fromReadSide: Boolean, withAttributes: Option[String] = None) =
+  def getPerson(id: PersonId, source: Option[String], withAttributes: Option[String] = None) =
     authenticated.async { implicit request =>
       def action =
         for {
-          person <- personService.getPersonById(id, fromReadSide, withAttributes)
+          person <- personService.getPerson(id, source, withAttributes)
         } yield Ok(Json.toJson(person))
 
-      if (fromReadSide) authorizer.performCheck(canViewOrMaintainPerson(id))(action)
-      else authorizer.performCheck(canMaintainPerson(id))(action)
+      if (DataSource.fromOrigin(source))
+        authorizer.performCheck(canMaintainPerson(id))(action)
+      else
+        authorizer.performCheck(canViewOrMaintainPerson(id))(action)
 
     }
 
-  def getPersonsById(fromReadSide: Boolean, withAttributes: Option[String] = None) =
+  def getPersons(source: Option[String], withAttributes: Option[String] = None) =
     authenticated.async(parse.json[Set[PersonId]]) { implicit request =>
       def action =
         for {
-          persons <- personService.getPersonsById(request.body, fromReadSide, withAttributes)
+          persons <- personService.getPersons(request.body, source, withAttributes)
         } yield Ok(Json.toJson(persons))
-      if (fromReadSide) authorizer.performCheckAny(VIEW_ALL_PERSON, MAINTAIN_ALL_PERSON)(action)
-      else authorizer.performCheckAny(MAINTAIN_ALL_PERSON)(action)
+      if (DataSource.fromOrigin(source))
+        authorizer.performCheckAny(MAINTAIN_ALL_PERSON)(action)
+      else
+        authorizer.performCheckAny(VIEW_ALL_PERSON, MAINTAIN_ALL_PERSON)(action)
     }
 
   def findPersons =
@@ -151,7 +155,7 @@ class PersonController @Inject() (
     authenticated.async { implicit request =>
       val id = request.subject.principals.head.principalId
       for {
-        person <- personService.getPersonById(id, true)
+        person <- personService.getPerson(id, DataSource.FROM_READ_SIDE)
       } yield Ok(Json.toJson(person))
     }
 
@@ -164,20 +168,20 @@ class PersonController @Inject() (
       }
     }
 
-  def getPersonAttributes(id: PersonId, fromReadSide: Boolean, attributes: Option[String] = None) =
+  def getPersonAttributes(id: PersonId, source: Option[String], attributes: Option[String] = None) =
     authenticated.async { implicit request =>
       authorizer.performCheck(canViewOrMaintainPerson(id)) {
         for {
-          attributes <- personService.getPersonAttributes(id, fromReadSide, attributes)
+          attributes <- personService.getPersonAttributes(id, source, attributes)
         } yield Ok(Json.toJson(attributes))
       }
     }
 
-  def getPersonsAttributes(fromReadSide: Boolean, attributes: Option[String] = None) =
+  def getPersonsAttributes(source: Option[String], attributes: Option[String] = None) =
     authenticated.async(parse.json[Set[PersonId]]) { implicit request =>
       authorizer.performCheckAny(VIEW_ALL_PERSON, MAINTAIN_ALL_PERSON) {
         for {
-          attributes <- personService.getPersonsAttributes(request.body, fromReadSide, attributes)
+          attributes <- personService.getPersonsAttributes(request.body, source, attributes)
         } yield Ok(Json.toJson(attributes))
       }
     }
@@ -193,7 +197,7 @@ class PersonController @Inject() (
           .transform
         for {
           _    <- personService.createCategory(payload)
-          role <- personService.getCategoryById(payload.id, false)
+          role <- personService.getCategory(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -207,7 +211,7 @@ class PersonController @Inject() (
           .transform
         for {
           _    <- personService.updateCategory(payload)
-          role <- personService.getCategoryById(payload.id, false)
+          role <- personService.getCategory(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -225,27 +229,31 @@ class PersonController @Inject() (
       }
     }
 
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean) =
+  def getCategory(id: CategoryId, source: Option[String]) =
     authenticated.async { implicit request =>
       val rules =
-        if (fromReadSide) Seq(VIEW_ALL_PERSON_CATEGORIES, MAINTAIN_ALL_PERSON_CATEGORIES)
-        else Seq(MAINTAIN_ALL_PERSON_CATEGORIES)
+        if (DataSource.fromOrigin(source))
+          Seq(MAINTAIN_ALL_PERSON_CATEGORIES)
+        else
+          Seq(VIEW_ALL_PERSON_CATEGORIES, MAINTAIN_ALL_PERSON_CATEGORIES)
       authorizer.performCheckAny(rules: _*) {
         for {
-          role <- personService.getCategoryById(id, fromReadSide)
+          role <- personService.getCategory(id, source)
         } yield Ok(Json.toJson(role))
       }
     }
 
-  def getCategoriesById(fromReadSide: Boolean) =
+  def getCategories(source: Option[String]) =
     authenticated.async(parse.json[Set[CategoryId]]) { implicit request =>
       val ids   = request.body
       val rules =
-        if (fromReadSide) Seq(VIEW_ALL_PERSON_CATEGORIES, MAINTAIN_ALL_PERSON_CATEGORIES)
-        else Seq(MAINTAIN_ALL_PERSON_CATEGORIES)
+        if (DataSource.fromOrigin(source))
+          Seq(MAINTAIN_ALL_PERSON_CATEGORIES)
+        else
+          Seq(VIEW_ALL_PERSON_CATEGORIES, MAINTAIN_ALL_PERSON_CATEGORIES)
       authorizer.performCheckAny(rules: _*) {
         for {
-          roles <- personService.getCategoriesById(ids, fromReadSide)
+          roles <- personService.getCategories(ids, source)
         } yield Ok(Json.toJson(roles))
       }
     }

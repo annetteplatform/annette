@@ -493,7 +493,7 @@ private[impl] class HierarchyDbDao(
       maybeEntity      <- ctx
                             .run(itemSchema.filter(_.id == lift(id)))
                             .map(_.headOption.map(_.toOrgItem))
-      entityAttributes <- if (maybeEntity.isDefined && attributes.nonEmpty) getAttributesById(id, attributes)
+      entityAttributes <- if (maybeEntity.isDefined && attributes.nonEmpty) getAttributes(id, attributes)
                           else Future.successful(Map.empty[String, String])
     } yield maybeEntity.map(_.withAttributes(entityAttributes))
 
@@ -502,7 +502,7 @@ private[impl] class HierarchyDbDao(
       entities      <- ctx
                          .run(itemSchema.filter(b => liftQuery(ids).contains(b.id)))
                          .map(_.map(_.toOrgItem))
-      attributesMap <- getAttributesById(ids, attributes)
+      attributesMap <- getAttributes(ids, attributes)
     } yield
       if (attributes.isEmpty) entities
       else
@@ -545,7 +545,7 @@ private[impl] class HierarchyDbDao(
                              .run(itemSchema.filter(_.id == lift(id)).map(_.id))
                              .map(_.headOption)
       orgItemAttributes <- if (maybeOrgItem.isDefined)
-                             getAttributesById(id, attributes)
+                             getAttributes(id, attributes)
                            else Future.successful(Map.empty[String, String])
     } yield maybeOrgItem.map(_ => orgItemAttributes)
 
@@ -557,7 +557,7 @@ private[impl] class HierarchyDbDao(
     else
       for {
         foundOrgItems <- ctx.run(itemSchema.filter(b => liftQuery(ids).contains(b.id)).map(_.id))
-        attributesMap <- getAttributesById(ids, attributes)
+        attributesMap <- getAttributes(ids, attributes)
       } yield foundOrgItems
         .map(orgItemId => orgItemId -> attributesMap.get(orgItemId).getOrElse(Map.empty[String, String]))
         .toMap

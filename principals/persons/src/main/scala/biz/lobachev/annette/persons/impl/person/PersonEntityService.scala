@@ -22,7 +22,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.core.attribute.{AttributeValues, UpdateAttributesPayload}
-import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.core.model.{DataSource, PersonId}
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.microservice_core.attribute.AttributeComponents
 import biz.lobachev.annette.persons.api.person._
@@ -103,57 +103,57 @@ class PersonEntityService(
       .ask[Confirmation](GetPerson(id, withAttributes, _))
       .map(res => convertSuccessPerson(id, res))
 
-  def getPersonById(id: PersonId, fromReadSide: Boolean, withAttributes: Option[String] = None): Future[Person] = {
+  def getPerson(id: PersonId, source: Option[String], withAttributes: Option[String] = None): Future[Person] = {
     val attributes = extractAttributes(withAttributes)
-    if (fromReadSide)
-      dbDao
-        .getPersonById(id, attributes)
-        .map(_.getOrElse(throw PersonNotFound(id)))
-    else {
+    if (DataSource.fromOrigin(source)) {
       val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attributes)
-      val personAttributesFuture                    =
+      val personAttributesFuture =
         if (readSideAttributes.nonEmpty) dbDao.getPersonAttributes(id, readSideAttributes)
         else Future.successful(None)
       for {
-        person           <- getPerson(id, writeSideAttributes)
+        person <- getPerson(id, writeSideAttributes)
         personAttributes <- personAttributesFuture
       } yield person.copy(
         attributes = person.attributes ++ personAttributes.getOrElse(Map.empty[String, String])
       )
+    } else {
+      dbDao
+        .getPerson(id, attributes)
+        .map(_.getOrElse(throw PersonNotFound(id)))
     }
   }
 
-  def getPersonsById(
+  def getPersons(
     ids: Set[PersonId],
-    fromReadSide: Boolean,
+    source: Option[String],
     withAttributes: Option[String] = None
   ): Future[Seq[Person]] = {
     val attributes = extractAttributes(withAttributes)
-    if (fromReadSide)
-      dbDao.getPersonsById(ids, attributes)
-    else {
+    if (DataSource.fromOrigin(source)) {
       val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attributes)
-      val attributeMapFuture                        =
+      val attributeMapFuture =
         if (readSideAttributes.nonEmpty) dbDao.getPersonsAttributes(ids, readSideAttributes)
         else Future.successful(Map.empty[String, AttributeValues])
       for {
-        persons      <- Source(ids)
-                          .mapAsync(1) { id =>
-                            refFor(id)
-                              .ask[Confirmation](GetPerson(id, writeSideAttributes, _))
-                              .map {
-                                case PersonEntity.SuccessPerson(person) => Some(person)
-                                case _                                  => None
-                              }
-                          }
-                          .runWith(Sink.seq)
-                          .map(_.flatten)
+        persons <- Source(ids)
+          .mapAsync(1) { id =>
+            refFor(id)
+              .ask[Confirmation](GetPerson(id, writeSideAttributes, _))
+              .map {
+                case PersonEntity.SuccessPerson(person) => Some(person)
+                case _ => None
+              }
+          }
+          .runWith(Sink.seq)
+          .map(_.flatten)
         attributeMap <- attributeMapFuture
       } yield persons.map(person =>
         person.copy(attributes =
           person.attributes ++ attributeMap.get(person.id).getOrElse(Map.empty[String, String])
         )
       )
+    } else {
+      dbDao.getPersons(ids, attributes)
     }
   }
 
@@ -170,57 +170,57 @@ class PersonEntityService(
 
   def getPersonAttributes(
     id: PersonId,
-    fromReadSide: Boolean,
+    source: Option[String],
     withAttributes: Option[String]
   ): Future[AttributeValues] = {
     val attributes = extractAttributes(withAttributes)
-    if (fromReadSide)
-      dbDao
-        .getPersonAttributes(id, attributes)
-        .map(_.getOrElse(throw PersonNotFound(id)))
-    else {
+    if (DataSource.fromOrigin(source)) {
       val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attributes)
-      val readSideAttributesFuture                  =
+      val readSideAttributesFuture =
         if (readSideAttributes.nonEmpty) dbDao.getPersonAttributes(id, readSideAttributes)
         else Future.successful(None)
       for {
         writeSideAttributeValues <- refFor(id)
-                                      .ask[Confirmation](GetPersonAttributes(id, writeSideAttributes, _))
-                                      .map(res => convertSuccessEntityAttributes(id, res))
-        readSideAttributeValues  <- readSideAttributesFuture
+          .ask[Confirmation](GetPersonAttributes(id, writeSideAttributes, _))
+          .map(res => convertSuccessEntityAttributes(id, res))
+        readSideAttributeValues <- readSideAttributesFuture
       } yield writeSideAttributeValues ++ readSideAttributeValues.getOrElse(Map.empty[String, String])
+    } else {
+      dbDao
+        .getPersonAttributes(id, attributes)
+        .map(_.getOrElse(throw PersonNotFound(id)))
     }
 
   }
 
   def getPersonsAttributes(
     ids: Set[PersonId],
-    fromReadSide: Boolean,
+    source: Option[String],
     withAttributes: Option[String]
   ): Future[Map[String, AttributeValues]] = {
     val attributes = extractAttributes(withAttributes)
-    if (fromReadSide)
-      dbDao
-        .getPersonsAttributes(ids, attributes)
-    else {
+    if (DataSource.fromOrigin(source)) {
       val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attributes)
-      val readSideAttributesFuture                  =
+      val readSideAttributesFuture =
         if (readSideAttributes.nonEmpty) dbDao.getPersonsAttributes(ids, readSideAttributes)
         else Future.successful(Map.empty[String, AttributeValues])
       for {
         writeSideAttributeValueMap <- Source(ids)
-                                        .mapAsync(1) { id =>
-                                          refFor(id)
-                                            .ask[Confirmation](GetPersonAttributes(id, writeSideAttributes, _))
-                                            .map(res => id -> convertSuccessEntityAttributes(id, res))
-                                        }
-                                        .runWith(Sink.seq)
-                                        .map(_.toMap)
-        readSideAttributesMap      <- readSideAttributesFuture
+          .mapAsync(1) { id =>
+            refFor(id)
+              .ask[Confirmation](GetPersonAttributes(id, writeSideAttributes, _))
+              .map(res => id -> convertSuccessEntityAttributes(id, res))
+          }
+          .runWith(Sink.seq)
+          .map(_.toMap)
+        readSideAttributesMap <- readSideAttributesFuture
       } yield writeSideAttributeValueMap.map {
         case id -> attributeValues =>
           id -> (attributeValues ++ readSideAttributesMap.get(id).getOrElse(Map.empty[String, String]))
       }
+    } else {
+      dbDao
+        .getPersonsAttributes(ids, attributes)
     }
   }
 
