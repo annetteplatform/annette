@@ -21,6 +21,7 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef, EntityT
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 import com.typesafe.config.Config
@@ -88,28 +89,27 @@ class SpaceCategoryEntityService(
       }
       .map(res => convertSuccess(payload.id, res))
 
-  def getCategory(id: CategoryId, fromReadSide: Boolean): Future[Category] =
-    if (fromReadSide)
-      for {
-        maybeCategory <- dbDao.getCategory(id)
-      } yield maybeCategory match {
-        case Some(category) => category
-        case None           => throw CategoryNotFound(id)
-      }
-    else
+  def getCategory(id: CategoryId, source: Option[String]): Future[Category] =
+    if (DataSource.fromOrigin(source))
       refFor(id)
         .ask[SpaceCategoryEntity.Confirmation](SpaceCategoryEntity.GetCategory(id, _))
         .map {
           case SpaceCategoryEntity.SuccessCategory(entity) => entity
           case _                                           => throw CategoryNotFound(id)
         }
+    else
+      for {
+        maybeCategory <- dbDao.getCategory(id)
+      } yield maybeCategory match {
+        case Some(category) => category
+        case None           => throw CategoryNotFound(id)
+      }
 
   def getCategories(
     ids: Set[CategoryId],
-    fromReadSide: Boolean
+    source: Option[String]
   ): Future[Seq[Category]] =
-    if (fromReadSide) dbDao.getCategories(ids)
-    else
+    if (DataSource.fromOrigin(source))
       Source(ids)
         .mapAsync(1) { id =>
           refFor(id)
@@ -121,6 +121,8 @@ class SpaceCategoryEntityService(
         }
         .runWith(Sink.seq)
         .map(seq => seq.flatten)
+    else
+      dbDao.getCategories(ids)
 
   def findCategories(query: CategoryFindQuery): Future[FindResult] =
     indexDao.findCategories(query)

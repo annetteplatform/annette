@@ -85,17 +85,17 @@ class PrincipalGroupServiceApiImpl(
 
   override def getPrincipalGroup(
     id: PrincipalGroupId,
-    fromReadSide: Boolean
+    source: Option[String]
   ): ServiceCall[NotUsed, PrincipalGroup] =
     ServiceCall { _ =>
-      groupEntityService.getPrincipalGroup(id, fromReadSide)
+      groupEntityService.getPrincipalGroup(id, source)
     }
 
   override def getPrincipalGroups(
-    fromReadSide: Boolean
+    source: Option[String]
   ): ServiceCall[Set[PrincipalGroupId], Seq[PrincipalGroup]] =
     ServiceCall { ids =>
-      groupEntityService.getPrincipalGroups(ids, fromReadSide)
+      groupEntityService.getPrincipalGroups(ids, source)
     }
 
   override def findPrincipalGroups: ServiceCall[PrincipalGroupFindQuery, FindResult] =
@@ -130,16 +130,16 @@ class PrincipalGroupServiceApiImpl(
       categoryEntityService.deleteCategory(payload)
     }
 
-  override def getCategory(id: CategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, Category] =
+  override def getCategory(id: CategoryId, source: Option[String]): ServiceCall[NotUsed, Category] =
     ServiceCall { _ =>
-      categoryEntityService.getCategory(id, fromReadSide)
+      categoryEntityService.getCategory(id, source)
     }
 
   override def getCategories(
-    fromReadSide: Boolean
+    source: Option[String]
   ): ServiceCall[Set[CategoryId], Seq[Category]] =
     ServiceCall { ids =>
-      categoryEntityService.getCategories(ids, fromReadSide)
+      categoryEntityService.getCategories(ids, source)
     }
 
   override def findCategories: ServiceCall[CategoryFindQuery, FindResult] =

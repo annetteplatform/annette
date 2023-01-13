@@ -45,7 +45,7 @@ class UserServiceController @Inject() (
   maybeAuthenticatedAction: MaybeAuthenticatedAction,
   authorizer: Authorizer,
   serviceCatalogService: ServiceCatalogService,
-  appllicationService: ApplicationService,
+  applicationService: ApplicationService,
   cc: ControllerComponents,
   implicit val ec: ExecutionContext
 ) extends AbstractController(cc) {
@@ -75,7 +75,7 @@ class UserServiceController @Inject() (
                              case _                                                             => None
                            }.toSet
           applications  <- if (applicationIds.nonEmpty)
-                             appllicationService.getApplications(applicationIds)
+                             applicationService.getApplications(applicationIds)
                            else Future.successful(Seq.empty)
         } yield Ok(
           Json.toJson(
@@ -107,7 +107,7 @@ class UserServiceController @Inject() (
                              )
                              .toSet
           applications  <- if (applicationIds.nonEmpty)
-                             appllicationService.getApplications(applicationIds)
+                             applicationService.getApplications(applicationIds)
                            else Future.successful(Seq.empty)
         } yield Ok(
           Json.toJson(

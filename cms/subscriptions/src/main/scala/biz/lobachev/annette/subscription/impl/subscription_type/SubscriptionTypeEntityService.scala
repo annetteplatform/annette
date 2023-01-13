@@ -21,6 +21,7 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.subscription.api.subscription_type._
 import biz.lobachev.annette.subscription.impl.subscription_type.dao.{SubscriptionTypeDbDao, SubscriptionTypeIndexDao}
@@ -72,11 +73,13 @@ class SubscriptionTypeEntityService(
       .ask[SubscriptionTypeEntity.Confirmation](SubscriptionTypeEntity.DeleteSubscriptionType(payload, _))
       .map(res => convertSuccess(payload.id, res))
 
-  def getSubscriptionType(id: SubscriptionTypeId, fromReadSide: Boolean): Future[SubscriptionType] =
-    if (fromReadSide) getSubscriptionTypeFromReadSide(id)
-    else getSubscriptionType(id)
+  def getSubscriptionType(id: SubscriptionTypeId, source: Option[String]): Future[SubscriptionType] =
+    if (DataSource.fromOrigin(source))
+      getSubscriptionTypeFromOrigin(id)
+    else
+      getSubscriptionTypeFromReadSide(id)
 
-  def getSubscriptionType(id: SubscriptionTypeId): Future[SubscriptionType] =
+  private def getSubscriptionTypeFromOrigin(id: SubscriptionTypeId): Future[SubscriptionType] =
     refFor(id)
       .ask[SubscriptionTypeEntity.Confirmation](SubscriptionTypeEntity.GetSubscriptionType(id, _))
       .map {
@@ -84,7 +87,7 @@ class SubscriptionTypeEntityService(
         case _                                                      => throw SubscriptionTypeNotFound(id)
       }
 
-  def getSubscriptionTypeFromReadSide(id: SubscriptionTypeId): Future[SubscriptionType] =
+  private def getSubscriptionTypeFromReadSide(id: SubscriptionTypeId): Future[SubscriptionType] =
     for {
       maybeSubscriptionType <- dbDao.getSubscriptionType(id)
     } yield maybeSubscriptionType match {
@@ -94,10 +97,9 @@ class SubscriptionTypeEntityService(
 
   def getSubscriptionTypes(
     ids: Set[SubscriptionTypeId],
-    fromReadSide: Boolean
+    source: Option[String]
   ): Future[Seq[SubscriptionType]] =
-    if (fromReadSide) dbDao.getSubscriptionTypes(ids)
-    else
+    if (DataSource.fromOrigin(source))
       Source(ids)
         .mapAsync(1) { id =>
           refFor(id)
@@ -109,6 +111,8 @@ class SubscriptionTypeEntityService(
         }
         .runWith(Sink.seq)
         .map(seq => seq.flatten)
+    else
+      dbDao.getSubscriptionTypes(ids)
 
   def findSubscriptionTypes(query: SubscriptionTypeFindQuery): Future[FindResult] =
     indexDao.findSubscriptionTypes(query)

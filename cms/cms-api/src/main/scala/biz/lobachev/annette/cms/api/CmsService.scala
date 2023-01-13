@@ -79,8 +79,8 @@ trait CmsService {
   def createBlogCategory(payload: CreateCategoryPayload): Future[Done]
   def updateBlogCategory(payload: UpdateCategoryPayload): Future[Done]
   def deleteBlogCategory(payload: DeleteCategoryPayload): Future[Done]
-  def getBlogCategory(id: CategoryId, fromReadSide: Boolean = true): Future[Category]
-  def getBlogCategories(ids: Set[CategoryId], fromReadSide: Boolean = true): Future[Seq[Category]]
+  def getBlogCategory(id: CategoryId, source: Option[String] = None): Future[Category]
+  def getBlogCategories(ids: Set[CategoryId], source: Option[String] = None): Future[Seq[Category]]
   def findBlogCategories(payload: CategoryFindQuery): Future[FindResult]
 
   def createBlog(payload: CreateBlogPayload): Future[Done]
@@ -94,8 +94,8 @@ trait CmsService {
   def activateBlog(payload: ActivatePayload): Future[Done]
   def deactivateBlog(payload: DeactivatePayload): Future[Done]
   def deleteBlog(payload: DeletePayload): Future[Done]
-  def getBlog(id: BlogId, fromReadSide: Boolean = true): Future[Blog]
-  def getBlogs(ids: Set[BlogId], fromReadSide: Boolean = true): Future[Seq[Blog]]
+  def getBlog(id: BlogId, source: Option[String] = None): Future[Blog]
+  def getBlogs(ids: Set[BlogId], source: Option[String] = None): Future[Seq[Blog]]
   def getBlogViews(payload: GetBlogViewsPayload): Future[Seq[BlogView]]
   def canEditBlogPosts(payload: CanAccessToEntityPayload): Future[Boolean]
   def canAccessToBlog(payload: CanAccessToEntityPayload): Future[Boolean]
@@ -117,14 +117,14 @@ trait CmsService {
   def deletePost(payload: DeletePayload): Future[Updated]
   def getPost(
     id: PostId,
-    fromReadSide: Boolean = true,
+    source: Option[String] = None,
     withIntro: Option[Boolean],
     withContent: Option[Boolean],
     withTargets: Option[Boolean]
   ): Future[Post]
   def getPosts(
     ids: Set[PostId],
-    fromReadSide: Boolean = true,
+    source: Option[String] = None,
     withIntro: Option[Boolean],
     withContent: Option[Boolean],
     withTargets: Option[Boolean]
@@ -145,8 +145,8 @@ trait CmsService {
   def createSpaceCategory(payload: CreateCategoryPayload): Future[Done]
   def updateSpaceCategory(payload: UpdateCategoryPayload): Future[Done]
   def deleteSpaceCategory(payload: DeleteCategoryPayload): Future[Done]
-  def getSpaceCategory(id: CategoryId, fromReadSide: Boolean = true): Future[Category]
-  def getSpaceCategories(ids: Set[CategoryId], fromReadSide: Boolean = true): Future[Seq[Category]]
+  def getSpaceCategory(id: CategoryId, source: Option[String] = None): Future[Category]
+  def getSpaceCategories(ids: Set[CategoryId], source: Option[String] = None): Future[Seq[Category]]
   def findSpaceCategories(payload: CategoryFindQuery): Future[FindResult]
 
   def createSpace(payload: CreateSpacePayload): Future[Done]
@@ -160,8 +160,8 @@ trait CmsService {
   def activateSpace(payload: ActivatePayload): Future[Done]
   def deactivateSpace(payload: DeactivatePayload): Future[Done]
   def deleteSpace(payload: DeletePayload): Future[Done]
-  def getSpace(id: SpaceId, fromReadSide: Boolean = true): Future[Space]
-  def getSpaces(ids: Set[SpaceId], fromReadSide: Boolean = true): Future[Seq[Space]]
+  def getSpace(id: SpaceId, source: Option[String] = None): Future[Space]
+  def getSpaces(ids: Set[SpaceId], source: Option[String] = None): Future[Seq[Space]]
   def getSpaceViews(payload: GetSpaceViewsPayload): Future[Seq[SpaceView]]
   def canEditSpacePages(payload: CanAccessToEntityPayload): Future[Boolean]
   def canAccessToSpace(payload: CanAccessToEntityPayload): Future[Boolean]
@@ -182,13 +182,13 @@ trait CmsService {
   def deletePage(payload: DeletePayload): Future[Updated]
   def getPage(
     id: PageId,
-    fromReadSide: Boolean = true,
+    source: Option[String] = None,
     withContent: Option[Boolean],
     withTargets: Option[Boolean]
   ): Future[Page]
   def getPages(
     ids: Set[PageId],
-    fromReadSide: Boolean = true,
+    source: Option[String] = None,
     withContent: Option[Boolean],
     withTargets: Option[Boolean]
   ): Future[Seq[Page]]
@@ -209,9 +209,9 @@ trait CmsService {
   def unassignHomePage(payload: UnassignHomePagePayload): Future[Done]
   def getHomePage(
     id: HomePageId,
-    fromReadSide: Boolean = true
+    source: Option[String] = None
   ): Future[HomePage]
-  def getHomePages(ids: Set[HomePageId], fromReadSide: Boolean = true): Future[Seq[HomePage]]
+  def getHomePages(ids: Set[HomePageId], source: Option[String] = None): Future[Seq[HomePage]]
   def getHomePageByPrincipalCodes(applicationId: String, ids: Seq[String]): Future[PageId]
   def findHomePages(query: HomePageFindQuery): Future[FindResult]
 

@@ -22,6 +22,7 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.org_structure.api.role._
 import biz.lobachev.annette.org_structure.impl.role.dao.{OrgRoleDbDao, OrgRoleIndexDao}
@@ -72,11 +73,14 @@ class OrgRoleEntityService(
       .ask[OrgRoleEntity.Confirmation](OrgRoleEntity.DeleteOrgRole(payload, _))
       .map(res => convertSuccess(payload.id, res))
 
-  def getOrgRole(id: OrgRoleId, fromReadSide: Boolean): Future[OrgRole] =
-    if (fromReadSide) getOrgRoleFromReadSide(id)
-    else getOrgRole(id)
+  def getOrgRole(id: OrgRoleId, source: Option[String]): Future[OrgRole] =
+    if (DataSource.fromOrigin(source)) {
+      getOrgRoleFromOrigin(id)
+    } else {
+      getOrgRoleFromReadSide(id)
+    }
 
-  def getOrgRole(id: OrgRoleId): Future[OrgRole] =
+  def getOrgRoleFromOrigin(id: OrgRoleId): Future[OrgRole] =
     refFor(id)
       .ask[OrgRoleEntity.Confirmation](OrgRoleEntity.GetOrgRole(id, _))
       .map {
@@ -92,20 +96,22 @@ class OrgRoleEntityService(
       case None          => throw OrgRoleNotFound(id)
     }
 
-  def getOrgRoles(ids: Set[OrgRoleId], fromReadSide: Boolean): Future[Seq[OrgRole]] =
-    if (fromReadSide) dbDao.getOrgRoles(ids)
-    else
+  def getOrgRoles(ids: Set[OrgRoleId], source: Option[String]): Future[Seq[OrgRole]] =
+    if (DataSource.fromOrigin(source)) {
       Source(ids)
         .mapAsync(1) { id =>
           refFor(id)
             .ask[OrgRoleEntity.Confirmation](OrgRoleEntity.GetOrgRole(id, _))
             .map {
               case OrgRoleEntity.SuccessOrgRole(entity) => Some(entity)
-              case _                                    => None
+              case _ => None
             }
         }
         .runWith(Sink.seq)
         .map(seq => seq.flatten)
+    } else {
+      dbDao.getOrgRoles(ids)
+    }
 
   def findOrgRoles(query: OrgRoleFindQuery): Future[FindResult] =
     indexDao.findOrgRole(query)

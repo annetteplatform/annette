@@ -18,6 +18,7 @@ package biz.lobachev.annette.service_catalog.gateway
 
 import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.service_catalog.api.ServiceCatalogService
 import biz.lobachev.annette.service_catalog.api.item._
 import biz.lobachev.annette.service_catalog.gateway.Permissions.MAINTAIN_SERVICE_CATALOG
@@ -47,7 +48,7 @@ class ServiceItemController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.createGroup(payload)
-          result <- serviceCatalogService.getServiceItem(payload.id, false)
+          result <- serviceCatalogService.getServiceItem(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -61,7 +62,7 @@ class ServiceItemController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.updateGroup(payload)
-          result <- serviceCatalogService.getServiceItem(payload.id, false)
+          result <- serviceCatalogService.getServiceItem(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -75,7 +76,7 @@ class ServiceItemController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.createService(payload)
-          result <- serviceCatalogService.getServiceItem(payload.id, false)
+          result <- serviceCatalogService.getServiceItem(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -89,7 +90,7 @@ class ServiceItemController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.updateService(payload)
-          result <- serviceCatalogService.getServiceItem(payload.id, false)
+          result <- serviceCatalogService.getServiceItem(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -103,7 +104,7 @@ class ServiceItemController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.activateServiceItem(payload)
-          result <- serviceCatalogService.getServiceItem(payload.id, false)
+          result <- serviceCatalogService.getServiceItem(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -117,7 +118,7 @@ class ServiceItemController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.deactivateServiceItem(payload)
-          result <- serviceCatalogService.getServiceItem(payload.id, false)
+          result <- serviceCatalogService.getServiceItem(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -135,21 +136,21 @@ class ServiceItemController @Inject() (
       }
     }
 
-  def getServiceItem(id: ServiceItemId, fromReadSide: Boolean = true) =
+  def getServiceItem(id: ServiceItemId, source: Option[String] = None) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
         for {
-          result <- serviceCatalogService.getServiceItem(id, fromReadSide)
+          result <- serviceCatalogService.getServiceItem(id, source)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def getServiceItems(fromReadSide: Boolean = true) =
+  def getServiceItems(source: Option[String] = None) =
     authenticated.async(parse.json[Set[ServiceItemId]]) { implicit request =>
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
         val ids = request.body
         for {
-          result <- serviceCatalogService.getServiceItems(ids, fromReadSide)
+          result <- serviceCatalogService.getServiceItems(ids, source)
         } yield Ok(Json.toJson(result))
       }
     }

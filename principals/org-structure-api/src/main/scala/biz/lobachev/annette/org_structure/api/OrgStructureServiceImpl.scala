@@ -98,17 +98,17 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
 
   def getOrgItem(
     itemId: CompositeOrgItemId,
-    fromReadSide: Boolean,
-    withAttributes: Option[String]
+    source: Option[String],
+    attributes: Option[String]
   ): Future[OrgItem] =
-    api.getOrgItem(itemId, fromReadSide, withAttributes).invoke()
+    api.getOrgItem(itemId, source, attributes).invoke()
 
   def getOrgItems(
     ids: Set[CompositeOrgItemId],
-    fromReadSide: Boolean,
-    withAttributes: Option[String]
+    source: Option[String],
+    attributes: Option[String]
   ): Future[Seq[OrgItem]] =
-    api.getOrgItems(fromReadSide, withAttributes).invoke(ids)
+    api.getOrgItems(source, attributes).invoke(ids)
 
   def getItemIdsByExternalId(externalIds: Set[String]): Future[Map[String, CompositeOrgItemId]] =
     api.getItemIdsByExternalId.invoke(externalIds)
@@ -131,17 +131,17 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
 
   override def getOrgItemAttributes(
     id: CompositeOrgItemId,
-    fromReadSide: Boolean,
+    source: Option[String],
     attributes: Option[String]
   ): Future[AttributeValues] =
-    api.getOrgItemAttributes(id, fromReadSide, attributes).invoke()
+    api.getOrgItemAttributes(id, source, attributes).invoke()
 
   override def getOrgItemsAttributes(
     ids: Set[CompositeOrgItemId],
-    fromReadSide: Boolean,
+    source: Option[String],
     attributes: Option[String]
   ): Future[Map[String, AttributeValues]] =
-    api.getOrgItemsAttributes(fromReadSide, attributes).invoke(ids)
+    api.getOrgItemsAttributes(source, attributes).invoke(ids)
 
   // org role methods
 
@@ -165,11 +165,11 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
   def deleteOrgRole(payload: DeleteOrgRolePayload): Future[Done] =
     api.deleteOrgRole.invoke(payload)
 
-  def getOrgRole(id: OrgRoleId, fromReadSide: Boolean): Future[OrgRole] =
-    api.getOrgRole(id, fromReadSide).invoke()
+  def getOrgRole(id: OrgRoleId, source: Option[String]): Future[OrgRole] =
+    api.getOrgRole(id, source).invoke()
 
-  def getOrgRoles(ids: Set[OrgRoleId], fromReadSide: Boolean): Future[Seq[OrgRole]] =
-    api.getOrgRoles(fromReadSide).invoke(ids)
+  def getOrgRoles(ids: Set[OrgRoleId], source: Option[String]): Future[Seq[OrgRole]] =
+    api.getOrgRoles(source).invoke(ids)
 
   def findOrgRoles(query: OrgRoleFindQuery): Future[FindResult] =
     api.findOrgRoles.invoke(query)
@@ -196,11 +196,11 @@ class OrgStructureServiceImpl(api: OrgStructureServiceApi, implicit val ec: Exec
   def deleteCategory(payload: DeleteCategoryPayload): Future[Done] =
     api.deleteCategory.invoke(payload)
 
-  def getCategory(id: OrgCategoryId, fromReadSide: Boolean): Future[OrgCategory] =
-    api.getCategory(id, fromReadSide).invoke()
+  def getCategory(id: OrgCategoryId, source: Option[String]): Future[OrgCategory] =
+    api.getCategory(id, source).invoke()
 
-  def getCategories(ids: Set[OrgCategoryId], fromReadSide: Boolean): Future[Seq[OrgCategory]] =
-    api.getCategories(fromReadSide).invoke(ids)
+  def getCategories(ids: Set[OrgCategoryId], source: Option[String]): Future[Seq[OrgCategory]] =
+    api.getCategories(source).invoke(ids)
 
   def findCategories(query: OrgCategoryFindQuery): Future[FindResult] =
     api.findCategories.invoke(query)

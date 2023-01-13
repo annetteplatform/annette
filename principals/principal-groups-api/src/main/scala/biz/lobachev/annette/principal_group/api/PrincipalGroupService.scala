@@ -33,10 +33,10 @@ trait PrincipalGroupService {
   def deletePrincipalGroup(payload: DeletePrincipalGroupPayload): Future[Done]
   def assignPrincipal(payload: AssignPrincipalPayload): Future[Done]
   def unassignPrincipal(payload: UnassignPrincipalPayload): Future[Done]
-  def getPrincipalGroup(id: PrincipalGroupId, fromReadSide: Boolean): Future[PrincipalGroup]
+  def getPrincipalGroup(id: PrincipalGroupId, source: Option[String]): Future[PrincipalGroup]
   def getPrincipalGroups(
     ids: Set[PrincipalGroupId],
-    fromReadSide: Boolean
+    source: Option[String]
   ): Future[Seq[PrincipalGroup]]
   def findPrincipalGroups(query: PrincipalGroupFindQuery): Future[FindResult]
   def getAssignments(id: PrincipalGroupId): Future[Set[AnnettePrincipal]]
@@ -48,7 +48,7 @@ trait PrincipalGroupService {
   def createOrUpdateCategory(payload: CreateCategoryPayload): Future[Done]
   def updateCategory(payload: UpdateCategoryPayload): Future[Done]
   def deleteCategory(payload: DeleteCategoryPayload): Future[Done]
-  def getCategory(id: CategoryId, fromReadSide: Boolean): Future[Category]
-  def getCategories(ids: Set[CategoryId], fromReadSide: Boolean): Future[Seq[Category]]
+  def getCategory(id: CategoryId, source: Option[String]): Future[Category]
+  def getCategories(ids: Set[CategoryId], source: Option[String]): Future[Seq[Category]]
   def findCategories(query: CategoryFindQuery): Future[FindResult]
 }

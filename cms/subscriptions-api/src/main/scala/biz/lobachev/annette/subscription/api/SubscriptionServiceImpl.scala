@@ -42,11 +42,11 @@ class SubscriptionServiceImpl(api: SubscriptionServiceApi, implicit val ec: Exec
   override def deleteSubscription(payload: DeleteSubscriptionPayload): Future[Done] =
     api.deleteSubscription.invoke(payload)
 
-  override def getSubscription(key: SubscriptionKey, fromReadSide: Boolean): Future[Subscription] =
-    api.getSubscription(fromReadSide).invoke(key)
+  override def getSubscription(key: SubscriptionKey, source: Option[String]): Future[Subscription] =
+    api.getSubscription(source).invoke(key)
 
-  override def getSubscriptions(keys: Set[SubscriptionKey], fromReadSide: Boolean): Future[Set[Subscription]] =
-    api.getSubscriptions(fromReadSide).invoke(keys)
+  override def getSubscriptions(keys: Set[SubscriptionKey], source: Option[String]): Future[Set[Subscription]] =
+    api.getSubscriptions(source).invoke(keys)
 
   override def getSubscriptionsByPrincipals(
     principals: Set[AnnettePrincipal],
@@ -85,11 +85,11 @@ class SubscriptionServiceImpl(api: SubscriptionServiceApi, implicit val ec: Exec
   def deleteSubscriptionType(payload: DeleteSubscriptionTypePayload): Future[Done] =
     api.deleteSubscriptionType.invoke(payload)
 
-  def getSubscriptionType(id: SubscriptionTypeId, fromReadSide: Boolean): Future[SubscriptionType] =
-    api.getSubscriptionType(id, fromReadSide).invoke()
+  def getSubscriptionType(id: SubscriptionTypeId, source: Option[String]): Future[SubscriptionType] =
+    api.getSubscriptionType(id, source).invoke()
 
-  def getSubscriptionTypes(ids: Set[SubscriptionTypeId], fromReadSide: Boolean): Future[Seq[SubscriptionType]] =
-    api.getSubscriptionTypes(fromReadSide).invoke(ids)
+  def getSubscriptionTypes(ids: Set[SubscriptionTypeId], source: Option[String]): Future[Seq[SubscriptionType]] =
+    api.getSubscriptionTypes(source).invoke(ids)
 
   def findSubscriptionTypes(query: SubscriptionTypeFindQuery): Future[FindResult] =
     api.findSubscriptionTypes.invoke(query)
