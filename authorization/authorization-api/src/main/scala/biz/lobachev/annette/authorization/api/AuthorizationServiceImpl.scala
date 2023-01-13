@@ -61,11 +61,11 @@ class AuthorizationServiceImpl(api: AuthorizationServiceApi, implicit val ec: Ex
 
   override def deleteRole(payload: DeleteRolePayload): Future[Done] = api.deleteRole.invoke(payload)
 
-  override def getRole(id: AuthRoleId, fromReadSide: Boolean): Future[AuthRole] =
-    api.getRole(id, fromReadSide).invoke()
+  override def getRole(id: AuthRoleId, source: Option[String]): Future[AuthRole] =
+    api.getRole(id, source).invoke()
 
-  override def getRoles(ids: Set[AuthRoleId], fromReadSide: Boolean): Future[Seq[AuthRole]] =
-    api.getRoles(fromReadSide).invoke(ids)
+  override def getRoles(ids: Set[AuthRoleId], source: Option[String]): Future[Seq[AuthRole]] =
+    api.getRoles(source).invoke(ids)
 
   override def findRoles(payload: AuthRoleFindQuery): Future[FindResult] = api.findRoles.invoke(payload)
 
@@ -74,8 +74,8 @@ class AuthorizationServiceImpl(api: AuthorizationServiceApi, implicit val ec: Ex
   override def unassignPrincipal(payload: UnassignPrincipalPayload): Future[Done] =
     api.unassignPrincipal.invoke(payload)
 
-  override def getRolePrincipals(id: AuthRoleId, fromReadSide: Boolean): Future[Set[AnnettePrincipal]] =
-    api.getRolePrincipals(id, fromReadSide).invoke()
+  override def getRolePrincipals(id: AuthRoleId, source: Option[String]): Future[Set[AnnettePrincipal]] =
+    api.getRolePrincipals(id, source).invoke()
 
   override def assignPermission(payload: AssignPermissionPayload): Future[Done] = api.assignPermission.invoke(payload)
 

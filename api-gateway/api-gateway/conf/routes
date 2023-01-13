@@ -88,11 +88,11 @@ POST    /api/annette/v1/authorization/createRole          biz.lobachev.annette.a
 POST    /api/annette/v1/authorization/updateRole          biz.lobachev.annette.authorization.gateway.AuthorizationController.updateRole
 POST    /api/annette/v1/authorization/deleteRole          biz.lobachev.annette.authorization.gateway.AuthorizationController.deleteRole
 POST    /api/annette/v1/authorization/findRoles           biz.lobachev.annette.authorization.gateway.AuthorizationController.findRoles
-GET     /api/annette/v1/authorization/getRole/:id/:fromReadSide        biz.lobachev.annette.authorization.gateway.AuthorizationController.getRole(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/authorization/getRoles/:fromReadSide           biz.lobachev.annette.authorization.gateway.AuthorizationController.getRoles(fromReadSide: Boolean)
+GET     /api/annette/v1/authorization/getRole/:id         biz.lobachev.annette.authorization.gateway.AuthorizationController.getRole(id: String, source: Option[String])
+POST    /api/annette/v1/authorization/getRoles            biz.lobachev.annette.authorization.gateway.AuthorizationController.getRoles(source: Option[String])
 POST    /api/annette/v1/authorization/assignPrincipal     biz.lobachev.annette.authorization.gateway.AuthorizationController.assignPrincipal
 POST    /api/annette/v1/authorization/unassignPrincipal   biz.lobachev.annette.authorization.gateway.AuthorizationController.unassignPrincipal
-GET     /api/annette/v1/authorization/getRolePrincipals/:id/:fromReadSide  biz.lobachev.annette.authorization.gateway.AuthorizationController.getRolePrincipals(id: String, fromReadSide: Boolean)
+GET     /api/annette/v1/authorization/getRolePrincipals/:id  biz.lobachev.annette.authorization.gateway.AuthorizationController.getRolePrincipals(id: String, source: Option[String])
 # Permission Assignments
 POST    /api/annette/v1/authorization/findAssignments     biz.lobachev.annette.authorization.gateway.AuthorizationController.findAssignments
 
