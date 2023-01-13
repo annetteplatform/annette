@@ -22,6 +22,7 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.subscription.api.subscription._
 import biz.lobachev.annette.subscription.api.subscription_type.SubscriptionTypeId
@@ -110,29 +111,29 @@ class SubscriptionEntityService(
       .ask[Confirmation](GetSubscription(key, _))
       .map(res => convertSuccessSubscription(key.subscriptionType, key.objectId, key.principal, res))
 
-  def getSubscription(key: SubscriptionKey, fromReadSide: Boolean): Future[Subscription] =
-    if (fromReadSide)
+  def getSubscription(key: SubscriptionKey, source: Option[String]): Future[Subscription] =
+    if (DataSource.fromOrigin(source))
+      getSubscription(key)
+    else
       dbDao
         .getSubscription(key)
         .map(_.getOrElse(throw SubscriptionNotFound(key.subscriptionType, key.objectId, key.principal.code)))
-    else
-      getSubscription(key)
 
   def getSubscriptions(
     keys: Set[SubscriptionKey],
-    fromReadSide: Boolean
+    source: Option[String]
   ): Future[Set[Subscription]] =
     Source(keys)
       .mapAsync(1) { key =>
-        if (fromReadSide)
-          dbDao.getSubscription(key)
-        else
+        if (DataSource.fromOrigin(source))
           refFor(key.subscriptionType, key.objectId, key.principal)
             .ask[Confirmation](GetSubscription(key, _))
             .map {
               case SubscriptionEntity.SuccessSubscription(subscription) => Some(subscription)
               case _                                                    => None
             }
+        else
+          dbDao.getSubscription(key)
       }
       .runWith(Sink.seq)
       .map(_.flatten.toSet)

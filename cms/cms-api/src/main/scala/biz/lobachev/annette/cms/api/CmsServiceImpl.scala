@@ -92,11 +92,11 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def deleteBlogCategory(payload: DeleteCategoryPayload): Future[Done] =
     api.deleteBlogCategory.invoke(payload)
 
-  override def getBlogCategory(id: CategoryId, fromReadSide: Boolean): Future[Category] =
-    api.getBlogCategory(id, fromReadSide).invoke()
+  override def getBlogCategory(id: CategoryId, source: Option[String]): Future[Category] =
+    api.getBlogCategory(id, source).invoke()
 
-  override def getBlogCategories(ids: Set[CategoryId], fromReadSide: Boolean): Future[Seq[Category]] =
-    api.getBlogCategories(fromReadSide).invoke(ids)
+  override def getBlogCategories(ids: Set[CategoryId], source: Option[String]): Future[Seq[Category]] =
+    api.getBlogCategories(source).invoke(ids)
 
   override def findBlogCategories(query: CategoryFindQuery): Future[FindResult] =
     api.findBlogCategories.invoke(query)
@@ -134,11 +134,11 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def deleteBlog(payload: DeletePayload): Future[Done] =
     api.deleteBlog.invoke(payload)
 
-  override def getBlog(id: BlogId, fromReadSide: Boolean): Future[Blog] =
-    api.getBlog(id, fromReadSide).invoke()
+  override def getBlog(id: BlogId, source: Option[String]): Future[Blog] =
+    api.getBlog(id, source).invoke()
 
-  override def getBlogs(ids: Set[BlogId], fromReadSide: Boolean): Future[Seq[Blog]] =
-    api.getBlogs(fromReadSide).invoke(ids)
+  override def getBlogs(ids: Set[BlogId], source: Option[String]): Future[Seq[Blog]] =
+    api.getBlogs(source).invoke(ids)
 
   override def getBlogViews(
     payload: GetBlogViewsPayload
@@ -198,21 +198,21 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
 
   override def getPost(
     id: PostId,
-    fromReadSide: Boolean,
+    source: Option[String],
     withIntro: Option[Boolean] = None,
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
   ): Future[Post] =
-    api.getPost(id, fromReadSide, withIntro, withContent, withTargets).invoke()
+    api.getPost(id, source, withIntro, withContent, withTargets).invoke()
 
   override def getPosts(
     ids: Set[PostId],
-    fromReadSide: Boolean,
+    source: Option[String],
     withIntro: Option[Boolean] = None,
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
   ): Future[Seq[Post]] =
-    api.getPosts(fromReadSide, withIntro, withContent, withTargets).invoke(ids)
+    api.getPosts(source, withIntro, withContent, withTargets).invoke(ids)
 
   override def getPostViews(payload: GetPostViewsPayload): Future[Seq[Post]] =
     api.getPostViews.invoke(payload)
@@ -252,11 +252,11 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def deleteSpaceCategory(payload: DeleteCategoryPayload): Future[Done] =
     api.deleteSpaceCategory.invoke(payload)
 
-  override def getSpaceCategory(id: CategoryId, fromReadSide: Boolean): Future[Category] =
-    api.getSpaceCategory(id, fromReadSide).invoke()
+  override def getSpaceCategory(id: CategoryId, source: Option[String]): Future[Category] =
+    api.getSpaceCategory(id, source).invoke()
 
-  override def getSpaceCategories(ids: Set[CategoryId], fromReadSide: Boolean): Future[Seq[Category]] =
-    api.getSpaceCategories(fromReadSide).invoke(ids)
+  override def getSpaceCategories(ids: Set[CategoryId], source: Option[String]): Future[Seq[Category]] =
+    api.getSpaceCategories(source).invoke(ids)
 
   override def findSpaceCategories(query: CategoryFindQuery): Future[FindResult] =
     api.findSpaceCategories.invoke(query)
@@ -294,11 +294,11 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def deleteSpace(payload: DeletePayload): Future[Done] =
     api.deleteSpace.invoke(payload)
 
-  override def getSpace(id: SpaceId, fromReadSide: Boolean): Future[Space] =
-    api.getSpace(id, fromReadSide).invoke()
+  override def getSpace(id: SpaceId, source: Option[String]): Future[Space] =
+    api.getSpace(id, source).invoke()
 
-  override def getSpaces(ids: Set[SpaceId], fromReadSide: Boolean): Future[Seq[Space]] =
-    api.getSpaces(fromReadSide).invoke(ids)
+  override def getSpaces(ids: Set[SpaceId], source: Option[String]): Future[Seq[Space]] =
+    api.getSpaces(source).invoke(ids)
 
   override def getSpaceViews(
     payload: GetSpaceViewsPayload
@@ -355,19 +355,19 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
 
   override def getPage(
     id: PageId,
-    fromReadSide: Boolean,
+    source: Option[String],
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
   ): Future[Page] =
-    api.getPage(id, fromReadSide, withContent, withTargets).invoke()
+    api.getPage(id, source, withContent, withTargets).invoke()
 
   override def getPages(
     ids: Set[PageId],
-    fromReadSide: Boolean,
+    source: Option[String],
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
   ): Future[Seq[Page]] =
-    api.getPages(fromReadSide, withContent, withTargets).invoke(ids)
+    api.getPages(source, withContent, withTargets).invoke(ids)
 
   override def getPageViews(payload: GetPageViewsPayload): Future[Seq[Page]] =
     api.getPageViews.invoke(payload)
@@ -404,14 +404,14 @@ class CmsServiceImpl(api: CmsServiceApi) extends CmsService {
   override def unassignHomePage(payload: UnassignHomePagePayload): Future[Done] =
     api.unassignHomePage.invoke(payload)
 
-  override def getHomePage(id: HomePageId, fromReadSide: Boolean = true): Future[HomePage] =
-    api.getHomePage(id, fromReadSide).invoke()
+  override def getHomePage(id: HomePageId, source: Option[String] = None): Future[HomePage] =
+    api.getHomePage(id, source).invoke()
 
   override def getHomePages(
     ids: Set[HomePageId],
-    fromReadSide: Boolean = true
+    source: Option[String] = None
   ): Future[Seq[HomePage]] =
-    api.getHomePages(fromReadSide).invoke(ids)
+    api.getHomePages(source).invoke(ids)
 
   override def getHomePageByPrincipalCodes(applicationId: String, ids: Seq[String]): Future[PageId] =
     api.getHomePageByPrincipalCodes(applicationId).invoke(ids)

@@ -33,6 +33,7 @@ import biz.lobachev.annette.cms.api.common.{
 }
 import biz.lobachev.annette.cms.gateway.Permissions
 import biz.lobachev.annette.cms.gateway.blogs.blog._
+import biz.lobachev.annette.core.model.DataSource
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, Action, ControllerComponents}
@@ -67,7 +68,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.createBlog(payload)
-          blog <- cmsService.getBlog(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -81,7 +82,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.updateBlogName(payload)
-          blog <- cmsService.getBlog(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -95,7 +96,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.updateBlogDescription(payload)
-          blog <- cmsService.getBlog(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -109,7 +110,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.updateBlogCategoryId(payload)
-          blog <- cmsService.getBlog(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -123,7 +124,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.assignBlogAuthorPrincipal(payload)
-          blog <- cmsService.getBlog(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -137,7 +138,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.unassignBlogAuthorPrincipal(payload)
-          blog <- cmsService.getBlog(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -151,7 +152,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.assignBlogTargetPrincipal(payload)
-          blog <- cmsService.getBlog(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -165,7 +166,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.unassignBlogTargetPrincipal(payload)
-          blog <- cmsService.getBlog(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -179,7 +180,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.activateBlog(payload)
-          blog <- cmsService.getBlog(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -193,7 +194,7 @@ class CmsBlogController @Inject() (
           .transform
         for {
           _    <- cmsService.deactivateBlog(payload)
-          blog <- cmsService.getBlog(payload.id, false)
+          blog <- cmsService.getBlog(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(blog))
       }
     }
@@ -211,22 +212,22 @@ class CmsBlogController @Inject() (
       }
     }
 
-  def getBlog(id: BlogId, fromReadSide: Boolean) =
+  def getBlog(id: BlogId, source: Option[String]) =
     authenticated.async { implicit request =>
       authorizer.performCheck(canEditBlog(id)) {
         for {
-          blog <- cmsService.getBlog(id, fromReadSide)
+          blog <- cmsService.getBlog(id, source)
         } yield Ok(Json.toJson(blog))
       }
     }
 
-  def getBlogs(fromReadSide: Boolean) =
+  def getBlogs(source: Option[String]) =
     authenticated.async(parse.json[Set[BlogId]]) { implicit request =>
       val filteredBlogsFuture = filterBlogs(request.request.body)
       authorizer.performCheck(filteredBlogsFuture.map(_.nonEmpty)) {
         for {
           filteredBlogs <- filteredBlogsFuture
-          blogs         <- cmsService.getBlogs(filteredBlogs, fromReadSide)
+          blogs         <- cmsService.getBlogs(filteredBlogs, source)
         } yield Ok(Json.toJson(blogs))
       }
     }

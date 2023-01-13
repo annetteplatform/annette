@@ -18,6 +18,8 @@ package biz.lobachev.annette.cms.impl.pages.space
 
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.cms.api.common.{
   ActivatePayload,
@@ -32,6 +34,7 @@ import biz.lobachev.annette.cms.api.common.{
 }
 import biz.lobachev.annette.cms.api.pages.space.{GetSpaceViewsPayload, _}
 import biz.lobachev.annette.cms.impl.pages.space.dao.{SpaceDbDao, SpaceIndexDao}
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.indexing.FindResult
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
@@ -44,7 +47,8 @@ class SpaceEntityService(
   dbDao: SpaceDbDao,
   indexDao: SpaceIndexDao
 )(implicit
-  ec: ExecutionContext
+  ec: ExecutionContext,
+  val materializer: Materializer
 ) {
 
   val log = LoggerFactory.getLogger(this.getClass)
@@ -185,20 +189,18 @@ class SpaceEntityService(
       .ask[SpaceEntity.Confirmation](SpaceEntity.GetSpace(id, _))
       .map(convertSuccessSpace(_, id))
 
-  def getSpace(id: SpaceId, fromReadSide: Boolean): Future[Space] =
-    if (fromReadSide)
+  def getSpace(id: SpaceId, source: Option[String]): Future[Space] =
+    if (DataSource.fromOrigin(source))
+      getSpace(id)
+    else
       dbDao
         .getSpace(id)
         .map(_.getOrElse(throw SpaceNotFound(id)))
-    else
-      getSpace(id)
 
-  def getSpaces(ids: Set[SpaceId], fromReadSide: Boolean): Future[Seq[Space]] =
-    if (fromReadSide)
-      dbDao.getSpaces(ids)
-    else
-      Future
-        .traverse(ids) { id =>
+  def getSpaces(ids: Set[SpaceId], source: Option[String]): Future[Seq[Space]] =
+    if (DataSource.fromOrigin(source))
+      Source(ids)
+        .mapAsync(1) { id =>
           refFor(id)
             .ask[SpaceEntity.Confirmation](SpaceEntity.GetSpace(id, _))
             .map {
@@ -206,7 +208,10 @@ class SpaceEntityService(
               case _                               => None
             }
         }
+        .runWith(Sink.seq)
         .map(_.flatten.toSeq)
+    else
+      dbDao.getSpaces(ids)
 
   def getSpaceViews(payload: GetSpaceViewsPayload): Future[Seq[SpaceView]] =
     dbDao.getSpaceViews(payload.ids, payload.principals)

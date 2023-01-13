@@ -21,6 +21,7 @@ import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.CmsService
 import biz.lobachev.annette.cms.gateway.Permissions.{MAINTAIN_ALL_SPACE_CATEGORIES, VIEW_ALL_SPACE_CATEGORIES}
 import biz.lobachev.annette.cms.gateway.pages.category._
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.category._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
@@ -49,7 +50,7 @@ class CmsSpaceCategoryController @Inject() (
           .transform
         for {
           _    <- cmsService.createSpaceCategory(payload)
-          role <- cmsService.getSpaceCategory(payload.id, false)
+          role <- cmsService.getSpaceCategory(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -63,7 +64,7 @@ class CmsSpaceCategoryController @Inject() (
           .transform
         for {
           _    <- cmsService.updateSpaceCategory(payload)
-          role <- cmsService.getSpaceCategory(payload.id, false)
+          role <- cmsService.getSpaceCategory(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -81,26 +82,30 @@ class CmsSpaceCategoryController @Inject() (
       }
     }
 
-  def getSpaceCategory(id: CategoryId, fromReadSide: Boolean) =
+  def getSpaceCategory(id: CategoryId, source: Option[String]) =
     authenticated.async { implicit request =>
       val rules =
-        if (fromReadSide) Seq(VIEW_ALL_SPACE_CATEGORIES, MAINTAIN_ALL_SPACE_CATEGORIES)
-        else Seq(MAINTAIN_ALL_SPACE_CATEGORIES)
+        if (DataSource.fromOrigin(source))
+          Seq(MAINTAIN_ALL_SPACE_CATEGORIES)
+        else
+          Seq(VIEW_ALL_SPACE_CATEGORIES, MAINTAIN_ALL_SPACE_CATEGORIES)
       authorizer.performCheckAny(rules: _*) {
         for {
-          role <- cmsService.getSpaceCategory(id, fromReadSide)
+          role <- cmsService.getSpaceCategory(id, source)
         } yield Ok(Json.toJson(role))
       }
     }
 
-  def getSpaceCategories(fromReadSide: Boolean) =
+  def getSpaceCategories(source: Option[String]) =
     authenticated.async(parse.json[Set[CategoryId]]) { implicit request =>
       val rules =
-        if (fromReadSide) Seq(VIEW_ALL_SPACE_CATEGORIES, MAINTAIN_ALL_SPACE_CATEGORIES)
-        else Seq(MAINTAIN_ALL_SPACE_CATEGORIES)
+        if (DataSource.fromOrigin(source))
+          Seq(MAINTAIN_ALL_SPACE_CATEGORIES)
+        else
+          Seq(VIEW_ALL_SPACE_CATEGORIES, MAINTAIN_ALL_SPACE_CATEGORIES)
       authorizer.performCheckAny(rules: _*) {
         for {
-          result <- cmsService.getSpaceCategories(request.request.body, fromReadSide)
+          result <- cmsService.getSpaceCategories(request.request.body, source)
         } yield Ok(Json.toJson(result))
       }
     }

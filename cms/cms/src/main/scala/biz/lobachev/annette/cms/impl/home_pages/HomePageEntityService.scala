@@ -18,17 +18,13 @@ package biz.lobachev.annette.cms.impl.home_pages
 
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
-import biz.lobachev.annette.cms.api.home_pages.{
-  AssignHomePagePayload,
-  HomePage,
-  HomePageFindQuery,
-  HomePageId,
-  HomePageNotFound,
-  UnassignHomePagePayload
-}
+import biz.lobachev.annette.cms.api.home_pages.{AssignHomePagePayload, HomePage, HomePageFindQuery, HomePageId, HomePageNotFound, UnassignHomePagePayload}
 import biz.lobachev.annette.cms.api.pages.page.PageId
 import biz.lobachev.annette.cms.impl.home_pages.dao.{HomePageDbDao, HomePageIndexDao}
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
 import io.scalaland.chimney.dsl._
@@ -42,7 +38,8 @@ class HomePageEntityService(
   dbDao: HomePageDbDao,
   indexDao: HomePageIndexDao
 )(implicit
-  ec: ExecutionContext
+  ec: ExecutionContext,
+  val materializer: Materializer
 ) {
 
   val log = LoggerFactory.getLogger(this.getClass)
@@ -107,31 +104,34 @@ class HomePageEntityService(
       .ask[HomePageEntity.Confirmation](HomePageEntity.GetHomePage(id, _))
       .map(convertSuccessHomePage(_, id))
 
-  def getHomePage(id: HomePageId, fromReadSide: Boolean): Future[HomePage] =
-    if (fromReadSide)
+  def getHomePage(id: HomePageId, source: Option[String]): Future[HomePage] =
+    if (DataSource.fromOrigin(source)) {
+      getHomePage(id)
+    } else {
       dbDao
         .getHomePage(id)
         .map(_.getOrElse {
           val (applicationId, principal) = HomePage.fromCompositeId(id)
           throw HomePageNotFound(applicationId, principal.code)
         })
-    else
-      getHomePage(id)
+    }
 
-  def getHomePages(ids: Set[HomePageId], fromReadSide: Boolean): Future[Seq[HomePage]] =
-    if (fromReadSide)
-      dbDao.getHomePages(ids)
-    else
-      Future
-        .traverse(ids) { id =>
+  def getHomePages(ids: Set[HomePageId], source: Option[String]): Future[Seq[HomePage]] =
+    if (DataSource.fromOrigin(source)) {
+      Source(ids)
+        .mapAsync(1) { id =>
           refFor(id)
             .ask[HomePageEntity.Confirmation](HomePageEntity.GetHomePage(id, _))
             .map {
               case HomePageEntity.SuccessHomePage(homePage) => Some(homePage)
-              case _                                        => None
+              case _ => None
             }
         }
+        .runWith(Sink.seq)
         .map(_.flatten.toSeq)
+    } else {
+      dbDao.getHomePages(ids)
+    }
 
   def getHomePageByPrincipalCodes(applicationId: String, principalCodes: Seq[String]): Future[PageId] =
     indexDao

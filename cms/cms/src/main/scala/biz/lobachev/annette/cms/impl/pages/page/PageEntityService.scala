@@ -18,6 +18,8 @@ package biz.lobachev.annette.cms.impl.pages.page
 
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.cms.api.common.article.{
   GetMetricPayload,
@@ -48,6 +50,7 @@ import biz.lobachev.annette.cms.api.content.{
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.cms.impl.content.{ContentInt, WidgetInt}
 import biz.lobachev.annette.cms.impl.pages.page.dao.{PageDbDao, PageIndexDao}
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
 import io.scalaland.chimney.dsl._
@@ -62,7 +65,8 @@ class PageEntityService(
   dbDao: PageDbDao,
   indexDao: PageIndexDao
 )(implicit
-  ec: ExecutionContext
+  ec: ExecutionContext,
+  val materializer: Materializer
 ) {
 
   val log = LoggerFactory.getLogger(this.getClass)
@@ -240,28 +244,26 @@ class PageEntityService(
 
   def getPage(
     id: PageId,
-    fromReadSide: Boolean,
+    source: Option[String],
     withContent: Boolean,
     withTargets: Boolean
   ): Future[Page] =
-    if (fromReadSide)
+    if (DataSource.fromOrigin(source))
+      getPage(id, withContent, withTargets)
+    else
       dbDao
         .getPage(id, withContent, withTargets)
         .map(_.getOrElse(throw PageNotFound(id)))
-    else
-      getPage(id, withContent, withTargets)
 
   def getPages(
     ids: Set[PageId],
-    fromReadSide: Boolean,
+    source: Option[String],
     withContent: Boolean,
     withTargets: Boolean
   ): Future[Seq[Page]] =
-    if (fromReadSide)
-      dbDao.getPages(ids, withContent, withTargets)
-    else
-      Future
-        .traverse(ids) { id =>
+    if (DataSource.fromOrigin(source))
+      Source(ids)
+        .mapAsync(1) { id =>
           refFor(id)
             .ask[PageEntity.Confirmation](PageEntity.GetPage(id, withContent, withTargets, _))
             .map {
@@ -269,7 +271,10 @@ class PageEntityService(
               case _                               => None
             }
         }
+        .runWith(Sink.seq)
         .map(_.flatten.toSeq)
+    else
+      dbDao.getPages(ids, withContent, withTargets)
 
   def getPageViews(payload: GetPageViewsPayload): Future[Seq[Page]] =
     dbDao.getPageViews(payload)
