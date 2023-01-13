@@ -22,6 +22,7 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.principal_group.api.group._
@@ -153,32 +154,34 @@ class PrincipalGroupEntityService(
       .ask[Confirmation](GetPrincipalGroup(id, _))
       .map(res => convertSuccessPrincipalGroup(id, res))
 
-  def getPrincipalGroup(id: PrincipalGroupId, fromReadSide: Boolean): Future[PrincipalGroup] =
-    if (fromReadSide)
+  def getPrincipalGroup(id: PrincipalGroupId, source: Option[String]): Future[PrincipalGroup] =
+    if (DataSource.fromOrigin(source)) {
+      getPrincipalGroup(id)
+    } else {
       dbDao
         .getPrincipalGroup(id)
         .map(_.getOrElse(throw PrincipalGroupNotFound(id)))
-    else
-      getPrincipalGroup(id)
+    }
 
   def getPrincipalGroups(
     ids: Set[PrincipalGroupId],
-    fromReadSide: Boolean
+    source: Option[String]
   ): Future[Seq[PrincipalGroup]] =
-    if (fromReadSide)
-      dbDao.getPrincipalGroups(ids)
-    else
+    if (DataSource.fromOrigin(source)) {
       Source(ids)
         .mapAsync(1) { id =>
           refFor(id)
             .ask[Confirmation](GetPrincipalGroup(id, _))
             .map {
               case PrincipalGroupEntity.SuccessPrincipalGroup(group) => Some(group)
-              case _                                                 => None
+              case _ => None
             }
         }
         .runWith(Sink.seq)
         .map(_.flatten)
+    } else {
+      dbDao.getPrincipalGroups(ids)
+    }
 
   def findPrincipalGroups(query: PrincipalGroupFindQuery): Future[FindResult] =
     indexDao.findPrincipalGroup(query)

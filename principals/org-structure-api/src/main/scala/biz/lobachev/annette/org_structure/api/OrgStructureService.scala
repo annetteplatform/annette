@@ -58,13 +58,13 @@ trait OrgStructureService {
 
   def getOrgItem(
     itemId: CompositeOrgItemId,
-    fromReadSide: Boolean = true,
-    withAttributes: Option[String] = None
+    source: Option[String] = None,
+    attributes: Option[String] = None
   ): Future[OrgItem]
   def getOrgItems(
     ids: Set[CompositeOrgItemId],
-    fromReadSide: Boolean = true,
-    withAttributes: Option[String] = None
+    source: Option[String] = None,
+    attributes: Option[String] = None
   ): Future[Seq[OrgItem]]
 
   def getItemIdsByExternalId(externalIds: Set[String]): Future[Map[String, CompositeOrgItemId]]
@@ -79,12 +79,12 @@ trait OrgStructureService {
   def updateOrgItemAttributes(payload: UpdateAttributesPayload): Future[Done]
   def getOrgItemAttributes(
     id: CompositeOrgItemId,
-    fromReadSide: Boolean = true,
+    source: Option[String] = None,
     attributes: Option[String] = None
   ): Future[AttributeValues]
   def getOrgItemsAttributes(
     ids: Set[CompositeOrgItemId],
-    fromReadSide: Boolean = true,
+    source: Option[String] = None,
     attributes: Option[String] = None
   ): Future[Map[String, AttributeValues]]
 
@@ -94,8 +94,8 @@ trait OrgStructureService {
   def createOrUpdateOrgRole(payload: CreateOrgRolePayload): Future[Done]
   def updateOrgRole(payload: UpdateOrgRolePayload): Future[Done]
   def deleteOrgRole(payload: DeleteOrgRolePayload): Future[Done]
-  def getOrgRole(id: OrgRoleId, fromReadSide: Boolean): Future[OrgRole]
-  def getOrgRoles(ids: Set[OrgRoleId], fromReadSide: Boolean): Future[Seq[OrgRole]]
+  def getOrgRole(id: OrgRoleId, source: Option[String]): Future[OrgRole]
+  def getOrgRoles(ids: Set[OrgRoleId], source: Option[String]): Future[Seq[OrgRole]]
   def findOrgRoles(query: OrgRoleFindQuery): Future[FindResult]
 
   // category methods
@@ -104,8 +104,8 @@ trait OrgStructureService {
   def createOrUpdateCategory(payload: CreateCategoryPayload): Future[Done]
   def updateCategory(payload: UpdateCategoryPayload): Future[Done]
   def deleteCategory(payload: DeleteCategoryPayload): Future[Done]
-  def getCategory(id: OrgCategoryId, fromReadSide: Boolean): Future[OrgCategory]
-  def getCategories(ids: Set[OrgCategoryId], fromReadSide: Boolean): Future[Seq[OrgCategory]]
+  def getCategory(id: OrgCategoryId, source: Option[String]): Future[OrgCategory]
+  def getCategories(ids: Set[OrgCategoryId], source: Option[String]): Future[Seq[OrgCategory]]
   def findCategories(query: OrgCategoryFindQuery): Future[FindResult]
 
 }

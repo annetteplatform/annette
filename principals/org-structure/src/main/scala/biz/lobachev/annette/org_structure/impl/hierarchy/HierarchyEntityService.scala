@@ -22,7 +22,7 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.core.attribute.{AttributeValues, UpdateAttributesPayload}
-import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.core.model.{DataSource, PersonId}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.microservice_core.attribute.AttributeComponents
@@ -281,9 +281,9 @@ class HierarchyEntityService(
         case _                                                         => throw new RuntimeException("Match fail")
       }
 
-  def getOrgItem(id: CompositeOrgItemId, withAttributes: Seq[String]): Future[OrgItem] =
+  def getOrgItem(id: CompositeOrgItemId, attributes: Seq[String]): Future[OrgItem] =
     refFor(id)
-      .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrgItem(id, withAttributes, _))
+      .ask[HierarchyEntity.Confirmation](HierarchyEntity.GetOrgItem(id, attributes, _))
       .map {
         case HierarchyEntity.SuccessOrgItem(orgItem)     => orgItem
         case HierarchyEntity.OrganizationNotFound(orgId) => throw OrganizationNotFound(orgId)
@@ -293,16 +293,12 @@ class HierarchyEntityService(
 
   def getOrgItem(
     id: CompositeOrgItemId,
-    fromReadSide: Boolean,
-    withAttributes: Option[String] = None
+    source: Option[String],
+    attributes: Option[String] = None
   ): Future[OrgItem] = {
-    val attributes = extractAttributes(withAttributes)
-    if (fromReadSide)
-      dbDao
-        .getOrgItem(id, attributes)
-        .map(_.getOrElse(throw ItemNotFound()))
-    else {
-      val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attributes)
+    val attrs = extractAttributes(attributes)
+    if (DataSource.fromOrigin(source)) {
+      val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attrs)
       val entityAttributesFuture                    =
         if (readSideAttributes.nonEmpty) dbDao.getOrgItemAttributes(id, readSideAttributes)
         else Future.successful(None)
@@ -312,19 +308,20 @@ class HierarchyEntityService(
       } yield entity.withAttributes(
         entity.attributes ++ entityAttributes.getOrElse(Map.empty[String, String])
       )
-    }
+    } else
+      dbDao
+        .getOrgItem(id, attrs)
+        .map(_.getOrElse(throw ItemNotFound()))
   }
 
   def getOrgItems(
     ids: Set[CompositeOrgItemId],
-    fromReadSide: Boolean,
-    withAttributes: Option[String] = None
+    source: Option[String],
+    attributes: Option[String] = None
   ): Future[Seq[OrgItem]] = {
-    val attributes = extractAttributes(withAttributes)
-    if (fromReadSide)
-      dbDao.getOrgItems(ids, attributes)
-    else {
-      val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attributes)
+    val attrs = extractAttributes(attributes)
+    if (DataSource.fromOrigin(source)) {
+      val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attrs)
       val attributeMapFuture                        =
         if (readSideAttributes.nonEmpty) dbDao.getOrgItemsAttributes(ids, readSideAttributes)
         else Future.successful(Map.empty[String, AttributeValues])
@@ -347,7 +344,8 @@ class HierarchyEntityService(
           entity.attributes ++ attributeMap.get(entity.id).getOrElse(Map.empty[String, String])
         )
       )
-    }
+    } else
+      dbDao.getOrgItems(ids, attrs)
   }
 
   def getItemIdsByExternalId(externalIds: Set[String]): Future[Map[String, CompositeOrgItemId]] =
@@ -378,16 +376,12 @@ class HierarchyEntityService(
 
   def getOrgItemAttributes(
     id: CompositeOrgItemId,
-    fromReadSide: Boolean,
-    withAttributes: Option[String]
+    source: Option[String],
+    attributes: Option[String]
   ): Future[AttributeValues] = {
-    val attributes = extractAttributes(withAttributes)
-    if (fromReadSide)
-      dbDao
-        .getOrgItemAttributes(id, attributes)
-        .map(_.getOrElse(throw ItemNotFound()))
-    else {
-      val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attributes)
+    val attrs = extractAttributes(attributes)
+    if (DataSource.fromOrigin(source)) {
+      val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attrs)
       val readSideAttributesFuture                  =
         if (readSideAttributes.nonEmpty) dbDao.getOrgItemAttributes(id, readSideAttributes)
         else Future.successful(None)
@@ -398,21 +392,21 @@ class HierarchyEntityService(
             .map(res => convertSuccessEntityAttributes(res))
         readSideAttributeValues  <- readSideAttributesFuture
       } yield writeSideAttributeValues ++ readSideAttributeValues.getOrElse(Map.empty[String, String])
-    }
+    } else
+      dbDao
+        .getOrgItemAttributes(id, attrs)
+        .map(_.getOrElse(throw ItemNotFound()))
 
   }
 
   def getOrgItemsAttributes(
     ids: Set[CompositeOrgItemId],
-    fromReadSide: Boolean,
-    withAttributes: Option[String]
+    source: Option[String],
+    attributes: Option[String]
   ): Future[Map[String, AttributeValues]] = {
-    val attributes = extractAttributes(withAttributes)
-    if (fromReadSide)
-      dbDao
-        .getOrgItemsAttributes(ids, attributes)
-    else {
-      val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attributes)
+    val attrs = extractAttributes(attributes)
+    if (DataSource.fromOrigin(source)) {
+      val (readSideAttributes, writeSideAttributes) = splitAttributesByStorage(attrs)
       val readSideAttributesFuture                  =
         if (readSideAttributes.nonEmpty) dbDao.getOrgItemsAttributes(ids, readSideAttributes)
         else Future.successful(Map.empty[String, AttributeValues])
@@ -432,7 +426,9 @@ class HierarchyEntityService(
         case id -> attributeValues =>
           id -> (attributeValues ++ readSideAttributesMap.get(id).getOrElse(Map.empty[String, String]))
       }
-    }
+    } else
+      dbDao
+        .getOrgItemsAttributes(ids, attrs)
   }
 
   def getChildren(unitId: CompositeOrgItemId): Future[Seq[CompositeOrgItemId]] =

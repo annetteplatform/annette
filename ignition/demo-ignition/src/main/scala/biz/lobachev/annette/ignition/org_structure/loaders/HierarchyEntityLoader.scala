@@ -20,6 +20,7 @@ import akka.Done
 import akka.stream.scaladsl.{RestartSource, Sink, Source}
 import akka.stream.{Materializer, RestartSettings}
 import biz.lobachev.annette.core.attribute.UpdateAttributesPayload
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, SystemPrincipal}
 import biz.lobachev.annette.ignition.core.EntityLoader
 import biz.lobachev.annette.ignition.core.config.UpsertMode
@@ -190,7 +191,7 @@ class HierarchyEntityLoader(
     val timestamp        = LocalDateTime.now().toString
     val disposedUnitName = s"[DISPOSED $timestamp]"
     for {
-      currentOrg        <- service.getOrgItem(orgId, false).map(_.asInstanceOf[OrgUnit])
+      currentOrg        <- service.getOrgItem(orgId, DataSource.FROM_ORIGIN).map(_.asInstanceOf[OrgUnit])
       _                 <- if (currentOrg.name != org.name)
                              service.updateName(UpdateNamePayload(orgId, org.name, org.updatedBy.getOrElse(SystemPrincipal())))
                            else Future.successful(())
@@ -274,7 +275,7 @@ class HierarchyEntityLoader(
 
   private def getCurrentItem(item: OrgItemData) =
     service
-      .getOrgItem(item.id, false, Some("all"))
+      .getOrgItem(item.id, DataSource.FROM_ORIGIN, Some("all"))
       .map {
         case currentUnit: OrgUnit if item.isInstanceOf[PositionData]     =>
           throw new IllegalArgumentException(
@@ -386,7 +387,7 @@ class HierarchyEntityLoader(
     for {
       _ <- unit.chief.map { chiefId =>
              for {
-               currentItem <- service.getOrgItem(unit.id, false)
+               currentItem <- service.getOrgItem(unit.id, DataSource.FROM_ORIGIN)
                _           <- currentItem match {
                                 case currentUnit: OrgUnit if currentUnit.chief.isEmpty          =>
                                   service

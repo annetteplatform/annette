@@ -98,48 +98,48 @@ POST    /api/annette/v1/authorization/findAssignments     biz.lobachev.annette.a
 
 # ************************************** OrgStructure API **************************************
 # OrgStructure
-POST    /api/annette/v1/orgStructure/createOrganization                  biz.lobachev.annette.org_structure.gateway.OrgStructureController.createOrganization(withAttributes: Option[String])
-POST    /api/annette/v1/orgStructure/createUnit                          biz.lobachev.annette.org_structure.gateway.OrgStructureController.createUnit(withAttributes: Option[String])
-POST    /api/annette/v1/orgStructure/createPosition                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.createPosition(withAttributes: Option[String])
-POST    /api/annette/v1/orgStructure/updateName                          biz.lobachev.annette.org_structure.gateway.OrgStructureController.updateName(withAttributes: Option[String])
-POST    /api/annette/v1/orgStructure/assignCategory                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.assignCategory(withAttributes: Option[String])
-POST    /api/annette/v1/orgStructure/updateSource                        biz.lobachev.annette.org_structure.gateway.OrgStructureController.updateSource(withAttributes: Option[String])
-POST    /api/annette/v1/orgStructure/updateExternalId                    biz.lobachev.annette.org_structure.gateway.OrgStructureController.updateExternalId(withAttributes: Option[String])
+POST    /api/annette/v1/orgStructure/createOrganization                  biz.lobachev.annette.org_structure.gateway.OrgStructureController.createOrganization(attributes: Option[String])
+POST    /api/annette/v1/orgStructure/createUnit                          biz.lobachev.annette.org_structure.gateway.OrgStructureController.createUnit(attributes: Option[String])
+POST    /api/annette/v1/orgStructure/createPosition                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.createPosition(attributes: Option[String])
+POST    /api/annette/v1/orgStructure/updateName                          biz.lobachev.annette.org_structure.gateway.OrgStructureController.updateName(attributes: Option[String])
+POST    /api/annette/v1/orgStructure/assignCategory                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.assignCategory(attributes: Option[String])
+POST    /api/annette/v1/orgStructure/updateSource                        biz.lobachev.annette.org_structure.gateway.OrgStructureController.updateSource(attributes: Option[String])
+POST    /api/annette/v1/orgStructure/updateExternalId                    biz.lobachev.annette.org_structure.gateway.OrgStructureController.updateExternalId(attributes: Option[String])
 POST    /api/annette/v1/orgStructure/moveItem                            biz.lobachev.annette.org_structure.gateway.OrgStructureController.moveItem
 POST    /api/annette/v1/orgStructure/updateOrgItemAttributes             biz.lobachev.annette.org_structure.gateway.OrgStructureController.updateOrgItemAttributes
-POST    /api/annette/v1/orgStructure/assignChief                         biz.lobachev.annette.org_structure.gateway.OrgStructureController.assignChief(withAttributes: Option[String])
-POST    /api/annette/v1/orgStructure/unassignChief                       biz.lobachev.annette.org_structure.gateway.OrgStructureController.unassignChief(withAttributes: Option[String])
-POST    /api/annette/v1/orgStructure/changePositionLimit                 biz.lobachev.annette.org_structure.gateway.OrgStructureController.changePositionLimit(withAttributes: Option[String])
-POST    /api/annette/v1/orgStructure/assignPerson                        biz.lobachev.annette.org_structure.gateway.OrgStructureController.assignPerson(withAttributes: Option[String])
-POST    /api/annette/v1/orgStructure/unassignPerson                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.unassignPerson(withAttributes: Option[String])
-POST    /api/annette/v1/orgStructure/assignOrgRole                       biz.lobachev.annette.org_structure.gateway.OrgStructureController.assignOrgRole(withAttributes: Option[String])
-POST    /api/annette/v1/orgStructure/unassignOrgRole                     biz.lobachev.annette.org_structure.gateway.OrgStructureController.unassignOrgRole(withAttributes: Option[String])
+POST    /api/annette/v1/orgStructure/assignChief                         biz.lobachev.annette.org_structure.gateway.OrgStructureController.assignChief(attributes: Option[String])
+POST    /api/annette/v1/orgStructure/unassignChief                       biz.lobachev.annette.org_structure.gateway.OrgStructureController.unassignChief(attributes: Option[String])
+POST    /api/annette/v1/orgStructure/changePositionLimit                 biz.lobachev.annette.org_structure.gateway.OrgStructureController.changePositionLimit(attributes: Option[String])
+POST    /api/annette/v1/orgStructure/assignPerson                        biz.lobachev.annette.org_structure.gateway.OrgStructureController.assignPerson(attributes: Option[String])
+POST    /api/annette/v1/orgStructure/unassignPerson                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.unassignPerson(attributes: Option[String])
+POST    /api/annette/v1/orgStructure/assignOrgRole                       biz.lobachev.annette.org_structure.gateway.OrgStructureController.assignOrgRole(attributes: Option[String])
+POST    /api/annette/v1/orgStructure/unassignOrgRole                     biz.lobachev.annette.org_structure.gateway.OrgStructureController.unassignOrgRole(attributes: Option[String])
 POST    /api/annette/v1/orgStructure/deleteOrgItem                       biz.lobachev.annette.org_structure.gateway.OrgStructureController.deleteOrgItem
 GET     /api/annette/v1/orgStructure/getOrganization/:orgId          biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrganization(orgId: String)
 GET     /api/annette/v1/orgStructure/getOrganizationTree/:itemId         biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrganizationTree(itemId: String)
-GET     /api/annette/v1/orgStructure/getOrgItem/:id/:fromReadSide    biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgItem(id: String, fromReadSide: Boolean, withAttributes: Option[String])
-POST    /api/annette/v1/orgStructure/getOrgItems/:fromReadSide       biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgItems(fromReadSide: Boolean, withAttributes: Option[String])
+GET     /api/annette/v1/orgStructure/getOrgItem/:id    biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgItem(id: String, source: Option[String], attributes: Option[String])
+POST    /api/annette/v1/orgStructure/getOrgItems       biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgItems(source: Option[String], attributes: Option[String])
 GET     /api/annette/v1/orgStructure/getPersonPrincipals/:personId       biz.lobachev.annette.org_structure.gateway.OrgStructureController.getPersonPrincipals(personId: String)
 GET     /api/annette/v1/orgStructure/getPersonPositions/:personId        biz.lobachev.annette.org_structure.gateway.OrgStructureController.getPersonPositions(personId: String)
 POST    /api/annette/v1/orgStructure/findOrgItems                        biz.lobachev.annette.org_structure.gateway.OrgStructureController.findOrgItems
 GET     /api/annette/v1/orgStructure/getOrgItemMetadata                  biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgItemMetadata
-GET     /api/annette/v1/orgStructure/getOrgItemAttributes/:id/:fromReadSide  biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgItemAttributes(id: String, fromReadSide: Boolean, attributes: Option[String])
-POST    /api/annette/v1/orgStructure/getOrgItemsAttributes/:fromReadSide     biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgItemsAttributes(fromReadSide: Boolean, attributes: Option[String])
+GET     /api/annette/v1/orgStructure/getOrgItemAttributes/:id  biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgItemAttributes(id: String, source: Option[String], attributes: Option[String])
+POST    /api/annette/v1/orgStructure/getOrgItemsAttributes     biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgItemsAttributes(source: Option[String], attributes: Option[String])
 
 # OrgStructure Role
-POST    /api/annette/v1/orgStructure/createOrgRole                       biz.lobachev.annette.org_structure.gateway.OrgStructureController.createOrgRole
-POST    /api/annette/v1/orgStructure/updateOrgRole                       biz.lobachev.annette.org_structure.gateway.OrgStructureController.updateOrgRole
-POST    /api/annette/v1/orgStructure/deleteOrgRole                       biz.lobachev.annette.org_structure.gateway.OrgStructureController.deleteOrgRole
-GET     /api/annette/v1/orgStructure/getOrgRole/:id/:fromReadSide    biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgRole(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/orgStructure/getOrgRoles/:fromReadSide       biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgRoles(fromReadSide: Boolean)
-POST    /api/annette/v1/orgStructure/findOrgRoles                        biz.lobachev.annette.org_structure.gateway.OrgStructureController.findOrgRoles
+POST    /api/annette/v1/orgStructure/createOrgRole   biz.lobachev.annette.org_structure.gateway.OrgStructureController.createOrgRole
+POST    /api/annette/v1/orgStructure/updateOrgRole   biz.lobachev.annette.org_structure.gateway.OrgStructureController.updateOrgRole
+POST    /api/annette/v1/orgStructure/deleteOrgRole   biz.lobachev.annette.org_structure.gateway.OrgStructureController.deleteOrgRole
+GET     /api/annette/v1/orgStructure/getOrgRole/:id  biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgRole(id: String, source: Option[String])
+POST    /api/annette/v1/orgStructure/getOrgRoles     biz.lobachev.annette.org_structure.gateway.OrgStructureController.getOrgRoles(source: Option[String])
+POST    /api/annette/v1/orgStructure/findOrgRoles    biz.lobachev.annette.org_structure.gateway.OrgStructureController.findOrgRoles
 # OrgStructure Category
-POST    /api/annette/v1/orgStructure/createCategory                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.createCategory
-POST    /api/annette/v1/orgStructure/updateCategory                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.updateCategory
-POST    /api/annette/v1/orgStructure/deleteCategory                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.deleteCategory
-GET     /api/annette/v1/orgStructure/getCategory/:id/:fromReadSide   biz.lobachev.annette.org_structure.gateway.OrgStructureController.getCategory(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/orgStructure/getCategories/:fromReadSide     biz.lobachev.annette.org_structure.gateway.OrgStructureController.getCategories(fromReadSide: Boolean)
-POST    /api/annette/v1/orgStructure/findCategories                      biz.lobachev.annette.org_structure.gateway.OrgStructureController.findCategories
+POST    /api/annette/v1/orgStructure/createCategory   biz.lobachev.annette.org_structure.gateway.OrgStructureController.createCategory
+POST    /api/annette/v1/orgStructure/updateCategory   biz.lobachev.annette.org_structure.gateway.OrgStructureController.updateCategory
+POST    /api/annette/v1/orgStructure/deleteCategory   biz.lobachev.annette.org_structure.gateway.OrgStructureController.deleteCategory
+GET     /api/annette/v1/orgStructure/getCategory/:id  biz.lobachev.annette.org_structure.gateway.OrgStructureController.getCategory(id: String, source: Option[String])
+POST    /api/annette/v1/orgStructure/getCategories    biz.lobachev.annette.org_structure.gateway.OrgStructureController.getCategories(source: Option[String])
+POST    /api/annette/v1/orgStructure/findCategories   biz.lobachev.annette.org_structure.gateway.OrgStructureController.findCategories
 
 # ************************************** Person API **************************************
 # Person
@@ -150,10 +150,10 @@ POST    /api/annette/v1/person/deletePerson            biz.lobachev.annette.pers
 POST    /api/annette/v1/person/findPersons             biz.lobachev.annette.person.gateway.PersonController.findPersons
 GET     /api/annette/v1/person/getPerson/:id    biz.lobachev.annette.person.gateway.PersonController.getPerson(id: String, source: Option[String], attributes: Option[String])
 POST    /api/annette/v1/person/getPersons       biz.lobachev.annette.person.gateway.PersonController.getPersons(source: Option[String], attributes: Option[String])
-GET     /api/annette/v1/person/getPersonMetadata       biz.lobachev.annette.person.gateway.PersonController.getPersonMetadata
+GET     /api/annette/v1/person/getPersonMetadata        biz.lobachev.annette.person.gateway.PersonController.getPersonMetadata
 GET     /api/annette/v1/person/getPersonAttributes/:id  biz.lobachev.annette.person.gateway.PersonController.getPersonAttributes(id: String, source: Option[String], attributes: Option[String])
 POST    /api/annette/v1/person/getPersonsAttributes     biz.lobachev.annette.person.gateway.PersonController.getPersonsAttributes(source: Option[String], attributes: Option[String])
-GET     /api/annette/v1/person/profile                             biz.lobachev.annette.person.gateway.PersonController.profile
+GET     /api/annette/v1/person/profile                  biz.lobachev.annette.person.gateway.PersonController.profile
 
 # Person Category
 POST    /api/annette/v1/person/createCategory                      biz.lobachev.annette.person.gateway.PersonController.createCategory
@@ -173,15 +173,15 @@ POST    /api/annette/v1/principalGroup/assignPrincipal                 biz.lobac
 POST    /api/annette/v1/principalGroup/unassignPrincipal               biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.unassignPrincipal
 POST    /api/annette/v1/principalGroup/deletePrincipalGroup            biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.deletePrincipalGroup
 POST    /api/annette/v1/principalGroup/findPrincipalGroups             biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.findPrincipalGroups
-GET     /api/annette/v1/principalGroup/getPrincipalGroup/:id/:fromReadSide biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getPrincipalGroup(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/principalGroup/getPrincipalGroups/:fromReadSide    biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getPrincipalGroups(fromReadSide: Boolean)
+GET     /api/annette/v1/principalGroup/getPrincipalGroup/:id biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getPrincipalGroup(id: String, source: Option[String])
+POST    /api/annette/v1/principalGroup/getPrincipalGroups    biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getPrincipalGroups(source: Option[String])
 GET     /api/annette/v1/principalGroup/getAssignments/:id                  biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getAssignments(id: String)
 # Principal Group Category
 POST    /api/annette/v1/principalGroup/createCategory                      biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.createCategory
 POST    /api/annette/v1/principalGroup/updateCategory                      biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.updateCategory
 POST    /api/annette/v1/principalGroup/deleteCategory                      biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.deleteCategory
-GET     /api/annette/v1/principalGroup/getCategory/:id/:fromReadSide   biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getCategory(id: String, fromReadSide: Boolean)
-POST    /api/annette/v1/principalGroup/getCategories/:fromReadSide     biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getCategories(fromReadSide: Boolean)
+GET     /api/annette/v1/principalGroup/getCategory/:id   biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getCategory(id: String, source: Option[String])
+POST    /api/annette/v1/principalGroup/getCategories     biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.getCategories(source: Option[String])
 POST    /api/annette/v1/principalGroup/findCategories                      biz.lobachev.annette.principal_group.gateway.PrincipalGroupController.findCategories
 
 # ************************************** CMS Blogs API **************************************

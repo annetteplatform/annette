@@ -65,12 +65,12 @@ trait OrgStructureServiceApi extends Service {
 
   def getOrgItem(
     itemId: CompositeOrgItemId,
-    fromReadSide: Boolean,
-    withAttributes: Option[String] = None
+    source: Option[String],
+    attributes: Option[String] = None
   ): ServiceCall[NotUsed, OrgItem]
   def getOrgItems(
-    fromReadSide: Boolean,
-    withAttributes: Option[String] = None
+    source: Option[String],
+    attributes: Option[String] = None
   ): ServiceCall[Set[CompositeOrgItemId], Seq[OrgItem]]
 
   def getItemIdsByExternalId: ServiceCall[Set[String], Map[String, CompositeOrgItemId]]
@@ -86,11 +86,11 @@ trait OrgStructureServiceApi extends Service {
   def updateOrgItemAttributes: ServiceCall[UpdateAttributesPayload, Done]
   def getOrgItemAttributes(
     id: CompositeOrgItemId,
-    fromReadSide: Boolean = true,
+    source: Option[String] = None,
     attributes: Option[String] = None
   ): ServiceCall[NotUsed, AttributeValues]
   def getOrgItemsAttributes(
-    fromReadSide: Boolean = true,
+    source: Option[String] = None,
     attributes: Option[String] = None
   ): ServiceCall[Set[CompositeOrgItemId], Map[String, AttributeValues]]
 
@@ -99,8 +99,8 @@ trait OrgStructureServiceApi extends Service {
   def createOrgRole: ServiceCall[CreateOrgRolePayload, Done]
   def updateOrgRole: ServiceCall[UpdateOrgRolePayload, Done]
   def deleteOrgRole: ServiceCall[DeleteOrgRolePayload, Done]
-  def getOrgRole(id: OrgRoleId, fromReadSide: Boolean): ServiceCall[NotUsed, OrgRole]
-  def getOrgRoles(fromReadSide: Boolean): ServiceCall[Set[OrgRoleId], Seq[OrgRole]]
+  def getOrgRole(id: OrgRoleId, source: Option[String]): ServiceCall[NotUsed, OrgRole]
+  def getOrgRoles(source: Option[String]): ServiceCall[Set[OrgRoleId], Seq[OrgRole]]
   def findOrgRoles: ServiceCall[OrgRoleFindQuery, FindResult]
 
   // OrgItem Category methods
@@ -108,8 +108,8 @@ trait OrgStructureServiceApi extends Service {
   def createCategory: ServiceCall[CreateCategoryPayload, Done]
   def updateCategory: ServiceCall[UpdateCategoryPayload, Done]
   def deleteCategory: ServiceCall[DeleteCategoryPayload, Done]
-  def getCategory(id: OrgCategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, OrgCategory]
-  def getCategories(fromReadSide: Boolean): ServiceCall[Set[OrgCategoryId], Seq[OrgCategory]]
+  def getCategory(id: OrgCategoryId, source: Option[String]): ServiceCall[NotUsed, OrgCategory]
+  def getCategories(source: Option[String]): ServiceCall[Set[OrgCategoryId], Seq[OrgCategory]]
   def findCategories: ServiceCall[OrgCategoryFindQuery, FindResult]
 
   final override def descriptor = {
@@ -135,8 +135,8 @@ trait OrgStructureServiceApi extends Service {
         pathCall("/api/org-structure/v1/deleteOrgItem",        deleteOrgItem),
         pathCall("/api/org-structure/v1/getOrganization/:orgId",            getOrganization _),
         pathCall("/api/org-structure/v1/getOrganizationTree/:itemId",           getOrganizationTree _),
-        pathCall("/api/org-structure/v1/getOrgItem/:itemId/:fromReadSide?withAttributes",  getOrgItem _),
-        pathCall("/api/org-structure/v1/getOrgItems/:fromReadSide?withAttributes",         getOrgItems _ ),
+        pathCall("/api/org-structure/v1/getOrgItem/:itemId?source&attributes",  getOrgItem _),
+        pathCall("/api/org-structure/v1/getOrgItems?source&attributes",         getOrgItems _ ),
         pathCall("/api/org-structure/v1/getItemIdsByExternalId",         getItemIdsByExternalId  ),
         pathCall("/api/org-structure/v1/getPersonPrincipals/:personId",  getPersonPrincipals _),
         pathCall("/api/org-structure/v1/getPersonPositions/:personId",   getPersonPositions _),
@@ -144,21 +144,21 @@ trait OrgStructureServiceApi extends Service {
 
         pathCall("/api/org-structure/v1/getOrgItemMetadata",             getOrgItemMetadata),
         pathCall("/api/org-structure/v1/updateOrgItemAttributes",        updateOrgItemAttributes),
-        pathCall("/api/org-structure/v1/getOrgItemAttributes/:id/:fromReadSide?attributes", getOrgItemAttributes _),
-        pathCall("/api/org-structure/v1/getOrgItemsAttributes/:fromReadSide?attributes",    getOrgItemsAttributes _),
+        pathCall("/api/org-structure/v1/getOrgItemAttributes/:id?source&attributes", getOrgItemAttributes _),
+        pathCall("/api/org-structure/v1/getOrgItemsAttributes?source&attributes",    getOrgItemsAttributes _),
 
         pathCall("/api/org-structure/v1/createOrgRole",                createOrgRole),
         pathCall("/api/org-structure/v1/updateOrgRole",                updateOrgRole),
         pathCall("/api/org-structure/v1/deleteOrgRole",                deleteOrgRole),
-        pathCall("/api/org-structure/v1/getOrgRole/:id/:readSide", getOrgRole _),
-        pathCall("/api/org-structure/v1/getOrgRoles/:readSide",    getOrgRoles _) ,
+        pathCall("/api/org-structure/v1/getOrgRole/:id?source", getOrgRole _),
+        pathCall("/api/org-structure/v1/getOrgRoles?source",    getOrgRoles _) ,
         pathCall("/api/org-structure/v1/findOrgRoles",                 findOrgRoles),
 
         pathCall("/api/org-structure/v1/createCategory",                 createCategory),
         pathCall("/api/org-structure/v1/updateCategory",                 updateCategory),
         pathCall("/api/org-structure/v1/deleteCategory",                 deleteCategory),
-        pathCall("/api/org-structure/v1/getCategory/:id/:readSide",  getCategory _),
-        pathCall("/api/org-structure/v1/getCategories/:readSide",    getCategories _) ,
+        pathCall("/api/org-structure/v1/getCategory/:id?source",  getCategory _),
+        pathCall("/api/org-structure/v1/getCategories?source",    getCategories _) ,
         pathCall("/api/org-structure/v1/findCategories",                 findCategories),
 
       )

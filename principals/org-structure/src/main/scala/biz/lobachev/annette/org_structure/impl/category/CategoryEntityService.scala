@@ -22,6 +22,7 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.org_structure.api.category._
 import biz.lobachev.annette.org_structure.impl.category.dao.{CategoryDbDao, CategoryIndexDao}
@@ -72,11 +73,14 @@ class CategoryEntityService(
       .ask[CategoryEntity.Confirmation](CategoryEntity.DeleteCategory(payload, _))
       .map(res => convertSuccess(payload.id, res))
 
-  def getCategory(id: OrgCategoryId, fromReadSide: Boolean): Future[OrgCategory] =
-    if (fromReadSide) getCategoryFromReadSide(id)
-    else getCategory(id)
+  def getCategory(id: OrgCategoryId, source: Option[String]): Future[OrgCategory] =
+    if (DataSource.fromOrigin(source)) {
+      getCategoryFromOrigin(id)
+    } else {
+      getCategoryFromReadSide(id)
+    }
 
-  def getCategory(id: OrgCategoryId): Future[OrgCategory] =
+  def getCategoryFromOrigin(id: OrgCategoryId): Future[OrgCategory] =
     refFor(id)
       .ask[CategoryEntity.Confirmation](CategoryEntity.GetCategory(id, _))
       .map {
@@ -92,20 +96,22 @@ class CategoryEntityService(
       case None           => throw OrgCategoryNotFound(id)
     }
 
-  def getCategories(ids: Set[OrgCategoryId], fromReadSide: Boolean): Future[Seq[OrgCategory]] =
-    if (fromReadSide) dbDao.getCategories(ids)
-    else
+  def getCategories(ids: Set[OrgCategoryId], source: Option[String]): Future[Seq[OrgCategory]] =
+    if (DataSource.fromOrigin(source)) {
       Source(ids)
         .mapAsync(1) { id =>
           refFor(id)
             .ask[CategoryEntity.Confirmation](CategoryEntity.GetCategory(id, _))
             .map {
               case CategoryEntity.SuccessCategory(entity) => Some(entity)
-              case _                                      => None
+              case _ => None
             }
         }
         .runWith(Sink.seq)
         .map(seq => seq.flatten)
+    } else {
+      dbDao.getCategories(ids)
+    }
 
   def findCategories(query: OrgCategoryFindQuery): Future[FindResult] =
     indexDao.findCategories(query)
