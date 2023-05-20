@@ -1,56 +1,6 @@
 version: '3'
 
 services:
-  odfe-node1:
-    image: amazon/opendistro-for-elasticsearch:1.13.3
-    container_name: odfe-node1
-    environment:
-      - cluster.name=odfe-cluster
-      - node.name=odfe-node1
-      - discovery.type=single-node
-      - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
-      - "ES_JAVA_OPTS=-Xms1024m -Xmx1024m" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
-    ulimits:
-      memlock:
-        soft: -1
-        hard: -1
-      nofile:
-        soft: 65536 # maximum number of open files for the Elasticsearch user, set to at least 65536 on modern systems
-        hard: 65536
-    volumes:
-      - odfe-data1:/usr/share/elasticsearch/data
-    ports:
-      - 9200:9200
-      - 9600:9600 # required for Performance Analyzer
-
-  kibana:
-    image: amazon/opendistro-for-elasticsearch-kibana:latest
-    container_name: odfe-kibana
-    ports:
-      - 5601:5601
-    expose:
-      - "5601"
-    environment:
-      ELASTICSEARCH_URL: https://odfe-node1:9200
-      ELASTICSEARCH_HOSTS: https://odfe-node1:9200
-
-  cassandra:
-    image: cassandra:3.11.14
-    ports:
-      - 9042:9042
-    volumes:
-      - cassandra-data:/var/lib/cassandra
-    environment:
-      - CASSANDRA_CLUSTER_NAME=AnnetteCluster
-
-  minio:
-    image: 'minio/minio:latest'
-    ports:
-      - '9002:9000'
-      - '9001:9001'
-    volumes:
-      - minio-data:/data
-    command: 'server /data --console-address ":9001"'
 
   postgres:
     build: ./postgres/
@@ -59,7 +9,7 @@ services:
     volumes:
       - pg-data:/var/lib/postgresql/data
     environment:
-      POSTGRES_PASSWORD: password
+      POSTGRES_PASSWORD: postgres
 
   pgadmin:
     image: dpage/pgadmin4
@@ -71,13 +21,62 @@ services:
       PGADMIN_DEFAULT_PASSWORD: postgres
       PGADMIN_DEFAULT_EMAIL: postgres@example.com
 
+  cassandra:
+    image: cassandra:3.11.15
+    ports:
+      - 9042:9042
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+    environment:
+      - CASSANDRA_CLUSTER_NAME=AnnetteCluster
+
+  os-node1:
+    image: opensearchproject/opensearch:2.4.1
+    environment:
+      - cluster.name=opensearch-cluster # Name the cluster
+      - node.name=os-node1      # Name the node that will run in this container
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true      # Disable JVM heap memory swapping
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" # Set min and max JVM heap sizes to at least 50% of system RAM
+    ulimits:
+      memlock:
+        soft: -1 # Set memlock to unlimited (no soft or hard limit)
+        hard: -1
+      nofile:
+        soft: 65536 # Maximum number of open files for the opensearch user - set to at least 65536
+        hard: 65536
+    volumes:
+      - os-data1:/usr/share/opensearch/data
+    ports:
+      - 9200:9200 # REST API
+      - 9600:9600 # Performance Analyzer
+
+  os-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.7.0
+    ports:
+      - 5601:5601 # Map host port 5601 to container port 5601
+    expose:
+      - "5601" # Expose port 5601 for web access to OpenSearch Dashboards
+    environment:
+      OPENSEARCH_HOSTS: '["https://os-node1:9200"]' # Define the OpenSearch nodes that OpenSearch Dashboards will query
+
+  minio:
+    image: 'minio/minio:latest'
+    ports:
+      - '9002:9000'
+      - '9001:9001'
+    volumes:
+      - minio-data:/data
+    command: 'server /data --console-address ":9001"'
+
+
   keycloak:
-    image: quay.io/keycloak/keycloak:20.0.2
+    image: quay.io/keycloak/keycloak:21.1.1
     environment:
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
-      KC_DB_USERNAME: keycloak
-      KC_DB_PASSWORD: keycloak
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
     command:  start-dev --hostname-port=8080
@@ -92,8 +91,8 @@ services:
     environment:
       - DB_DRIVER=org.postgresql.Driver
       - DB_URL=jdbc:postgresql://postgres:5432/camunda
-      - DB_USERNAME=camunda
-      - DB_PASSWORD=camunda
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
       - WAIT_FOR=postgres:5432
     links:
       - postgres
@@ -193,7 +192,7 @@ services:
       - "8518:9000"
 
 volumes:
-  odfe-data1:
+  os-data1:
   cassandra-data:
   minio-data:
   pg-data:

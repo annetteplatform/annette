@@ -3,6 +3,6 @@
 To deploy prerequisites for development purposes run the following commands:
 
 ```bash
-cd deploy/docker-local
+cd deploy/docker
 ./deploy.sh
 ```
