@@ -10,16 +10,22 @@ services:
       - pg-data:/var/lib/postgresql/data
     environment:
       POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   pgadmin:
     image: dpage/pgadmin4
     ports:
       - 15433:80
-    depends_on:
-      - postgres
     environment:
       PGADMIN_DEFAULT_PASSWORD: postgres
       PGADMIN_DEFAULT_EMAIL: postgres@example.com
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   cassandra:
     image: cassandra:3.11.15
@@ -29,6 +35,11 @@ services:
       - cassandra-data:/var/lib/cassandra
     environment:
       - CASSANDRA_CLUSTER_NAME=AnnetteCluster
+    healthcheck:
+      test: [ "CMD-SHELL", "[ $$(nodetool statusgossip) = running ]" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   os-node1:
     image: opensearchproject/opensearch:2.8.0
@@ -50,6 +61,11 @@ services:
     ports:
       - 9200:9200 # REST API
       - 9600:9600 # Performance Analyzer
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail -k --header 'Authorization: Basic YWRtaW46YWRtaW4=' https://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
 
   os-dashboards:
     image: opensearchproject/opensearch-dashboards:2.8.0
@@ -59,6 +75,9 @@ services:
       - "5601" # Expose port 5601 for web access to OpenSearch Dashboards
     environment:
       OPENSEARCH_HOSTS: '["https://os-node1:9200"]' # Define the OpenSearch nodes that OpenSearch Dashboards will query
+    depends_on:
+      os-node1:
+        condition: service_healthy
 
   minio:
     image: 'minio/minio:latest'
@@ -83,8 +102,8 @@ services:
     ports:
       - 8080:8080
     depends_on:
-      - postgres
-
+      postgres:
+        condition: service_healthy
 
   camunda:
     build: ./camunda/
@@ -98,6 +117,9 @@ services:
       - postgres
     ports:
       - "3090:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   traefik:
     image: traefik:latest
@@ -141,24 +163,46 @@ services:
       - env/ms.env
     ports:
       - "8510:9000"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      os-node1:
+        condition: service_healthy
+
   service-catalog:
     image: "annetteplatform/service-catalog:${BACKEND_VERSION}"
     env_file:
       - env/ms.env
     ports:
       - "8511:9000"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      os-node1:
+        condition: service_healthy
+
   authorization:
     image: "annetteplatform/authorization:${BACKEND_VERSION}"
     env_file:
       - env/ms.env
     ports:
       - "8512:9000"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      os-node1:
+        condition: service_healthy
+
   bpm-repository:
     image: "annetteplatform/bpm-repository:${BACKEND_VERSION}"
     env_file:
       - env/bpm-repository.env
     ports:
       - "8513:9000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   cms:
     image: "annetteplatform/cms:${BACKEND_VERSION}"
     env_file:
@@ -166,30 +210,59 @@ services:
       - env/cms-minio.env
     ports:
       - "8514:9000"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      os-node1:
+        condition: service_healthy
+
   subscriptions:
     image: "annetteplatform/subscriptions:${BACKEND_VERSION}"
     env_file:
       - env/ms.env
     ports:
       - "8515:9000"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      os-node1:
+        condition: service_healthy
+
   org-structure:
     image: "annetteplatform/org-structure:${BACKEND_VERSION}"
     env_file:
       - env/ms.env
     ports:
       - "8516:9000"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      os-node1:
+        condition: service_healthy
+
   persons:
     image: "annetteplatform/persons:${BACKEND_VERSION}"
     env_file:
       - env/ms.env
     ports:
       - "8517:9000"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      os-node1:
+        condition: service_healthy
+
   principal-groups:
     image: "annetteplatform/principal-groups:${BACKEND_VERSION}"
     env_file:
       - env/ms.env
     ports:
       - "8518:9000"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      os-node1:
+        condition: service_healthy
 
 volumes:
   os-data1:
