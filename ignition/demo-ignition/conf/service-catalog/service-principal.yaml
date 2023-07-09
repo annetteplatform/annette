@@ -1,136 +1,68 @@
 - serviceId: ANNETTE_SITE_SERVICE
-  principal:
-    principalType: authenticated
-    principalId: user
+  principal: authenticated~user
 - serviceId: ANNETTE_GITHUB_SERVICE
-  principal:
-    principalType: authenticated
-    principalId: user
+  principal: authenticated~user
 - serviceId: SERVICE_SEARCH_SERVICE
-  principal:
-    principalType: authenticated
-    principalId: user
+  principal: authenticated~user
 - serviceId: POSTS_VIEW_SERVICE
-  principal:
-    principalType: authenticated
-    principalId: user
+  principal: authenticated~user
 - serviceId: BLOGS_VIEW_SERVICE
-  principal:
-    principalType: authenticated
-    principalId: user
+  principal: authenticated~user
 - serviceId: PAGES_VIEW_SERVICE
-  principal:
-    principalType: authenticated
-    principalId: user
+  principal: authenticated~user
 - serviceId: SPACES_VIEW_SERVICE
-  principal:
-    principalType: authenticated
-    principalId: user
+  principal: authenticated~user
 - serviceId: LANGUAGES_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: TRANSLATIONS_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: APPLICATIONS_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: PERSON_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: PERSON_CATEGORIES_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: HIERARCHY_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: ORG_CATEGORIES_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: ORG_ROLES_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: BLOG_CATEGORIES_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: BLOGS_EDIT_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: POSTS_EDIT_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: SPACE_CATEGORIES_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: SPACES_EDIT_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: PAGES_EDIT_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: HOME_PAGE_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: SERVICE_CATALOG_CATEGORIES_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: SCOPES_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: SCOPE_PRINCIPALS_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: SERVICE_ITEMS_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: SERVICE_PRINCIPALS_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: BPM_MODELS_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: DATA_SCHEMAS_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: BUSINESS_PROCESSES_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: PRINCIPAL_GROUPS_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: PRINCIPAL_GROUP_CATEGORIES_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: AUTH_ROLES_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin
 - serviceId: PERMISSIONS_SERVICE
-  principal:
-    principalType: principal-group
-    principalId: admin
+  principal: principal-group~admin

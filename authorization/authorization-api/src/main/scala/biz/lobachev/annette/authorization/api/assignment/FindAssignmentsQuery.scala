@@ -17,14 +17,15 @@
 package biz.lobachev.annette.authorization.api.assignment
 
 import biz.lobachev.annette.core.model.indexing.SortBy
-import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
+import biz.lobachev.annette.core.model.auth.Permission
 import play.api.libs.json.Json
 
 case class FindAssignmentsQuery(
   offset: Int = 0,
   size: Int,
   permission: Permission,
-  principal: AnnettePrincipal,
+  principalType: String,
+  principalId: String,
   source: AuthSource,
   sortBy: Option[Seq[SortBy]] = None
 )

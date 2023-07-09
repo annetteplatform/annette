@@ -35,7 +35,7 @@ trait QuillEncoders {
     MappedEncoding[AnnettePrincipal, String](_.code)
 
   implicit val principalDecoder: MappedEncoding[String, AnnettePrincipal] =
-    MappedEncoding[String, AnnettePrincipal](AnnettePrincipal.fromCode)
+    MappedEncoding[String, AnnettePrincipal](AnnettePrincipal.apply)
 
   implicit val jsValueEncoder: MappedEncoding[JsValue, String] =
     MappedEncoding[JsValue, String](t => t.toString())

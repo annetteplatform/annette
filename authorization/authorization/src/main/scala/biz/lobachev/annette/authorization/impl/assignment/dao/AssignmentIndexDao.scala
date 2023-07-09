@@ -40,20 +40,20 @@ class AssignmentIndexDao(client: ElasticClient)(implicit
 
   def assignPermission(event: AssignmentEntity.PermissionAssigned) = {
     val id = AssignmentEntity.assignmentId(event.principal, event.permission, event.source)
+    val (principalType, principalId) = event.principal.split
     createIndexDoc(
       id,
-      "id"                     -> id,
-      "principalType"          -> event.principal.principalType,
-      "principalId"            -> event.principal.principalId,
-      "permissionId"           -> event.permission.id,
-      "arg1"                   -> event.permission.arg1,
-      "arg2"                   -> event.permission.arg2,
-      "arg3"                   -> event.permission.arg3,
-      "sourceType"             -> event.source.sourceType,
-      "sourceId"               -> event.source.sourceId,
-      "updatedAt"              -> event.updatedAt,
-      "updatedByPrincipalType" -> event.updatedBy.principalType,
-      "updatedByPrincipalId"   -> event.updatedBy.principalId
+      "id"            -> id,
+      "principalType" -> principalType,
+      "principalId"   -> principalId,
+      "permissionId"  -> event.permission.id,
+      "arg1"          -> event.permission.arg1,
+      "arg2"          -> event.permission.arg2,
+      "arg3"          -> event.permission.arg3,
+      "sourceType"    -> event.source.sourceType,
+      "sourceId"      -> event.source.sourceId,
+      "updatedAt"     -> event.updatedAt,
+      "updatedBy"     -> event.updatedBy.code
     )
   }
 
@@ -80,9 +80,8 @@ class AssignmentIndexDao(client: ElasticClient)(implicit
       val total  = result.hits.total.value
       val hits   = result.hits.hits.map { hit =>
         val updatedBy  = for {
-          principalType <- hit.sourceAsMap.get(alias2FieldName("updatedByPrincipalType")).map(_.toString)
-          principalId   <- hit.sourceAsMap.get(alias2FieldName("updatedByPrincipalId")).map(_.toString)
-        } yield AnnettePrincipal(principalType, principalId)
+          principalCode <- hit.sourceAsMap.get(alias2FieldName("updatedBy")).map(_.toString)
+        } yield AnnettePrincipal(principalCode)
         val assignment = PermissionAssignment(
           principal = AnnettePrincipal(
             principalType = hit.sourceAsMap.get(alias2FieldName("principalType")).getOrElse("").toString,
@@ -111,8 +110,8 @@ class AssignmentIndexDao(client: ElasticClient)(implicit
 
   private def buildFieldQuery(query: FindAssignmentsQuery): Seq[TermQuery] =
     Seq(
-      "principalType" -> query.principal.principalType,
-      "principalId"   -> query.principal.principalId,
+      "principalType" -> query.principalType,
+      "principalId"   -> query.principalId,
       "permissionId"  -> query.permission.id,
       "arg1"          -> query.permission.arg1,
       "arg2"          -> query.permission.arg2,

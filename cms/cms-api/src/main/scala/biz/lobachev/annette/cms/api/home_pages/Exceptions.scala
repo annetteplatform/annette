@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.cms.api.home_pages
 
-import biz.lobachev.annette.core.exception.{AnnetteTransportExceptionCompanion2}
+import biz.lobachev.annette.core.exception.{AnnetteTransportExceptionCompanion1, AnnetteTransportExceptionCompanion2}
 import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
 
 object HomePageNotFound extends AnnetteTransportExceptionCompanion2 {
@@ -24,4 +24,10 @@ object HomePageNotFound extends AnnetteTransportExceptionCompanion2 {
   val MessageCode     = "annette.cms.homePage.notFound"
   val Arg1Key: String = "applicationId"
   val Arg2Key: String = "principalCode"
+}
+
+object InvalidCompositeId extends AnnetteTransportExceptionCompanion1 {
+  val ErrorCode       = TransportErrorCode.NotFound
+  val MessageCode     = "annette.cms.homePage.invalidCompositeId"
+  val Arg1Key: String = "id"
 }

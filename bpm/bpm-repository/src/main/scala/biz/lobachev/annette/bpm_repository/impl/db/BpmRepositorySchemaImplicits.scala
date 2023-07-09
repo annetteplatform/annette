@@ -45,7 +45,7 @@ trait BpmRepositorySchemaImplicits {
     MappedColumnType.base[ProcessDefinition, String](_.value, ProcessDefinition(_))
 
   implicit val annettePrincipalColumnType: JdbcType[AnnettePrincipal] with BaseTypedType[AnnettePrincipal] =
-    MappedColumnType.base[AnnettePrincipal, String](_.code, AnnettePrincipal.fromCode)
+    MappedColumnType.base[AnnettePrincipal, String](_.code, AnnettePrincipal.apply)
 
   /* Enumeration */
   implicit val notationColumnType: JdbcType[Notation.Notation] with BaseTypedType[Notation.Notation] =

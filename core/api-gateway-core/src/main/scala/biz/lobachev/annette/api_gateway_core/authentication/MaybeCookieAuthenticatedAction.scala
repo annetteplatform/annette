@@ -39,7 +39,7 @@ class MaybeCookieAuthenticatedAction @Inject() (
     log.info("Request method={}, uri={}", request.method, request.uri)
     val started        = System.currentTimeMillis()
     val expirationTime = request.session.data.get("exp").flatMap(_.toLongOption)
-    val principal      = request.session.data.get("principal").map(AnnettePrincipal.fromCode)
+    val principal      = request.session.data.get("principal").map(AnnettePrincipal.apply)
     val maybeSubject   =
       if (principal.isDefined && expirationTime.isDefined && System.currentTimeMillis() / 1000L < expirationTime.get)
         Some(Subject(principals = principal.toSeq, Map.empty, None))

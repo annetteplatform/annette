@@ -151,7 +151,7 @@ object BpmData {
       "double"       -> DoubleValue(1234567890.1234),
       "date"         -> DateValue("1977-03-30T00:00:00.000+0000"),
       "json"         -> JsonValue(
-        "{\"id\": \"my-bpmn-model1\",\n  \"name\": \"My bpmn model 111\",\n  \"updatedBy\": {\n    \"principalType\": \"person\",\n    \"principalId\": \"P0002\"\n  }}"
+        "{\"id\": \"my-bpmn-model1\",\n  \"name\": \"My bpmn model 111\",\n  \"updatedBy\": \"person~P0002\"\n  }"
       ),
       "xml"          -> XmlValue("<name>Valery</name>"),
       "testScalaVar" -> ObjectValue(

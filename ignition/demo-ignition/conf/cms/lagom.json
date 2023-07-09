@@ -3,10 +3,7 @@
     "id": "lagom-01",
     "spaceId": "lagom",
     "featured": false,
-    "authorId": {
-      "principalType": "person",
-      "principalId": "P0001"
-    },
+    "authorId": "person~P0001",
     "title": "Welcome to Lagom",
     "introContent": {
       "type": "markdown",
@@ -23,10 +20,7 @@
     "id": "lagom-03",
     "spaceId": "lagom",
     "featured": false,
-    "authorId": {
-      "principalType": "person",
-      "principalId": "P0001"
-    },
+    "authorId": "person~P0001",
     "title": "Introduction and prerequisites",
     "introContent": {
       "type": "markdown",
@@ -43,10 +37,7 @@
     "id": "lagom-03",
     "spaceId": "lagom",
     "featured": false,
-    "authorId": {
-      "principalType": "person",
-      "principalId": "P0001"
-    },
+    "authorId": "person~P0001",
     "title": "Creating and running Hello World with sb",
     "introContent": {
       "type": "markdown",
@@ -63,10 +54,7 @@
     "id": "lagom-04",
     "spaceId": "lagom",
     "featured": false,
-    "authorId": {
-      "principalType": "person",
-      "principalId": "P0001"
-    },
+    "authorId": "person~P0001",
     "title": "Understanding Hello World",
     "introContent": {
       "type": "markdown",
@@ -83,10 +71,7 @@
     "id": "lagom-05",
     "spaceId": "lagom",
     "featured": false,
-    "authorId": {
-      "principalType": "person",
-      "principalId": "P0001"
-    },
+    "authorId": "person~P0001",
     "title": "Development Environment",
     "introContent": {
       "type": "markdown",
@@ -103,10 +88,7 @@
     "id": "lagom-06",
     "spaceId": "lagom",
     "featured": false,
-    "authorId": {
-      "principalType": "person",
-      "principalId": "P0001"
-    },
+    "authorId": "person~P0001",
     "title": "Running services",
     "introContent": {
       "type": "markdown",
@@ -123,10 +105,7 @@
     "id": "lagom-06",
     "spaceId": "lagom",
     "featured": false,
-    "authorId": {
-      "principalType": "person",
-      "principalId": "P0001"
-    },
+    "authorId": "person~P0001",
     "title": "Running services",
     "introContent": {
       "type": "markdown",
@@ -143,10 +122,7 @@
     "id": "lagom-07",
     "spaceId": "lagom",
     "featured": false,
-    "authorId": {
-      "principalType": "person",
-      "principalId": "P0001"
-    },
+    "authorId": "person~P0001",
     "title": "Development Environment",
     "introContent": {
       "type": "markdown",
