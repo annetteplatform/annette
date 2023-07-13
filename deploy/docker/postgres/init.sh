@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 set -u
@@ -8,8 +8,6 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" <<-EOSQL
       CREATE DATABASE camunda WITH ENCODING ='UTF8';
       CREATE DATABASE bpm_repository WITH ENCODING ='UTF8';
 EOSQL
-
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -d keycloak </tmp/keycloak.sql
 
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" -d bpm_repository <<-EOSQL
 	   alter table if exists "business_process_variables"

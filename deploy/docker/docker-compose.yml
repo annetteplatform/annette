@@ -90,7 +90,7 @@ services:
 
 
   keycloak:
-    image: quay.io/keycloak/keycloak:21.1.1
+    build: ./keycloak
     environment:
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
@@ -98,7 +98,7 @@ services:
       KC_DB_PASSWORD: postgres
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-    command:  start-dev --hostname-port=8080
+    command:  start-dev --hostname-port=8080 --import-realm
     ports:
       - 8080:8080
     depends_on:
