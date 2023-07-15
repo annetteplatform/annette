@@ -2360,9 +2360,10 @@
 - id: P0335
   firstname: Shannon
   lastname: Baker
+  username: shannon.baker2
   categoryId: PERSON
   gender: female
-  email: shannon.baker@example.com
+  email: shannon.baker2@example.com
   phone: "(136)-007-0633"
 - id: P0336
   firstname: Martha
@@ -4194,9 +4195,10 @@
 - id: P0597
   firstname: Judith
   lastname: Butler
+  username: judith.butler2
   categoryId: PERSON
   gender: female
-  email: judith.butler@example.com
+  email: judith.butler2@example.com
   phone: "(227)-929-6114"
 - id: P0598
   firstname: Jar

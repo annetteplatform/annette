@@ -20,6 +20,7 @@ import akka.Done
 import biz.lobachev.annette.ignition.application.ApplicationLoaderFactory
 import biz.lobachev.annette.ignition.authorization.AuthorizationLoaderFactory
 import biz.lobachev.annette.ignition.core.{Ignition, IgnitionLagomClient, ServiceLoaderFactory}
+import biz.lobachev.annette.ignition.keycloak.KeycloakLoaderFactory
 import biz.lobachev.annette.ignition.org_structure.OrgStructureLoaderFactory
 import biz.lobachev.annette.ignition.persons.PersonLoaderFactory
 import biz.lobachev.annette.ignition.principal_group.PrincipalGroupLoaderFactory
@@ -37,6 +38,7 @@ object ConsoleIgnitionApp extends App {
     "application"     -> ApplicationLoaderFactory,
     "authorization"   -> AuthorizationLoaderFactory,
     "person"          -> PersonLoaderFactory,
+    "keycloak"        -> new KeycloakLoaderFactory(client.wsClient),
     "org-structure"   -> OrgStructureLoaderFactory,
     "principal-group" -> PrincipalGroupLoaderFactory
   )
