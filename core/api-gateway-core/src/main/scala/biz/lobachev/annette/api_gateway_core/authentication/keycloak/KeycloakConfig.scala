@@ -28,6 +28,7 @@ case class KeycloakConfig(
 case class RealmConfig(
   realm: String,
   authServerUrl: String,
+  publicAuthServerUrl: String,
   sslRequired: Option[String],
   resource: Option[String],
   publicClient: Option[Boolean]
@@ -36,6 +37,7 @@ case class RealmConfig(
 case class ClientConfig(
   realm: Option[String],
   authServerUrl: Option[String],
+  publicAuthServerUrl: Option[String],
   sslRequired: Option[String],
   resource: Option[String],
   publicClient: Option[Boolean]

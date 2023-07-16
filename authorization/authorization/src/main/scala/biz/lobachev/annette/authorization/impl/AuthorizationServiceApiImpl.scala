@@ -67,19 +67,19 @@ class AuthorizationServiceApiImpl(
       roleEntityService.unassignPrincipal(payload)
     }
 
-  override def getRoleById(id: AuthRoleId, fromReadSide: Boolean): ServiceCall[NotUsed, AuthRole] =
+  override def getRole(id: AuthRoleId, source: Option[String]): ServiceCall[NotUsed, AuthRole] =
     ServiceCall { _ =>
-      roleEntityService.getRoleById(id, fromReadSide)
+      roleEntityService.getRole(id, source)
     }
 
-  override def getRolePrincipals(id: AuthRoleId, fromReadSide: Boolean): ServiceCall[NotUsed, Set[AnnettePrincipal]] =
+  override def getRolePrincipals(id: AuthRoleId, source: Option[String]): ServiceCall[NotUsed, Set[AnnettePrincipal]] =
     ServiceCall { _ =>
-      roleEntityService.getRolePrincipals(id, fromReadSide)
+      roleEntityService.getRolePrincipals(id, source)
     }
 
-  override def getRolesById(fromReadSide: Boolean): ServiceCall[Set[AuthRoleId], Seq[AuthRole]] =
+  override def getRoles(source: Option[String]): ServiceCall[Set[AuthRoleId], Seq[AuthRole]] =
     ServiceCall { payload =>
-      roleEntityService.getRolesById(payload, fromReadSide)
+      roleEntityService.getRoles(payload, source)
     }
 
   override def findRoles: ServiceCall[AuthRoleFindQuery, FindResult] =

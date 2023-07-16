@@ -258,7 +258,7 @@ class SpaceDbDao(
       _ <- ctx.run(spaceTargetSchema.filter(_.spaceId == lift(event.id)).delete)
     } yield Done
 
-  def getSpaceById(id: SpaceId): Future[Option[Space]] =
+  def getSpace(id: SpaceId): Future[Option[Space]] =
     for {
       maybeSpaceRecord <- ctx
                             .run(spaceSchema.filter(_.id == lift(id)))
@@ -274,7 +274,7 @@ class SpaceDbDao(
       )
     )
 
-  def getSpacesById(ids: Set[SpaceId]): Future[Seq[Space]] =
+  def getSpaces(ids: Set[SpaceId]): Future[Seq[Space]] =
     for {
       spaces  <- ctx
                    .run(spaceSchema.filter(b => liftQuery(ids).contains(b.id)))

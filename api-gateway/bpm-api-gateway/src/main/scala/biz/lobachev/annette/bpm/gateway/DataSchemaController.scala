@@ -131,20 +131,20 @@ class DataSchemaController @Inject() (
       }
     }
 
-  def getDataSchemaById(id: String, withVariables: Option[Boolean] = None) =
+  def getDataSchema(id: String, withVariables: Option[Boolean] = None) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_BPM) {
         for {
-          dataSchema <- bpmRepositoryService.getDataSchemaById(id, withVariables)
+          dataSchema <- bpmRepositoryService.getDataSchema(id, withVariables)
         } yield Ok(Json.toJson(dataSchema))
       }
     }
 
-  def getDataSchemasById(withVariables: Option[Boolean] = None) =
+  def getDataSchemas(withVariables: Option[Boolean] = None) =
     authenticated.async(parse.json[Set[DataSchemaId]]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_BPM) {
         for {
-          dataSchemas <- bpmRepositoryService.getDataSchemasById(request.body.toSeq, withVariables)
+          dataSchemas <- bpmRepositoryService.getDataSchemas(request.body.toSeq, withVariables)
         } yield Ok(Json.toJson(dataSchemas))
       }
     }

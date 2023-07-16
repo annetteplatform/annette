@@ -26,7 +26,7 @@ import biz.lobachev.annette.application.impl.application._
 import biz.lobachev.annette.application.impl.language._
 import biz.lobachev.annette.application.impl.translation._
 import biz.lobachev.annette.application.impl.translation_json.TranslationJsonEntityService
-import biz.lobachev.annette.core.model.LanguageId
+import biz.lobachev.annette.core.model.{DataSource, LanguageId}
 import biz.lobachev.annette.core.model.indexing.FindResult
 import com.lightbend.lagom.scaladsl.api.ServiceCall
 import com.typesafe.config.Config
@@ -69,13 +69,13 @@ class ApplicationServiceLagomApiImpl(
       languageEntityService.deleteLanguage(payload)
     }
 
-  def getLanguageById(id: LanguageId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Language] =
+  def getLanguage(id: LanguageId, source: Option[String]): ServiceCall[NotUsed, Language] =
     ServiceCall { _ =>
-      languageEntityService.getLanguageById(id, fromReadSide)
+      languageEntityService.getLanguage(id, source)
     }
-  def getLanguagesById(fromReadSide: Boolean = true): ServiceCall[Set[LanguageId], Seq[Language]]   =
+  def getLanguages(source: Option[String]): ServiceCall[Set[LanguageId], Seq[Language]]   =
     ServiceCall { ids =>
-      languageEntityService.getLanguagesById(ids, fromReadSide)
+      languageEntityService.getLanguages(ids, source)
     }
 
   def findLanguages: ServiceCall[FindLanguageQuery, FindResult] =
@@ -106,14 +106,19 @@ class ApplicationServiceLagomApiImpl(
       } yield Done
     }
 
-  override def getTranslationById(id: TranslationId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Translation] =
+  override def getTranslation(
+    id: TranslationId,
+    source: Option[String]
+  ): ServiceCall[NotUsed, Translation] =
     ServiceCall { _ =>
-      translationEntityService.getTranslationById(id, fromReadSide)
+      translationEntityService.getTranslation(id, source)
     }
 
-  override def getTranslationsById(fromReadSide: Boolean = true): ServiceCall[Set[TranslationId], Seq[Translation]] =
+  override def getTranslations(
+    source: Option[String]
+  ): ServiceCall[Set[TranslationId], Seq[Translation]] =
     ServiceCall { ids =>
-      translationEntityService.getTranslationsById(ids, fromReadSide)
+      translationEntityService.getTranslations(ids, source)
     }
 
   override def findTranslations: ServiceCall[FindTranslationQuery, FindResult] =
@@ -165,14 +170,19 @@ class ApplicationServiceLagomApiImpl(
       applicationEntityService.deleteApplication(payload)
     }
 
-  override def getApplicationById(id: ApplicationId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Application] =
+  override def getApplication(
+    id: ApplicationId,
+    source: Option[String]
+  ): ServiceCall[NotUsed, Application] =
     ServiceCall { _ =>
-      applicationEntityService.getApplicationById(id, fromReadSide)
+      applicationEntityService.getApplication(id, source)
     }
 
-  override def getApplicationsById(fromReadSide: Boolean = true): ServiceCall[Set[ApplicationId], Seq[Application]] =
+  override def getApplications(
+    source: Option[String]
+  ): ServiceCall[Set[ApplicationId], Seq[Application]] =
     ServiceCall { ids =>
-      applicationEntityService.getApplicationsById(ids, fromReadSide)
+      applicationEntityService.getApplications(ids, source)
     }
 
   override def getAllApplications: ServiceCall[NotUsed, Seq[Application]] =
@@ -188,7 +198,7 @@ class ApplicationServiceLagomApiImpl(
   def getApplicationTranslations(id: ApplicationId, languageId: LanguageId): ServiceCall[NotUsed, JsObject] =
     ServiceCall { _ =>
       for {
-        application      <- applicationEntityService.getApplicationById(id, true)
+        application      <- applicationEntityService.getApplication(id, DataSource.FROM_READ_SIDE)
         translationJsons <- translationJsonEntityService.getTranslationJsons(application.translations, languageId)
         json              = if (translationJsons.nonEmpty)
                               translationJsons.map(_.json).reduceRight((obj, acc) => acc.deepMerge(obj))

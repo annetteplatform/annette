@@ -41,9 +41,9 @@ trait ServiceCatalogServiceLagomApi extends LagomService {
   def createCategory: ServiceCall[CreateCategoryPayload, Done]
   def updateCategory: ServiceCall[UpdateCategoryPayload, Done]
   def deleteCategory: ServiceCall[DeleteCategoryPayload, Done]
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, Category]
-  def getCategoriesById(
-    fromReadSide: Boolean
+  def getCategory(id: CategoryId, source: Option[String]): ServiceCall[NotUsed, Category]
+  def getCategories(
+    source: Option[String]
   ): ServiceCall[Set[CategoryId], Seq[Category]]
   def findCategories: ServiceCall[CategoryFindQuery, FindResult]
 
@@ -52,8 +52,8 @@ trait ServiceCatalogServiceLagomApi extends LagomService {
   def activateScope: ServiceCall[ActivateScopePayload, Done]
   def deactivateScope: ServiceCall[DeactivateScopePayload, Done]
   def deleteScope: ServiceCall[DeleteScopePayload, Done]
-  def getScopeById(id: ScopeId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Scope]
-  def getScopesById(fromReadSide: Boolean = true): ServiceCall[Set[ScopeId], Seq[Scope]]
+  def getScope(id: ScopeId, source: Option[String] = None): ServiceCall[NotUsed, Scope]
+  def getScopes(source: Option[String] = None): ServiceCall[Set[ScopeId], Seq[Scope]]
   def findScopes: ServiceCall[FindScopeQuery, FindResult]
 
   def assignScopePrincipal: ServiceCall[AssignScopePrincipalPayload, Done]
@@ -68,8 +68,8 @@ trait ServiceCatalogServiceLagomApi extends LagomService {
   def activateServiceItem: ServiceCall[ActivateServiceItemPayload, Done]
   def deactivateServiceItem: ServiceCall[DeactivateServiceItemPayload, Done]
   def deleteServiceItem: ServiceCall[DeleteServiceItemPayload, Done]
-  def getServiceItemById(id: ServiceItemId, fromReadSide: Boolean = true): ServiceCall[NotUsed, ServiceItem]
-  def getServiceItemsById(fromReadSide: Boolean = true): ServiceCall[Set[ServiceItemId], Seq[ServiceItem]]
+  def getServiceItem(id: ServiceItemId, source: Option[String] = None): ServiceCall[NotUsed, ServiceItem]
+  def getServiceItems(source: Option[String] = None): ServiceCall[Set[ServiceItemId], Seq[ServiceItem]]
   def findServiceItems: ServiceCall[FindServiceItemsQuery, FindResult]
 
   def assignServicePrincipal: ServiceCall[AssignServicePrincipalPayload, Done]
@@ -86,16 +86,16 @@ trait ServiceCatalogServiceLagomApi extends LagomService {
         pathCall("/api/serviceCatalog/v1/createCategory", createCategory),
         pathCall("/api/serviceCatalog/v1/updateCategory", updateCategory),
         pathCall("/api/serviceCatalog/v1/deleteCategory", deleteCategory),
-        pathCall("/api/serviceCatalog/v1/getCategoryById/:id/:fromReadSide", getCategoryById _),
-        pathCall("/api/serviceCatalog/v1/getCategoriesById/:fromReadSide", getCategoriesById _),
+        pathCall("/api/serviceCatalog/v1/getCategory/:id?source", getCategory _),
+        pathCall("/api/serviceCatalog/v1/getCategories?source", getCategories _),
         pathCall("/api/serviceCatalog/v1/findCategories", findCategories),
         pathCall("/api/serviceCatalog/v1/createScope", createScope),
         pathCall("/api/serviceCatalog/v1/updateScope", updateScope),
         pathCall("/api/serviceCatalog/v1/activateScope", activateScope),
         pathCall("/api/serviceCatalog/v1/deactivateScope", deactivateScope),
         pathCall("/api/serviceCatalog/v1/deleteScope", deleteScope),
-        pathCall("/api/serviceCatalog/v1/getScopeById/:id/:fromReadSide", getScopeById _),
-        pathCall("/api/serviceCatalog/v1/getScopesById/:fromReadSide", getScopesById _),
+        pathCall("/api/serviceCatalog/v1/getScope/:id?source", getScope _),
+        pathCall("/api/serviceCatalog/v1/getScopes?source", getScopes _),
         pathCall("/api/serviceCatalog/v1/findScopes", findScopes),
         pathCall("/api/serviceCatalog/v1/assignScopePrincipal", assignScopePrincipal),
         pathCall("/api/serviceCatalog/v1/unassignScopePrincipal", unassignScopePrincipal),
@@ -107,8 +107,8 @@ trait ServiceCatalogServiceLagomApi extends LagomService {
         pathCall("/api/serviceCatalog/v1/activateServiceItem", activateServiceItem),
         pathCall("/api/serviceCatalog/v1/deactivateServiceItem", deactivateServiceItem),
         pathCall("/api/serviceCatalog/v1/deleteServiceItem", deleteServiceItem),
-        pathCall("/api/serviceCatalog/v1/getServiceItemById/:id/:fromReadSide", getServiceItemById _),
-        pathCall("/api/serviceCatalog/v1/getServiceItemsById/:fromReadSide", getServiceItemsById _),
+        pathCall("/api/serviceCatalog/v1/getServiceItem/:id?source", getServiceItem _),
+        pathCall("/api/serviceCatalog/v1/getServiceItems?source", getServiceItems _),
         pathCall("/api/serviceCatalog/v1/findServiceItems", findServiceItems),
         pathCall("/api/serviceCatalog/v1/assignServicePrincipal", assignServicePrincipal),
         pathCall("/api/serviceCatalog/v1/unassignServicePrincipal", unassignServicePrincipal),

@@ -65,8 +65,8 @@ trait BpmRepositoryServiceApi extends Service {
   def updateBpmModelDescription: ServiceCall[UpdateBpmModelDescriptionPayload, BpmModel]
   def updateBpmModelXml: ServiceCall[UpdateBpmModelXmlPayload, BpmModel]
   def deleteBpmModel: ServiceCall[DeleteBpmModelPayload, Done]
-  def getBpmModelById(id: String, withXml: Option[Boolean]): ServiceCall[NotUsed, BpmModel]
-  def getBpmModelsById(withXml: Option[Boolean]): ServiceCall[Seq[BpmModelId], Seq[BpmModel]]
+  def getBpmModel(id: String, withXml: Option[Boolean]): ServiceCall[NotUsed, BpmModel]
+  def getBpmModels(withXml: Option[Boolean]): ServiceCall[Seq[BpmModelId], Seq[BpmModel]]
   def findBpmModels: ServiceCall[BpmModelFindQuery, FindResult]
 
   def createDataSchema: ServiceCall[CreateDataSchemaPayload, DataSchema]
@@ -76,8 +76,8 @@ trait BpmRepositoryServiceApi extends Service {
   def storeDataSchemaVariable: ServiceCall[StoreDataSchemaVariablePayload, DataSchema]
   def deleteDataSchemaVariable: ServiceCall[DeleteDataSchemaVariablePayload, DataSchema]
   def deleteDataSchema: ServiceCall[DeleteDataSchemaPayload, Done]
-  def getDataSchemaById(id: String, withVariables: Option[Boolean]): ServiceCall[NotUsed, DataSchema]
-  def getDataSchemasById(withVariables: Option[Boolean]): ServiceCall[Seq[DataSchemaId], Seq[DataSchema]]
+  def getDataSchema(id: String, withVariables: Option[Boolean]): ServiceCall[NotUsed, DataSchema]
+  def getDataSchemas(withVariables: Option[Boolean]): ServiceCall[Seq[DataSchemaId], Seq[DataSchema]]
   def findDataSchemas: ServiceCall[DataSchemaFindQuery, FindResult]
 
   def createBusinessProcess: ServiceCall[CreateBusinessProcessPayload, BusinessProcess]
@@ -91,8 +91,8 @@ trait BpmRepositoryServiceApi extends Service {
   def storeBusinessProcessVariable: ServiceCall[StoreBusinessProcessVariablePayload, BusinessProcess]
   def deleteBusinessProcessVariable: ServiceCall[DeleteBusinessProcessVariablePayload, BusinessProcess]
   def deleteBusinessProcess: ServiceCall[DeleteBusinessProcessPayload, Done]
-  def getBusinessProcessById(id: String, withVariables: Option[Boolean]): ServiceCall[NotUsed, BusinessProcess]
-  def getBusinessProcessesById(
+  def getBusinessProcess(id: String, withVariables: Option[Boolean]): ServiceCall[NotUsed, BusinessProcess]
+  def getBusinessProcesses(
     withVariables: Option[Boolean]
   ): ServiceCall[Seq[BusinessProcessId], Seq[BusinessProcess]]
   def findBusinessProcesses: ServiceCall[BusinessProcessFindQuery, FindResult]
@@ -107,8 +107,8 @@ trait BpmRepositoryServiceApi extends Service {
         pathCall("/api/bpm-repository/v1/updateBpmModelDescription", updateBpmModelDescription),
         pathCall("/api/bpm-repository/v1/updateBpmModelXml", updateBpmModelXml),
         pathCall("/api/bpm-repository/v1/deleteBpmModel", deleteBpmModel),
-        pathCall("/api/bpm-repository/v1/getBpmModelById/:id?withXml", getBpmModelById _),
-        pathCall("/api/bpm-repository/v1/getBpmModelsById?withXml", getBpmModelsById _),
+        pathCall("/api/bpm-repository/v1/getBpmModel/:id?withXml", getBpmModel _),
+        pathCall("/api/bpm-repository/v1/getBpmModels?withXml", getBpmModels _),
         pathCall("/api/bpm-repository/v1/findBpmModels", findBpmModels),
         pathCall("/api/bpm-repository/v1/createDataSchema", createDataSchema),
         pathCall("/api/bpm-repository/v1/updateDataSchema", updateDataSchema),
@@ -117,8 +117,8 @@ trait BpmRepositoryServiceApi extends Service {
         pathCall("/api/bpm-repository/v1/storeDataSchemaVariable", storeDataSchemaVariable),
         pathCall("/api/bpm-repository/v1/deleteDataSchemaVariable", deleteDataSchemaVariable),
         pathCall("/api/bpm-repository/v1/deleteDataSchema", deleteDataSchema),
-        pathCall("/api/bpm-repository/v1/getDataSchemaById/:id?withVariables", getDataSchemaById _),
-        pathCall("/api/bpm-repository/v1/getDataSchemasById?withVariables", getDataSchemasById _),
+        pathCall("/api/bpm-repository/v1/getDataSchema/:id?withVariables", getDataSchema _),
+        pathCall("/api/bpm-repository/v1/getDataSchemas?withVariables", getDataSchemas _),
         pathCall("/api/bpm-repository/v1/findDataSchemas", findDataSchemas),
         pathCall("/api/bpm-repository/v1/createBusinessProcess", createBusinessProcess),
         pathCall("/api/bpm-repository/v1/updateBusinessProcess", updateBusinessProcess),
@@ -133,8 +133,8 @@ trait BpmRepositoryServiceApi extends Service {
         pathCall("/api/bpm-repository/v1/storeBusinessProcessVariable", storeBusinessProcessVariable),
         pathCall("/api/bpm-repository/v1/deleteBusinessProcessVariable", deleteBusinessProcessVariable),
         pathCall("/api/bpm-repository/v1/deleteBusinessProcess", deleteBusinessProcess),
-        pathCall("/api/bpm-repository/v1/getBusinessProcessById/:id?withVariables", getBusinessProcessById _),
-        pathCall("/api/bpm-repository/v1/getBusinessProcessesById?withVariables", getBusinessProcessesById _),
+        pathCall("/api/bpm-repository/v1/getBusinessProcess/:id?withVariables", getBusinessProcess _),
+        pathCall("/api/bpm-repository/v1/getBusinessProcesses?withVariables", getBusinessProcesses _),
         pathCall("/api/bpm-repository/v1/findBusinessProcesses", findBusinessProcesses)
       )
       .withExceptionSerializer(new AnnetteTransportExceptionSerializer())

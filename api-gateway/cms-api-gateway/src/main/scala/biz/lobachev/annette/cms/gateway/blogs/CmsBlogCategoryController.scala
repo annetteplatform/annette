@@ -21,6 +21,7 @@ import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.CmsService
 import biz.lobachev.annette.cms.gateway.Permissions.{MAINTAIN_ALL_BLOG_CATEGORIES, VIEW_ALL_BLOG_CATEGORIES}
 import biz.lobachev.annette.cms.gateway.blogs.category._
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.category._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
@@ -49,7 +50,7 @@ class CmsBlogCategoryController @Inject() (
           .transform
         for {
           _    <- cmsService.createBlogCategory(payload)
-          role <- cmsService.getBlogCategoryById(payload.id, false)
+          role <- cmsService.getBlogCategory(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -63,7 +64,7 @@ class CmsBlogCategoryController @Inject() (
           .transform
         for {
           _    <- cmsService.updateBlogCategory(payload)
-          role <- cmsService.getBlogCategoryById(payload.id, false)
+          role <- cmsService.getBlogCategory(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -81,26 +82,30 @@ class CmsBlogCategoryController @Inject() (
       }
     }
 
-  def getBlogCategoryById(id: CategoryId, fromReadSide: Boolean) =
+  def getBlogCategory(id: CategoryId, source: Option[String]) =
     authenticated.async { implicit request =>
       val rules =
-        if (fromReadSide) Seq(VIEW_ALL_BLOG_CATEGORIES, MAINTAIN_ALL_BLOG_CATEGORIES)
-        else Seq(MAINTAIN_ALL_BLOG_CATEGORIES)
+        if (DataSource.fromOrigin(source))
+          Seq(MAINTAIN_ALL_BLOG_CATEGORIES)
+        else
+          Seq(VIEW_ALL_BLOG_CATEGORIES, MAINTAIN_ALL_BLOG_CATEGORIES)
       authorizer.performCheckAny(rules: _*) {
         for {
-          role <- cmsService.getBlogCategoryById(id, fromReadSide)
+          role <- cmsService.getBlogCategory(id, source)
         } yield Ok(Json.toJson(role))
       }
     }
 
-  def getBlogCategoriesById(fromReadSide: Boolean) =
+  def getBlogCategories(source: Option[String]) =
     authenticated.async(parse.json[Set[CategoryId]]) { implicit request =>
       val rules =
-        if (fromReadSide) Seq(VIEW_ALL_BLOG_CATEGORIES, MAINTAIN_ALL_BLOG_CATEGORIES)
-        else Seq(MAINTAIN_ALL_BLOG_CATEGORIES)
+        if (DataSource.fromOrigin(source))
+          Seq(MAINTAIN_ALL_BLOG_CATEGORIES)
+        else
+          Seq(VIEW_ALL_BLOG_CATEGORIES, MAINTAIN_ALL_BLOG_CATEGORIES)
       authorizer.performCheckAny(rules: _*) {
         for {
-          result <- cmsService.getBlogCategoriesById(request.request.body, fromReadSide)
+          result <- cmsService.getBlogCategories(request.request.body, source)
         } yield Ok(Json.toJson(result))
       }
     }

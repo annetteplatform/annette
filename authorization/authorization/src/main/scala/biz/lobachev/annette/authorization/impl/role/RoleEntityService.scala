@@ -24,6 +24,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.authorization.api.role._
 import biz.lobachev.annette.authorization.impl.role.dao.{RoleDbDao, RoleIndexDao}
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
 import com.typesafe.config.Config
@@ -99,48 +100,51 @@ class RoleEntityService(
       .ask[RoleEntity.Confirmation](RoleEntity.UnassignPrincipal(payload, _))
       .map(convertSuccess)
 
-  def getRoleById(id: AuthRoleId, fromReadSide: Boolean): Future[AuthRole] =
-    if (fromReadSide)
-      dbDao
-        .getRoleById(id)
-        .map(_.getOrElse(throw RoleNotFound()))
-    else
+  def getRole(id: AuthRoleId, source: Option[String]): Future[AuthRole] =
+    if (DataSource.fromOrigin(source)) {
       refFor(id)
-        .ask[RoleEntity.Confirmation](RoleEntity.GetRoleById(id, _))
+        .ask[RoleEntity.Confirmation](RoleEntity.GetRole(id, _))
         .map(convertSuccessRole)
-
-  def getRolePrincipals(id: AuthRoleId, fromReadSide: Boolean): Future[Set[AnnettePrincipal]] =
-    if (fromReadSide)
+    } else {
       dbDao
-        .getRolePrincipals(id)
+        .getRole(id)
         .map(_.getOrElse(throw RoleNotFound()))
-    else
+    }
+
+  def getRolePrincipals(id: AuthRoleId, source: Option[String]): Future[Set[AnnettePrincipal]] =
+    if (DataSource.fromOrigin(source)) {
       refFor(id)
         .ask[RoleEntity.Confirmation](RoleEntity.GetRolePrincipals(id, _))
         .map(convertSuccessPrincipals)
+    } else {
+      dbDao
+        .getRolePrincipals(id)
+        .map(_.getOrElse(throw RoleNotFound()))
+    }
 
   def getRolePrincipals(id: AuthRoleId): Future[Set[AnnettePrincipal]] =
     refFor(id)
       .ask[RoleEntity.Confirmation](RoleEntity.GetRolePrincipals(id, _))
       .map(convertSuccessPrincipals)
 
-  def getRolesById(ids: Set[AuthRoleId], fromReadSide: Boolean): Future[Seq[AuthRole]] =
-    if (fromReadSide)
-      dbDao
-        .getRolesById(ids)
-    else
+  def getRoles(ids: Set[AuthRoleId], source: Option[String]): Future[Seq[AuthRole]] =
+    if (DataSource.fromOrigin(source)) {
       for {
         roles <- Source(ids)
-                   .mapAsync(1) { id =>
-                     refFor(id)
-                       .ask[RoleEntity.Confirmation](RoleEntity.GetRoleById(id, _))
-                       .map {
-                         case RoleEntity.SuccessRole(role) => Some(role)
-                         case _                            => None
-                       }
-                   }
-                   .runWith(Sink.seq)
+          .mapAsync(1) { id =>
+            refFor(id)
+              .ask[RoleEntity.Confirmation](RoleEntity.GetRole(id, _))
+              .map {
+                case RoleEntity.SuccessRole(role) => Some(role)
+                case _ => None
+              }
+          }
+          .runWith(Sink.seq)
       } yield roles.flatten
+    } else {
+      dbDao
+        .getRoles(ids)
+    }
 
   def findRoles(payload: AuthRoleFindQuery): Future[FindResult] =
     indexDao.findRoles(payload)

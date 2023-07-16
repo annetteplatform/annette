@@ -75,11 +75,11 @@ private[impl] class CategoryDbDao(override val session: CassandraSession)(implic
   def deleteCategory(event: CategoryDeleted) =
     ctx.run(entitySchema.filter(_.id == lift(event.id)).delete)
 
-  def getCategoryById(id: OrgCategoryId): Future[Option[OrgCategory]] =
+  def getCategory(id: OrgCategoryId): Future[Option[OrgCategory]] =
     ctx
       .run(entitySchema.filter(_.id == lift(id)))
       .map(_.headOption)
 
-  def getCategoriesById(ids: Set[OrgCategoryId]): Future[Seq[OrgCategory]] =
+  def getCategories(ids: Set[OrgCategoryId]): Future[Seq[OrgCategory]] =
     ctx.run(entitySchema.filter(b => liftQuery(ids).contains(b.id)))
 }

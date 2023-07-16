@@ -30,13 +30,13 @@ trait AuthorizationService {
   def updateRole(payload: UpdateRolePayload): Future[Done]
   def createOrUpdateRole(payload: CreateRolePayload): Future[Done]
   def deleteRole(payload: DeleteRolePayload): Future[Done]
-  def getRoleById(id: AuthRoleId, fromReadSide: Boolean = true): Future[AuthRole]
-  def getRolesById(ids: Set[AuthRoleId], fromReadSide: Boolean = true): Future[Seq[AuthRole]]
+  def getRole(id: AuthRoleId, source: Option[String] = None): Future[AuthRole]
+  def getRoles(ids: Set[AuthRoleId], source: Option[String] = None): Future[Seq[AuthRole]]
   def findRoles(payload: AuthRoleFindQuery): Future[FindResult]
 
   def assignPrincipal(payload: AssignPrincipalPayload): Future[Done]
   def unassignPrincipal(payload: UnassignPrincipalPayload): Future[Done]
-  def getRolePrincipals(id: AuthRoleId, fromReadSide: Boolean = true): Future[Set[AnnettePrincipal]]
+  def getRolePrincipals(id: AuthRoleId, source: Option[String] = None): Future[Set[AnnettePrincipal]]
 
   def assignPermission(payload: AssignPermissionPayload): Future[Done]
   def unassignPermission(payload: UnassignPermissionPayload): Future[Done]

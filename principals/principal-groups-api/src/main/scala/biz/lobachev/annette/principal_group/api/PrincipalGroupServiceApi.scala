@@ -41,9 +41,9 @@ trait PrincipalGroupServiceApi extends Service {
   def deletePrincipalGroup: ServiceCall[DeletePrincipalGroupPayload, Done]
   def assignPrincipal: ServiceCall[AssignPrincipalPayload, Done]
   def unassignPrincipal: ServiceCall[UnassignPrincipalPayload, Done]
-  def getPrincipalGroupById(id: PrincipalGroupId, fromReadSide: Boolean = true): ServiceCall[NotUsed, PrincipalGroup]
-  def getPrincipalGroupsById(
-    fromReadSide: Boolean = true
+  def getPrincipalGroup(id: PrincipalGroupId, source: Option[String] = None): ServiceCall[NotUsed, PrincipalGroup]
+  def getPrincipalGroups(
+    source: Option[String] = None
   ): ServiceCall[Set[PrincipalGroupId], Seq[PrincipalGroup]]
   def findPrincipalGroups: ServiceCall[PrincipalGroupFindQuery, FindResult]
   def getAssignments(id: PrincipalGroupId): ServiceCall[NotUsed, Set[AnnettePrincipal]]
@@ -54,8 +54,8 @@ trait PrincipalGroupServiceApi extends Service {
   def createCategory: ServiceCall[CreateCategoryPayload, Done]
   def updateCategory: ServiceCall[UpdateCategoryPayload, Done]
   def deleteCategory: ServiceCall[DeleteCategoryPayload, Done]
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, Category]
-  def getCategoriesById(fromReadSide: Boolean): ServiceCall[Set[CategoryId], Seq[Category]]
+  def getCategory(id: CategoryId, source: Option[String]): ServiceCall[NotUsed, Category]
+  def getCategories(source: Option[String]): ServiceCall[Set[CategoryId], Seq[Category]]
   def findCategories: ServiceCall[CategoryFindQuery, FindResult]
 
   final override def descriptor = {
@@ -71,8 +71,8 @@ trait PrincipalGroupServiceApi extends Service {
         pathCall("/api/principal-groups/v1/deletePrincipalGroup",                    deletePrincipalGroup),
         pathCall("/api/principal-groups/v1/assignPrincipal",                         assignPrincipal),
         pathCall("/api/principal-groups/v1/unassignPrincipal",                       unassignPrincipal),
-        pathCall("/api/principal-groups/v1/getPrincipalGroupById/:id/:fromReadSide", getPrincipalGroupById _),
-        pathCall("/api/principal-groups/v1/getPrincipalGroupsById/:fromReadSide",    getPrincipalGroupsById _),
+        pathCall("/api/principal-groups/v1/getPrincipalGroup/:id?source", getPrincipalGroup _),
+        pathCall("/api/principal-groups/v1/getPrincipalGroups?source",    getPrincipalGroups _),
         pathCall("/api/principal-groups/v1/findPrincipalGroups",                     findPrincipalGroups),
         pathCall("/api/principal-groups/v1/getAssignments/:id",                      getAssignments _),
         pathCall("/api/principal-groups/v1/getPrincipalAssignments",                 getPrincipalAssignments),
@@ -80,8 +80,8 @@ trait PrincipalGroupServiceApi extends Service {
         pathCall("/api/principal-groups/v1/createCategory",                 createCategory),
         pathCall("/api/principal-groups/v1/updateCategory",                 updateCategory),
         pathCall("/api/principal-groups/v1/deleteCategory",                 deleteCategory),
-        pathCall("/api/principal-groups/v1/getCategoryById/:id/:readSide",  getCategoryById _),
-        pathCall("/api/principal-groups/v1/getCategoriesById/:readSide",    getCategoriesById _) ,
+        pathCall("/api/principal-groups/v1/getCategory/:id?readSide",  getCategory _),
+        pathCall("/api/principal-groups/v1/getCategories?readSide",    getCategories _) ,
         pathCall("/api/principal-groups/v1/findCategories",                 findCategories),
       )
       .withExceptionSerializer(new AnnetteTransportExceptionSerializer())

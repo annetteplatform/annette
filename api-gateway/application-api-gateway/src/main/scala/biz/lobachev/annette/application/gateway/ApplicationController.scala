@@ -26,7 +26,7 @@ import biz.lobachev.annette.application.gateway.application.{
   DeleteApplicationPayloadDto,
   UpdateApplicationPayloadDto
 }
-import biz.lobachev.annette.core.model.LanguageId
+import biz.lobachev.annette.core.model.{DataSource, LanguageId}
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}
@@ -52,7 +52,7 @@ class ApplicationController @Inject() (
           .transform
         for {
           _      <- applicationService.createApplication(payload)
-          result <- applicationService.getApplicationById(payload.id, false)
+          result <- applicationService.getApplication(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -66,7 +66,7 @@ class ApplicationController @Inject() (
           .transform
         for {
           _      <- applicationService.updateApplication(payload)
-          result <- applicationService.getApplicationById(payload.id, false)
+          result <- applicationService.getApplication(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -84,21 +84,21 @@ class ApplicationController @Inject() (
       }
     }
 
-  def getApplicationById(id: ApplicationId, fromReadSide: Boolean = true) =
+  def getApplication(id: ApplicationId, source: Option[String] = None) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(MAINTAIN_ALL_APPLICATIONS) {
         for {
-          result <- applicationService.getApplicationById(id, fromReadSide)
+          result <- applicationService.getApplication(id, source)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def getApplicationsById(fromReadSide: Boolean = true) =
+  def getApplications(source: Option[String] = None) =
     authenticated.async(parse.json[Set[ApplicationId]]) { implicit request =>
       authorizer.performCheckAny(MAINTAIN_ALL_APPLICATIONS) {
         val ids = request.body
         for {
-          result <- applicationService.getApplicationsById(ids, fromReadSide)
+          result <- applicationService.getApplications(ids, source)
         } yield Ok(Json.toJson(result))
       }
     }

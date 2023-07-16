@@ -19,20 +19,11 @@ package biz.lobachev.annette.cms.gateway.pages
 import biz.lobachev.annette.api_gateway_core.authentication.{AuthenticatedAction, AuthenticatedRequest}
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.CmsService
-import biz.lobachev.annette.cms.api.common.{
-  ActivatePayload,
-  AssignPrincipalPayload,
-  CanAccessToEntityPayload,
-  DeactivatePayload,
-  DeletePayload,
-  UnassignPrincipalPayload,
-  UpdateCategoryIdPayload,
-  UpdateDescriptionPayload,
-  UpdateNamePayload
-}
+import biz.lobachev.annette.cms.api.common.{ActivatePayload, AssignPrincipalPayload, CanAccessToEntityPayload, DeactivatePayload, DeletePayload, UnassignPrincipalPayload, UpdateCategoryIdPayload, UpdateDescriptionPayload, UpdateNamePayload}
 import biz.lobachev.annette.cms.api.pages.space._
 import biz.lobachev.annette.cms.gateway.Permissions
 import biz.lobachev.annette.cms.gateway.pages.space._
+import biz.lobachev.annette.core.model.DataSource
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, Action, ControllerComponents}
@@ -67,7 +58,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.createSpace(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -81,7 +72,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.updateSpaceName(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -95,7 +86,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.updateSpaceDescription(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -109,7 +100,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.updateSpaceCategoryId(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -123,7 +114,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.assignSpaceAuthorPrincipal(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -137,7 +128,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.unassignSpaceAuthorPrincipal(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -151,7 +142,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.assignSpaceTargetPrincipal(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -165,7 +156,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.unassignSpaceTargetPrincipal(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -179,7 +170,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.activateSpace(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -193,7 +184,7 @@ class CmsSpaceController @Inject() (
           .transform
         for {
           _     <- cmsService.deactivateSpace(payload)
-          space <- cmsService.getSpaceById(payload.id, false)
+          space <- cmsService.getSpace(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(space))
       }
     }
@@ -211,22 +202,22 @@ class CmsSpaceController @Inject() (
       }
     }
 
-  def getSpaceById(id: SpaceId, fromReadSide: Boolean) =
+  def getSpace(id: SpaceId, source: Option[String]) =
     authenticated.async { implicit request =>
       authorizer.performCheck(canEditSpace(id)) {
         for {
-          space <- cmsService.getSpaceById(id, fromReadSide)
+          space <- cmsService.getSpace(id, source)
         } yield Ok(Json.toJson(space))
       }
     }
 
-  def getSpacesById(fromReadSide: Boolean) =
+  def getSpaces(source: Option[String]) =
     authenticated.async(parse.json[Set[SpaceId]]) { implicit request =>
       val filteredSpacesFuture = filterSpaces(request.request.body)
       authorizer.performCheck(filteredSpacesFuture.map(_.nonEmpty)) {
         for {
           filteredSpaces <- filteredSpacesFuture
-          spaces         <- cmsService.getSpacesById(filteredSpaces, fromReadSide)
+          spaces         <- cmsService.getSpaces(filteredSpaces, source)
         } yield Ok(Json.toJson(spaces))
       }
     }

@@ -1,0 +1,272 @@
+version: '3'
+
+services:
+
+  postgres:
+    build: ./postgres/
+    ports:
+      - 5432:5432
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  pgadmin:
+    image: dpage/pgadmin4
+    ports:
+      - 15433:80
+    environment:
+      PGADMIN_DEFAULT_PASSWORD: postgres
+      PGADMIN_DEFAULT_EMAIL: postgres@example.com
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  cassandra:
+    image: cassandra:3.11.15
+    ports:
+      - 9042:9042
+    volumes:
+      - cassandra-data:/var/lib/cassandra
+    environment:
+      - CASSANDRA_CLUSTER_NAME=AnnetteCluster
+    healthcheck:
+      test: [ "CMD-SHELL", "[ $$(nodetool statusgossip) = running ]" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  os-node1:
+    image: opensearchproject/opensearch:2.8.0
+    environment:
+      - cluster.name=opensearch-cluster # Name the cluster
+      - node.name=os-node1      # Name the node that will run in this container
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true      # Disable JVM heap memory swapping
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" # Set min and max JVM heap sizes to at least 50% of system RAM
+    ulimits:
+      memlock:
+        soft: -1 # Set memlock to unlimited (no soft or hard limit)
+        hard: -1
+      nofile:
+        soft: 65536 # Maximum number of open files for the opensearch user - set to at least 65536
+        hard: 65536
+    volumes:
+      - os-data1:/usr/share/opensearch/data
+    ports:
+      - 9200:9200 # REST API
+      - 9600:9600 # Performance Analyzer
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail -k --header 'Authorization: Basic YWRtaW46YWRtaW4=' https://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+
+  os-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.8.0
+    ports:
+      - 5601:5601 # Map host port 5601 to container port 5601
+    expose:
+      - "5601" # Expose port 5601 for web access to OpenSearch Dashboards
+    environment:
+      OPENSEARCH_HOSTS: '["https://os-node1:9200"]' # Define the OpenSearch nodes that OpenSearch Dashboards will query
+    depends_on:
+      os-node1:
+        condition: service_healthy
+
+  minio:
+    image: 'minio/minio:latest'
+    ports:
+      - '9002:9000'
+      - '9001:9001'
+    volumes:
+      - minio-data:/data
+    command: 'server /data --console-address ":9001"'
+
+
+  keycloak:
+    build: ./keycloak
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    command:  start-dev --hostname-port=8080 --import-realm
+    ports:
+      - 8080:8080
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  camunda:
+    build: ./camunda/
+    environment:
+      - DB_DRIVER=org.postgresql.Driver
+      - DB_URL=jdbc:postgresql://postgres:5432/camunda
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - WAIT_FOR=postgres:5432
+    links:
+      - postgres
+    ports:
+      - "3090:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  traefik:
+    image: traefik:latest
+    command: --api.insecure=true --providers.docker
+    ports:
+      - 8500:80
+      - 8443:443
+      - 8400:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    container_name: traefik
+
+
+  frontend:
+    image: "annetteplatform/annette-frontend:${FRONTEND_VERSION}"
+    ports:
+      - "8501:8080"
+    labels:
+      - traefik.enable=true
+      - "traefik.http.routers.front.rule=PathPrefix(`/`)"
+      - "traefik.http.services.front.loadbalancer.server.port=8080"
+
+  api-gateway:
+    image: "annetteplatform/api-gateway:${BACKEND_VERSION}"
+    env_file:
+      - env/api-gw.env
+      - env/keycloak.env
+      - env/cms-minio.env
+      - env/play-secret.env
+    ports:
+      - "8502:9000"
+    labels:
+      - traefik.enable=true
+      - "traefik.http.routers.back.rule=PathPrefix(`/api`)"
+      - "traefik.http.services.back.loadbalancer.server.port=9000"
+#      - traefik.http.routers.back.port=9000
+
+  application:
+    image: "annetteplatform/application:${BACKEND_VERSION}"
+    env_file:
+      - env/ms.env
+    ports:
+      - "8510:9000"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      os-node1:
+        condition: service_healthy
+
+  service-catalog:
+    image: "annetteplatform/service-catalog:${BACKEND_VERSION}"
+    env_file:
+      - env/ms.env
+    ports:
+      - "8511:9000"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      os-node1:
+        condition: service_healthy
+
+  authorization:
+    image: "annetteplatform/authorization:${BACKEND_VERSION}"
+    env_file:
+      - env/ms.env
+    ports:
+      - "8512:9000"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      os-node1:
+        condition: service_healthy
+
+  bpm-repository:
+    image: "annetteplatform/bpm-repository:${BACKEND_VERSION}"
+    env_file:
+      - env/bpm-repository.env
+    ports:
+      - "8513:9000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  cms:
+    image: "annetteplatform/cms:${BACKEND_VERSION}"
+    env_file:
+      - env/ms.env
+      - env/cms-minio.env
+    ports:
+      - "8514:9000"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      os-node1:
+        condition: service_healthy
+
+  subscriptions:
+    image: "annetteplatform/subscriptions:${BACKEND_VERSION}"
+    env_file:
+      - env/ms.env
+    ports:
+      - "8515:9000"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      os-node1:
+        condition: service_healthy
+
+  org-structure:
+    image: "annetteplatform/org-structure:${BACKEND_VERSION}"
+    env_file:
+      - env/ms.env
+    ports:
+      - "8516:9000"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      os-node1:
+        condition: service_healthy
+
+  persons:
+    image: "annetteplatform/persons:${BACKEND_VERSION}"
+    env_file:
+      - env/ms.env
+    ports:
+      - "8517:9000"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      os-node1:
+        condition: service_healthy
+
+  principal-groups:
+    image: "annetteplatform/principal-groups:${BACKEND_VERSION}"
+    env_file:
+      - env/ms.env
+    ports:
+      - "8518:9000"
+    depends_on:
+      cassandra:
+        condition: service_healthy
+      os-node1:
+        condition: service_healthy
+
+volumes:
+  os-data1:
+  cassandra-data:
+  minio-data:
+  pg-data:
+

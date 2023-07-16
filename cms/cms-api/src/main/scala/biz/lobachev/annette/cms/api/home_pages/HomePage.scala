@@ -39,11 +39,12 @@ object HomePage {
     s"$applicationId~${principal.code}"
 
   def fromCompositeId(id: String): (String, AnnettePrincipal) = {
-    val splitted      = id.split("~")
-    val applicationId = splitted(0)
-    var principal     = AnnettePrincipal("", "")
-    if (splitted.length >= 2) principal = principal.copy(principalType = splitted(1))
-    if (splitted.length >= 3) principal = principal.copy(principalId = splitted(2))
-    (applicationId, principal)
+    val idx = id.indexOf("~")
+    if (idx != -1) {
+      val applicationId = id.take(idx)
+      val principal     = id.takeRight(id.length - idx - 1)
+      (applicationId, AnnettePrincipal(principal))
+    } else throw InvalidCompositeId(id)
+
   }
 }

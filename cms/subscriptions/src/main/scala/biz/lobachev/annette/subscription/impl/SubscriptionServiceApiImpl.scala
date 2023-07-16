@@ -49,14 +49,14 @@ class SubscriptionServiceApiImpl(
       subscriptionEntityService.deleteSubscription(payload)
     }
 
-  override def getSubscriptionById(fromReadSide: Boolean): ServiceCall[SubscriptionKey, Subscription] =
+  override def getSubscription(source: Option[String]): ServiceCall[SubscriptionKey, Subscription] =
     ServiceCall { key =>
-      subscriptionEntityService.getSubscriptionById(key, fromReadSide)
+      subscriptionEntityService.getSubscription(key, source)
     }
 
-  override def getSubscriptionsById(fromReadSide: Boolean): ServiceCall[Set[SubscriptionKey], Set[Subscription]] =
+  override def getSubscriptions(source: Option[String]): ServiceCall[Set[SubscriptionKey], Set[Subscription]] =
     ServiceCall { keys =>
-      subscriptionEntityService.getSubscriptionsById(keys, fromReadSide)
+      subscriptionEntityService.getSubscriptions(keys, source)
     }
 
   override def getSubscriptionsByPrincipals(
@@ -95,19 +95,19 @@ class SubscriptionServiceApiImpl(
       subscriptionTypeEntityService.deleteSubscriptionType(payload)
     }
 
-  override def getSubscriptionTypeById(
+  override def getSubscriptionType(
     id: SubscriptionTypeId,
-    fromReadSide: Boolean
+    source: Option[String]
   ): ServiceCall[NotUsed, SubscriptionType] =
     ServiceCall { _ =>
-      subscriptionTypeEntityService.getSubscriptionTypeById(id, fromReadSide)
+      subscriptionTypeEntityService.getSubscriptionType(id, source)
     }
 
-  override def getSubscriptionTypesById(
-    fromReadSide: Boolean
+  override def getSubscriptionTypes(
+    source: Option[String]
   ): ServiceCall[Set[SubscriptionTypeId], Seq[SubscriptionType]] =
     ServiceCall { ids =>
-      subscriptionTypeEntityService.getSubscriptionTypesById(ids, fromReadSide)
+      subscriptionTypeEntityService.getSubscriptionTypes(ids, source)
     }
 
   override def findSubscriptionTypes: ServiceCall[SubscriptionTypeFindQuery, FindResult] =

@@ -18,11 +18,8 @@ package biz.lobachev.annette.service_catalog.gateway
 
 import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
-import biz.lobachev.annette.api_gateway_core.category.{
-  CreateCategoryPayloadDto,
-  DeleteCategoryPayloadDto,
-  UpdateCategoryPayloadDto
-}
+import biz.lobachev.annette.api_gateway_core.category.{CreateCategoryPayloadDto, DeleteCategoryPayloadDto, UpdateCategoryPayloadDto}
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.service_catalog.api.ServiceCatalogService
 import biz.lobachev.annette.service_catalog.gateway.Permissions.MAINTAIN_SERVICE_CATALOG
@@ -51,7 +48,7 @@ class CategoryController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.createCategory(payload)
-          result <- serviceCatalogService.getCategoryById(payload.id, false)
+          result <- serviceCatalogService.getCategory(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -65,7 +62,7 @@ class CategoryController @Inject() (
           .transform
         for {
           _      <- serviceCatalogService.updateCategory(payload)
-          result <- serviceCatalogService.getCategoryById(payload.id, false)
+          result <- serviceCatalogService.getCategory(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -83,21 +80,21 @@ class CategoryController @Inject() (
       }
     }
 
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean = true) =
+  def getCategory(id: CategoryId, source: Option[String] = None) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
         for {
-          result <- serviceCatalogService.getCategoryById(id, fromReadSide)
+          result <- serviceCatalogService.getCategory(id, source)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def getCategoriesById(fromReadSide: Boolean = true) =
+  def getCategories(source: Option[String] = None) =
     authenticated.async(parse.json[Set[CategoryId]]) { implicit request =>
       authorizer.performCheckAny(MAINTAIN_SERVICE_CATALOG) {
         val ids = request.body
         for {
-          result <- serviceCatalogService.getCategoriesById(ids, fromReadSide)
+          result <- serviceCatalogService.getCategories(ids, source)
         } yield Ok(Json.toJson(result))
       }
     }

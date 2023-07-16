@@ -6,18 +6,9 @@
     "spaceType": "blog",
     "categoryId": "finance",
     "targets": [
-      {
-        "principalType": "person",
-        "principalId": "P0001"
-      },
-      {
-        "principalType": "descendant-unit",
-        "principalId": "ANSOFT"
-      },
-      {
-        "principalType": "descendant-unit",
-        "principalId": "AR-0001"
-      }
+      "person~P0001",
+      "descendant-unit~ANSOFT",
+      "descendant-unit~AR-0001"
     ]
   },
   {
@@ -27,18 +18,9 @@
     "spaceType": "blog",
     "categoryId": "finance",
     "targets": [
-      {
-        "principalType": "person",
-        "principalId": "P0001"
-      },
-      {
-        "principalType": "descendant-unit",
-        "principalId": "ANSOFT"
-      },
-      {
-        "principalType": "descendant-unit",
-        "principalId": "AR-0001"
-      }
+      "person~P0001",
+      "descendant-unit~ANSOFT",
+      "descendant-unit~AR-0001"
     ]
   },
   {
@@ -48,18 +30,9 @@
     "spaceType": "blog",
     "categoryId": "finance",
     "targets": [
-      {
-        "principalType": "person",
-        "principalId": "P0001"
-      },
-      {
-        "principalType": "descendant-unit",
-        "principalId": "ANSOFT"
-      },
-      {
-        "principalType": "descendant-unit",
-        "principalId": "AR-0001"
-      }
+      "person~P0001",
+      "descendant-unit~ANSOFT",
+      "descendant-unit~AR-0001"
     ]
   },
   {
@@ -69,21 +42,11 @@
     "spaceType": "blog",
     "categoryId": "finance",
     "targets": [
-      {
-        "principalType": "person",
-        "principalId": "P0001"
-      },
-      {
-        "principalType": "descendant-unit",
-        "principalId": "ANSOFT"
-      },
-      {
-        "principalType": "descendant-unit",
-        "principalId": "AR-0001"
-      }
+      "person~P0001",
+      "descendant-unit~ANSOFT",
+      "descendant-unit~AR-0001"
     ]
-  }
-,
+  },
   {
     "id": "lagom",
     "name": "Lagom documentation ",
@@ -91,18 +54,9 @@
     "spaceType": "blog",
     "categoryId": "it",
     "targets": [
-      {
-        "principalType": "person",
-        "principalId": "P0001"
-      },
-      {
-        "principalType": "descendant-unit",
-        "principalId": "ANSOFT"
-      },
-      {
-        "principalType": "descendant-unit",
-        "principalId": "AR-0001"
-      }
+      "person~P0001",
+      "descendant-unit~ANSOFT",
+      "descendant-unit~AR-0001"
     ]
   }
 ]

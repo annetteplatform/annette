@@ -19,7 +19,7 @@ class OrgRoleServiceSpec extends AbstractOrgItemsServiceSpec with OrgRoleTestDat
       val createPayload = generateCreateOrgRolePayload()
       for {
         created <- client.createOrgRole.invoke(createPayload)
-        found   <- client.getOrgRoleById(createPayload.id, false).invoke()
+        found   <- client.getOrgRole(createPayload.id, false).invoke()
       } yield {
         created shouldBe Done
         found shouldBe convertToOrgRole(createPayload, found.updatedAt)
@@ -29,7 +29,7 @@ class OrgRoleServiceSpec extends AbstractOrgItemsServiceSpec with OrgRoleTestDat
     "getOrgRole for non-existing entity" in {
       val createPayload = generateCreateOrgRolePayload()
       for {
-        found <- client.getOrgRoleById(createPayload.id, false).invoke().recover { case th: Throwable => th }
+        found <- client.getOrgRole(createPayload.id, false).invoke().recover { case th: Throwable => th }
       } yield found shouldBe OrgRoleNotFound(createPayload.id)
     }
 
@@ -40,7 +40,7 @@ class OrgRoleServiceSpec extends AbstractOrgItemsServiceSpec with OrgRoleTestDat
         _     <- Source(createPayloads)
                    .mapAsync(1)(entity => client.createOrgRole.invoke(entity))
                    .runWith(Sink.ignore)
-        found <- client.getOrgRolesById(false).invoke(createPayloads.map(_.id).toSet)
+        found <- client.getOrgRoles(false).invoke(createPayloads.map(_.id).toSet)
       } yield found shouldBe found.values.map(f => convertToOrgRole(createPayloadMap(f.id), f.updatedAt))
     }
 
@@ -50,7 +50,7 @@ class OrgRoleServiceSpec extends AbstractOrgItemsServiceSpec with OrgRoleTestDat
         _ <- client.createOrgRole.invoke(createPayload)
       } yield awaitSuccess() {
         for {
-          found <- client.getOrgRoleById(createPayload.id, true).invoke()
+          found <- client.getOrgRole(createPayload.id, true).invoke()
         } yield found shouldBe convertToOrgRole(createPayload, found.updatedAt)
       }).flatMap(identity)
     }
@@ -64,7 +64,7 @@ class OrgRoleServiceSpec extends AbstractOrgItemsServiceSpec with OrgRoleTestDat
                .runWith(Sink.ignore)
       } yield awaitSuccess() {
         for {
-          found <- client.getOrgRolesById(true).invoke(createPayloads.map(_.id).toSet)
+          found <- client.getOrgRoles(true).invoke(createPayloads.map(_.id).toSet)
         } yield {
 
           val r = found shouldBe found.values.map(f => convertToOrgRole(createPayloadMap(f.id), f.updatedAt))

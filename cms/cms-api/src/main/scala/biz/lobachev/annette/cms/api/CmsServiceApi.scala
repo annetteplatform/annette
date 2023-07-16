@@ -79,8 +79,8 @@ trait CmsServiceApi extends Service {
   def createBlogCategory: ServiceCall[CreateCategoryPayload, Done]
   def updateBlogCategory: ServiceCall[UpdateCategoryPayload, Done]
   def deleteBlogCategory: ServiceCall[DeleteCategoryPayload, Done]
-  def getBlogCategoryById(id: CategoryId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Category]
-  def getBlogCategoriesById(fromReadSide: Boolean = true): ServiceCall[Set[CategoryId], Seq[Category]]
+  def getBlogCategory(id: CategoryId, source: Option[String] = None): ServiceCall[NotUsed, Category]
+  def getBlogCategories(source: Option[String] = None): ServiceCall[Set[CategoryId], Seq[Category]]
   def findBlogCategories: ServiceCall[CategoryFindQuery, FindResult]
 
   def createBlog: ServiceCall[CreateBlogPayload, Done]
@@ -94,8 +94,8 @@ trait CmsServiceApi extends Service {
   def activateBlog: ServiceCall[ActivatePayload, Done]
   def deactivateBlog: ServiceCall[DeactivatePayload, Done]
   def deleteBlog: ServiceCall[DeletePayload, Done]
-  def getBlogById(id: BlogId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Blog]
-  def getBlogsById(fromReadSide: Boolean = true): ServiceCall[Set[BlogId], Seq[Blog]]
+  def getBlog(id: BlogId, source: Option[String] = None): ServiceCall[NotUsed, Blog]
+  def getBlogs(source: Option[String] = None): ServiceCall[Set[BlogId], Seq[Blog]]
   def getBlogViews: ServiceCall[GetBlogViewsPayload, Seq[BlogView]]
   def canEditBlogPosts: ServiceCall[CanAccessToEntityPayload, Boolean]
   def canAccessToBlog: ServiceCall[CanAccessToEntityPayload, Boolean]
@@ -115,15 +115,15 @@ trait CmsServiceApi extends Service {
   def assignPostTargetPrincipal: ServiceCall[AssignPrincipalPayload, Updated]
   def unassignPostTargetPrincipal: ServiceCall[UnassignPrincipalPayload, Updated]
   def deletePost: ServiceCall[DeletePayload, Updated]
-  def getPostById(
+  def getPost(
     id: PostId,
-    fromReadSide: Boolean = true,
+    source: Option[String] = None,
     withIntro: Option[Boolean] = None,
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
   ): ServiceCall[NotUsed, Post]
-  def getPostsById(
-    fromReadSide: Boolean = true,
+  def getPosts(
+    source: Option[String] = None,
     withIntro: Option[Boolean] = None,
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
@@ -138,16 +138,16 @@ trait CmsServiceApi extends Service {
   def viewPost: ServiceCall[article.ViewPayload, Done]
   def likePost: ServiceCall[LikePayload, Done]
   def unlikePost: ServiceCall[UnlikePayload, Done]
-  def getPostMetricById: ServiceCall[GetMetricPayload, Metric]
-  def getPostMetricsById: ServiceCall[GetMetricsPayload, Seq[Metric]]
+  def getPostMetric: ServiceCall[GetMetricPayload, Metric]
+  def getPostMetrics: ServiceCall[GetMetricsPayload, Seq[Metric]]
 
   // ************************** CMS Pages **************************
 
   def createSpaceCategory: ServiceCall[CreateCategoryPayload, Done]
   def updateSpaceCategory: ServiceCall[UpdateCategoryPayload, Done]
   def deleteSpaceCategory: ServiceCall[DeleteCategoryPayload, Done]
-  def getSpaceCategoryById(id: CategoryId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Category]
-  def getSpaceCategoriesById(fromReadSide: Boolean = true): ServiceCall[Set[CategoryId], Seq[Category]]
+  def getSpaceCategory(id: CategoryId, source: Option[String] = None): ServiceCall[NotUsed, Category]
+  def getSpaceCategories(source: Option[String] = None): ServiceCall[Set[CategoryId], Seq[Category]]
   def findSpaceCategories: ServiceCall[CategoryFindQuery, FindResult]
 
   def createSpace: ServiceCall[CreateSpacePayload, Done]
@@ -161,8 +161,8 @@ trait CmsServiceApi extends Service {
   def activateSpace: ServiceCall[ActivatePayload, Done]
   def deactivateSpace: ServiceCall[DeactivatePayload, Done]
   def deleteSpace: ServiceCall[DeletePayload, Done]
-  def getSpaceById(id: SpaceId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Space]
-  def getSpacesById(fromReadSide: Boolean = true): ServiceCall[Set[SpaceId], Seq[Space]]
+  def getSpace(id: SpaceId, source: Option[String] = None): ServiceCall[NotUsed, Space]
+  def getSpaces(source: Option[String] = None): ServiceCall[Set[SpaceId], Seq[Space]]
   def getSpaceViews: ServiceCall[GetSpaceViewsPayload, Seq[SpaceView]]
   def canEditSpacePages: ServiceCall[CanAccessToEntityPayload, Boolean]
   def canAccessToSpace: ServiceCall[CanAccessToEntityPayload, Boolean]
@@ -181,14 +181,14 @@ trait CmsServiceApi extends Service {
   def assignPageTargetPrincipal: ServiceCall[AssignPrincipalPayload, Updated]
   def unassignPageTargetPrincipal: ServiceCall[UnassignPrincipalPayload, Updated]
   def deletePage: ServiceCall[DeletePayload, Updated]
-  def getPageById(
+  def getPage(
     id: PageId,
-    fromReadSide: Boolean = true,
+    source: Option[String] = None,
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
   ): ServiceCall[NotUsed, Page]
-  def getPagesById(
-    fromReadSide: Boolean = true,
+  def getPages(
+    source: Option[String] = None,
     withContent: Option[Boolean] = None,
     withTargets: Option[Boolean] = None
   ): ServiceCall[Set[PageId], Seq[Page]]
@@ -202,19 +202,19 @@ trait CmsServiceApi extends Service {
   def viewPage: ServiceCall[article.ViewPayload, Done]
   def likePage: ServiceCall[LikePayload, Done]
   def unlikePage: ServiceCall[UnlikePayload, Done]
-  def getPageMetricById: ServiceCall[GetMetricPayload, Metric]
-  def getPageMetricsById: ServiceCall[GetMetricsPayload, Seq[Metric]]
+  def getPageMetric: ServiceCall[GetMetricPayload, Metric]
+  def getPageMetrics: ServiceCall[GetMetricsPayload, Seq[Metric]]
 
   // ************************** CMS Home Page  **************************
 
   def assignHomePage: ServiceCall[AssignHomePagePayload, Done]
   def unassignHomePage: ServiceCall[UnassignHomePagePayload, Done]
-  def getHomePageById(
+  def getHomePage(
     id: HomePageId,
-    fromReadSide: Boolean = true
+    source: Option[String] = None
   ): ServiceCall[NotUsed, HomePage]
-  def getHomePagesById(
-    fromReadSide: Boolean = true
+  def getHomePages(
+    source: Option[String] = None
   ): ServiceCall[Set[HomePageId], Seq[HomePage]]
   def getHomePageByPrincipalCodes(applicationId: String): ServiceCall[Seq[String], PageId]
   def findHomePages: ServiceCall[HomePageFindQuery, FindResult]
@@ -232,8 +232,8 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/createBlogCategory", createBlogCategory),
         pathCall("/api/cms/v1/updateBlogCategory", updateBlogCategory),
         pathCall("/api/cms/v1/deleteBlogCategory", deleteBlogCategory),
-        pathCall("/api/cms/v1/getBlogCategoryById/:id/:fromReadSide", getBlogCategoryById _),
-        pathCall("/api/cms/v1/getBlogCategoriesById/:fromReadSide", getBlogCategoriesById _),
+        pathCall("/api/cms/v1/getBlogCategory/:id?source", getBlogCategory _),
+        pathCall("/api/cms/v1/getBlogCategories?source", getBlogCategories _),
         pathCall("/api/cms/v1/findBlogCategories", findBlogCategories),
         pathCall("/api/cms/v1/createBlog", createBlog),
         pathCall("/api/cms/v1/updateBlogName", updateBlogName),
@@ -246,8 +246,8 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/activateBlog", activateBlog),
         pathCall("/api/cms/v1/deactivateBlog", deactivateBlog),
         pathCall("/api/cms/v1/deleteBlog", deleteBlog),
-        pathCall("/api/cms/v1/getBlogById/:id/:fromReadSide", getBlogById _),
-        pathCall("/api/cms/v1/getBlogsById/:fromReadSide", getBlogsById _),
+        pathCall("/api/cms/v1/getBlog/:id?source", getBlog _),
+        pathCall("/api/cms/v1/getBlogs?source", getBlogs _),
         pathCall("/api/cms/v1/getBlogViews", getBlogViews),
         pathCall("/api/cms/v1/canEditBlogPosts", canEditBlogPosts),
         pathCall("/api/cms/v1/canAccessToBlog", canAccessToBlog),
@@ -266,8 +266,8 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/assignPostTargetPrincipal", assignPostTargetPrincipal),
         pathCall("/api/cms/v1/unassignPostTargetPrincipal", unassignPostTargetPrincipal),
         pathCall("/api/cms/v1/deletePost", deletePost),
-        pathCall("/api/cms/v1/getPostById/:id/:fromReadSide?withIntro&withContent&withTargets", getPostById _),
-        pathCall("/api/cms/v1/getPostsById/:fromReadSide?withIntro&withContent&withTargets", getPostsById _),
+        pathCall("/api/cms/v1/getPost/:id?source&withIntro&withContent&withTargets", getPost _),
+        pathCall("/api/cms/v1/getPosts?source&withIntro&withContent&withTargets", getPosts _),
         pathCall("/api/cms/v1/getPostViews", getPostViews),
         pathCall("/api/cms/v1/canEditPost", canEditPost),
         pathCall("/api/cms/v1/canAccessToPost", canAccessToPost),
@@ -275,14 +275,14 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/viewPost", viewPost),
         pathCall("/api/cms/v1/likePost", likePost),
         pathCall("/api/cms/v1/unlikePost", unlikePost),
-        pathCall("/api/cms/v1/getPostMetricById", getPostMetricById),
-        pathCall("/api/cms/v1/getPostMetricsById", getPostMetricsById),
+        pathCall("/api/cms/v1/getPostMetric", getPostMetric),
+        pathCall("/api/cms/v1/getPostMetrics", getPostMetrics),
         // ************************** CMS Pages **************************
         pathCall("/api/cms/v1/createSpaceCategory", createSpaceCategory),
         pathCall("/api/cms/v1/updateSpaceCategory", updateSpaceCategory),
         pathCall("/api/cms/v1/deleteSpaceCategory", deleteSpaceCategory),
-        pathCall("/api/cms/v1/getSpaceCategoryById/:id/:fromReadSide", getSpaceCategoryById _),
-        pathCall("/api/cms/v1/getSpaceCategoriesById/:fromReadSide", getSpaceCategoriesById _),
+        pathCall("/api/cms/v1/getSpaceCategory/:id?source", getSpaceCategory _),
+        pathCall("/api/cms/v1/getSpaceCategories?source", getSpaceCategories _),
         pathCall("/api/cms/v1/findSpaceCategories", findSpaceCategories),
         pathCall("/api/cms/v1/createSpace", createSpace),
         pathCall("/api/cms/v1/updateSpaceName", updateSpaceName),
@@ -295,8 +295,8 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/activateSpace", activateSpace),
         pathCall("/api/cms/v1/deactivateSpace", deactivateSpace),
         pathCall("/api/cms/v1/deleteSpace", deleteSpace),
-        pathCall("/api/cms/v1/getSpaceById/:id/:fromReadSide", getSpaceById _),
-        pathCall("/api/cms/v1/getSpacesById/:fromReadSide", getSpacesById _),
+        pathCall("/api/cms/v1/getSpace/:id?source", getSpace _),
+        pathCall("/api/cms/v1/getSpaces?source", getSpaces _),
         pathCall("/api/cms/v1/getSpaceViews", getSpaceViews),
         pathCall("/api/cms/v1/canEditSpacePages", canEditSpacePages),
         pathCall("/api/cms/v1/canAccessToSpace", canAccessToSpace),
@@ -314,8 +314,8 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/assignPageTargetPrincipal", assignPageTargetPrincipal),
         pathCall("/api/cms/v1/unassignPageTargetPrincipal", unassignPageTargetPrincipal),
         pathCall("/api/cms/v1/deletePage", deletePage),
-        pathCall("/api/cms/v1/getPageById/:id/:fromReadSide?withContent&withTargets", getPageById _),
-        pathCall("/api/cms/v1/getPagesById/:fromReadSide?withContent&withTargets", getPagesById _),
+        pathCall("/api/cms/v1/getPage/:id?source&withContent&withTargets", getPage _),
+        pathCall("/api/cms/v1/getPages?source&withContent&withTargets", getPages _),
         pathCall("/api/cms/v1/getPageViews", getPageViews),
         pathCall("/api/cms/v1/canEditPage", canEditPage),
         pathCall("/api/cms/v1/canAccessToPage", canAccessToPage),
@@ -323,13 +323,13 @@ trait CmsServiceApi extends Service {
         pathCall("/api/cms/v1/viewPage", viewPage),
         pathCall("/api/cms/v1/likePage", likePage),
         pathCall("/api/cms/v1/unlikePage", unlikePage),
-        pathCall("/api/cms/v1/getPageMetricById", getPageMetricById),
-        pathCall("/api/cms/v1/getPageMetricsById", getPageMetricsById),
+        pathCall("/api/cms/v1/getPageMetric", getPageMetric),
+        pathCall("/api/cms/v1/getPageMetrics", getPageMetrics),
         // ************************** CMS Home Page  **************************
         pathCall("/api/cms/v1/assignHomePage", assignHomePage),
         pathCall("/api/cms/v1/unassignHomePage", unassignHomePage),
-        pathCall("/api/cms/v1/getHomePageById/:id/:fromReadSide", getHomePageById _),
-        pathCall("/api/cms/v1/getHomePagesById/:fromReadSide", getHomePagesById _),
+        pathCall("/api/cms/v1/getHomePage/:id?source", getHomePage _),
+        pathCall("/api/cms/v1/getHomePages?source", getHomePages _),
         pathCall("/api/cms/v1/getHomePageByPrincipalCodes/:applicationId", getHomePageByPrincipalCodes _),
         pathCall("/api/cms/v1/findHomePages", findHomePages)
       )

@@ -70,11 +70,11 @@ private[application] class TranslationDbDao(
   def deleteTranslation(event: TranslationEntity.TranslationDeleted) =
     ctx.run(schema.filter(_.id == lift(event.id)).delete)
 
-  def getTranslationById(id: TranslationId): Future[Option[Translation]] =
+  def getTranslation(id: TranslationId): Future[Option[Translation]] =
     ctx
       .run(schema.filter(_.id == lift(id)))
       .map(_.headOption)
 
-  def getTranslationsById(ids: Set[TranslationId]): Future[Seq[Translation]] =
+  def getTranslations(ids: Set[TranslationId]): Future[Seq[Translation]] =
     ctx.run(schema.filter(b => liftQuery(ids).contains(b.id)))
 }

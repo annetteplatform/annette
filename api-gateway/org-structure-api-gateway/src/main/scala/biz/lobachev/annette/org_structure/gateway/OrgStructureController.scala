@@ -19,7 +19,7 @@ package biz.lobachev.annette.org_structure.gateway
 import biz.lobachev.annette.api_gateway_core.authentication.{AuthenticatedAction, AuthenticatedRequest}
 import biz.lobachev.annette.api_gateway_core.authorization.{AuthorizationFailedException, Authorizer}
 import biz.lobachev.annette.core.attribute.{UpdateAttributesPayload, UpdateAttributesPayloadDto}
-import biz.lobachev.annette.core.model.PersonId
+import biz.lobachev.annette.core.model.{DataSource, PersonId}
 import biz.lobachev.annette.org_structure.api.OrgStructureService
 import biz.lobachev.annette.org_structure.api.category._
 import biz.lobachev.annette.org_structure.api.hierarchy._
@@ -42,7 +42,7 @@ class OrgStructureController @Inject() (
   implicit val ec: ExecutionContext
 ) extends AbstractController(cc) {
 
-  def createOrganization(withAttributes: Option[String] = None) =
+  def createOrganization(attributes: Option[String] = None) =
     authenticated.async(parse.json[CreateOrganizationPayloadDto]) { implicit request =>
       val payload = request.body
         .into[CreateOrganizationPayload]
@@ -51,12 +51,12 @@ class OrgStructureController @Inject() (
       authorizer.performCheck(canMaintainOrg(payload.orgId)) {
         for {
           _      <- orgStructureService.createOrganization(payload)
-          result <- orgStructureService.getOrgItemById(payload.orgId, false, withAttributes)
+          result <- orgStructureService.getOrgItem(payload.orgId, DataSource.FROM_ORIGIN, attributes)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def createUnit(withAttributes: Option[String] = None) =
+  def createUnit(attributes: Option[String] = None) =
     authenticated.async(parse.json[CreateUnitPayloadDto]) { implicit request =>
       val payload = request.body
         .into[CreateUnitPayload]
@@ -65,12 +65,13 @@ class OrgStructureController @Inject() (
       authorizer.performCheck(canMaintainOrg(OrgItemKey.extractOrgId(payload.unitId))) {
         for {
           _      <- orgStructureService.createUnit(payload)
-          result <- orgStructureService.getOrgItemsById(Set(payload.unitId, payload.parentId), false, withAttributes)
+          result <-
+            orgStructureService.getOrgItems(Set(payload.unitId, payload.parentId), DataSource.FROM_ORIGIN, attributes)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def createPosition(withAttributes: Option[String] = None) =
+  def createPosition(attributes: Option[String] = None) =
     authenticated.async(parse.json[CreatePositionPayloadDto]) { implicit request =>
       val payload = request.body
         .into[CreatePositionPayload]
@@ -79,13 +80,16 @@ class OrgStructureController @Inject() (
       authorizer.performCheck(canMaintainOrg(OrgItemKey.extractOrgId(payload.positionId))) {
         for {
           _      <- orgStructureService.createPosition(payload)
-          result <-
-            orgStructureService.getOrgItemsById(Set(payload.positionId, payload.parentId), false, withAttributes)
+          result <- orgStructureService.getOrgItems(
+                      Set(payload.positionId, payload.parentId),
+                      DataSource.FROM_ORIGIN,
+                      attributes
+                    )
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def updateName(withAttributes: Option[String] = None) =
+  def updateName(attributes: Option[String] = None) =
     authenticated.async(parse.json[UpdateNamePayloadDto]) { implicit request =>
       val payload = request.body
         .into[UpdateNamePayload]
@@ -94,12 +98,12 @@ class OrgStructureController @Inject() (
       authorizer.performCheck(canMaintainOrg(OrgItemKey.extractOrgId(payload.itemId))) {
         for {
           _      <- orgStructureService.updateName(payload)
-          result <- orgStructureService.getOrgItemById(payload.itemId, false, withAttributes)
+          result <- orgStructureService.getOrgItem(payload.itemId, DataSource.FROM_ORIGIN, attributes)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def assignCategory(withAttributes: Option[String] = None) =
+  def assignCategory(attributes: Option[String] = None) =
     authenticated.async(parse.json[AssignCategoryPayloadDto]) { implicit request =>
       val payload = request.body
         .into[AssignCategoryPayload]
@@ -108,12 +112,12 @@ class OrgStructureController @Inject() (
       authorizer.performCheck(canMaintainOrg(OrgItemKey.extractOrgId(payload.itemId))) {
         for {
           _      <- orgStructureService.assignCategory(payload)
-          result <- orgStructureService.getOrgItemById(payload.itemId, false, withAttributes)
+          result <- orgStructureService.getOrgItem(payload.itemId, DataSource.FROM_ORIGIN, attributes)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def updateSource(withAttributes: Option[String] = None) =
+  def updateSource(attributes: Option[String] = None) =
     authenticated.async(parse.json[UpdateSourcePayloadDto]) { implicit request =>
       val payload = request.body
         .into[UpdateSourcePayload]
@@ -122,12 +126,12 @@ class OrgStructureController @Inject() (
       authorizer.performCheck(canMaintainOrg(OrgItemKey.extractOrgId(payload.itemId))) {
         for {
           _      <- orgStructureService.updateSource(payload)
-          result <- orgStructureService.getOrgItemById(payload.itemId, false, withAttributes)
+          result <- orgStructureService.getOrgItem(payload.itemId, DataSource.FROM_ORIGIN, attributes)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def updateExternalId(withAttributes: Option[String] = None) =
+  def updateExternalId(attributes: Option[String] = None) =
     authenticated.async(parse.json[UpdateExternalIdPayloadDto]) { implicit request =>
       val payload = request.body
         .into[UpdateExternalIdPayload]
@@ -136,7 +140,7 @@ class OrgStructureController @Inject() (
       authorizer.performCheck(canMaintainOrg(OrgItemKey.extractOrgId(payload.itemId))) {
         for {
           _      <- orgStructureService.updateExternalId(payload)
-          result <- orgStructureService.getOrgItemById(payload.itemId, false, withAttributes)
+          result <- orgStructureService.getOrgItem(payload.itemId, DataSource.FROM_ORIGIN, attributes)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -163,15 +167,15 @@ class OrgStructureController @Inject() (
       val attributes = payload.attributes.keys.toSeq
       authorizer.performCheck(canMaintainOrg(OrgItemKey.extractOrgId(payload.id))) {
         for {
-          _             <- orgStructureService.updateOrgItemAttributes(payload)
-          withAttributes = if (attributes.nonEmpty) Some(attributes.mkString(","))
-                           else None
-          entity        <- orgStructureService.getOrgItemAttributes(payload.id, false, withAttributes)
+          _         <- orgStructureService.updateOrgItemAttributes(payload)
+          attrs = if (attributes.nonEmpty) Some(attributes.mkString(","))
+                       else None
+          entity    <- orgStructureService.getOrgItemAttributes(payload.id, DataSource.FROM_ORIGIN, attrs)
         } yield Ok(Json.toJson(entity))
       }
     }
 
-  def assignChief(withAttributes: Option[String] = None) =
+  def assignChief(attributes: Option[String] = None) =
     authenticated.async(parse.json[AssignChiefPayloadDto]) { implicit request =>
       val payload = request.body
         .into[AssignChiefPayload]
@@ -180,12 +184,12 @@ class OrgStructureController @Inject() (
       authorizer.performCheck(canMaintainOrg(OrgItemKey.extractOrgId(payload.unitId))) {
         for {
           _      <- orgStructureService.assignChief(payload)
-          result <- orgStructureService.getOrgItemById(payload.unitId, false, withAttributes)
+          result <- orgStructureService.getOrgItem(payload.unitId, DataSource.FROM_ORIGIN, attributes)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def unassignChief(withAttributes: Option[String] = None) =
+  def unassignChief(attributes: Option[String] = None) =
     authenticated.async(parse.json[UnassignChiefPayloadDto]) { implicit request =>
       val payload = request.body
         .into[UnassignChiefPayload]
@@ -194,12 +198,12 @@ class OrgStructureController @Inject() (
       authorizer.performCheck(canMaintainOrg(OrgItemKey.extractOrgId(payload.unitId))) {
         for {
           _      <- orgStructureService.unassignChief(payload)
-          result <- orgStructureService.getOrgItemById(payload.unitId, false, withAttributes)
+          result <- orgStructureService.getOrgItem(payload.unitId, DataSource.FROM_ORIGIN, attributes)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def changePositionLimit(withAttributes: Option[String] = None) =
+  def changePositionLimit(attributes: Option[String] = None) =
     authenticated.async(parse.json[ChangePositionLimitPayloadDto]) { implicit request =>
       val payload = request.body
         .into[ChangePositionLimitPayload]
@@ -208,12 +212,12 @@ class OrgStructureController @Inject() (
       authorizer.performCheck(canMaintainOrg(OrgItemKey.extractOrgId(payload.positionId))) {
         for {
           _      <- orgStructureService.changePositionLimit(payload)
-          result <- orgStructureService.getOrgItemById(payload.positionId, false, withAttributes)
+          result <- orgStructureService.getOrgItem(payload.positionId, DataSource.FROM_ORIGIN, attributes)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def assignPerson(withAttributes: Option[String] = None) =
+  def assignPerson(attributes: Option[String] = None) =
     authenticated.async(parse.json[AssignPersonPayloadDto]) { implicit request =>
       val payload = request.body
         .into[AssignPersonPayload]
@@ -222,12 +226,12 @@ class OrgStructureController @Inject() (
       authorizer.performCheck(canMaintainOrg(OrgItemKey.extractOrgId(payload.positionId))) {
         for {
           _      <- orgStructureService.assignPerson(payload)
-          result <- orgStructureService.getOrgItemById(payload.positionId, false, withAttributes)
+          result <- orgStructureService.getOrgItem(payload.positionId, DataSource.FROM_ORIGIN, attributes)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def unassignPerson(withAttributes: Option[String] = None) =
+  def unassignPerson(attributes: Option[String] = None) =
     authenticated.async(parse.json[UnassignPersonPayloadDto]) { implicit request =>
       val payload = request.body
         .into[UnassignPersonPayload]
@@ -236,12 +240,12 @@ class OrgStructureController @Inject() (
       authorizer.performCheck(canMaintainOrg(OrgItemKey.extractOrgId(payload.positionId))) {
         for {
           _      <- orgStructureService.unassignPerson(payload)
-          result <- orgStructureService.getOrgItemById(payload.positionId, false, withAttributes)
+          result <- orgStructureService.getOrgItem(payload.positionId, DataSource.FROM_ORIGIN, attributes)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def assignOrgRole(withAttributes: Option[String] = None) =
+  def assignOrgRole(attributes: Option[String] = None) =
     authenticated.async(parse.json[AssignOrgRolePayloadDto]) { implicit request =>
       val payload = request.body
         .into[AssignOrgRolePayload]
@@ -250,12 +254,12 @@ class OrgStructureController @Inject() (
       authorizer.performCheck(canMaintainOrg(OrgItemKey.extractOrgId(payload.positionId))) {
         for {
           _      <- orgStructureService.assignOrgRole(payload)
-          result <- orgStructureService.getOrgItemById(payload.positionId, false, withAttributes)
+          result <- orgStructureService.getOrgItem(payload.positionId, DataSource.FROM_ORIGIN, attributes)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def unassignOrgRole(withAttributes: Option[String] = None) =
+  def unassignOrgRole(attributes: Option[String] = None) =
     authenticated.async(parse.json[UnassignOrgRolePayloadDto]) { implicit request =>
       val payload = request.body
         .into[UnassignOrgRolePayload]
@@ -264,7 +268,7 @@ class OrgStructureController @Inject() (
       authorizer.performCheck(canMaintainOrg(OrgItemKey.extractOrgId(payload.positionId))) {
         for {
           _      <- orgStructureService.unassignOrgRole(payload)
-          result <- orgStructureService.getOrgItemById(payload.positionId, false, withAttributes)
+          result <- orgStructureService.getOrgItem(payload.positionId, DataSource.FROM_ORIGIN, attributes)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -282,11 +286,11 @@ class OrgStructureController @Inject() (
       }
     }
 
-  def getOrganizationById(orgId: CompositeOrgItemId) =
+  def getOrganization(orgId: CompositeOrgItemId) =
     authenticated.async { implicit request =>
       authorizer.performCheck(canViewOrMaintainOrg(orgId)) {
         for {
-          result <- orgStructureService.getOrganizationById(orgId)
+          result <- orgStructureService.getOrganization(orgId)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -300,21 +304,21 @@ class OrgStructureController @Inject() (
       }
     }
 
-  def getOrgItemById(id: CompositeOrgItemId, fromReadSide: Boolean, withAttributes: Option[String] = None) =
+  def getOrgItem(id: CompositeOrgItemId, source: Option[String], attributes: Option[String] = None) =
     authenticated.async { implicit request =>
       authorizer.performCheck(canViewOrMaintainOrg(OrgItemKey.extractOrgId(id))) {
         for {
-          result <- orgStructureService.getOrgItemById(id, fromReadSide, withAttributes)
+          result <- orgStructureService.getOrgItem(id, source, attributes)
         } yield Ok(Json.toJson(result))
       }
     }
 
-  def getOrgItemsById(fromReadSide: Boolean, withAttributes: Option[String] = None) =
+  def getOrgItems(source: Option[String], attributes: Option[String] = None) =
     authenticated.async(parse.json[Set[CompositeOrgItemId]]) { implicit request =>
       val ids = request.body
       authorizer.performCheck(canViewOrMaintainOrg(OrgItemKey.extractOrgId(ids.head))) {
         for {
-          result <- orgStructureService.getOrgItemsById(ids, fromReadSide, withAttributes)
+          result <- orgStructureService.getOrgItems(ids, source, attributes)
         } yield Ok(Json.toJson(result))
       }
     }
@@ -344,21 +348,21 @@ class OrgStructureController @Inject() (
       }
     }
 
-  def getOrgItemAttributes(id: CompositeOrgItemId, fromReadSide: Boolean, attributes: Option[String] = None) =
+  def getOrgItemAttributes(id: CompositeOrgItemId, source: Option[String], attributes: Option[String] = None) =
     authenticated.async { implicit request =>
       authorizer.performCheck(canViewOrMaintainOrg(OrgItemKey.extractOrgId(id))) {
         for {
-          attributes <- orgStructureService.getOrgItemAttributes(id, fromReadSide, attributes)
+          attributes <- orgStructureService.getOrgItemAttributes(id, source, attributes)
         } yield Ok(Json.toJson(attributes))
       }
     }
 
-  def getOrgItemsAttributes(fromReadSide: Boolean, attributes: Option[String] = None) =
+  def getOrgItemsAttributes(source: Option[String], attributes: Option[String] = None) =
     authenticated.async(parse.json[Set[CompositeOrgItemId]]) { implicit request =>
       val ids = request.body
       authorizer.performCheck(canViewOrMaintainOrg(OrgItemKey.extractOrgId(ids.head))) {
         for {
-          attributes <- orgStructureService.getOrgItemsAttributes(ids, fromReadSide, attributes)
+          attributes <- orgStructureService.getOrgItemsAttributes(ids, source, attributes)
         } yield Ok(Json.toJson(attributes))
       }
     }
@@ -402,7 +406,7 @@ class OrgStructureController @Inject() (
           .transform
         for {
           _    <- orgStructureService.createOrgRole(payload)
-          role <- orgStructureService.getOrgRoleById(payload.id, false)
+          role <- orgStructureService.getOrgRole(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -416,7 +420,7 @@ class OrgStructureController @Inject() (
           .transform
         for {
           _    <- orgStructureService.updateOrgRole(payload)
-          role <- orgStructureService.getOrgRoleById(payload.id, false)
+          role <- orgStructureService.getOrgRole(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -434,40 +438,40 @@ class OrgStructureController @Inject() (
       }
     }
 
-  def getOrgRoleById(id: OrgRoleId, fromReadSide: Boolean) =
-    if (fromReadSide)
+  def getOrgRole(id: OrgRoleId, source: Option[String]) =
+    if (DataSource.fromOrigin(source))
       authenticated.async { implicit request =>
-        authorizer.performCheckAny(VIEW_ALL_ORG_ROLES, MAINTAIN_ALL_ORG_ROLES) {
+        authorizer.performCheckAny(MAINTAIN_ALL_ORG_ROLES) {
           for {
-            role <- orgStructureService.getOrgRoleById(id, fromReadSide)
+            role <- orgStructureService.getOrgRole(id, source)
           } yield Ok(Json.toJson(role))
         }
       }
     else
       authenticated.async { implicit request =>
-        authorizer.performCheckAny(MAINTAIN_ALL_ORG_ROLES) {
+        authorizer.performCheckAny(VIEW_ALL_ORG_ROLES, MAINTAIN_ALL_ORG_ROLES) {
           for {
-            role <- orgStructureService.getOrgRoleById(id, fromReadSide)
+            role <- orgStructureService.getOrgRole(id, source)
           } yield Ok(Json.toJson(role))
         }
       }
 
-  def getOrgRolesById(fromReadSide: Boolean) =
-    if (fromReadSide)
+  def getOrgRoles(source: Option[String]) =
+    if (DataSource.fromOrigin(source))
       authenticated.async(parse.json[Set[OrgRoleId]]) { implicit request =>
         val ids = request.body
-        authorizer.performCheckAny(VIEW_ALL_ORG_ROLES, MAINTAIN_ALL_ORG_ROLES) {
+        authorizer.performCheckAny(MAINTAIN_ALL_ORG_ROLES) {
           for {
-            roles <- orgStructureService.getOrgRolesById(ids, fromReadSide)
+            roles <- orgStructureService.getOrgRoles(ids, source)
           } yield Ok(Json.toJson(roles))
         }
       }
     else
       authenticated.async(parse.json[Set[OrgRoleId]]) { implicit request =>
         val ids = request.body
-        authorizer.performCheckAny(MAINTAIN_ALL_ORG_ROLES) {
+        authorizer.performCheckAny(VIEW_ALL_ORG_ROLES, MAINTAIN_ALL_ORG_ROLES) {
           for {
-            roles <- orgStructureService.getOrgRolesById(ids, fromReadSide)
+            roles <- orgStructureService.getOrgRoles(ids, source)
           } yield Ok(Json.toJson(roles))
         }
       }
@@ -493,7 +497,7 @@ class OrgStructureController @Inject() (
           .transform
         for {
           _    <- orgStructureService.createCategory(payload)
-          role <- orgStructureService.getCategoryById(payload.id, false)
+          role <- orgStructureService.getCategory(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -507,7 +511,7 @@ class OrgStructureController @Inject() (
           .transform
         for {
           _    <- orgStructureService.updateCategory(payload)
-          role <- orgStructureService.getCategoryById(payload.id, false)
+          role <- orgStructureService.getCategory(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -525,40 +529,40 @@ class OrgStructureController @Inject() (
       }
     }
 
-  def getCategoryById(id: OrgCategoryId, fromReadSide: Boolean) =
-    if (fromReadSide)
+  def getCategory(id: OrgCategoryId, source: Option[String]) =
+    if (DataSource.fromOrigin(source))
       authenticated.async { implicit request =>
-        authorizer.performCheckAny(VIEW_ALL_ORG_CATEGORIES, MAINTAIN_ALL_ORG_CATEGORIES) {
+        authorizer.performCheckAny(MAINTAIN_ALL_ORG_CATEGORIES) {
           for {
-            role <- orgStructureService.getCategoryById(id, fromReadSide)
+            role <- orgStructureService.getCategory(id, source)
           } yield Ok(Json.toJson(role))
         }
       }
     else
       authenticated.async { implicit request =>
-        authorizer.performCheckAny(MAINTAIN_ALL_ORG_CATEGORIES) {
+        authorizer.performCheckAny(VIEW_ALL_ORG_CATEGORIES, MAINTAIN_ALL_ORG_CATEGORIES) {
           for {
-            role <- orgStructureService.getCategoryById(id, fromReadSide)
+            role <- orgStructureService.getCategory(id, source)
           } yield Ok(Json.toJson(role))
         }
       }
 
-  def getCategoriesById(fromReadSide: Boolean) =
-    if (fromReadSide)
+  def getCategories(source: Option[String]) =
+    if (DataSource.fromOrigin(source))
       authenticated.async(parse.json[Set[OrgCategoryId]]) { implicit request =>
         val ids = request.body
-        authorizer.performCheckAny(VIEW_ALL_ORG_CATEGORIES, MAINTAIN_ALL_ORG_CATEGORIES) {
+        authorizer.performCheckAny(MAINTAIN_ALL_ORG_CATEGORIES) {
           for {
-            roles <- orgStructureService.getCategoriesById(ids, fromReadSide)
+            roles <- orgStructureService.getCategories(ids, source)
           } yield Ok(Json.toJson(roles))
         }
       }
     else
       authenticated.async(parse.json[Set[OrgCategoryId]]) { implicit request =>
         val ids = request.body
-        authorizer.performCheckAny(MAINTAIN_ALL_ORG_CATEGORIES) {
+        authorizer.performCheckAny(VIEW_ALL_ORG_CATEGORIES, MAINTAIN_ALL_ORG_CATEGORIES) {
           for {
-            roles <- orgStructureService.getCategoriesById(ids, fromReadSide)
+            roles <- orgStructureService.getCategories(ids, source)
           } yield Ok(Json.toJson(roles))
         }
       }

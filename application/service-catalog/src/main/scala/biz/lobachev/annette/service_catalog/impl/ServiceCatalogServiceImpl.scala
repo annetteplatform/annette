@@ -63,11 +63,11 @@ class ServiceCatalogServiceImpl(
   override def deleteCategory(payload: DeleteCategoryPayload): Future[Done] =
     categoryEntityService.deleteCategory(payload)
 
-  override def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category] =
-    categoryEntityService.getCategoryById(id, fromReadSide)
+  override def getCategory(id: CategoryId, source: Option[String]): Future[Category] =
+    categoryEntityService.getCategory(id, source)
 
-  override def getCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean): Future[Seq[Category]] =
-    categoryEntityService.getCategoriesById(ids, fromReadSide)
+  override def getCategories(ids: Set[CategoryId], source: Option[String]): Future[Seq[Category]] =
+    categoryEntityService.getCategories(ids, source)
 
   override def findCategories(payload: CategoryFindQuery): Future[FindResult] =
     categoryEntityService.findCategories(payload)
@@ -87,11 +87,11 @@ class ServiceCatalogServiceImpl(
   override def deleteScope(payload: DeleteScopePayload): Future[Done] =
     scopeEntityService.deleteScope(payload)
 
-  override def getScopeById(id: ScopeId, fromReadSide: Boolean): Future[Scope] =
-    scopeEntityService.getScopeById(id, fromReadSide)
+  override def getScope(id: ScopeId, source: Option[String]): Future[Scope] =
+    scopeEntityService.getScope(id, source)
 
-  override def getScopesById(ids: Set[ScopeId], fromReadSide: Boolean): Future[Seq[Scope]] =
-    scopeEntityService.getScopesById(ids, fromReadSide)
+  override def getScopes(ids: Set[ScopeId], source: Option[String]): Future[Seq[Scope]] =
+    scopeEntityService.getScopes(ids, source)
 
   override def findScopes(payload: FindScopeQuery): Future[FindResult] =
     scopeEntityService.findScopes(payload)
@@ -126,11 +126,11 @@ class ServiceCatalogServiceImpl(
   override def deleteServiceItem(payload: DeleteServiceItemPayload): Future[Done] =
     serviceEntityService.deleteServiceItem(payload)
 
-  override def getServiceItemById(id: ServiceItemId, fromReadSide: Boolean): Future[ServiceItem] =
-    serviceEntityService.getServiceItemById(id, fromReadSide)
+  override def getServiceItem(id: ServiceItemId, source: Option[String]): Future[ServiceItem] =
+    serviceEntityService.getServiceItem(id, source)
 
-  override def getServiceItemsById(ids: Set[ServiceItemId], fromReadSide: Boolean): Future[Seq[ServiceItem]] =
-    serviceEntityService.getServiceItemsById(ids, fromReadSide)
+  override def getServiceItems(ids: Set[ServiceItemId], source: Option[String]): Future[Seq[ServiceItem]] =
+    serviceEntityService.getServiceItems(ids, source)
 
   override def findServiceItems(payload: FindServiceItemsQuery): Future[FindResult] =
     serviceEntityService.findServiceItems(payload)

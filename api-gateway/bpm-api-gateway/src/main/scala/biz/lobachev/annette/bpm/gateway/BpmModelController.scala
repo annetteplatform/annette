@@ -122,20 +122,20 @@ class BpmModelController @Inject() (
       }
     }
 
-  def getBpmModelById(id: String, withXml: Option[Boolean] = None) =
+  def getBpmModel(id: String, withXml: Option[Boolean] = None) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_BPM) {
         for {
-          bpmModel <- bpmRepositoryService.getBpmModelById(id, withXml)
+          bpmModel <- bpmRepositoryService.getBpmModel(id, withXml)
         } yield Ok(Json.toJson(bpmModel))
       }
     }
 
-  def getBpmModelsById(withXml: Option[Boolean] = None) =
+  def getBpmModels(withXml: Option[Boolean] = None) =
     authenticated.async(parse.json[Set[BpmModelId]]) { implicit request =>
       authorizer.performCheckAny(Permissions.MAINTAIN_BPM) {
         for {
-          bpmModels <- bpmRepositoryService.getBpmModelsById(request.body.toSeq, withXml)
+          bpmModels <- bpmRepositoryService.getBpmModels(request.body.toSeq, withXml)
         } yield Ok(Json.toJson(bpmModels))
       }
     }

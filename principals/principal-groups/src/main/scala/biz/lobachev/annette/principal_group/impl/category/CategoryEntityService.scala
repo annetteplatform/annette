@@ -21,6 +21,7 @@ import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef, EntityT
 import akka.stream.Materializer
 import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 import com.typesafe.config.Config
@@ -88,28 +89,27 @@ class CategoryEntityService(
       }
       .map(res => convertSuccess(payload.id, res))
 
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean): Future[Category] =
-    if (fromReadSide)
-      for {
-        maybeCategory <- dbDao.getCategoryById(id)
-      } yield maybeCategory match {
-        case Some(category) => category
-        case None           => throw CategoryNotFound(id)
-      }
-    else
+  def getCategory(id: CategoryId, source: Option[String]): Future[Category] =
+    if (DataSource.fromOrigin(source))
       refFor(id)
         .ask[CategoryEntity.Confirmation](CategoryEntity.GetCategory(id, _))
         .map {
           case CategoryEntity.SuccessCategory(entity) => entity
           case _                                      => throw CategoryNotFound(id)
         }
-
-  def getCategoriesById(
-    ids: Set[CategoryId],
-    fromReadSide: Boolean
-  ): Future[Seq[Category]] =
-    if (fromReadSide) dbDao.getCategoriesById(ids)
     else
+      for {
+        maybeCategory <- dbDao.getCategory(id)
+      } yield maybeCategory match {
+        case Some(category) => category
+        case None           => throw CategoryNotFound(id)
+      }
+
+  def getCategories(
+    ids: Set[CategoryId],
+    source: Option[String]
+  ): Future[Seq[Category]] =
+    if (DataSource.fromOrigin(source))
       Source(ids)
         .mapAsync(1) { id =>
           refFor(id)
@@ -121,6 +121,8 @@ class CategoryEntityService(
         }
         .runWith(Sink.seq)
         .map(seq => seq.flatten)
+    else
+      dbDao.getCategories(ids)
 
   def findCategories(query: CategoryFindQuery): Future[FindResult] =
     indexDao.findCategories(query)

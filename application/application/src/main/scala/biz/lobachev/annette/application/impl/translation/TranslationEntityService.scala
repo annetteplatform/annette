@@ -23,6 +23,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.application.impl.translation.dao.{TranslationDbDao, TranslationIndexDao}
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.indexing.FindResult
 import com.typesafe.config.Config
 import io.scalaland.chimney.dsl._
@@ -99,31 +100,33 @@ class TranslationEntityService(
       }
       .map(convertSuccess)
 
-  def getTranslationById(id: TranslationId, fromReadSide: Boolean = true): Future[Translation] =
-    if (fromReadSide)
-      dbDao
-        .getTranslationById(id)
-        .map(_.getOrElse(throw TranslationNotFound()))
-    else
+  def getTranslation(id: TranslationId, source: Option[String]): Future[Translation] =
+    if (DataSource.fromOrigin(source)) {
       refFor(id)
         .ask[TranslationEntity.Confirmation](TranslationEntity.GetTranslation(id, _))
         .map(convertSuccessTranslation)
+    } else {
+      dbDao
+        .getTranslation(id)
+        .map(_.getOrElse(throw TranslationNotFound()))
+    }
 
-  def getTranslationsById(ids: Set[TranslationId], fromReadSide: Boolean = true): Future[Seq[Translation]] =
-    if (fromReadSide)
-      dbDao.getTranslationsById(ids)
-    else
+  def getTranslations(ids: Set[TranslationId], source: Option[String] ): Future[Seq[Translation]] =
+    if (DataSource.fromOrigin(source)) {
       Source(ids)
         .mapAsync(1) { id =>
           refFor(id)
             .ask[TranslationEntity.Confirmation](TranslationEntity.GetTranslation(id, _))
             .map {
               case TranslationEntity.SuccessTranslation(translation) => Some(translation)
-              case _                                                 => None
+              case _ => None
             }
         }
         .runWith(Sink.seq)
         .map(_.flatten)
+    } else {
+      dbDao.getTranslations(ids)
+    }
 
   def findTranslations(query: FindTranslationQuery): Future[FindResult] =
     indexDao.findTranslations(query)

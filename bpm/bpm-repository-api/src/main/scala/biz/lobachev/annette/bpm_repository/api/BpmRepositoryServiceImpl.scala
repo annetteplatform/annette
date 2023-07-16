@@ -75,11 +75,11 @@ class BpmRepositoryServiceImpl(api: BpmRepositoryServiceApi) extends BpmReposito
   override def deleteBpmModel(payload: DeleteBpmModelPayload): Future[Done] =
     api.deleteBpmModel.invoke(payload)
 
-  override def getBpmModelById(id: String, withXml: Option[Boolean]): Future[BpmModel] =
-    api.getBpmModelById(id, withXml).invoke()
+  override def getBpmModel(id: String, withXml: Option[Boolean]): Future[BpmModel] =
+    api.getBpmModel(id, withXml).invoke()
 
-  override def getBpmModelsById(ids: Seq[BpmModelId], withXml: Option[Boolean]): Future[Seq[BpmModel]] =
-    api.getBpmModelsById(withXml).invoke(ids)
+  override def getBpmModels(ids: Seq[BpmModelId], withXml: Option[Boolean]): Future[Seq[BpmModel]] =
+    api.getBpmModels(withXml).invoke(ids)
 
   override def findBpmModels(query: BpmModelFindQuery): Future[FindResult] =
     api.findBpmModels.invoke(query)
@@ -105,11 +105,11 @@ class BpmRepositoryServiceImpl(api: BpmRepositoryServiceApi) extends BpmReposito
   override def deleteDataSchema(payload: DeleteDataSchemaPayload): Future[Done] =
     api.deleteDataSchema.invoke(payload)
 
-  override def getDataSchemaById(id: String, withVariables: Option[Boolean]): Future[DataSchema] =
-    api.getDataSchemaById(id, withVariables).invoke()
+  override def getDataSchema(id: String, withVariables: Option[Boolean]): Future[DataSchema] =
+    api.getDataSchema(id, withVariables).invoke()
 
-  override def getDataSchemasById(ids: Seq[DataSchemaId], withVariables: Option[Boolean]): Future[Seq[DataSchema]] =
-    api.getDataSchemasById(withVariables).invoke(ids)
+  override def getDataSchemas(ids: Seq[DataSchemaId], withVariables: Option[Boolean]): Future[Seq[DataSchema]] =
+    api.getDataSchemas(withVariables).invoke(ids)
 
   override def findDataSchemas(query: DataSchemaFindQuery): Future[FindResult] =
     api.findDataSchemas.invoke(query)
@@ -150,14 +150,14 @@ class BpmRepositoryServiceImpl(api: BpmRepositoryServiceApi) extends BpmReposito
   override def deleteBusinessProcess(payload: DeleteBusinessProcessPayload): Future[Done] =
     api.deleteBusinessProcess.invoke(payload)
 
-  override def getBusinessProcessById(id: String, withVariables: Option[Boolean]): Future[BusinessProcess] =
-    api.getBusinessProcessById(id, withVariables).invoke()
+  override def getBusinessProcess(id: String, withVariables: Option[Boolean]): Future[BusinessProcess] =
+    api.getBusinessProcess(id, withVariables).invoke()
 
-  override def getBusinessProcessesById(
+  override def getBusinessProcesses(
     ids: Seq[BusinessProcessId],
     withVariables: Option[Boolean]
   ): Future[Seq[BusinessProcess]] =
-    api.getBusinessProcessesById(withVariables).invoke(ids)
+    api.getBusinessProcesses(withVariables).invoke(ids)
 
   override def findBusinessProcesses(query: BusinessProcessFindQuery): Future[FindResult] =
     api.findBusinessProcesses.invoke(query)

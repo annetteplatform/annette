@@ -83,19 +83,19 @@ class PrincipalGroupServiceApiImpl(
       groupEntityService.unassignPrincipal(payload)
     }
 
-  override def getPrincipalGroupById(
+  override def getPrincipalGroup(
     id: PrincipalGroupId,
-    fromReadSide: Boolean
+    source: Option[String]
   ): ServiceCall[NotUsed, PrincipalGroup] =
     ServiceCall { _ =>
-      groupEntityService.getPrincipalGroupById(id, fromReadSide)
+      groupEntityService.getPrincipalGroup(id, source)
     }
 
-  override def getPrincipalGroupsById(
-    fromReadSide: Boolean
+  override def getPrincipalGroups(
+    source: Option[String]
   ): ServiceCall[Set[PrincipalGroupId], Seq[PrincipalGroup]] =
     ServiceCall { ids =>
-      groupEntityService.getPrincipalGroupsById(ids, fromReadSide)
+      groupEntityService.getPrincipalGroups(ids, source)
     }
 
   override def findPrincipalGroups: ServiceCall[PrincipalGroupFindQuery, FindResult] =
@@ -130,16 +130,16 @@ class PrincipalGroupServiceApiImpl(
       categoryEntityService.deleteCategory(payload)
     }
 
-  override def getCategoryById(id: CategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, Category] =
+  override def getCategory(id: CategoryId, source: Option[String]): ServiceCall[NotUsed, Category] =
     ServiceCall { _ =>
-      categoryEntityService.getCategoryById(id, fromReadSide)
+      categoryEntityService.getCategory(id, source)
     }
 
-  override def getCategoriesById(
-    fromReadSide: Boolean
+  override def getCategories(
+    source: Option[String]
   ): ServiceCall[Set[CategoryId], Seq[Category]] =
     ServiceCall { ids =>
-      categoryEntityService.getCategoriesById(ids, fromReadSide)
+      categoryEntityService.getCategories(ids, source)
     }
 
   override def findCategories: ServiceCall[CategoryFindQuery, FindResult] =

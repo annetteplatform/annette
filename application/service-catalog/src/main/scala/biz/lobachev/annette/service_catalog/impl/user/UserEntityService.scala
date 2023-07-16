@@ -16,6 +16,7 @@
 
 package biz.lobachev.annette.service_catalog.impl.user
 
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.service_catalog.api.scope.FindScopeQuery
 import biz.lobachev.annette.service_catalog.api.scope_principal.FindScopePrincipalQuery
 import biz.lobachev.annette.service_catalog.api.item.{FindServiceItemsQuery, Group, Service, ServiceItem, ServiceItemId}
@@ -65,7 +66,7 @@ class UserEntityService(
 
   def getServiceItems(ids: Set[ServiceItemId], processed: Set[ServiceItemId]): Future[Seq[ServiceItem]] =
     for {
-      items         <- serviceEntityService.getServiceItemsById(ids, true).map(_.filter(_.active))
+      items         <- serviceEntityService.getServiceItems(ids, DataSource.FROM_READ_SIDE).map(_.filter(_.active))
       childrenIds    =
         items.filter(_.isInstanceOf[Group]).flatMap(_.asInstanceOf[Group].children).toSet -- ids -- processed
       childrenItems <- if (childrenIds.nonEmpty)
@@ -101,7 +102,7 @@ class UserEntityService(
 
   def getScopeServices(query: ScopeServicesQuery): Future[ScopeServicesResult] =
     for {
-      scope             <- scopeEntityService.getScopeById(query.scopeId, true)
+      scope             <- scopeEntityService.getScope(query.scopeId, DataSource.FROM_READ_SIDE)
       items             <- getServiceItems(scope.children.toSet, Set.empty)
 //      _                  = println(items)
       serviceIds         = items.flatMap {
@@ -177,7 +178,7 @@ class UserEntityService(
                             )
                           )
       serviceMap       <- serviceEntityService
-                            .getServiceItemsById(foundServices.hits.map(_.id).toSet, true)
+                            .getServiceItems(foundServices.hits.map(_.id).toSet, DataSource.FROM_READ_SIDE)
                             .map(_.map(s => s.id -> s).toMap)
     } yield UserServicesResult(
       total = foundServices.total,

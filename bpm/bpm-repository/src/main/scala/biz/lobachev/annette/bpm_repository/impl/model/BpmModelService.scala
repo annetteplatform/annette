@@ -136,20 +136,20 @@ class BpmModelService(db: PostgresDatabase, actions: BpmModelActions)(implicit
 
   }
 
-  def getBpmModelById(id: String, withXml: Boolean): Future[BpmModel] = {
+  def getBpmModel(id: String, withXml: Boolean): Future[BpmModel] = {
     val bpmModelId = BpmModelId(id)
     val action     =
-      if (withXml) actions.getBpmModelByIdWithXmlAction(bpmModelId)
-      else actions.getBpmModelByIdWithoutXmlAction(bpmModelId)
+      if (withXml) actions.getBpmModelWithXmlAction(bpmModelId)
+      else actions.getBpmModelWithoutXmlAction(bpmModelId)
     for {
       res <- db.run(action)
     } yield res.getOrElse(throw BpmModelNotFound(id))
   }
 
-  def getBpmModelsById(ids: Seq[BpmModelId], withXml: Boolean): Future[Seq[BpmModel]] = {
+  def getBpmModels(ids: Seq[BpmModelId], withXml: Boolean): Future[Seq[BpmModel]] = {
     val action =
-      if (withXml) actions.getBpmModelsByIdWithXmlAction(ids)
-      else actions.getBpmModelsByIdWithoutXmlAction(ids)
+      if (withXml) actions.getBpmModelsWithXmlAction(ids)
+      else actions.getBpmModelsWithoutXmlAction(ids)
     db.run(action)
   }
 

@@ -54,21 +54,21 @@ class PersonServiceApiImpl(
       personEntityService.deletePerson(payload)
     }
 
-  override def getPersonById(
+  override def getPerson(
     id: PersonId,
-    fromReadSide: Boolean = true,
-    withAttributes: Option[String] = None
+    source: Option[String] = None,
+    attributes: Option[String] = None
   ): ServiceCall[NotUsed, Person] =
     ServiceCall { _ =>
-      personEntityService.getPersonById(id, fromReadSide, withAttributes)
+      personEntityService.getPerson(id, source, attributes)
     }
 
-  override def getPersonsById(
-    fromReadSide: Boolean,
-    withAttributes: Option[String] = None
+  override def getPersons(
+                           source: Option[String] = None,
+                           attributes: Option[String] = None
   ): ServiceCall[Set[PersonId], Seq[Person]] =
     ServiceCall { ids =>
-      personEntityService.getPersonsById(ids, fromReadSide, withAttributes)
+      personEntityService.getPersons(ids, source, attributes)
     }
 
   override def findPersons: ServiceCall[PersonFindQuery, FindResult]                   =
@@ -87,19 +87,19 @@ class PersonServiceApiImpl(
 
   override def getPersonAttributes(
     id: PersonId,
-    fromReadSide: Boolean,
+    source: Option[String] = None,
     attributes: Option[String]
   ): ServiceCall[NotUsed, AttributeValues] =
     ServiceCall { _ =>
-      personEntityService.getPersonAttributes(id, fromReadSide, attributes)
+      personEntityService.getPersonAttributes(id, source, attributes)
     }
 
   override def getPersonsAttributes(
-    fromReadSide: Boolean,
+    source: Option[String] = None,
     attributes: Option[String]
   ): ServiceCall[Set[PersonId], Map[String, AttributeValues]] =
     ServiceCall { ids =>
-      personEntityService.getPersonsAttributes(ids, fromReadSide, attributes)
+      personEntityService.getPersonsAttributes(ids, source, attributes)
     }
 
   // ****************************** Category methods ******************************
@@ -119,16 +119,16 @@ class PersonServiceApiImpl(
       categoryEntityService.deleteCategory(payload)
     }
 
-  override def getCategoryById(id: CategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, Category] =
+  override def getCategory(id: CategoryId, source: Option[String] = None): ServiceCall[NotUsed, Category] =
     ServiceCall { _ =>
-      categoryEntityService.getCategoryById(id, fromReadSide)
+      categoryEntityService.getCategory(id, source)
     }
 
-  override def getCategoriesById(
-    fromReadSide: Boolean
+  override def getCategories(
+    source: Option[String] = None
   ): ServiceCall[Set[CategoryId], Seq[Category]] =
     ServiceCall { ids =>
-      categoryEntityService.getCategoriesById(ids, fromReadSide)
+      categoryEntityService.getCategories(ids, source)
     }
 
   override def findCategories: ServiceCall[CategoryFindQuery, FindResult] =

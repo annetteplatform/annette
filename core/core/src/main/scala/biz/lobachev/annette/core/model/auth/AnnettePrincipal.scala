@@ -16,35 +16,31 @@
 
 package biz.lobachev.annette.core.model.auth
 
-import play.api.libs.json.Json
+import play.api.libs.json._
 
-import java.security.Principal
-
-case class AnnettePrincipal(principalType: String, principalId: String) extends Principal {
-  override def getName: String = code
-  def code                     = s"$principalType~$principalId"
+case class AnnettePrincipal(code: String) extends AnyVal {
+  def principalType: String = split._1
+  def principalId: String   = split._2
+  def split: (String, String) = {
+    val arr = code.split("~")
+    if (arr.length == 2) arr(0) -> arr(1)
+    else code   -> ""
+  }
 }
 
 object AnnettePrincipal {
-  implicit val format = Json.format[AnnettePrincipal]
+  implicit val format = Json.valueFormat[AnnettePrincipal]
 
-  def fromCode(code: String): AnnettePrincipal = {
-    val arr = code.split("~")
-    if (arr.length == 2)
-      AnnettePrincipal(arr(0), arr(1))
-    else
-      AnnettePrincipal(code, "")
-  }
+  def apply(principalType: String, principalId: String): AnnettePrincipal =
+    AnnettePrincipal(s"$principalType~$principalId")
 }
 
 trait SimplePrincipal {
   val PRINCIPAL_TYPE: String
   def apply(principalId: String): AnnettePrincipal         = AnnettePrincipal(PRINCIPAL_TYPE, principalId)
   def unapply(principal: AnnettePrincipal): Option[String] =
-    principal match {
-      case AnnettePrincipal(PRINCIPAL_TYPE, principalId) => Some(principalId)
-      case _                                             => None
-    }
+    if (principal.principalType == PRINCIPAL_TYPE) Some(principal.principalId)
+    else None
 }
 
 object PersonPrincipal extends SimplePrincipal {
@@ -84,10 +80,8 @@ object AuthenticatedPrincipal {
   val PRINCIPAL_ID: String                               = "user"
   def apply(): AnnettePrincipal                          = AnnettePrincipal(PRINCIPAL_TYPE, PRINCIPAL_ID)
   def unapply(principal: AnnettePrincipal): Option[Unit] =
-    principal match {
-      case AnnettePrincipal(PRINCIPAL_TYPE, PRINCIPAL_ID) => Some(())
-      case _                                              => None
-    }
+    if (principal.principalType == PRINCIPAL_TYPE && principal.principalId == PRINCIPAL_ID) Some(())
+    else None
 }
 
 object AnonymousPrincipal {
@@ -95,10 +89,8 @@ object AnonymousPrincipal {
   val PRINCIPAL_ID: String                               = "ANONYMOUS"
   def apply(): AnnettePrincipal                          = AnnettePrincipal(PRINCIPAL_TYPE, PRINCIPAL_ID)
   def unapply(principal: AnnettePrincipal): Option[Unit] =
-    principal match {
-      case AnnettePrincipal(PRINCIPAL_TYPE, PRINCIPAL_ID) => Some(())
-      case _                                              => None
-    }
+    if (principal.principalType == PRINCIPAL_TYPE && principal.principalId == PRINCIPAL_ID) Some(())
+    else None
 }
 
 object SystemPrincipal {
@@ -106,8 +98,6 @@ object SystemPrincipal {
   val PRINCIPAL_ID: String                               = "SYSTEM"
   def apply(): AnnettePrincipal                          = AnnettePrincipal(PRINCIPAL_TYPE, PRINCIPAL_ID)
   def unapply(principal: AnnettePrincipal): Option[Unit] =
-    principal match {
-      case AnnettePrincipal(PRINCIPAL_TYPE, PRINCIPAL_ID) => Some(())
-      case _                                              => None
-    }
+    if (principal.principalType == PRINCIPAL_TYPE && principal.principalId == PRINCIPAL_ID) Some(())
+    else None
 }

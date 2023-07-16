@@ -79,8 +79,8 @@ trait CmsService {
   def createBlogCategory(payload: CreateCategoryPayload): Future[Done]
   def updateBlogCategory(payload: UpdateCategoryPayload): Future[Done]
   def deleteBlogCategory(payload: DeleteCategoryPayload): Future[Done]
-  def getBlogCategoryById(id: CategoryId, fromReadSide: Boolean = true): Future[Category]
-  def getBlogCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean = true): Future[Seq[Category]]
+  def getBlogCategory(id: CategoryId, source: Option[String] = None): Future[Category]
+  def getBlogCategories(ids: Set[CategoryId], source: Option[String] = None): Future[Seq[Category]]
   def findBlogCategories(payload: CategoryFindQuery): Future[FindResult]
 
   def createBlog(payload: CreateBlogPayload): Future[Done]
@@ -94,8 +94,8 @@ trait CmsService {
   def activateBlog(payload: ActivatePayload): Future[Done]
   def deactivateBlog(payload: DeactivatePayload): Future[Done]
   def deleteBlog(payload: DeletePayload): Future[Done]
-  def getBlogById(id: BlogId, fromReadSide: Boolean = true): Future[Blog]
-  def getBlogsById(ids: Set[BlogId], fromReadSide: Boolean = true): Future[Seq[Blog]]
+  def getBlog(id: BlogId, source: Option[String] = None): Future[Blog]
+  def getBlogs(ids: Set[BlogId], source: Option[String] = None): Future[Seq[Blog]]
   def getBlogViews(payload: GetBlogViewsPayload): Future[Seq[BlogView]]
   def canEditBlogPosts(payload: CanAccessToEntityPayload): Future[Boolean]
   def canAccessToBlog(payload: CanAccessToEntityPayload): Future[Boolean]
@@ -115,16 +115,16 @@ trait CmsService {
   def assignPostTargetPrincipal(payload: AssignPrincipalPayload): Future[Updated]
   def unassignPostTargetPrincipal(payload: UnassignPrincipalPayload): Future[Updated]
   def deletePost(payload: DeletePayload): Future[Updated]
-  def getPostById(
+  def getPost(
     id: PostId,
-    fromReadSide: Boolean = true,
+    source: Option[String] = None,
     withIntro: Option[Boolean],
     withContent: Option[Boolean],
     withTargets: Option[Boolean]
   ): Future[Post]
-  def getPostsById(
+  def getPosts(
     ids: Set[PostId],
-    fromReadSide: Boolean = true,
+    source: Option[String] = None,
     withIntro: Option[Boolean],
     withContent: Option[Boolean],
     withTargets: Option[Boolean]
@@ -137,16 +137,16 @@ trait CmsService {
   def viewPost(payload: article.ViewPayload): Future[Done]
   def likePost(payload: LikePayload): Future[Done]
   def unlikePost(payload: UnlikePayload): Future[Done]
-  def getPostMetricById(payload: GetMetricPayload): Future[Metric]
-  def getPostMetricsById(payload: GetMetricsPayload): Future[Seq[Metric]]
+  def getPostMetric(payload: GetMetricPayload): Future[Metric]
+  def getPostMetrics(payload: GetMetricsPayload): Future[Seq[Metric]]
 
   // ************************** CMS Pages **************************
 
   def createSpaceCategory(payload: CreateCategoryPayload): Future[Done]
   def updateSpaceCategory(payload: UpdateCategoryPayload): Future[Done]
   def deleteSpaceCategory(payload: DeleteCategoryPayload): Future[Done]
-  def getSpaceCategoryById(id: CategoryId, fromReadSide: Boolean = true): Future[Category]
-  def getSpaceCategoriesById(ids: Set[CategoryId], fromReadSide: Boolean = true): Future[Seq[Category]]
+  def getSpaceCategory(id: CategoryId, source: Option[String] = None): Future[Category]
+  def getSpaceCategories(ids: Set[CategoryId], source: Option[String] = None): Future[Seq[Category]]
   def findSpaceCategories(payload: CategoryFindQuery): Future[FindResult]
 
   def createSpace(payload: CreateSpacePayload): Future[Done]
@@ -160,8 +160,8 @@ trait CmsService {
   def activateSpace(payload: ActivatePayload): Future[Done]
   def deactivateSpace(payload: DeactivatePayload): Future[Done]
   def deleteSpace(payload: DeletePayload): Future[Done]
-  def getSpaceById(id: SpaceId, fromReadSide: Boolean = true): Future[Space]
-  def getSpacesById(ids: Set[SpaceId], fromReadSide: Boolean = true): Future[Seq[Space]]
+  def getSpace(id: SpaceId, source: Option[String] = None): Future[Space]
+  def getSpaces(ids: Set[SpaceId], source: Option[String] = None): Future[Seq[Space]]
   def getSpaceViews(payload: GetSpaceViewsPayload): Future[Seq[SpaceView]]
   def canEditSpacePages(payload: CanAccessToEntityPayload): Future[Boolean]
   def canAccessToSpace(payload: CanAccessToEntityPayload): Future[Boolean]
@@ -180,15 +180,15 @@ trait CmsService {
   def assignPageTargetPrincipal(payload: AssignPrincipalPayload): Future[Updated]
   def unassignPageTargetPrincipal(payload: UnassignPrincipalPayload): Future[Updated]
   def deletePage(payload: DeletePayload): Future[Updated]
-  def getPageById(
+  def getPage(
     id: PageId,
-    fromReadSide: Boolean = true,
+    source: Option[String] = None,
     withContent: Option[Boolean],
     withTargets: Option[Boolean]
   ): Future[Page]
-  def getPagesById(
+  def getPages(
     ids: Set[PageId],
-    fromReadSide: Boolean = true,
+    source: Option[String] = None,
     withContent: Option[Boolean],
     withTargets: Option[Boolean]
   ): Future[Seq[Page]]
@@ -200,18 +200,18 @@ trait CmsService {
   def viewPage(payload: article.ViewPayload): Future[Done]
   def likePage(payload: LikePayload): Future[Done]
   def unlikePage(payload: UnlikePayload): Future[Done]
-  def getPageMetricById(payload: GetMetricPayload): Future[Metric]
-  def getPageMetricsById(payload: GetMetricsPayload): Future[Seq[Metric]]
+  def getPageMetric(payload: GetMetricPayload): Future[Metric]
+  def getPageMetrics(payload: GetMetricsPayload): Future[Seq[Metric]]
 
   // ************************** CMS Home Page  **************************
 
   def assignHomePage(payload: AssignHomePagePayload): Future[Done]
   def unassignHomePage(payload: UnassignHomePagePayload): Future[Done]
-  def getHomePageById(
+  def getHomePage(
     id: HomePageId,
-    fromReadSide: Boolean = true
+    source: Option[String] = None
   ): Future[HomePage]
-  def getHomePagesById(ids: Set[HomePageId], fromReadSide: Boolean = true): Future[Seq[HomePage]]
+  def getHomePages(ids: Set[HomePageId], source: Option[String] = None): Future[Seq[HomePage]]
   def getHomePageByPrincipalCodes(applicationId: String, ids: Seq[String]): Future[PageId]
   def findHomePages(query: HomePageFindQuery): Future[FindResult]
 

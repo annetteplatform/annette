@@ -55,7 +55,7 @@ class OrgStructureServiceApiImpl(
   override def createOrganization: ServiceCall[CreateOrganizationPayload, Done] =
     ServiceCall { payload =>
       for {
-        category <- categoryEntityService.getCategoryById(payload.categoryId)
+        category <- categoryEntityService.getCategoryFromOrigin(payload.categoryId)
         result   <- if (category.forOrganization) hierarchyEntityService.createOrganization(payload)
                     else Future.failed(IncorrectCategory())
       } yield result
@@ -64,7 +64,7 @@ class OrgStructureServiceApiImpl(
   override def createUnit: ServiceCall[CreateUnitPayload, Done] =
     ServiceCall { payload =>
       for {
-        category <- categoryEntityService.getCategoryById(payload.categoryId)
+        category <- categoryEntityService.getCategoryFromOrigin(payload.categoryId)
         result   <- if (category.forUnit) hierarchyEntityService.createUnit(payload)
                     else Future.failed(IncorrectCategory())
       } yield result
@@ -73,7 +73,7 @@ class OrgStructureServiceApiImpl(
   override def createPosition: ServiceCall[CreatePositionPayload, Done] =
     ServiceCall { payload =>
       for {
-        category <- categoryEntityService.getCategoryById(payload.categoryId)
+        category <- categoryEntityService.getCategoryFromOrigin(payload.categoryId)
         result   <- if (category.forPosition) hierarchyEntityService.createPosition(payload)
                     else Future.failed(IncorrectCategory())
       } yield result
@@ -87,7 +87,7 @@ class OrgStructureServiceApiImpl(
   override def assignCategory: ServiceCall[AssignCategoryPayload, Done] =
     ServiceCall { payload =>
       for {
-        category <- categoryEntityService.getCategoryById(payload.categoryId)
+        category <- categoryEntityService.getCategoryFromOrigin(payload.categoryId)
         result   <- hierarchyEntityService.assignCategory(payload, category)
       } yield result
     }
@@ -147,30 +147,30 @@ class OrgStructureServiceApiImpl(
       hierarchyEntityService.deleteOrgItem(payload)
     }
 
-  override def getOrganizationById(orgId: CompositeOrgItemId): ServiceCall[NotUsed, Organization] =
+  override def getOrganization(orgId: CompositeOrgItemId): ServiceCall[NotUsed, Organization] =
     ServiceCall { _ =>
-      hierarchyEntityService.getOrganizationById(orgId)
+      hierarchyEntityService.getOrganization(orgId)
     }
 
   override def getOrganizationTree(itemId: CompositeOrgItemId): ServiceCall[NotUsed, OrganizationTree] = { _ =>
     hierarchyEntityService.getOrganizationTree(itemId)
   }
 
-  override def getOrgItemById(
+  override def getOrgItem(
     itemId: CompositeOrgItemId,
-    fromReadSide: Boolean,
-    withAttributes: Option[String] = None
+    source: Option[String],
+    attributes: Option[String] = None
   ): ServiceCall[NotUsed, OrgItem] =
     ServiceCall { _ =>
-      hierarchyEntityService.getOrgItemById(itemId, fromReadSide, withAttributes)
+      hierarchyEntityService.getOrgItem(itemId, source, attributes)
     }
 
-  override def getOrgItemsById(
-    fromReadSide: Boolean,
-    withAttributes: Option[String] = None
+  override def getOrgItems(
+    source: Option[String],
+    attributes: Option[String] = None
   ): ServiceCall[Set[CompositeOrgItemId], Seq[OrgItem]] =
     ServiceCall { ids =>
-      hierarchyEntityService.getOrgItemsById(ids, fromReadSide, withAttributes)
+      hierarchyEntityService.getOrgItems(ids, source, attributes)
     }
 
   override def getItemIdsByExternalId: ServiceCall[Set[String], Map[String, CompositeOrgItemId]] =
@@ -207,19 +207,19 @@ class OrgStructureServiceApiImpl(
 
   def getOrgItemAttributes(
     id: CompositeOrgItemId,
-    fromReadSide: Boolean = true,
+    source: Option[String] = None,
     attributes: Option[String] = None
   ): ServiceCall[NotUsed, AttributeValues] =
     ServiceCall { _ =>
-      hierarchyEntityService.getOrgItemAttributes(id, fromReadSide, attributes)
+      hierarchyEntityService.getOrgItemAttributes(id, source, attributes)
     }
 
   def getOrgItemsAttributes(
-    fromReadSide: Boolean = true,
+    source: Option[String] = None,
     attributes: Option[String] = None
   ): ServiceCall[Set[CompositeOrgItemId], Map[String, AttributeValues]] =
     ServiceCall { ids =>
-      hierarchyEntityService.getOrgItemsAttributes(ids, fromReadSide, attributes)
+      hierarchyEntityService.getOrgItemsAttributes(ids, source, attributes)
     }
 
   // ****************************** OrgRoles methods ******************************
@@ -239,14 +239,14 @@ class OrgStructureServiceApiImpl(
       orgRoleEntityService.deleteOrgRole(payload)
     }
 
-  override def getOrgRoleById(id: OrgRoleId, fromReadSide: Boolean): ServiceCall[NotUsed, OrgRole] =
+  override def getOrgRole(id: OrgRoleId, source: Option[String]): ServiceCall[NotUsed, OrgRole] =
     ServiceCall { _ =>
-      orgRoleEntityService.getOrgRoleById(id, fromReadSide)
+      orgRoleEntityService.getOrgRole(id, source)
     }
 
-  override def getOrgRolesById(fromReadSide: Boolean): ServiceCall[Set[OrgRoleId], Seq[OrgRole]] =
+  override def getOrgRoles(source: Option[String]): ServiceCall[Set[OrgRoleId], Seq[OrgRole]] =
     ServiceCall { ids =>
-      orgRoleEntityService.getOrgRolesById(ids, fromReadSide)
+      orgRoleEntityService.getOrgRoles(ids, source)
     }
 
   override def findOrgRoles: ServiceCall[OrgRoleFindQuery, FindResult] =
@@ -271,14 +271,14 @@ class OrgStructureServiceApiImpl(
       categoryEntityService.deleteCategory(payload)
     }
 
-  override def getCategoryById(id: OrgCategoryId, fromReadSide: Boolean): ServiceCall[NotUsed, OrgCategory] =
+  override def getCategory(id: OrgCategoryId, source: Option[String]): ServiceCall[NotUsed, OrgCategory] =
     ServiceCall { _ =>
-      categoryEntityService.getCategoryById(id, fromReadSide)
+      categoryEntityService.getCategory(id, source)
     }
 
-  override def getCategoriesById(fromReadSide: Boolean): ServiceCall[Set[OrgCategoryId], Seq[OrgCategory]] =
+  override def getCategories(source: Option[String]): ServiceCall[Set[OrgCategoryId], Seq[OrgCategory]] =
     ServiceCall { ids =>
-      categoryEntityService.getCategoriesById(ids, fromReadSide)
+      categoryEntityService.getCategories(ids, source)
     }
 
   override def findCategories: ServiceCall[OrgCategoryFindQuery, FindResult] =

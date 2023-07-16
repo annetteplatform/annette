@@ -16,8 +16,9 @@
 
 package biz.lobachev.annette.principal_group.gateway
 
-import biz.lobachev.annette.api_gateway_core.authentication.{AuthenticatedAction}
+import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.principal_group.gateway.Permissions._
 import biz.lobachev.annette.principal_group.api.PrincipalGroupService
@@ -38,7 +39,7 @@ import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}
 
 import javax.inject.{Inject, Singleton}
-import scala.concurrent.{ExecutionContext}
+import scala.concurrent.ExecutionContext
 
 @Singleton
 class PrincipalGroupController @Inject() (
@@ -60,7 +61,7 @@ class PrincipalGroupController @Inject() (
           .transform
         for {
           _              <- principalGroupService.createPrincipalGroup(payload)
-          principalGroup <- principalGroupService.getPrincipalGroupById(payload.id, false)
+          principalGroup <- principalGroupService.getPrincipalGroup(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(principalGroup))
       }
     }
@@ -74,7 +75,7 @@ class PrincipalGroupController @Inject() (
           .transform
         for {
           _              <- principalGroupService.updatePrincipalGroupName(payload)
-          principalGroup <- principalGroupService.getPrincipalGroupById(payload.id, false)
+          principalGroup <- principalGroupService.getPrincipalGroup(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(principalGroup))
       }
     }
@@ -88,7 +89,7 @@ class PrincipalGroupController @Inject() (
           .transform
         for {
           _              <- principalGroupService.updatePrincipalGroupDescription(payload)
-          principalGroup <- principalGroupService.getPrincipalGroupById(payload.id, false)
+          principalGroup <- principalGroupService.getPrincipalGroup(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(principalGroup))
       }
     }
@@ -102,7 +103,7 @@ class PrincipalGroupController @Inject() (
           .transform
         for {
           _              <- principalGroupService.updatePrincipalGroupCategory(payload)
-          principalGroup <- principalGroupService.getPrincipalGroupById(payload.id, false)
+          principalGroup <- principalGroupService.getPrincipalGroup(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(principalGroup))
       }
     }
@@ -146,20 +147,20 @@ class PrincipalGroupController @Inject() (
       }
     }
 
-  def getPrincipalGroupById(id: PrincipalGroupId, fromReadSide: Boolean) =
+  def getPrincipalGroup(id: PrincipalGroupId, source: Option[String]) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(VIEW_ALL_PRINCIPAL_GROUPS, MAINTAIN_ALL_PRINCIPAL_GROUPS) {
         for {
-          principalGroup <- principalGroupService.getPrincipalGroupById(id, fromReadSide)
+          principalGroup <- principalGroupService.getPrincipalGroup(id, source)
         } yield Ok(Json.toJson(principalGroup))
       }
     }
 
-  def getPrincipalGroupsById(fromReadSide: Boolean) =
+  def getPrincipalGroups(source: Option[String]) =
     authenticated.async(parse.json[Set[PrincipalGroupId]]) { implicit request =>
       authorizer.performCheckAny(VIEW_ALL_PRINCIPAL_GROUPS, MAINTAIN_ALL_PRINCIPAL_GROUPS) {
         for {
-          principalGroups <- principalGroupService.getPrincipalGroupsById(request.body, fromReadSide)
+          principalGroups <- principalGroupService.getPrincipalGroups(request.body, source)
         } yield Ok(Json.toJson(principalGroups))
       }
     }
@@ -194,7 +195,7 @@ class PrincipalGroupController @Inject() (
           .transform
         for {
           _    <- principalGroupService.createCategory(payload)
-          role <- principalGroupService.getCategoryById(payload.id, false)
+          role <- principalGroupService.getCategory(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -208,7 +209,7 @@ class PrincipalGroupController @Inject() (
           .transform
         for {
           _    <- principalGroupService.updateCategory(payload)
-          role <- principalGroupService.getCategoryById(payload.id, false)
+          role <- principalGroupService.getCategory(payload.id, DataSource.FROM_ORIGIN)
         } yield Ok(Json.toJson(role))
       }
     }
@@ -226,21 +227,21 @@ class PrincipalGroupController @Inject() (
       }
     }
 
-  def getCategoryById(id: CategoryId, fromReadSide: Boolean) =
+  def getCategory(id: CategoryId, source: Option[String]) =
     authenticated.async { implicit request =>
       authorizer.performCheckAny(VIEW_ALL_PRINCIPAL_GROUP_CATEGORIES, MAINTAIN_ALL_PRINCIPAL_GROUP_CATEGORIES) {
         for {
-          role <- principalGroupService.getCategoryById(id, fromReadSide)
+          role <- principalGroupService.getCategory(id, source)
         } yield Ok(Json.toJson(role))
       }
     }
 
-  def getCategoriesById(fromReadSide: Boolean) =
+  def getCategories(source: Option[String]) =
     authenticated.async(parse.json[Set[CategoryId]]) { implicit request =>
       val ids = request.body
       authorizer.performCheckAny(VIEW_ALL_PRINCIPAL_GROUP_CATEGORIES, MAINTAIN_ALL_PRINCIPAL_GROUP_CATEGORIES) {
         for {
-          roles <- principalGroupService.getCategoriesById(ids, fromReadSide)
+          roles <- principalGroupService.getCategories(ids, source)
         } yield Ok(Json.toJson(roles))
       }
     }

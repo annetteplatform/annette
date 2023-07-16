@@ -175,7 +175,7 @@ private[service_catalog] class ServiceItemDbDao(override val session: CassandraS
       _ <- ctx.run(serviceSchema.filter(_.id == lift(event.id)).delete)
     } yield Done
 
-  def getServiceItemById(id: ServiceItemId): Future[Option[ServiceItem]] =
+  def getServiceItem(id: ServiceItemId): Future[Option[ServiceItem]] =
     for {
       maybeService <- ctx
                         .run(serviceSchema.filter(_.id == lift(id)))
@@ -183,7 +183,7 @@ private[service_catalog] class ServiceItemDbDao(override val session: CassandraS
 
     } yield maybeService
 
-  def getServiceItemsById(ids: Set[ServiceItemId]): Future[Seq[ServiceItem]] =
+  def getServiceItems(ids: Set[ServiceItemId]): Future[Seq[ServiceItem]] =
     for {
       services <- ctx.run(serviceSchema.filter(b => liftQuery(ids).contains(b.id))).map(_.map(_.toServiceItem))
     } yield services

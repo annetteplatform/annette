@@ -70,12 +70,12 @@ private[impl] class OrgRoleDbDao(
   def deleteOrgRole(event: OrgRoleDeleted) =
     ctx.run(entitySchema.filter(_.id == lift(event.id)).delete)
 
-  def getOrgRoleById(id: OrgRoleId): Future[Option[OrgRole]] =
+  def getOrgRole(id: OrgRoleId): Future[Option[OrgRole]] =
     ctx
       .run(entitySchema.filter(_.id == lift(id)))
       .map(_.headOption)
 
-  def getOrgRolesById(ids: Set[OrgRoleId]): Future[Seq[OrgRole]] =
+  def getOrgRoles(ids: Set[OrgRoleId]): Future[Seq[OrgRole]] =
     ctx.run(entitySchema.filter(b => liftQuery(ids).contains(b.id)))
 
 }

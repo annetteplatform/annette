@@ -175,12 +175,12 @@ private[impl] class PrincipalGroupDbDao(
            )
     } yield Done
 
-  def getPrincipalGroupById(id: PrincipalGroupId): Future[Option[PrincipalGroup]] =
+  def getPrincipalGroup(id: PrincipalGroupId): Future[Option[PrincipalGroup]] =
     ctx
       .run(groupSchema.filter(_.id == lift(id)))
       .map(_.headOption)
 
-  def getPrincipalGroupsById(ids: Set[PrincipalGroupId]): Future[Seq[PrincipalGroup]] =
+  def getPrincipalGroups(ids: Set[PrincipalGroupId]): Future[Seq[PrincipalGroup]] =
     ctx.run(groupSchema.filter(b => liftQuery(ids).contains(b.id)))
 
   def getAssignments(id: PrincipalGroupId): Future[Set[AnnettePrincipal]] =

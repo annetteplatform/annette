@@ -29,13 +29,13 @@ trait AuthorizationServiceApi extends Service {
   def createRole: ServiceCall[CreateRolePayload, Done]
   def updateRole: ServiceCall[UpdateRolePayload, Done]
   def deleteRole: ServiceCall[DeleteRolePayload, Done]
-  def getRoleById(id: AuthRoleId, fromReadSide: Boolean = true): ServiceCall[NotUsed, AuthRole]
-  def getRolesById(fromReadSide: Boolean = true): ServiceCall[Set[AuthRoleId], Seq[AuthRole]]
+  def getRole(id: AuthRoleId, source: Option[String] = None): ServiceCall[NotUsed, AuthRole]
+  def getRoles(source: Option[String] = None): ServiceCall[Set[AuthRoleId], Seq[AuthRole]]
   def findRoles: ServiceCall[AuthRoleFindQuery, FindResult]
 
   def assignPrincipal: ServiceCall[AssignPrincipalPayload, Done]
   def unassignPrincipal: ServiceCall[UnassignPrincipalPayload, Done]
-  def getRolePrincipals(id: AuthRoleId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Set[AnnettePrincipal]]
+  def getRolePrincipals(id: AuthRoleId, source: Option[String] = None): ServiceCall[NotUsed, Set[AnnettePrincipal]]
 
   def assignPermission: ServiceCall[AssignPermissionPayload, Done]
   def unassignPermission: ServiceCall[UnassignPermissionPayload, Done]
@@ -52,12 +52,12 @@ trait AuthorizationServiceApi extends Service {
         pathCall("/api/authorization/v1/createRole",                   createRole ),
         pathCall("/api/authorization/v1/updateRole",                   updateRole ),
         pathCall("/api/authorization/v1/deleteRole",                   deleteRole ),
-        pathCall("/api/authorization/v1/getRoleById/:id/:fromReadSide",getRoleById _),
-        pathCall("/api/authorization/v1/getRolesById/:fromReadSide",   getRolesById _),
+        pathCall("/api/authorization/v1/getRole/:id?source",getRole _),
+        pathCall("/api/authorization/v1/getRoles?source",   getRoles _),
         pathCall("/api/authorization/v1/findRoles",                    findRoles ),
         pathCall("/api/authorization/v1/assignPrincipal",              assignPrincipal ),
         pathCall("/api/authorization/v1/unassignPrincipal",            unassignPrincipal ),
-        pathCall("/api/authorization/v1/getRolePrincipals/:id/:fromReadSide", getRolePrincipals _),
+        pathCall("/api/authorization/v1/getRolePrincipals/:id?source", getRolePrincipals _),
 
         pathCall("/api/authorization/v1/assignPermission",   assignPermission ),
         pathCall("/api/authorization/v1/unassignPermission", unassignPermission ),

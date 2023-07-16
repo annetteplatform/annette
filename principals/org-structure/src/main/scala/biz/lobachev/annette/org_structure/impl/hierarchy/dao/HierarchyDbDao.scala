@@ -488,21 +488,21 @@ private[impl] class HierarchyDbDao(
            )
     } yield Done
 
-  def getOrgItemById(id: CompositeOrgItemId, attributes: Seq[String]): Future[Option[OrgItem]] =
+  def getOrgItem(id: CompositeOrgItemId, attributes: Seq[String]): Future[Option[OrgItem]] =
     for {
       maybeEntity      <- ctx
                             .run(itemSchema.filter(_.id == lift(id)))
                             .map(_.headOption.map(_.toOrgItem))
-      entityAttributes <- if (maybeEntity.isDefined && attributes.nonEmpty) getAttributesById(id, attributes)
+      entityAttributes <- if (maybeEntity.isDefined && attributes.nonEmpty) getAttributes(id, attributes)
                           else Future.successful(Map.empty[String, String])
     } yield maybeEntity.map(_.withAttributes(entityAttributes))
 
-  def getOrgItemsById(ids: Set[CompositeOrgItemId], attributes: Seq[String]): Future[Seq[OrgItem]] =
+  def getOrgItems(ids: Set[CompositeOrgItemId], attributes: Seq[String]): Future[Seq[OrgItem]] =
     for {
       entities      <- ctx
                          .run(itemSchema.filter(b => liftQuery(ids).contains(b.id)))
                          .map(_.map(_.toOrgItem))
-      attributesMap <- getAttributesById(ids, attributes)
+      attributesMap <- getAttributes(ids, attributes)
     } yield
       if (attributes.isEmpty) entities
       else
@@ -545,7 +545,7 @@ private[impl] class HierarchyDbDao(
                              .run(itemSchema.filter(_.id == lift(id)).map(_.id))
                              .map(_.headOption)
       orgItemAttributes <- if (maybeOrgItem.isDefined)
-                             getAttributesById(id, attributes)
+                             getAttributes(id, attributes)
                            else Future.successful(Map.empty[String, String])
     } yield maybeOrgItem.map(_ => orgItemAttributes)
 
@@ -557,7 +557,7 @@ private[impl] class HierarchyDbDao(
     else
       for {
         foundOrgItems <- ctx.run(itemSchema.filter(b => liftQuery(ids).contains(b.id)).map(_.id))
-        attributesMap <- getAttributesById(ids, attributes)
+        attributesMap <- getAttributes(ids, attributes)
       } yield foundOrgItems
         .map(orgItemId => orgItemId -> attributesMap.get(orgItemId).getOrElse(Map.empty[String, String]))
         .toMap

@@ -18,6 +18,8 @@ package biz.lobachev.annette.cms.impl.blogs.post
 
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.cms.api.blogs.post._
 import biz.lobachev.annette.cms.api.common.article.{
@@ -49,6 +51,7 @@ import biz.lobachev.annette.cms.api.content.{
 }
 import biz.lobachev.annette.cms.impl.blogs.post.dao.{PostDbDao, PostIndexDao}
 import biz.lobachev.annette.cms.impl.content.{ContentInt, WidgetInt}
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
 import io.scalaland.chimney.dsl._
@@ -63,7 +66,8 @@ class PostEntityService(
   dbDao: PostDbDao,
   indexDao: PostIndexDao
 )(implicit
-  ec: ExecutionContext
+  ec: ExecutionContext,
+  val materializer: Materializer
 ) {
 
   val log = LoggerFactory.getLogger(this.getClass)
@@ -254,32 +258,30 @@ class PostEntityService(
   def canAccessToPost(payload: CanAccessToEntityPayload): Future[Boolean] =
     dbDao.canAccessToPost(payload.id, payload.principals)
 
-  def getPostById(
+  def getPost(
     id: PostId,
-    fromReadSide: Boolean,
+    source: Option[String],
     withIntro: Boolean,
     withContent: Boolean,
     withTargets: Boolean
   ): Future[Post] =
-    if (fromReadSide)
-      dbDao
-        .getPostById(id, withIntro, withContent, withTargets)
-        .map(_.getOrElse(throw PostNotFound(id)))
-    else
+    if (DataSource.fromOrigin(source))
       getPost(id, withIntro, withContent, withTargets)
+    else
+      dbDao
+        .getPost(id, withIntro, withContent, withTargets)
+        .map(_.getOrElse(throw PostNotFound(id)))
 
-  def getPostsById(
+  def getPosts(
     ids: Set[PostId],
-    fromReadSide: Boolean,
+    source: Option[String],
     withIntro: Boolean,
     withContent: Boolean,
     withTargets: Boolean
   ): Future[Seq[Post]] =
-    if (fromReadSide)
-      dbDao.getPostsById(ids, withIntro, withContent, withTargets)
-    else
-      Future
-        .traverse(ids) { id =>
+    if (DataSource.fromOrigin(source))
+      Source(ids)
+        .mapAsync(1) { id =>
           refFor(id)
             .ask[PostEntity.Confirmation](PostEntity.GetPost(id, withIntro, withContent, withTargets, _))
             .map {
@@ -287,10 +289,13 @@ class PostEntityService(
               case _                               => None
             }
         }
+        .runWith(Sink.seq)
         .map(_.flatten.toSeq)
+    else
+      dbDao.getPosts(ids, withIntro, withContent, withTargets)
 
   def getPostViews(payload: GetPostViewsPayload): Future[Seq[Post]] =
-    dbDao.getPostViewsById(payload)
+    dbDao.getPostViews(payload)
 
   def findPosts(query: PostFindQuery): Future[FindResult] = indexDao.findPosts(query)
 
@@ -300,10 +305,10 @@ class PostEntityService(
 
   def unlikePost(payload: UnlikePayload): Future[Done] = dbDao.unlikePost(payload.id, payload.updatedBy)
 
-  def getPostMetricById(payload: GetMetricPayload): Future[Metric] =
-    dbDao.getPostMetricById(payload.id, payload.principal)
+  def getPostMetric(payload: GetMetricPayload): Future[Metric] =
+    dbDao.getPostMetric(payload.id, payload.principal)
 
-  def getPostMetricsById(payload: GetMetricsPayload): Future[Seq[Metric]] =
-    dbDao.getPostMetricsById(payload.ids, payload.principal)
+  def getPostMetrics(payload: GetMetricsPayload): Future[Seq[Metric]] =
+    dbDao.getPostMetrics(payload.ids, payload.principal)
 
 }

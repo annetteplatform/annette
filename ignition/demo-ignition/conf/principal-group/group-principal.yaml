@@ -1,4 +1,2 @@
 - id: admin
-  principal:
-    principalType: person
-    principalId: P0001
+  principal: person~P0001

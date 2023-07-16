@@ -55,14 +55,14 @@ class ServiceCatalogServiceLagomApiImpl(
       serviceCatalogService.deleteCategory(payload)
     }
 
-  override def getCategoryById(id: CategoryId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Category] =
+  override def getCategory(id: CategoryId, source: Option[String]): ServiceCall[NotUsed, Category] =
     ServiceCall { _ =>
-      serviceCatalogService.getCategoryById(id, fromReadSide)
+      serviceCatalogService.getCategory(id, source)
     }
 
-  override def getCategoriesById(fromReadSide: Boolean = true): ServiceCall[Set[CategoryId], Seq[Category]] =
+  override def getCategories(source: Option[String] ): ServiceCall[Set[CategoryId], Seq[Category]] =
     ServiceCall { ids =>
-      serviceCatalogService.getCategoriesById(ids, fromReadSide)
+      serviceCatalogService.getCategories(ids, source)
     }
 
   override def findCategories: ServiceCall[CategoryFindQuery, FindResult] =
@@ -95,14 +95,14 @@ class ServiceCatalogServiceLagomApiImpl(
       serviceCatalogService.deleteScope(payload)
     }
 
-  override def getScopeById(id: ScopeId, fromReadSide: Boolean = true): ServiceCall[NotUsed, Scope] =
+  override def getScope(id: ScopeId, source: Option[String]): ServiceCall[NotUsed, Scope] =
     ServiceCall { _ =>
-      serviceCatalogService.getScopeById(id, fromReadSide)
+      serviceCatalogService.getScope(id, source)
     }
 
-  override def getScopesById(fromReadSide: Boolean = true): ServiceCall[Set[ScopeId], Seq[Scope]] =
+  override def getScopes(source: Option[String]): ServiceCall[Set[ScopeId], Seq[Scope]] =
     ServiceCall { ids =>
-      serviceCatalogService.getScopesById(ids, fromReadSide)
+      serviceCatalogService.getScopes(ids, source)
     }
 
   override def findScopes: ServiceCall[FindScopeQuery, FindResult] =
@@ -160,14 +160,14 @@ class ServiceCatalogServiceLagomApiImpl(
       serviceCatalogService.deleteServiceItem(payload)
     }
 
-  override def getServiceItemById(id: ServiceItemId, fromReadSide: Boolean = true): ServiceCall[NotUsed, ServiceItem] =
+  override def getServiceItem(id: ServiceItemId, source: Option[String] ): ServiceCall[NotUsed, ServiceItem] =
     ServiceCall { _ =>
-      serviceCatalogService.getServiceItemById(id, fromReadSide)
+      serviceCatalogService.getServiceItem(id, source)
     }
 
-  override def getServiceItemsById(fromReadSide: Boolean = true): ServiceCall[Set[ServiceItemId], Seq[ServiceItem]] =
+  override def getServiceItems(source: Option[String]): ServiceCall[Set[ServiceItemId], Seq[ServiceItem]] =
     ServiceCall { ids =>
-      serviceCatalogService.getServiceItemsById(ids, fromReadSide)
+      serviceCatalogService.getServiceItems(ids, source)
     }
 
   override def findServiceItems: ServiceCall[FindServiceItemsQuery, FindResult] =

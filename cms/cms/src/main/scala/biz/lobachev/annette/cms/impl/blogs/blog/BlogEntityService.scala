@@ -18,10 +18,13 @@ package biz.lobachev.annette.cms.impl.blogs.blog
 
 import akka.Done
 import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import akka.stream.Materializer
+import akka.stream.scaladsl.{Sink, Source}
 import akka.util.Timeout
 import biz.lobachev.annette.cms.api.blogs.blog._
 import biz.lobachev.annette.cms.api.common._
 import biz.lobachev.annette.cms.impl.blogs.blog.dao.{BlogDbDao, BlogIndexDao}
+import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.indexing.FindResult
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
@@ -34,7 +37,8 @@ class BlogEntityService(
   dbDao: BlogDbDao,
   indexDao: BlogIndexDao
 )(implicit
-  ec: ExecutionContext
+  ec: ExecutionContext,
+  val materializer: Materializer
 ) {
 
   val log = LoggerFactory.getLogger(this.getClass)
@@ -175,28 +179,31 @@ class BlogEntityService(
       .ask[BlogEntity.Confirmation](BlogEntity.GetBlog(id, _))
       .map(convertSuccessBlog(_, id))
 
-  def getBlogById(id: BlogId, fromReadSide: Boolean): Future[Blog] =
-    if (fromReadSide)
-      dbDao
-        .getBlogById(id)
-        .map(_.getOrElse(throw BlogNotFound(id)))
-    else
+  def getBlog(id: BlogId, source: Option[String]): Future[Blog] =
+    if (DataSource.fromOrigin(source)) {
       getBlog(id)
+    } else {
+      dbDao
+        .getBlog(id)
+        .map(_.getOrElse(throw BlogNotFound(id)))
+    }
 
-  def getBlogsById(ids: Set[BlogId], fromReadSide: Boolean): Future[Seq[Blog]] =
-    if (fromReadSide)
-      dbDao.getBlogsById(ids)
-    else
-      Future
-        .traverse(ids) { id =>
+  def getBlogs(ids: Set[BlogId], source: Option[String]): Future[Seq[Blog]] =
+    if (DataSource.fromOrigin(source)) {
+      Source(ids)
+        .mapAsync(1) { id =>
           refFor(id)
             .ask[BlogEntity.Confirmation](BlogEntity.GetBlog(id, _))
             .map {
               case BlogEntity.SuccessBlog(blog) => Some(blog)
-              case _                            => None
+              case _ => None
             }
         }
+        .runWith(Sink.seq)
         .map(_.flatten.toSeq)
+    } else {
+      dbDao.getBlogs(ids)
+    }
 
   def getBlogViews(payload: GetBlogViewsPayload): Future[Seq[BlogView]] =
     dbDao.getBlogViews(payload.ids, payload.principals)

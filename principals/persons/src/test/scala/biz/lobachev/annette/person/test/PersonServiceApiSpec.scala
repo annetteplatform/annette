@@ -69,14 +69,14 @@ class PersonServiceApiSpec
 
       withClue("Person is not expected to exist") {
         client
-          .getPersonById(createPayload.id, false)
+          .getPerson(createPayload.id, false)
           .invoke()
           .recover { case th: Throwable => th }
           .futureValue shouldBe PersonNotFound(createPayload.id)
       }
       val future = for {
         created <- client.createPerson.invoke(createPayload)
-        found   <- client.getPersonById(createPayload.id, false).invoke()
+        found   <- client.getPerson(createPayload.id, false).invoke()
       } yield (created, found)
 
       withClue("Person is created on first event") {
@@ -93,7 +93,7 @@ class PersonServiceApiSpec
       val createdMap     = createPayloads.map(p => p.id -> p).toMap
       withClue("Persons are not expected to exist") {
         client
-          .getPersonsById(false)
+          .getPersons(false)
           .invoke(createPayloads.map(_.id).toSet)
           .futureValue
           .size shouldBe 0
@@ -102,7 +102,7 @@ class PersonServiceApiSpec
         _     <- Source(createPayloads)
                    .mapAsync(1)(entity => client.createPerson.invoke(entity))
                    .runWith(Sink.ignore)
-        found <- client.getPersonsById(false).invoke(createPayloads.map(_.id).toSet)
+        found <- client.getPersons(false).invoke(createPayloads.map(_.id).toSet)
       } yield found
 
       withClue("Persons are created on first event") {
@@ -122,7 +122,7 @@ class PersonServiceApiSpec
         _     <- Source(updatePayloads)
                    .mapAsync(1)(entity => client.updatePerson.invoke(entity))
                    .runWith(Sink.ignore)
-        found <- client.getPersonsById(false).invoke(createPayloads.map(_.id).toSet)
+        found <- client.getPersons(false).invoke(createPayloads.map(_.id).toSet)
       } yield found
 
       withClue("Persons are updated on second event") {
@@ -139,7 +139,7 @@ class PersonServiceApiSpec
         _     <- Source(updatePayloads)
                    .mapAsync(1)(entity => client.deletePerson.invoke(DeletePersonPayload(entity.id, entity.updatedBy)))
                    .runWith(Sink.ignore)
-        found <- client.getPersonsById(false).invoke(createPayloads.map(_.id).toSet)
+        found <- client.getPersons(false).invoke(createPayloads.map(_.id).toSet)
       } yield found
 
       withClue("Persons are deleted on third event") {
@@ -156,14 +156,14 @@ class PersonServiceApiSpec
       val createPayload = generateCreatePersonPayload()
       withClue("Person is not expected to exist") {
         client
-          .getPersonById(createPayload.id, true)
+          .getPerson(createPayload.id, true)
           .invoke()
           .recover { case th: Throwable => th }
           .futureValue shouldBe PersonNotFound(createPayload.id)
       }
       val future        = for {
         _     <- feedEvent(createPayload.id, convertToPersonCreated(createPayload))
-        found <- client.getPersonById(createPayload.id, true).invoke()
+        found <- client.getPerson(createPayload.id, true).invoke()
       } yield found
 
       withClue("Person is created on first event") {
@@ -178,7 +178,7 @@ class PersonServiceApiSpec
       val createdMap     = createPayloads.map(p => p.id -> p).toMap
       withClue("Persons are not expected to exist") {
         client
-          .getPersonsById(true)
+          .getPersons(true)
           .invoke(createPayloads.map(_.id).toSet)
           .futureValue
           .size shouldBe 0
@@ -187,7 +187,7 @@ class PersonServiceApiSpec
         _     <- Source(createPayloads)
                    .mapAsync(1)(entity => feedEvent(entity.id, convertToPersonCreated(entity)))
                    .runWith(Sink.ignore)
-        found <- client.getPersonsById(true).invoke(createPayloads.map(_.id).toSet)
+        found <- client.getPersons(true).invoke(createPayloads.map(_.id).toSet)
       } yield found
 
       withClue("Persons are created on first event") {
@@ -207,7 +207,7 @@ class PersonServiceApiSpec
         _     <- Source(updatePayloads)
                    .mapAsync(1)(entity => feedEvent(entity.id, convertToPersonUpdated(entity)))
                    .runWith(Sink.ignore)
-        found <- client.getPersonsById(true).invoke(createPayloads.map(_.id).toSet)
+        found <- client.getPersons(true).invoke(createPayloads.map(_.id).toSet)
       } yield found
 
       withClue("Persons are updated on second event") {
@@ -224,7 +224,7 @@ class PersonServiceApiSpec
         _     <- Source(updatePayloads)
                    .mapAsync(1)(entity => feedEvent(entity.id, PersonDeleted(entity.id, entity.updatedBy)))
                    .runWith(Sink.ignore)
-        found <- client.getPersonsById(true).invoke(updatePayloads.map(_.id).toSet)
+        found <- client.getPersons(true).invoke(updatePayloads.map(_.id).toSet)
       } yield found
 
       withClue("Persons are deleted on third event") {

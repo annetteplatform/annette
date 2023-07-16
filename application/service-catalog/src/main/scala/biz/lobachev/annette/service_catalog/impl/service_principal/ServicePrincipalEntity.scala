@@ -100,7 +100,7 @@ object ServicePrincipalEntity {
 
   def fromCompositeId(compositeId: String): (ServiceItemId, AnnettePrincipal) = {
     val split = compositeId.split("/")
-    split(0) -> AnnettePrincipal.fromCode(split(1))
+    split(0) -> AnnettePrincipal(split(1))
   }
 }
 
