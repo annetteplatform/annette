@@ -75,6 +75,38 @@ There are number of applications that has been developed using it, such as:
 
 See [Get started](https://annetteplatform.github.io/get-started/).
 
+## Installation
+
+To run Annette Platform in Docker perform the following steps:
+
+1. Clone repository
+
+```bash
+git clone https://github.com/annetteplatform/annette.git
+```
+
+2. Go to Docker deploy directory `deploy/docker` in project directory
+
+```bash
+cd annette/deploy/docker
+```
+
+3. Run deploy script to deploy platform in Docker Compose
+
+```bash
+./deploy.sh
+```
+
+4. After all services become up and have the healthy state run demo ignition script to populate database with demo data
+
+```bash
+./demo-ignition.sh
+```
+
+6. After demo ignition completes open Annette Console [http://localhost:8500](http://localhost:8500) (login: `kristina.fisher`, password: `abc`).
+Keycloak administration console is running at [http://localhost:8080](http://localhost:8080) (login: `admin`, password: `admin`).
+
+
 ## Documentation 
 
 Detailed documentation can be found on [Annette Platform](https://annetteplatform.github.io/) site.
