@@ -64,8 +64,8 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "curl --silent --fail -k --header 'Authorization: Basic YWRtaW46YWRtaW4=' https://localhost:9200/_cluster/health || exit 1"]
       interval: 30s
-      timeout: 30s
-      retries: 3
+      timeout: 10s
+      retries: 5
 
   os-dashboards:
     image: opensearchproject/opensearch-dashboards:2.8.0
