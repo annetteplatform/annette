@@ -46,7 +46,8 @@ class KeycloakController @Inject() (
           .map(appConf =>
             defaultConf.copy(
               realm = appConf.realm.getOrElse(defaultConf.realm),
-              authServerUrl = appConf.publicAuthServerUrl.getOrElse(defaultConf.publicAuthServerUrl),
+              authServerUrl = appConf.authServerUrl.getOrElse(defaultConf.authServerUrl),
+              publicAuthServerUrl = appConf.publicAuthServerUrl.getOrElse(defaultConf.publicAuthServerUrl),
               sslRequired = appConf.sslRequired.map(Some(_)).getOrElse(defaultConf.sslRequired),
               resource = appConf.resource.map(Some(_)).getOrElse(defaultConf.resource),
               publicClient = appConf.publicClient.map(Some(_)).getOrElse(defaultConf.publicClient)

@@ -33,7 +33,7 @@ object KeycloakJson {
   def apply(realmConfig: RealmConfig): KeycloakJson =
     KeycloakJson(
       realmConfig.realm,
-      realmConfig.authServerUrl,
+      realmConfig.publicAuthServerUrl,
       realmConfig.sslRequired,
       realmConfig.resource,
       realmConfig.publicClient

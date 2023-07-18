@@ -44,39 +44,39 @@ trait SimplePrincipal {
 }
 
 object PersonPrincipal extends SimplePrincipal {
-  val PRINCIPAL_TYPE = "person"
+  val PRINCIPAL_TYPE = "person" // pers
 }
 
 object OrgPositionPrincipal extends SimplePrincipal {
-  val PRINCIPAL_TYPE = "org-position"
+  val PRINCIPAL_TYPE = "org-position" // opos
 }
 
 object OrgRolePrincipal extends SimplePrincipal {
-  val PRINCIPAL_TYPE = "org-role"
+  val PRINCIPAL_TYPE = "org-role" // orol
 }
 
 object UnitChiefPrincipal extends SimplePrincipal {
-  val PRINCIPAL_TYPE = "unit-chief"
+  val PRINCIPAL_TYPE = "unit-chief" // ouch
 }
 
 object DirectUnitPrincipal extends SimplePrincipal {
-  val PRINCIPAL_TYPE = "direct-unit"
+  val PRINCIPAL_TYPE = "direct-unit" // odru
 }
 
 object DescendantUnitPrincipal extends SimplePrincipal {
-  val PRINCIPAL_TYPE = "descendant-unit"
+  val PRINCIPAL_TYPE = "descendant-unit" // odsu
 }
 
 object TechnicalPrincipal extends SimplePrincipal {
-  val PRINCIPAL_TYPE = "tech"
+  val PRINCIPAL_TYPE = "tech" // tech
 }
 
 object PrincipalGroupPrincipal extends SimplePrincipal {
-  val PRINCIPAL_TYPE = "principal-group"
+  val PRINCIPAL_TYPE = "principal-group" // prgr
 }
 
 object AuthenticatedPrincipal {
-  val PRINCIPAL_TYPE: String                             = "authenticated"
+  val PRINCIPAL_TYPE: String                             = "authenticated" // auth
   val PRINCIPAL_ID: String                               = "user"
   def apply(): AnnettePrincipal                          = AnnettePrincipal(PRINCIPAL_TYPE, PRINCIPAL_ID)
   def unapply(principal: AnnettePrincipal): Option[Unit] =
@@ -85,7 +85,7 @@ object AuthenticatedPrincipal {
 }
 
 object AnonymousPrincipal {
-  val PRINCIPAL_TYPE: String                             = "person"
+  val PRINCIPAL_TYPE: String                             = "person" // anon
   val PRINCIPAL_ID: String                               = "ANONYMOUS"
   def apply(): AnnettePrincipal                          = AnnettePrincipal(PRINCIPAL_TYPE, PRINCIPAL_ID)
   def unapply(principal: AnnettePrincipal): Option[Unit] =

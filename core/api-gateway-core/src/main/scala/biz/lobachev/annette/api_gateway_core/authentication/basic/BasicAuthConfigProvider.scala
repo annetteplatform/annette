@@ -32,9 +32,11 @@ object BasicAuthConfigProvider {
           None
         },
         config => {
-          config.basic.map { keycloakConfig =>
+          config.basic.map { basicAuthConfig =>
+            val conf =
+              basicAuthConfig.copy(accounts = basicAuthConfig.accounts.map(a => a._1 -> a._2.copy(secret = "***")))
             log.info("Basic Auth config load success")
-            log.debug("Basic Auth config: {}", keycloakConfig)
+            log.debug("Basic Auth config: {}", conf)
           }.getOrElse(log.warn("Basic Auth config not found"))
           config.basic
         }
