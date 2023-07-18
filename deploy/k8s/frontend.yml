@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: "annetteplatform/annette-frontend:0.4.0"
+          image: "annetteplatform/annette-frontend:0.5.1"
           imagePullPolicy: Always
           ports:
             - containerPort: 8080

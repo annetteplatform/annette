@@ -10,7 +10,7 @@ spec:
     spec:
       containers:
         - name: demo-ignition
-          image: "annetteplatform/demo-ignition:0.4.2"
+          image: "annetteplatform/demo-ignition:0.5.1"
           imagePullPolicy: Always
           ports:
             - containerPort: 2552

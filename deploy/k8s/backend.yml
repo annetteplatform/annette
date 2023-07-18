@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: api-gateway
-          image: "annetteplatform/api-gateway:0.4.2"
+          image: "annetteplatform/api-gateway:0.5.1"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -76,7 +76,7 @@ spec:
     spec:
       containers:
         - name: application
-          image: "annetteplatform/application:0.4.2"
+          image: "annetteplatform/application:0.5.1"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -150,7 +150,7 @@ spec:
     spec:
       containers:
         - name: authorization
-          image: "annetteplatform/authorization:0.4.2"
+          image: "annetteplatform/authorization:0.5.1"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -224,7 +224,7 @@ spec:
     spec:
       containers:
         - name: subscriptions
-          image: "annetteplatform/subscriptions:0.4.2"
+          image: "annetteplatform/subscriptions:0.5.1"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -298,7 +298,7 @@ spec:
     spec:
       containers:
         - name: principal-groups
-          image: "annetteplatform/principal-groups:0.4.2"
+          image: "annetteplatform/principal-groups:0.5.1"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -372,7 +372,7 @@ spec:
     spec:
       containers:
         - name: persons
-          image: "annetteplatform/persons:0.4.2"
+          image: "annetteplatform/persons:0.5.1"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -457,7 +457,7 @@ spec:
     spec:
       containers:
         - name: org-structure
-          image: "annetteplatform/org-structure:0.4.2"
+          image: "annetteplatform/org-structure:0.5.1"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -542,7 +542,7 @@ spec:
     spec:
       containers:
         - name: cms
-          image: "annetteplatform/cms:0.4.2"
+          image: "annetteplatform/cms:0.5.1"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -620,7 +620,7 @@ spec:
     spec:
       containers:
         - name: bpm-repository
-          image: "annetteplatform/bpm-repository:0.4.2"
+          image: "annetteplatform/bpm-repository:0.5.1"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -716,7 +716,7 @@ spec:
     spec:
       containers:
         - name: service-catalog
-          image: "annetteplatform/service-catalog:0.4.2"
+          image: "annetteplatform/service-catalog:0.5.1"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
