@@ -23,6 +23,7 @@ import biz.lobachev.annette.subscription.api.subscription.{ObjectId, Subscriptio
 import biz.lobachev.annette.subscription.api.subscription_type.SubscriptionTypeId
 import biz.lobachev.annette.subscription.impl.subscription.SubscriptionEntity.{SubscriptionCreated, SubscriptionDeleted}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.collection.immutable._

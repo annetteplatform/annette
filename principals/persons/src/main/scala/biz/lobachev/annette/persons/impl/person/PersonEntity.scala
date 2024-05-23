@@ -28,6 +28,7 @@ import biz.lobachev.annette.core.model.category.CategoryId
 import biz.lobachev.annette.persons.api.person._
 import biz.lobachev.annette.persons.impl.person.model.PersonState
 import com.lightbend.lagom.scaladsl.persistence._
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.{Format, _}
 

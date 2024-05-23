@@ -25,6 +25,7 @@ import biz.lobachev.annette.ignition.service_catalog.ServiceCatalogLoader
 import biz.lobachev.annette.ignition.service_catalog.loaders.data.GroupData
 import biz.lobachev.annette.service_catalog.api.ServiceCatalogService
 import biz.lobachev.annette.service_catalog.api.item.{CreateGroupPayload, ServiceItemAlreadyExist, UpdateGroupPayload}
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Reads
 

@@ -26,6 +26,7 @@ import biz.lobachev.annette.service_catalog.api.item.ServiceItemId
 import biz.lobachev.annette.service_catalog.api.scope._
 import biz.lobachev.annette.service_catalog.impl.scope.model.ScopeState
 import com.lightbend.lagom.scaladsl.persistence._
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json._
 

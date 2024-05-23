@@ -25,6 +25,7 @@ import biz.lobachev.annette.authorization.api.assignment._
 import biz.lobachev.annette.authorization.impl.assignment.model.AssignmentState
 import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
 import com.lightbend.lagom.scaladsl.persistence._
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json._
 

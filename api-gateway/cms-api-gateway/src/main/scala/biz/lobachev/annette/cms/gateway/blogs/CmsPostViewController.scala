@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.cms.gateway.blogs
 
-import biz.lobachev.annette.api_gateway_core.authentication.{MaybeAuthenticatedAction}
+import biz.lobachev.annette.api_gateway_core.authentication.MaybeAuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.cms.api.{common, CmsService}
 import biz.lobachev.annette.cms.api.blogs.blog._
@@ -35,6 +35,7 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.{FindResult, SortBy}
 import biz.lobachev.annette.subscription.api.SubscriptionService
 import biz.lobachev.annette.subscription.api.subscription.SubscriptionFindQuery
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, Action, ControllerComponents}

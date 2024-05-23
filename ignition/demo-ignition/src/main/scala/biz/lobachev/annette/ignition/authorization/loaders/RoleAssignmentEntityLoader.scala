@@ -25,6 +25,7 @@ import biz.lobachev.annette.ignition.authorization.loaders.data.RoleAssignmentDa
 import biz.lobachev.annette.ignition.core.EntityLoader
 import biz.lobachev.annette.ignition.core.config.DefaultEntityLoaderConfig
 import biz.lobachev.annette.ignition.core.result.{LoadFailed, LoadOk, LoadStatus}
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Reads
 

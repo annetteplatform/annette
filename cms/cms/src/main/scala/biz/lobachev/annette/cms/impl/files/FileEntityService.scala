@@ -24,6 +24,7 @@ import akka.util.Timeout
 import biz.lobachev.annette.cms.api.files.FileTypes.FileType
 import biz.lobachev.annette.cms.api.files._
 import biz.lobachev.annette.cms.impl.files.dao.FileDbDao
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
 

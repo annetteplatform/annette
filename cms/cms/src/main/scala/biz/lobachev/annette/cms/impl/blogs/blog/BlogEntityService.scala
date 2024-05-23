@@ -26,6 +26,7 @@ import biz.lobachev.annette.cms.api.common._
 import biz.lobachev.annette.cms.impl.blogs.blog.dao.{BlogDbDao, BlogIndexDao}
 import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.indexing.FindResult
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
 

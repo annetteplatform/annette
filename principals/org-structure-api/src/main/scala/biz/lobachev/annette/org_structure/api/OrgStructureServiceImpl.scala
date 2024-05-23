@@ -32,6 +32,7 @@ import biz.lobachev.annette.org_structure.api.category.{
 }
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role.{OrgRoleId, _}
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.collection.immutable.Map

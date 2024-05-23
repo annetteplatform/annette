@@ -23,6 +23,7 @@ import biz.lobachev.annette.bpm_repository.api.rdb.SQLErrorCodes
 import biz.lobachev.annette.bpm_repository.impl.PostgresDatabase
 import biz.lobachev.annette.bpm_repository.impl.db.{BpmModelRecord, BpmRepositorySchema, BpmRepositorySchemaImplicits}
 import biz.lobachev.annette.core.model.indexing.FindResult
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import org.postgresql.util.PSQLException
 import slick.jdbc.PostgresProfile.api._

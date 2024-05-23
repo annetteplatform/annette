@@ -33,7 +33,7 @@ import biz.lobachev.annette.service_catalog.gateway.user.{
   ScopeServicesResultDto,
   UserServicesResultDto
 }
-import io.scalaland.chimney.dsl.TransformerOps
+import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}
 

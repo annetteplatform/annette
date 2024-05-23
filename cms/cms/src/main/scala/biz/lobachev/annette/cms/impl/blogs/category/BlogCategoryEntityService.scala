@@ -25,6 +25,7 @@ import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 import com.typesafe.config.Config
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import java.util.concurrent.TimeUnit

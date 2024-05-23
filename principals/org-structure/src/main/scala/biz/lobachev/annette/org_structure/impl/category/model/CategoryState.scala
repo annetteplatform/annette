@@ -20,6 +20,7 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 
 import java.time.OffsetDateTime
 import biz.lobachev.annette.org_structure.api.category.{OrgCategory, OrgCategoryId}
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 

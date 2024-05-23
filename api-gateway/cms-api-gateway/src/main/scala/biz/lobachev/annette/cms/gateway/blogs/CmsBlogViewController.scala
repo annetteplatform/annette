@@ -30,6 +30,7 @@ import biz.lobachev.annette.subscription.api.subscription.{
   DeleteSubscriptionPayload,
   SubscriptionFindQuery
 }
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, Action, ControllerComponents}

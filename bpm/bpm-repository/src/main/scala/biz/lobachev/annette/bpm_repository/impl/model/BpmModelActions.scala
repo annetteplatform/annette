@@ -21,6 +21,7 @@ import biz.lobachev.annette.bpm_repository.api.domain.BpmModelId
 import biz.lobachev.annette.bpm_repository.api.model._
 import biz.lobachev.annette.bpm_repository.impl.db.{BpmRepositorySchema, BpmRepositorySchemaImplicits}
 import biz.lobachev.annette.core.model.indexing.{FindResult, HitResult}
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import slick.jdbc.PostgresProfile.api._
 

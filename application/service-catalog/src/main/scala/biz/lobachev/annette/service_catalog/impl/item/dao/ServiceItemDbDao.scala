@@ -30,6 +30,7 @@ import biz.lobachev.annette.service_catalog.impl.item.ServiceItemEntity.{
   ServiceUpdated
 }
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 

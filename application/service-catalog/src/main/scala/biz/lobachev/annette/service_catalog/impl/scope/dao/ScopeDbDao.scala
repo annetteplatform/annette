@@ -28,6 +28,7 @@ import biz.lobachev.annette.service_catalog.impl.scope.ScopeEntity.{
   ScopeUpdated
 }
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import java.util.Date

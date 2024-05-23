@@ -23,6 +23,7 @@ import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.application.gateway.Permissions.MAINTAIN_ALL_TRANSLATIONS
 import biz.lobachev.annette.application.gateway.translation._
 import biz.lobachev.annette.core.model.{DataSource, LanguageId}
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}

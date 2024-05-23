@@ -25,6 +25,7 @@ import biz.lobachev.annette.org_structure.impl.category.CategoryEntity.{
   CategoryUpdated
 }
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}

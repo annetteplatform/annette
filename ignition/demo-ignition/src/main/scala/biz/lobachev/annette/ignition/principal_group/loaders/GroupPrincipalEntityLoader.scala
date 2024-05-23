@@ -25,6 +25,7 @@ import biz.lobachev.annette.ignition.principal_group.PrincipalGroupLoader
 import biz.lobachev.annette.ignition.principal_group.loaders.data.GroupPrincipalData
 import biz.lobachev.annette.principal_group.api.PrincipalGroupService
 import biz.lobachev.annette.principal_group.api.group.AssignPrincipalPayload
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Reads
 

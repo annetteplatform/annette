@@ -18,6 +18,7 @@ package biz.lobachev.annette.bpm_repository.impl.db
 
 import biz.lobachev.annette.bpm_repository.api.bp.BusinessProcessVariable
 import biz.lobachev.annette.bpm_repository.api.domain.{BusinessProcessId, Datatype, VariableName}
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 case class BusinessProcessVariableRecord(

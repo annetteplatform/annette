@@ -23,6 +23,7 @@ import biz.lobachev.annette.cms.gateway.Permissions.{MAINTAIN_ALL_BLOG_CATEGORIE
 import biz.lobachev.annette.cms.gateway.blogs.category._
 import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.category._
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, Action, ControllerComponents}

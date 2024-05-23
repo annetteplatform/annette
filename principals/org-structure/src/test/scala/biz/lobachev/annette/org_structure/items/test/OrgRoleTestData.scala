@@ -5,6 +5,7 @@ import biz.lobachev.annette.core.model.OrgRolePrincipal
 import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, OrgRolePrincipal}
 import biz.lobachev.annette.core.test.generator.RandomGenerator
 import biz.lobachev.annette.org_structure.api.role._
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 trait OrgRoleTestData extends RandomGenerator {

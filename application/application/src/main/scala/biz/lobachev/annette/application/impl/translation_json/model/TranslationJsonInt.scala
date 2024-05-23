@@ -19,6 +19,7 @@ package biz.lobachev.annette.application.impl.translation_json.model
 import biz.lobachev.annette.application.api.translation.{TranslationId, TranslationJson}
 import biz.lobachev.annette.core.model.LanguageId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.{JsObject, Json}
 

@@ -6,6 +6,7 @@ import biz.lobachev.annette.core.model.category.CategoryId
 import biz.lobachev.annette.core.test.generator.RandomGenerator
 import biz.lobachev.annette.persons.api.person._
 import biz.lobachev.annette.persons.impl.person.PersonEntity.{PersonCreated, PersonUpdated}
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.util.Random

@@ -13,6 +13,7 @@ import biz.lobachev.annette.bpm_repository.impl.bp.{BusinessProcessActions, Busi
 import biz.lobachev.annette.bpm_repository.impl.schema.{DataSchemaActions, DataSchemaService}
 import biz.lobachev.annette.core.exception.AnnetteTransportException
 import biz.lobachev.annette.core.model.auth.PersonPrincipal
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AsyncWordSpecLike

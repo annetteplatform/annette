@@ -25,6 +25,7 @@ import biz.lobachev.annette.ignition.core.result.{LoadFailed, LoadOk, LoadStatus
 import biz.lobachev.annette.ignition.principal_group.PrincipalGroupLoader
 import biz.lobachev.annette.ignition.principal_group.loaders.data.CategoryData
 import biz.lobachev.annette.principal_group.api.PrincipalGroupService
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Reads
 

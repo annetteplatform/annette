@@ -26,6 +26,7 @@ import biz.lobachev.annette.application.impl.language.dao.{LanguageDbDao, Langua
 import biz.lobachev.annette.core.model.{DataSource, LanguageId}
 import biz.lobachev.annette.core.model.indexing.FindResult
 import com.typesafe.config.Config
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
 

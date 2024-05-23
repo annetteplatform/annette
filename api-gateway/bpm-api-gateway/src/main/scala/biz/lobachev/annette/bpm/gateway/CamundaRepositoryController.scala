@@ -31,6 +31,7 @@ import biz.lobachev.annette.bpm_repository.api.model.BpmModel
 import biz.lobachev.annette.camunda.api.RepositoryService
 import biz.lobachev.annette.camunda.api.repository.CreateDeploymentPayload
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}

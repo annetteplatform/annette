@@ -119,6 +119,7 @@ lazy val `core` = (project in file("core/core"))
       lagomScaladslPersistenceCassandra,
       lagomScaladslServer % Optional,
       lagomScaladslTestKit,
+      Dependencies.chimney,
       Dependencies.playJsonExt,
       Dependencies.macwire
     ) ++ Dependencies.tests

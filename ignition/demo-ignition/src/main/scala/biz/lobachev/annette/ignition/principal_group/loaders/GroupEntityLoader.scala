@@ -29,6 +29,7 @@ import biz.lobachev.annette.principal_group.api.group.{
   PrincipalGroupAlreadyExist,
   UpdatePrincipalGroupPayload
 }
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Reads
 
