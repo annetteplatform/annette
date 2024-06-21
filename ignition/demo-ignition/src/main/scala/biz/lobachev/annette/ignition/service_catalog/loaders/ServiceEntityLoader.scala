@@ -29,6 +29,7 @@ import biz.lobachev.annette.service_catalog.api.item.{
   ServiceItemAlreadyExist,
   UpdateServicePayload
 }
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Reads
 

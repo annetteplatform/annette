@@ -25,6 +25,7 @@ import biz.lobachev.annette.ignition.org_structure.OrgStructureLoader
 import biz.lobachev.annette.ignition.org_structure.loaders.data.OrgRoleData
 import biz.lobachev.annette.org_structure.api.OrgStructureService
 import biz.lobachev.annette.org_structure.api.role.{CreateOrgRolePayload, OrgRoleAlreadyExist, UpdateOrgRolePayload}
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Reads
 

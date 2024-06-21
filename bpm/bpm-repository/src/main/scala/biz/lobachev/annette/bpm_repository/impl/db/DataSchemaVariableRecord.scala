@@ -18,6 +18,7 @@ package biz.lobachev.annette.bpm_repository.impl.db
 
 import biz.lobachev.annette.bpm_repository.api.domain.{DataSchemaId, Datatype, VariableName}
 import biz.lobachev.annette.bpm_repository.api.schema.DataSchemaVariable
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 case class DataSchemaVariableRecord(

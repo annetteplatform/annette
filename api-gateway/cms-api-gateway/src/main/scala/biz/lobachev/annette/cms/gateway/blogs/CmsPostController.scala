@@ -49,6 +49,7 @@ import biz.lobachev.annette.cms.api.{CmsService, CmsStorage}
 import biz.lobachev.annette.cms.gateway.Permissions
 import biz.lobachev.annette.cms.gateway.blogs.post._
 import biz.lobachev.annette.core.model.indexing.SortBy
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, Action, ControllerComponents}

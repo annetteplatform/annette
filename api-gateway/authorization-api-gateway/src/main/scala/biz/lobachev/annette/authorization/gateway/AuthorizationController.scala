@@ -24,6 +24,7 @@ import biz.lobachev.annette.authorization.api.role._
 import biz.lobachev.annette.authorization.gateway.Permissions._
 import biz.lobachev.annette.authorization.gateway.dto.{DeleteRolePayloadDto, RolePayloadDto, RolePrincipalPayload}
 import biz.lobachev.annette.core.model.DataSource
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}

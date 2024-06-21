@@ -24,6 +24,7 @@ import biz.lobachev.annette.bpm_repository.api.BpmRepositoryService
 import biz.lobachev.annette.bpm_repository.api.domain.BpmModelId
 import biz.lobachev.annette.bpm_repository.api.model._
 import biz.lobachev.annette.camunda.api.RepositoryService
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}

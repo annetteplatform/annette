@@ -29,7 +29,7 @@ import biz.lobachev.annette.ignition.org_structure.OrgStructureLoader
 import biz.lobachev.annette.ignition.org_structure.loaders.data.{OrgItemData, PositionData, UnitData}
 import biz.lobachev.annette.org_structure.api.OrgStructureService
 import biz.lobachev.annette.org_structure.api.hierarchy._
-import io.scalaland.chimney.dsl.TransformerOps
+import io.scalaland.chimney.dsl._
 import play.api.libs.json.Reads
 
 import java.time.LocalDateTime

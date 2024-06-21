@@ -28,6 +28,7 @@ import biz.lobachev.annette.service_catalog.api.service_principal.{
 }
 import biz.lobachev.annette.service_catalog.impl.service_principal.model.ServicePrincipalState
 import com.lightbend.lagom.scaladsl.persistence._
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json._
 

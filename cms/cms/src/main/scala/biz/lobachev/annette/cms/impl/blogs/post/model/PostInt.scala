@@ -22,6 +22,7 @@ import biz.lobachev.annette.cms.api.common.article.{Metric, PublicationStatus}
 import biz.lobachev.annette.cms.impl.content.ContentInt
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import play.api.libs.json.{Format, Json}
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import java.time.OffsetDateTime

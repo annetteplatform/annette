@@ -21,6 +21,7 @@ import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTa
 import biz.lobachev.annette.subscription.api.subscription_type._
 import biz.lobachev.annette.subscription.impl.subscription_type.SubscriptionTypeEntity
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}

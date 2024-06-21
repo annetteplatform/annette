@@ -22,6 +22,7 @@ import biz.lobachev.annette.cms.api.home_pages.{HomePage, HomePageId}
 import biz.lobachev.annette.cms.impl.home_pages.HomePageEntity
 import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.collection.immutable.{Seq, _}

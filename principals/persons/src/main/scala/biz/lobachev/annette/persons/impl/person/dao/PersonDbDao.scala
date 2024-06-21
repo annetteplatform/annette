@@ -31,6 +31,7 @@ import biz.lobachev.annette.persons.impl.person.PersonEntity.{
 }
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
 import io.getquill.EntityQuery
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.collection.immutable._

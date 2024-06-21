@@ -18,7 +18,7 @@ package biz.lobachev.annette.application.gateway.user
 
 import biz.lobachev.annette.application.api.language.Language
 import biz.lobachev.annette.core.model.LanguageId
-import io.scalaland.chimney.dsl.TransformerOps
+import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 
 case class UserLanguage(

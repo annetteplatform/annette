@@ -23,6 +23,7 @@ import biz.lobachev.annette.cms.api.files.{FileDescriptor, FileTypes}
 import biz.lobachev.annette.cms.impl.files.FileEntity
 import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}

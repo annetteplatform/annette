@@ -26,6 +26,7 @@ import biz.lobachev.annette.authorization.api.role._
 import biz.lobachev.annette.authorization.impl.role.model.RoleState
 import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
 import com.lightbend.lagom.scaladsl.persistence._
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
 import play.api.libs.json._

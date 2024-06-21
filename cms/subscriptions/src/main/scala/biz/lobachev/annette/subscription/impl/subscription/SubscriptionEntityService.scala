@@ -29,6 +29,7 @@ import biz.lobachev.annette.subscription.api.subscription_type.SubscriptionTypeI
 import biz.lobachev.annette.subscription.impl.subscription.SubscriptionEntity._
 import biz.lobachev.annette.subscription.impl.subscription.dao.{SubscriptionDbDao, SubscriptionIndexDao}
 import com.typesafe.config.Config
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.duration._

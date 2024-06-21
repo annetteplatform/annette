@@ -30,6 +30,7 @@ import biz.lobachev.annette.principal_group.impl.group.PrincipalGroupEntity.{
   PrincipalUnassigned
 }
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.collection.immutable._

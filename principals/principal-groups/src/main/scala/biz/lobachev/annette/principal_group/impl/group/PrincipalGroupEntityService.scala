@@ -29,6 +29,7 @@ import biz.lobachev.annette.principal_group.api.group._
 import biz.lobachev.annette.principal_group.impl.group.PrincipalGroupEntity._
 import biz.lobachev.annette.principal_group.impl.group.dao.{PrincipalGroupDbDao, PrincipalGroupIndexDao}
 import com.typesafe.config.Config
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.duration._

@@ -18,6 +18,7 @@ package biz.lobachev.annette.service_catalog.impl.scope.dao
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.service_catalog.api.scope.{Scope, ScopeId}
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import java.time.OffsetDateTime

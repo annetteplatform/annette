@@ -25,6 +25,7 @@ import biz.lobachev.annette.core.model.category.CategoryId
 import biz.lobachev.annette.principal_group.api.group._
 import biz.lobachev.annette.principal_group.impl.group.model.PrincipalGroupState
 import com.lightbend.lagom.scaladsl.persistence._
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.{Format, _}
 

@@ -23,6 +23,7 @@ import biz.lobachev.annette.bpm.gateway.bp._
 import biz.lobachev.annette.bpm_repository.api.BpmRepositoryService
 import biz.lobachev.annette.bpm_repository.api.bp._
 import biz.lobachev.annette.bpm_repository.api.domain.BusinessProcessId
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}

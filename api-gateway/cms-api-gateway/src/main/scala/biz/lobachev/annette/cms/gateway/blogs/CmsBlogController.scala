@@ -34,6 +34,7 @@ import biz.lobachev.annette.cms.api.common.{
 import biz.lobachev.annette.cms.gateway.Permissions
 import biz.lobachev.annette.cms.gateway.blogs.blog._
 import biz.lobachev.annette.core.model.DataSource
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, Action, ControllerComponents}

@@ -29,6 +29,7 @@ import biz.lobachev.annette.cms.impl.blogs.post.model.{PostInt, PostState}
 import biz.lobachev.annette.cms.impl.content.{ContentInt, WidgetInt}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import com.lightbend.lagom.scaladsl.persistence._
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
 import play.api.libs.json._

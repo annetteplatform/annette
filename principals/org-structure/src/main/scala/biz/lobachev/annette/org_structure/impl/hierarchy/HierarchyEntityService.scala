@@ -32,6 +32,7 @@ import biz.lobachev.annette.org_structure.api.role.OrgRoleId
 import biz.lobachev.annette.org_structure.impl.hierarchy.dao.{HierarchyDbDao, HierarchyIndexDao}
 import biz.lobachev.annette.org_structure.impl.hierarchy.entity.HierarchyEntity
 import com.typesafe.config.Config
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import java.util.concurrent.TimeUnit

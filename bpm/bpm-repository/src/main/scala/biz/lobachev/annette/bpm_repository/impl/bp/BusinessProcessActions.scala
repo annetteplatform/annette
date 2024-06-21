@@ -28,6 +28,7 @@ import biz.lobachev.annette.bpm_repository.impl.db.{
 import biz.lobachev.annette.bpm_repository.impl.schema.DataSchemaQueries
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.{FindResult, HitResult}
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import slick.dbio.DBIOAction
 import slick.jdbc.PostgresProfile

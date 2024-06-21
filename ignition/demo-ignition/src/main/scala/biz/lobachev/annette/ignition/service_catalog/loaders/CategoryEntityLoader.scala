@@ -25,6 +25,7 @@ import biz.lobachev.annette.ignition.core.result.{LoadFailed, LoadOk, LoadStatus
 import biz.lobachev.annette.ignition.service_catalog.ServiceCatalogLoader
 import biz.lobachev.annette.ignition.service_catalog.loaders.data.CategoryData
 import biz.lobachev.annette.service_catalog.api.ServiceCatalogService
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Reads
 

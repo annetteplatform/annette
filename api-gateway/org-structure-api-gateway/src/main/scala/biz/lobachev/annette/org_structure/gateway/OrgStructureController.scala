@@ -26,6 +26,7 @@ import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role._
 import biz.lobachev.annette.org_structure.gateway.Permissions._
 import biz.lobachev.annette.org_structure.gateway.dto._
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 import play.api.mvc.{AbstractController, ControllerComponents}

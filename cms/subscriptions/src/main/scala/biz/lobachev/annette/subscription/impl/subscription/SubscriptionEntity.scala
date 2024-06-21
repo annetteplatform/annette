@@ -25,6 +25,7 @@ import biz.lobachev.annette.subscription.api.subscription._
 import biz.lobachev.annette.subscription.api.subscription_type.SubscriptionTypeId
 import biz.lobachev.annette.subscription.impl.subscription.model.SubscriptionState
 import com.lightbend.lagom.scaladsl.persistence._
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.{Format, _}
 

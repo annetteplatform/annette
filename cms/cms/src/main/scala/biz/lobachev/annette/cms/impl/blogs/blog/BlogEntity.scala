@@ -25,6 +25,7 @@ import biz.lobachev.annette.cms.impl.blogs.blog.model.BlogState
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.CategoryId
 import com.lightbend.lagom.scaladsl.persistence._
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
 import play.api.libs.json._

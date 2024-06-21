@@ -53,6 +53,7 @@ import biz.lobachev.annette.cms.impl.pages.page.dao.{PageDbDao, PageIndexDao}
 import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
 

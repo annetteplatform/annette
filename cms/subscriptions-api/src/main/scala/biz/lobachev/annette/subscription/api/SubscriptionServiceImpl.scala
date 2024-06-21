@@ -29,6 +29,7 @@ import biz.lobachev.annette.subscription.api.subscription.{
   SubscriptionKey
 }
 import biz.lobachev.annette.subscription.api.subscription_type._
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}

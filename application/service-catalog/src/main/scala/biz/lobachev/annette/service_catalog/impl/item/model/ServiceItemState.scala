@@ -20,7 +20,7 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.text.{Icon, MultiLanguageText}
 import biz.lobachev.annette.service_catalog.api.item.{Group, Service, ServiceItem, ServiceItemId, ServiceLink}
 import com.fasterxml.jackson.annotation.{JsonSubTypes, JsonTypeInfo}
-import io.scalaland.chimney.dsl.TransformerOps
+import io.scalaland.chimney.dsl._
 import play.api.libs.json.{Format, Json, JsonConfiguration, JsonNaming}
 
 import java.time.OffsetDateTime

@@ -18,6 +18,7 @@ package biz.lobachev.annette.cms.impl.pages.category.model
 
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.{Category, CategoryId}
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 

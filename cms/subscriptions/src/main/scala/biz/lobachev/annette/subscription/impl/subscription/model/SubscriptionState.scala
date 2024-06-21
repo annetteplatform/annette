@@ -20,6 +20,7 @@ import java.time.OffsetDateTime
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.subscription.api.subscription.{ObjectId, Subscription}
 import biz.lobachev.annette.subscription.api.subscription_type.SubscriptionTypeId
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 

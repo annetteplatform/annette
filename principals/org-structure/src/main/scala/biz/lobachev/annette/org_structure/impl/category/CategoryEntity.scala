@@ -26,6 +26,7 @@ import biz.lobachev.annette.org_structure.api.category.CreateCategoryPayload
 import biz.lobachev.annette.org_structure.api.category._
 import biz.lobachev.annette.org_structure.impl.category.model.CategoryState
 import com.lightbend.lagom.scaladsl.persistence._
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.{Format, _}
 

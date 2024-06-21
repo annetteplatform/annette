@@ -28,6 +28,7 @@ import biz.lobachev.annette.cms.impl.blogs.post.PostEntity
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
 import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
 

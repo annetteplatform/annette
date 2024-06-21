@@ -20,7 +20,7 @@ import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.CategoryId
 import biz.lobachev.annette.service_catalog.api.item.ServiceItemId
 import biz.lobachev.annette.service_catalog.api.scope.{Scope, ScopeId}
-import io.scalaland.chimney.dsl.TransformerOps
+import io.scalaland.chimney.dsl._
 import play.api.libs.json.{Format, Json}
 
 import java.time.OffsetDateTime

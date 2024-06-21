@@ -11,7 +11,7 @@ object Dependencies {
     val playJsonExt             = "0.42.0"
     val jwtPlayJson             = "9.0.2"
     val akkaKubernetesDiscovery = "1.0.10"
-    val chimney                 = "0.6.1"
+    val chimney                 = "1.0.0"
     val pureConfig              = "0.17.1"
     val quill                   = "3.10.0"
     val alpakkaS3               = "3.0.4"
