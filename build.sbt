@@ -83,6 +83,7 @@ lazy val root = (project in file("."))
   .aggregate(
     `core`,
     `microservice-core`,
+    `microservice-core-pekko`,
     `api-gateway-core`,
     `api-gateway`,
     // initialization application
@@ -151,6 +152,33 @@ lazy val `microservice-core` = (project in file("core/microservice-core"))
       ++ Dependencies.elastic
       ++ Dependencies.lagomAkkaDiscovery
       ++ Dependencies.quill
+  )
+  .settings(annetteSettings: _*)
+  .settings(
+    scalacOptions += "-Wconf:cat=unused-nowarn:s",
+    scalacOptions += "-Wconf:msg=evidence parameter.*never used:s"
+  )
+  .dependsOn(
+    `core`
+  )
+
+// Pekko-variant shared core (slice 003). Coexists with `microservice-core` (Lagom variant)
+// during the migration. Slices 004-012 add `.dependsOn(microservice-core-pekko)` as they
+// migrate. Slice 013 deletes the Lagom variant and renames this back to `microservice-core`.
+//
+// NOTE: depends on `core` only, NOT on `microservice-core`. The two share no source.
+// Quill uses driver-3 (`com.datastax.driver.core.*`); Pekko Persistence Cassandra uses
+// driver-4 (`com.datastax.oss.driver.api.core.*`). Both jars coexist on the classpath.
+// Service slices obtain separate sessions for each driver.
+lazy val `microservice-core-pekko` = (project in file("core/microservice-core-pekko"))
+  .settings(
+    libraryDependencies ++= Dependencies.pekkoCore
+      ++ Dependencies.pekkoPersistenceCassandra
+      ++ Dependencies.pekkoProjection
+      ++ Dependencies.quillPekko
+      ++ Dependencies.elastic
+      ++ Seq(Dependencies.chimney, Dependencies.pureConfig)
+      ++ Dependencies.tests
   )
   .settings(annetteSettings: _*)
   .settings(

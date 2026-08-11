@@ -1,0 +1,64 @@
+/*
+ * Copyright 2013 Valery Lobachev
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package biz.lobachev.annette.microservice_core.pekko.db
+
+import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.core.model.text.Icon
+import io.getquill.MappedEncoding
+import play.api.libs.json.{JsValue, Json, Reads, Writes}
+
+import java.time.{OffsetDateTime, ZoneOffset}
+import java.util.Date
+
+/**
+ * Direct port of `microservice_core.db.QuillEncoders`. No Lagom dependencies; the only
+ * change is the package name. Service slices change their import from
+ * `microservice_core.db.QuillEncoders` to `microservice_core.pekko.db.QuillEncoders`.
+ */
+trait QuillEncoders {
+  implicit val offsetDataTimeEncoder: MappedEncoding[OffsetDateTime, Date] =
+    MappedEncoding[OffsetDateTime, Date](odt => Date.from(odt.toInstant))
+
+  implicit val offsetDataTimeDecoder: MappedEncoding[Date, OffsetDateTime] =
+    MappedEncoding[Date, OffsetDateTime](_.toInstant.atOffset(ZoneOffset.UTC))
+
+  implicit val principalEncoder: MappedEncoding[AnnettePrincipal, String] =
+    MappedEncoding[AnnettePrincipal, String](_.code)
+
+  implicit val principalDecoder: MappedEncoding[String, AnnettePrincipal] =
+    MappedEncoding[String, AnnettePrincipal](AnnettePrincipal.apply)
+
+  implicit val jsValueEncoder: MappedEncoding[JsValue, String] =
+    MappedEncoding[JsValue, String](t => t.toString())
+
+  implicit val jsValueDecoder: MappedEncoding[String, JsValue] =
+    MappedEncoding[String, JsValue](string => Json.parse(string))
+
+  def genericJsonEncoder[T](implicit writes: Writes[T]): MappedEncoding[T, String] =
+    MappedEncoding[T, String](t => Json.toJson(t).toString())
+
+  def genericJsonDecoder[T](implicit reads: Reads[T]): MappedEncoding[String, T] =
+    MappedEncoding[String, T](string => Json.parse(string).validate[T].get)
+
+  def genericStringEncoder[T]: MappedEncoding[T, String] = MappedEncoding[T, String](_.toString)
+
+  def genericStringDecoder[T](d: String => T): MappedEncoding[String, T] = MappedEncoding[String, T](d)
+
+  implicit val encoder = genericJsonEncoder[Icon]
+  implicit val decoder = genericJsonDecoder[Icon]
+
+}

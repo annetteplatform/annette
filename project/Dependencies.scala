@@ -83,6 +83,14 @@ object Dependencies {
     "io.getquill" %% "quill-cassandra-lagom" % Version.quill
   )
 
+  // Pekko variant — drops quill-cassandra-lagom (which depends on Lagom's CassandraSession
+  // and CassandraLagomAsyncContext). Pekko services construct a plain CassandraAsyncContext
+  // from quill-cassandra. Slice 013 may consolidate this with `quill` once Lagom is gone.
+  val quillPekko: Seq[ModuleID] = Seq(
+    quillCore,
+    "io.getquill" %% "quill-cassandra" % Version.quill
+  )
+
   val alpakkaS3: Seq[ModuleID] = Seq(
     "com.lightbend.akka" %% "akka-stream-alpakka-s3" % Version.alpakkaS3,
     "com.typesafe.akka"  %% "akka-stream"            % LagomVersion.akka,
@@ -125,7 +133,9 @@ object Dependencies {
   )
 
   val pekkoProjection: Seq[ModuleID] = Seq(
-    "org.apache.pekko" %% "pekko-projection-cassandra" % PekkoVersion.pekkoProjection
+    "org.apache.pekko" %% "pekko-projection-cassandra"   % PekkoVersion.pekkoProjection,
+    // eventsourced adds EventEnvelope + EventSourcedProvider.eventsByTag — used by ProjectionBase.
+    "org.apache.pekko" %% "pekko-projection-eventsourced" % PekkoVersion.pekkoProjection
   )
 
   val pekkoManagement: Seq[ModuleID] = Seq(
