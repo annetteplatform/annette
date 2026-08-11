@@ -29,6 +29,25 @@ cd deploy/docker && ./deploy.sh        # Postgres, Cassandra 3.11, OpenSearch 2.
 Tests spin up keyspaces via `ServiceTest.defaultSetup.withCassandra(true)` but **do not start a Cassandra server** — a
 real Cassandra must already be on `localhost:9042`. Same for OpenSearch on `:9200`. Expect tests to fail/hang otherwise.
 
+### Dev-mode service ports (post-Pekko migration)
+
+After slice 002 the dev-mode port table is authoritative (D2). Microservices run as their own
+processes (no Lagom `runAll`). Pekko Artery ports 17361–17369 are reserved; HTTP/gRPC ports
+8510–8518 mirror the existing docker-compose host-port allocation.
+
+| Service           | Artery port | HTTP/gRPC port |
+|-------------------|-------------|----------------|
+| application       | 17361       | 8510           |
+| service-catalog   | 17362       | 8511           |
+| authorization     | 17363       | 8512           |
+| bpm-repository    | 17364       | 8513           |
+| cms               | 17365       | 8514           |
+| subscriptions     | 17366       | 8515           |
+| org-structure     | 17367       | 8516           |
+| persons           | 17368       | 8517           |
+| principal-groups  | 17369       | 8518           |
+| api-gateway       | 17355       | 9000           |
+
 ## Module layout (real boundaries from `build.sbt`, ~30 sub-projects)
 
 Each business domain is split into three layers — keep this when adding code:

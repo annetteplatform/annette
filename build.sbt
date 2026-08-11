@@ -1,5 +1,6 @@
 import com.typesafe.sbt.SbtNativePackager.autoImport.NativePackagerHelper._
 import com.typesafe.sbt.packager.docker.DockerChmodType
+import org.apache.pekko.grpc.sbt.PekkoGrpcPlugin
 import play.sbt.routes.RoutesKeys
 
 scalaVersion := "2.13.18"
@@ -52,7 +53,12 @@ def annetteSettings: Seq[Setting[_]] =
   Seq(
     organizationName := "Valery Lobachev",
     startYear := Some(2013),
-    scalaVersion := "2.13.18"
+    scalaVersion := "2.13.18",
+    // Scala 2.13.18 tightened implicit-explicit-type checks (new since 2.13.9).
+    // Pre-existing codebase has ~700 `implicit val format = Json.format[X]` without
+    // explicit types; fixing them is out of scope for slice 002. Silent for now;
+    // the silence is per-message (not per-category) so other lint remains fatal.
+    scalacOptions += "-Wconf:msg=Implicit definition should have explicit type:s"
   )
 
 def confDirSettings: Seq[Setting[_]] =
@@ -177,7 +183,7 @@ lazy val `api-gateway-core` = (project in file("core/api-gateway-core"))
   )
 
 lazy val `api-gateway` = (project in file("api-gateway/api-gateway"))
-  .enablePlugins(LagomPlay, LagomScala)
+  .enablePlugins(LagomPlay, LagomScala, PekkoGrpcPlugin)
   .settings(
     // To disable Unused import error for routes
     RoutesKeys.routesImport := Seq.empty,
@@ -240,6 +246,7 @@ def ignitionDemoProject(pr: Project) =
     )
 
 lazy val `application-api` = (project in file("application/application-api"))
+  .enablePlugins(PekkoGrpcPlugin)
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -261,12 +268,14 @@ def applicationProject(pr: Project) =
       ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
     )
     .settings(lagomForkedTestSettings: _*)
+    .settings(Test / fork := true) // survives slice 013 (which removes lagomForkedTestSettings)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
     .dependsOn(`application-api`, `microservice-core`)
 
 lazy val `service-catalog-api` = (project in file("application/service-catalog-api"))
+  .enablePlugins(PekkoGrpcPlugin)
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -288,6 +297,7 @@ def serviceCatalogProject(pr: Project) =
       ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
     )
     .settings(lagomForkedTestSettings: _*)
+    .settings(Test / fork := true) // survives slice 013 (which removes lagomForkedTestSettings)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
@@ -333,6 +343,7 @@ lazy val `service-catalog-api-gateway` = (project in file("api-gateway/service-c
   )
 
 lazy val `authorization-api` = (project in file("authorization/authorization-api"))
+  .enablePlugins(PekkoGrpcPlugin)
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -354,6 +365,7 @@ def authorizationProject(pr: Project) =
       ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
     )
     .settings(lagomForkedTestSettings: _*)
+    .settings(Test / fork := true) // survives slice 013 (which removes lagomForkedTestSettings)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
@@ -393,6 +405,7 @@ lazy val `camunda` = (project in file("bpm/camunda"))
   .dependsOn(`core`)
 
 lazy val `bpm-repository-api` = (project in file("bpm/bpm-repository-api"))
+  .enablePlugins(PekkoGrpcPlugin)
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -416,6 +429,7 @@ def bpmRepositoryProject(pr: Project) =
         Dependencies.slick
     )
     .settings(lagomForkedTestSettings: _*)
+    .settings(Test / fork := true) // survives slice 013 (which removes lagomForkedTestSettings)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
@@ -442,6 +456,7 @@ lazy val `bpm-api-gateway` = (project in file("api-gateway/bpm-api-gateway"))
   )
 
 lazy val `cms-api` = (project in file("cms/cms-api"))
+  .enablePlugins(PekkoGrpcPlugin)
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -466,6 +481,7 @@ def cmsProject(pr: Project) =
       ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
     )
     .settings(lagomForkedTestSettings: _*)
+    .settings(Test / fork := true) // survives slice 013 (which removes lagomForkedTestSettings)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
@@ -492,6 +508,7 @@ lazy val `cms-api-gateway` = (project in file("api-gateway/cms-api-gateway"))
   )
 
 lazy val `org-structure-api` = (project in file("principals/org-structure-api"))
+  .enablePlugins(PekkoGrpcPlugin)
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -514,6 +531,7 @@ def orgStructureProject(pr: Project) =
       ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
     )
     .settings(lagomForkedTestSettings: _*)
+    .settings(Test / fork := true) // survives slice 013 (which removes lagomForkedTestSettings)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
@@ -539,6 +557,7 @@ lazy val `org-structure-api-gateway` = (project in file("api-gateway/org-structu
   )
 
 lazy val `persons-api` = (project in file("principals/persons-api"))
+  .enablePlugins(PekkoGrpcPlugin)
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -561,6 +580,7 @@ def personsProject(pr: Project) =
       ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery ++ Dependencies.quill
     )
     .settings(lagomForkedTestSettings: _*)
+    .settings(Test / fork := true) // survives slice 013 (which removes lagomForkedTestSettings)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
@@ -586,6 +606,7 @@ lazy val `persons-api-gateway` = (project in file("api-gateway/persons-api-gatew
   )
 
 lazy val `principal-groups-api` = (project in file("principals/principal-groups-api"))
+  .enablePlugins(PekkoGrpcPlugin)
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -609,6 +630,7 @@ def principalGroupsProject(pr: Project) =
       ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
     )
     .settings(lagomForkedTestSettings: _*)
+    .settings(Test / fork := true) // survives slice 013 (which removes lagomForkedTestSettings)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
@@ -634,6 +656,7 @@ lazy val `principal-groups-api-gateway` = (project in file("api-gateway/principa
   )
 
 lazy val `subscriptions-api` = (project in file("cms/subscriptions-api"))
+  .enablePlugins(PekkoGrpcPlugin)
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
@@ -657,6 +680,7 @@ def subscriptionsProject(pr: Project) =
       ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
     )
     .settings(lagomForkedTestSettings: _*)
+    .settings(Test / fork := true) // survives slice 013 (which removes lagomForkedTestSettings)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)

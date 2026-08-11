@@ -23,6 +23,31 @@ object Dependencies {
     val slf4j                   = "1.7.36"
   }
 
+  // ---------------------------------------------------------------------------
+  // Pekko version matrix — locked by dev/migration/001-decisions.md §C.
+  // Slices 003-012 consume these vals. Do not pin different versions.
+  // ---------------------------------------------------------------------------
+  object PekkoVersion {
+    // Play 3.0.11 is the Pekko-based Play release; coordinates moved to
+    // org.playframework (not com.typesafe.play) in Play 3.x.
+    val playFramework       = "3.0.11"
+    // Pekko Core verified empirically by Spike A.
+    val pekkoCore           = "1.1.3"
+    // Pekko HTTP is pulled in transitively by Play 3.0.11 at 1.1.x; pinned
+    // explicitly for direct dependencies in clients/tests.
+    val pekkoHttp           = "1.1.0"
+    // Pekko gRPC (runtime + sbt plugin) verified by Spike B.
+    val pekkoGrpc           = "1.1.0"
+    // Pekko Persistence Cassandra verified by Spike A.
+    val pekkoPersistenceCassandra = "1.1.0"
+    // Pekko Projection verified by Spike A (compiles; runtime documented).
+    val pekkoProjection     = "1.1.0"
+    // Pekko Connectors S3 — NOT spiked; first user is CMS slice 011.
+    val pekkoConnectorsS3   = "1.1.0"
+    // Pekko Management — NOT spiked; first user is k8s slice 013.
+    val pekkoManagement     = "1.1.0"
+  }
+
   val macwire = "com.softwaremill.macwire" %% "macros" % Version.macwire % "provided"
 
   val tests = Seq(
@@ -79,6 +104,41 @@ object Dependencies {
   val slf4j = Seq(
     "org.slf4j" % "slf4j-api"    % Version.slf4j,
     "org.slf4j" % "slf4j-simple" % Version.slf4j
+  )
+
+  // ---------------------------------------------------------------------------
+  // Pekko dependency vals (not yet consumed by any project after slice 002;
+  // slices 003-012 wire them in. Versions per PekkoVersion above.)
+  // ---------------------------------------------------------------------------
+
+  val pekkoCore: Seq[ModuleID] = Seq(
+    "org.apache.pekko" %% "pekko-actor-typed"            % PekkoVersion.pekkoCore,
+    "org.apache.pekko" %% "pekko-stream"                 % PekkoVersion.pekkoCore,
+    "org.apache.pekko" %% "pekko-cluster-typed"          % PekkoVersion.pekkoCore,
+    "org.apache.pekko" %% "pekko-cluster-sharding-typed" % PekkoVersion.pekkoCore,
+    "org.apache.pekko" %% "pekko-persistence-typed"      % PekkoVersion.pekkoCore,
+    "org.apache.pekko" %% "pekko-http"                   % PekkoVersion.pekkoHttp
+  )
+
+  val pekkoPersistenceCassandra: Seq[ModuleID] = Seq(
+    "org.apache.pekko" %% "pekko-persistence-cassandra" % PekkoVersion.pekkoPersistenceCassandra
+  )
+
+  val pekkoProjection: Seq[ModuleID] = Seq(
+    "org.apache.pekko" %% "pekko-projection-cassandra" % PekkoVersion.pekkoProjection
+  )
+
+  val pekkoManagement: Seq[ModuleID] = Seq(
+    "org.apache.pekko" %% "pekko-management-cluster-bootstrap" % PekkoVersion.pekkoManagement,
+    "org.apache.pekko" %% "pekko-discovery-kubernetes-api"     % PekkoVersion.pekkoManagement
+  )
+
+  val pekkoConnectorsS3: Seq[ModuleID] = Seq(
+    "org.apache.pekko" %% "pekko-connectors-s3" % PekkoVersion.pekkoConnectorsS3
+  )
+
+  val pekkoGrpcTestKit: Seq[ModuleID] = Seq(
+    "org.apache.pekko" %% "pekko-grpc-testkit" % PekkoVersion.pekkoGrpc % Test
   )
 
 }

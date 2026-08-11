@@ -76,6 +76,8 @@ import com.lightbend.lagom.scaladsl.client.LagomServiceClientComponents
 import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
 import com.softwaremill.macwire._
 import controllers.AssetsComponents
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.grpc.GrpcClientSettings
 import play.api.ApplicationLoader.Context
 import play.api.libs.ws.ahc.AhcWSComponents
 import play.api.mvc.{BodyParsers, EssentialFilter}
@@ -87,6 +89,28 @@ import router.Routes
 
 import scala.collection.immutable
 import scala.concurrent.ExecutionContext
+
+/**
+ * Scaffold for the gRPC client factory introduced by slice 002 of the Pekko migration. Each
+ * service slice (004-012) swaps one of the 9 `serviceClient.implement[T]` calls below to a
+ * Pekko gRPC client built via this factory.
+ *
+ * The trait's `system` field is typed as [[org.apache.pekko.actor.ActorSystem]] (Pekko). The
+ * gateway's `BuiltInComponentsFromContext.actorSystem` is currently `akka.actor.ActorSystem`
+ * because Play is still on 2.8.x (the Lagom 1.6.7 plugin cannot coexist with Play 3.0.x —
+ * see `project/plugins.sbt` for the binary-incompatibility evidence). Concrete wiring of
+ * `system` from `actorSystem` is therefore deferred to slice 013, which removes Lagom and
+ * upgrades Play to 3.0.11. Until then, this trait is compiled but unused; its
+ * `clientFor` must not be invoked.
+ *
+ * Per `dev/migration/002-build-and-gateway-foundations.md` step 5 and `001-decisions.md` §D.
+ */
+trait GrpcClientFactory {
+  def system: ActorSystem
+  def ec: ExecutionContext
+  def clientFor(name: String): GrpcClientSettings =
+    GrpcClientSettings.fromConfig(s"pekko.grpc.client.$name")(system)
+}
 
 abstract class ServiceGateway(context: Context)
     extends BuiltInComponentsFromContext(context)
@@ -107,6 +131,20 @@ abstract class ServiceGateway(context: Context)
   implicit override lazy val executionContext: ExecutionContext = actorSystem.dispatcher
 
   override lazy val httpErrorHandler: ApiGatewayErrorHandler = wire[ApiGatewayErrorHandler]
+
+  // Scaffold for the Pekko gRPC client factory. The `system` field is left unimplemented
+  // because the gateway still runs on Akka (Play 2.8.x via Lagom 1.6.7); Play 3.0.x cannot
+  // coexist with Lagom 1.6.7 in the same sbt meta-build. Slice 013 removes Lagom, upgrades
+  // Play to 3.0.11, and wires `system = actorSystem` here (the type then matches). Until
+  // then, `clientFor` MUST NOT be invoked — it would throw on the unimplemented `system`.
+  lazy val grpcClientFactory: GrpcClientFactory = new GrpcClientFactory {
+    override def system: ActorSystem =
+      throw new IllegalStateException(
+        "grpcClientFactory.system not wired: gateway is still on Akka (Lagom 1.6.7). " +
+          "Slice 013 upgrades Play to 3.0.x and wires this to actorSystem."
+      )
+    override def ec: ExecutionContext = executionContext
+  }
 
   override lazy val router = {
     val prefix = "/"
