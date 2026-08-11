@@ -2,10 +2,10 @@ import com.typesafe.sbt.SbtNativePackager.autoImport.NativePackagerHelper._
 import com.typesafe.sbt.packager.docker.DockerChmodType
 import play.sbt.routes.RoutesKeys
 
-scalaVersion := "2.13.9"
+scalaVersion := "2.13.18"
 
-ThisBuild / version := "0.5.1"
-ThisBuild / scalaVersion := "2.13.9"
+ThisBuild / version := "0.6.0"
+ThisBuild / scalaVersion := "2.13.18"
 
 ThisBuild / organization := "biz.lobachev.annette"
 ThisBuild / organizationName := "Valery Lobachev"
@@ -45,13 +45,14 @@ ThisBuild / lagomKafkaEnabled := false
 ThisBuild / lagomCassandraEnabled := false
 
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-java8-compat" % "always"
+ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml"          % "always"
 
 // Copyright settings
 def annetteSettings: Seq[Setting[_]] =
   Seq(
     organizationName := "Valery Lobachev",
     startYear := Some(2013),
-    scalaVersion := "2.13.9"
+    scalaVersion := "2.13.18"
   )
 
 def confDirSettings: Seq[Setting[_]] =
