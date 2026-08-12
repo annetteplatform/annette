@@ -383,21 +383,27 @@ lazy val `authorization-api` = (project in file("authorization/authorization-api
 
 def authorizationProject(pr: Project) =
   pr
-    .enablePlugins(LagomScala)
+    // Slice 004: dropped LagomScala + lagomScaladsl* deps; replaced with Pekko.
+    // JavaAppPackaging provides the Universal/docker/scriptClasspath keys that confDirSettings
+    // and dockerSettings reference (previously inherited from LagomScala).
+    .enablePlugins(JavaAppPackaging)
     .settings(
-      libraryDependencies ++= Seq(
-        lagomScaladslPersistenceCassandra,
-        lagomScaladslTestKit,
-        Dependencies.macwire,
-        Dependencies.chimney
-      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
+      libraryDependencies ++= Dependencies.pekkoCore
+        ++ Dependencies.pekkoPersistenceCassandra
+        ++ Dependencies.pekkoProjection
+        ++ Seq(Dependencies.macwire, Dependencies.chimney)
+        ++ Dependencies.tests
     )
-    .settings(lagomForkedTestSettings: _*)
-    .settings(Test / fork := true) // survives slice 013 (which removes lagomForkedTestSettings)
+    .settings(Test / fork := true)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`authorization-api`, `microservice-core`)
+    // Note: also depends on `microservice-core` (Lagom variant) for the indexing module
+    // (IndexingModule, AbstractIndexDao, RoleIndexDao, AssignmentIndexDao). That module uses
+    // akka.Done + Lagom's TransportErrorCode; not yet ported to microservice-core-pekko.
+    // Lagom deps come transitively but are unused by authorization sources. Slice 005+ should
+    // either port indexing to microservice-core-pekko OR add the same dep line.
+    .dependsOn(`authorization-api`, `microservice-core-pekko`, `microservice-core`)
 
 lazy val `authorization-api-gateway` = (project in file("api-gateway/authorization-api-gateway"))
   .settings(

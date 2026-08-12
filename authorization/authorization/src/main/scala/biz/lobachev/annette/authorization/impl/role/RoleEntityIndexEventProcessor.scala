@@ -17,28 +17,31 @@
 package biz.lobachev.annette.authorization.impl.role
 
 import biz.lobachev.annette.authorization.impl.role.dao.RoleIndexDao
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
+// Replaces the Lagom-variant RoleEntityIndexEventProcessor (extends ReadSideProcessor[Event]).
+// Per dev/migration/003-core-recipe.md §B.
 private[impl] class RoleEntityIndexEventProcessor(
-  readSide: CassandraReadSide,
   indexDao: RoleIndexDao
 )(implicit
-  ec: ExecutionContext
-) extends ReadSideProcessor[RoleEntity.Event]
-    with SimpleEventHandling {
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[RoleEntity.Event] {
 
-  def buildHandler(): ReadSideProcessor.ReadSideHandler[RoleEntity.Event] =
-    readSide
-      .builder[RoleEntity.Event]("role-indexing")
-      .setGlobalPrepare(indexDao.createEntityIndex)
-      .setEventHandler[RoleEntity.RoleCreated](handle(indexDao.createRole))
-      .setEventHandler[RoleEntity.RoleUpdated](handle(indexDao.updateRole))
-      .setEventHandler[RoleEntity.RoleDeleted](handle(indexDao.deleteRole))
-      .build()
+  override val projectionName: String = "role-indexing"
+  override val tags: Seq[String] = Tagger.fromEventName[RoleEntity.Event](10).allTags
 
-  def aggregateTags: Set[AggregateEventTag[RoleEntity.Event]] = RoleEntity.Event.Tag.allTags
+  override def process(envelope: EventEnvelope[RoleEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: RoleEntity.RoleCreated => indexDao.createRole(evt).map(_ => Done)
+      case evt: RoleEntity.RoleUpdated => indexDao.updateRole(evt).map(_ => Done)
+      case evt: RoleEntity.RoleDeleted => indexDao.deleteRole(evt).map(_ => Done)
+      case _                           => Future.successful(Done)
+    }
 }

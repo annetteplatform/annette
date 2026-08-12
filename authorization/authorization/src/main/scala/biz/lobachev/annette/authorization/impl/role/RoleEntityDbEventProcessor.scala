@@ -17,30 +17,38 @@
 package biz.lobachev.annette.authorization.impl.role
 
 import biz.lobachev.annette.authorization.impl.role.dao.RoleDbDao
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
+// Replaces the Lagom-variant RoleEntityDbEventProcessor (extends ReadSideProcessor[Event]).
+// Per dev/migration/003-core-recipe.md §B. The 5 case branches replace the previous
+// setEventHandler[RoleCreated](handle(dbDao.createRole)) calls — bodies unchanged.
 private[impl] class RoleEntityDbEventProcessor(
-  readSide: CassandraReadSide,
   dbDao: RoleDbDao
 )(implicit
-  ec: ExecutionContext
-) extends ReadSideProcessor[RoleEntity.Event]
-    with SimpleEventHandling {
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[RoleEntity.Event] {
 
-  def buildHandler(): ReadSideProcessor.ReadSideHandler[RoleEntity.Event] =
-    readSide
-      .builder[RoleEntity.Event]("role-cassandra")
-      .setGlobalPrepare(dbDao.createTables)
-      .setEventHandler[RoleEntity.RoleCreated](handle(dbDao.createRole))
-      .setEventHandler[RoleEntity.RoleUpdated](handle(dbDao.updateRole))
-      .setEventHandler[RoleEntity.RoleDeleted](handle(dbDao.deleteRole))
-      .setEventHandler[RoleEntity.PrincipalAssigned](handle(dbDao.assignPrincipal))
-      .setEventHandler[RoleEntity.PrincipalUnassigned](handle(dbDao.unassignPrincipal))
-      .build()
+  override val projectionName: String = "role-cassandra"
+  override val tags: Seq[String] = Tagger.fromEventName[RoleEntity.Event](10).allTags
 
-  def aggregateTags: Set[AggregateEventTag[RoleEntity.Event]] = RoleEntity.Event.Tag.allTags
+  override def process(envelope: EventEnvelope[RoleEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: RoleEntity.RoleCreated         => dbDao.createRole(evt).map(_ => Done)
+      case evt: RoleEntity.RoleUpdated         => dbDao.updateRole(evt).map(_ => Done)
+      case evt: RoleEntity.RoleDeleted         => dbDao.deleteRole(evt).map(_ => Done)
+      case evt: RoleEntity.PrincipalAssigned   => dbDao.assignPrincipal(evt).map(_ => Done)
+      case evt: RoleEntity.PrincipalUnassigned => dbDao.unassignPrincipal(evt).map(_ => Done)
+      case _                                   => Future.successful(Done)
+    }
+
+  // Override the default backoff to be more aggressive on cassandra writes (was the
+  // Lagom default). Override only if needed; default 3s/30s/0.2 is fine for this processor.
+  // override def projection(tag: String) = super.projection(tag).withRestartBackoff(...)
 }

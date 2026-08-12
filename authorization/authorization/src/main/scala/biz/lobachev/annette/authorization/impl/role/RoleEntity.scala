@@ -17,15 +17,15 @@
 package biz.lobachev.annette.authorization.impl.role
 
 import java.time.OffsetDateTime
-import akka.actor.typed.{ActorRef, Behavior}
-import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
-import akka.persistence.typed.PersistenceId
-import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
+import org.apache.pekko.actor.typed.{ActorRef, Behavior}
+import org.apache.pekko.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
+import org.apache.pekko.persistence.typed.PersistenceId
+import org.apache.pekko.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.authorization.api.assignment.AuthSource
 import biz.lobachev.annette.authorization.api.role._
 import biz.lobachev.annette.authorization.impl.role.model.RoleState
 import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
-import com.lightbend.lagom.scaladsl.persistence._
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
@@ -57,13 +57,12 @@ object RoleEntity {
   implicit val confirmationRoleNotFoundFormat: Format[RoleNotFound.type]         = Json.format
   implicit val confirmationFormat: Format[Confirmation]                          = Json.format[Confirmation]
 
-  sealed trait Event extends AggregateEvent[Event] {
-    override def aggregateTag: AggregateEventTagger[Event] = Event.Tag
-  }
+  sealed trait Event
 
-  object Event {
-    val Tag: AggregateEventShards[Event] = AggregateEventTag.sharded[Event](numShards = 10)
-  }
+  // Per 001-decisions.md §A: baseTagName is the Event trait's runtime class FQN
+  // (e.g. "...authorization.impl.role.RoleEntity$Event"). Tag format: baseTagName + shardNo
+  // with NO separator. Mirrors Lagom's AggregateEventTag.sharded[Event](numShards = 10).
+  private val tagger = Tagger.fromEventName[Event](numShards = 10)
 
   final case class RoleCreated(
     id: AuthRoleId,
@@ -137,7 +136,19 @@ object RoleEntity {
 
   def apply(entityContext: EntityContext[Command]): Behavior[Command] =
     apply(PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId))
-      .withTagger(AkkaTaggerAdapter.fromLagom(entityContext, Event.Tag))
+      .withTagger {
+        case evt: RoleCreated         => Set(tagger.tagFor(evt.id))
+        case evt: RoleUpdated         => Set(tagger.tagFor(evt.id))
+        case evt: RoleDeleted         => Set(tagger.tagFor(evt.id))
+        case evt: PrincipalAssigned   => Set(tagger.tagFor(evt.roleId))
+        case evt: PrincipalUnassigned => Set(tagger.tagFor(evt.roleId))
+        // AssignmentCreated / AssignmentDeleted events are emitted on the RoleEntity persistence
+        // stream but conceptually belong to AssignmentEntity. They're tagged with the ROLE's id
+        // here so the RoleEntityAssigmentEventProcessor (which subscribes to RoleEntity tags)
+        // can react to them. The assignment id is recoverable from event.principal/permission/source.
+        case evt: AssignmentCreated   => Set(tagger.tagFor(evt.source.sourceId))
+        case evt: AssignmentDeleted   => Set(tagger.tagFor(evt.source.sourceId))
+      }
       .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2))
 
   implicit val entityFormat: Format[RoleEntity] = Json.format

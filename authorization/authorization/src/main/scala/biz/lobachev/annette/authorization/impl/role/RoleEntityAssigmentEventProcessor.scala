@@ -16,56 +16,56 @@
 
 package biz.lobachev.annette.authorization.impl.role
 
-import akka.Done
 import biz.lobachev.annette.authorization.api.assignment.{AssignPermissionPayload, UnassignPermissionPayload}
 import biz.lobachev.annette.authorization.impl.assignment.AssignmentEntityService
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
+// Filename typo "Assigment" preserved from the Lagom variant for git-blame continuity.
+// Replaces the Lagom-variant RoleEntityAssigmentEventProcessor (extends ReadSideProcessor[Event]).
+// Subscribes to RoleEntity tags; reacts to AssignmentCreated / AssignmentDeleted events emitted
+// by RoleEntity (role changes propagate to AssignmentEntity via this projection).
 private[impl] class RoleEntityAssigmentEventProcessor(
-  readSide: CassandraReadSide,
   assignmentEntityService: AssignmentEntityService
 )(implicit
-  ec: ExecutionContext
-) extends ReadSideProcessor[RoleEntity.Event]
-    with SimpleEventHandling {
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[RoleEntity.Event] {
 
-  def buildHandler(): ReadSideProcessor.ReadSideHandler[RoleEntity.Event] =
-    readSide
-      .builder[RoleEntity.Event]("role-assignment")
-      .setEventHandler[RoleEntity.AssignmentCreated](handle(createAssignment))
-      .setEventHandler[RoleEntity.AssignmentDeleted](handle(deleteAssignment))
-      .build()
+  override val projectionName: String = "role-assignment"
+  override val tags: Seq[String] = Tagger.fromEventName[RoleEntity.Event](10).allTags
 
-  def aggregateTags: Set[AggregateEventTag[RoleEntity.Event]] = RoleEntity.Event.Tag.allTags
-
-  def createAssignment(event: RoleEntity.AssignmentCreated) =
-    for {
-      _ <- assignmentEntityService.assignPermission(
-             AssignPermissionPayload(
-               principal = event.principal,
-               permission = event.permission,
-               source = event.source,
-               updatedBy = event.updatedBy,
-               updatedAt = Some(event.updatedAt)
-             )
-           )
-    } yield Done
-
-  def deleteAssignment(event: RoleEntity.AssignmentDeleted) =
-    for {
-      _ <- assignmentEntityService.unassignPermission(
-             UnassignPermissionPayload(
-               principal = event.principal,
-               permission = event.permission,
-               source = event.source,
-               updatedBy = event.updatedBy,
-               updatedAt = Some(event.updatedAt)
-             )
-           )
-    } yield Done
-
+  override def process(envelope: EventEnvelope[RoleEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: RoleEntity.AssignmentCreated =>
+        assignmentEntityService
+          .assignPermission(
+            AssignPermissionPayload(
+              principal = evt.principal,
+              permission = evt.permission,
+              source = evt.source,
+              updatedBy = evt.updatedBy,
+              updatedAt = Some(evt.updatedAt)
+            )
+          )
+          .map(_ => Done)
+      case evt: RoleEntity.AssignmentDeleted =>
+        assignmentEntityService
+          .unassignPermission(
+            UnassignPermissionPayload(
+              principal = evt.principal,
+              permission = evt.permission,
+              source = evt.source,
+              updatedBy = evt.updatedBy,
+              updatedAt = Some(evt.updatedAt)
+            )
+          )
+          .map(_ => Done)
+      case _ => Future.successful(Done)
+    }
 }

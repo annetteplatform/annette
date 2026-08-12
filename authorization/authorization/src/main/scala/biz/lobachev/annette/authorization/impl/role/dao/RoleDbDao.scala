@@ -16,23 +16,32 @@
 
 package biz.lobachev.annette.authorization.impl.role.dao
 
-import akka.Done
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Sink, Source}
+import org.apache.pekko.Done
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.authorization.api.role.{AuthRole, AuthRoleId}
 import biz.lobachev.annette.authorization.impl.role.RoleEntity
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
+import io.getquill.CassandraContextConfig
+import com.typesafe.config.Config
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class RoleDbDao(
-  override val session: CassandraSession
+  config: Config
 )(implicit ec: ExecutionContext, materializer: Materializer)
     extends CassandraQuillDao {
+
+  // Load Quill's CassandraAsyncContext from the cassandra-quill HOCON block (or fall back to
+  // the service's cassandra.default block). See 003-core-recipe.md §D.
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -51,36 +60,37 @@ private[impl] class RoleDbDao(
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("roles")
-               .column("id", Text, true)
-               .column("name", Text)
-               .column("description", Text)
-               .column("updated_at", Timestamp)
-               .column("updated_by", Text)
-               .build
-           )
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("role_permissions")
-               .column("role_id", Text)
-               .column("permission_id", Text)
-               .column("arg1", Text)
-               .column("arg2", Text)
-               .column("arg3", Text)
-               .withPrimaryKey("role_id", "permission_id", "arg1", "arg2", "arg3")
-               .build
-           )
-
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("role_principals")
-               .column("role_id", Text)
-               .column("principal_type", Text)
-               .column("principal_id", Text)
-               .withPrimaryKey("role_id", "principal_type", "principal_id")
-               .build
-           )
-    } yield Done
+    // ctx.session is the driver-3 Session; execute DDL synchronously wrapped in Future.
+    Future {
+      ctx.session.execute(
+        CassandraTableBuilder("roles")
+          .column("id", Text, true)
+          .column("name", Text)
+          .column("description", Text)
+          .column("updated_at", Timestamp)
+          .column("updated_by", Text)
+          .build
+      )
+      ctx.session.execute(
+        CassandraTableBuilder("role_permissions")
+          .column("role_id", Text)
+          .column("permission_id", Text)
+          .column("arg1", Text)
+          .column("arg2", Text)
+          .column("arg3", Text)
+          .withPrimaryKey("role_id", "permission_id", "arg1", "arg2", "arg3")
+          .build
+      )
+      ctx.session.execute(
+        CassandraTableBuilder("role_principals")
+          .column("role_id", Text)
+          .column("principal_type", Text)
+          .column("principal_id", Text)
+          .withPrimaryKey("role_id", "principal_type", "principal_id")
+          .build
+      )
+      Done
+    }
   }
 
   def createRole(event: RoleEntity.RoleCreated) = {

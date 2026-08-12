@@ -17,27 +17,29 @@
 package biz.lobachev.annette.authorization.impl.assignment
 
 import biz.lobachev.annette.authorization.impl.assignment.dao.AssignmentDbDao
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
+// Replaces the Lagom-variant AssignmentEntityDbEventProcessor (extends ReadSideProcessor[Event]).
 private[impl] class AssignmentEntityDbEventProcessor(
-  readSide: CassandraReadSide,
   dbDao: AssignmentDbDao
 )(implicit
-  ec: ExecutionContext
-) extends ReadSideProcessor[AssignmentEntity.Event]
-    with SimpleEventHandling {
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[AssignmentEntity.Event] {
 
-  def buildHandler(): ReadSideProcessor.ReadSideHandler[AssignmentEntity.Event] =
-    readSide
-      .builder[AssignmentEntity.Event]("assignment-cassandra")
-      .setGlobalPrepare(dbDao.createTables)
-      .setEventHandler[AssignmentEntity.PermissionAssigned](handle(dbDao.assignPermission))
-      .setEventHandler[AssignmentEntity.PermissionUnassigned](handle(dbDao.unassignPermission))
-      .build()
+  override val projectionName: String = "assignment-cassandra"
+  override val tags: Seq[String] = Tagger.fromEventName[AssignmentEntity.Event](10).allTags
 
-  def aggregateTags: Set[AggregateEventTag[AssignmentEntity.Event]] = AssignmentEntity.Event.Tag.allTags
+  override def process(envelope: EventEnvelope[AssignmentEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: AssignmentEntity.PermissionAssigned   => dbDao.assignPermission(evt).map(_ => Done)
+      case evt: AssignmentEntity.PermissionUnassigned => dbDao.unassignPermission(evt).map(_ => Done)
+      case _                                          => Future.successful(Done)
+    }
 }

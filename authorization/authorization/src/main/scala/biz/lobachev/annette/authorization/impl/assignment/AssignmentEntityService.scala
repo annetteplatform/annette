@@ -17,10 +17,10 @@
 package biz.lobachev.annette.authorization.impl.assignment
 
 import java.util.concurrent.TimeUnit
-import akka.Done
-import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
-import akka.stream.Materializer
-import akka.util.Timeout
+import org.apache.pekko.Done
+import org.apache.pekko.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.util.Timeout
 import biz.lobachev.annette.authorization.api.assignment._
 import biz.lobachev.annette.authorization.impl.assignment.dao.{AssignmentDbDao, AssignmentIndexDao}
 import com.typesafe.config.Config

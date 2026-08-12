@@ -16,20 +16,27 @@
 
 package biz.lobachev.annette.authorization.impl.assignment.dao
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.authorization.api.assignment._
 import biz.lobachev.annette.authorization.impl.assignment.AssignmentEntity
 import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, Permission}
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
+import io.getquill.CassandraContextConfig
+import com.typesafe.config.Config
 
 import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class AssignmentDbDao(
-  override val session: CassandraSession
+  config: Config
 )(implicit ec: ExecutionContext)
     extends CassandraQuillDao {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -45,19 +52,20 @@ private[impl] class AssignmentDbDao(
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("permission_assignments")
-               .column("principal", Text)
-               .column("permission_id", Text)
-               .column("arg1", Text)
-               .column("arg2", Text)
-               .column("arg3", Text)
-               .column("source", Text)
-               .withPrimaryKey("principal", "permission_id", "arg1", "arg2", "arg3", "source")
-               .build
-           )
-    } yield Done
+    Future {
+      ctx.session.execute(
+        CassandraTableBuilder("permission_assignments")
+          .column("principal", Text)
+          .column("permission_id", Text)
+          .column("arg1", Text)
+          .column("arg2", Text)
+          .column("arg3", Text)
+          .column("source", Text)
+          .withPrimaryKey("principal", "permission_id", "arg1", "arg2", "arg3", "source")
+          .build
+      )
+      Done
+    }
   }
 
   def assignPermission(event: AssignmentEntity.PermissionAssigned) = {
@@ -109,7 +117,7 @@ private[impl] class AssignmentDbDao(
                       )
                       .size
                   )
-    } yield result.map(_ > 0L).getOrElse(false)
+    } yield result > 0L
 
   def findPermissions(payload: FindPermissions): Future[Set[PermissionAssignment]] =
     ctx
