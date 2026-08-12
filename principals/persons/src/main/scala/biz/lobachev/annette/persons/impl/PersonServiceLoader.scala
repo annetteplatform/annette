@@ -16,89 +16,106 @@
 
 package biz.lobachev.annette.persons.impl
 
-import akka.cluster.sharding.typed.scaladsl.Entity
-import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
-import biz.lobachev.annette.persons.api.PersonServiceApi
-import biz.lobachev.annette.persons.impl.category.model.CategorySerializerRegistry
-import biz.lobachev.annette.persons.impl.category.{CategoryEntity, CategoryProvider}
+import biz.lobachev.annette.persons.api.grpc.PersonServiceHandler
+import biz.lobachev.annette.persons.impl.category._
+import biz.lobachev.annette.persons.impl.category.dao.{CategoryDbDao, CategoryIndexDao}
 import biz.lobachev.annette.persons.impl.person._
 import biz.lobachev.annette.persons.impl.person.dao.{PersonDbDao, PersonIndexDao}
-import biz.lobachev.annette.persons.impl.person.model.PersonSerializerRegistry
-import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaClientComponents
-import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
-import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
-import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
-import com.lightbend.lagom.scaladsl.server._
-import com.softwaremill.macwire._
-import play.api.LoggerConfigurator
-import play.api.libs.ws.ahc.AhcWSComponents
+import com.sksamuel.elastic4s.ElasticClient
+import com.typesafe.config.ConfigFactory
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity, EntityTypeKey}
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.projection.ProjectionBehavior
+import org.apache.pekko.projection.cassandra.scaladsl.CassandraProjection
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.SystemMaterializer
+import org.slf4j.LoggerFactory
 
-import scala.collection.immutable
+import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.duration._
 
-class PersonServiceLoader extends LagomApplicationLoader {
+object PersonServiceMain {
 
-  override def load(context: LagomApplicationContext): LagomApplication =
-    new PersonServiceApplication(context) with AnnetteDiscoveryComponents
+  def main(args: Array[String]): Unit = {
+    val config = ConfigFactory.load()
+    implicit val system: ActorSystem[Nothing] = ActorSystem[Nothing](
+      Behaviors.empty,
+      name = config.getString("annette.cluster.system-name"),
+      config
+    )
+    val app = new PersonServiceApp()
+    app.run()(system)
+  }
+}
 
-  override def loadDevMode(context: LagomApplicationContext): LagomApplication = {
-    // workaround for custom logback.xml
-    val environment = context.playContext.environment
-    LoggerConfigurator(environment.classLoader).foreach {
-      _.configure(environment)
-    }
-    new PersonServiceApplication(context) with LagomDevModeComponents
+private[impl] class PersonServiceApp() {
+
+  private val log = LoggerFactory.getLogger(getClass)
+
+  def run()(implicit system: ActorSystem[_]): Unit = {
+    implicit val ec: ExecutionContext = system.executionContext
+    implicit val mat: Materializer   = SystemMaterializer(system).materializer
+    val config = system.settings.config
+
+    val indexingModule = new IndexingModule()
+    val elasticClient: ElasticClient = indexingModule.client
+
+    val personDbDao     = new PersonDbDao(config)
+    val categoryDbDao   = new CategoryDbDao(config)
+    val personIndexDao  = new PersonIndexDao(elasticClient)
+    val categoryIndexDao = new CategoryIndexDao(elasticClient, "indexing.category-index")
+
+    Await.result(CassandraProjection.createTablesIfNotExists(), 10.seconds)
+
+    val sharding = ClusterSharding(system)
+    val personEntityService = new PersonEntityService(sharding, personDbDao, personIndexDao, config)
+
+    val categoryTypeKey: EntityTypeKey[CategoryEntity.Command] =
+      EntityTypeKey[CategoryEntity.Command]("Category")
+    val categoryEntityService =
+      new CategoryEntityService(sharding, categoryDbDao, categoryIndexDao, config, categoryTypeKey)
+
+    val personDbProcessor     = new PersonDbEventProcessor(personDbDao)
+    val personIndexProcessor  = new PersonIndexEventProcessor(personIndexDao)
+    val categoryDbProcessor   = new CategoryDbEventProcessor(categoryDbDao, "category-cassandra")
+    val categoryIndexProcessor = new CategoryIndexEventProcessor(categoryIndexDao, "category-indexing")
+
+    startProjection("person-cassandra", personDbProcessor)
+    startProjection("person-indexing", personIndexProcessor)
+    startProjection("category-cassandra", categoryDbProcessor)
+    startProjection("category-indexing", categoryIndexProcessor)
+
+    sharding.init(
+      Entity(PersonEntity.typeKey) { entityContext =>
+        PersonEntity(entityContext)
+      }
+    )
+    sharding.init(
+      Entity(categoryTypeKey) { entityContext =>
+        CategoryEntity(entityContext)
+      }
+    )
+
+    val serviceApi = new PersonServiceApiImpl(personEntityService, categoryEntityService)
+    val handler    = PersonServiceHandler(serviceApi)
+
+    val httpHost = config.getString("annette.http.host")
+    val httpPort = config.getInt("annette.http.port")
+    Await.result(Http().newServerAt(httpHost, httpPort).bind(handler), 10.seconds)
+    log.info("Persons gRPC service bound to {}:{}", httpHost, httpPort)
   }
 
-  override def describeService = Some(readDescriptor[PersonServiceApi])
-}
-
-abstract class PersonServiceApplication(context: LagomApplicationContext)
-    extends LagomApplication(context)
-    with CassandraPersistenceComponents
-    with LagomKafkaClientComponents
-    with AhcWSComponents
-    with ClusterComponents {
-
-  lazy val jsonSerializerRegistry = PersonRepositorySerializerRegistry
-
-  val indexingModule = new IndexingModule()
-  import indexingModule._
-
-  override lazy val lagomServer = serverFor[PersonServiceApi](wire[PersonServiceApiImpl])
-  lazy val personIndexDao       = wire[PersonIndexDao]
-  lazy val personService        = wire[PersonEntityService]
-  lazy val personDbDao          = wire[PersonDbDao]
-  readSide.register(wire[PersonDbEventProcessor])
-  readSide.register(wire[PersonIndexEventProcessor])
-  clusterSharding.init(
-    Entity(PersonEntity.typeKey) { entityContext =>
-      PersonEntity(entityContext)
+  private def startProjection[E](
+    processorName: String,
+    projection: biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase[E]
+  )(implicit
+    system: ActorSystem[_]
+  ): Unit = {
+    projection.tags.foreach { tag =>
+      system.systemActorOf(ProjectionBehavior(projection.projection(tag)), s"$processorName-$tag")
     }
-  )
-
-  val categoryProvider = new CategoryProvider(
-    typeKeyName = "Category",
-    dbReadSideId = "category-cassandra",
-    configPath = "indexing.category-index",
-    indexReadSideId = "category-indexing"
-  )
-
-  lazy val categoryElastic       = wireWith(categoryProvider.createIndexDao _)
-  lazy val categoryRepository    = wireWith(categoryProvider.createDbDao _)
-  readSide.register(wireWith(categoryProvider.createDbProcessor _))
-  readSide.register(wireWith(categoryProvider.createIndexProcessor _))
-  lazy val categoryEntityService = wireWith(categoryProvider.createEntityService _)
-  clusterSharding.init(
-    Entity(categoryProvider.typeKey) { entityContext =>
-      CategoryEntity(entityContext)
-    }
-  )
-
-}
-
-object PersonRepositorySerializerRegistry extends JsonSerializerRegistry {
-  override def serializers: immutable.Seq[JsonSerializer[_]] =
-    PersonSerializerRegistry.serializers ++ CategorySerializerRegistry.serializers
+  }
 }

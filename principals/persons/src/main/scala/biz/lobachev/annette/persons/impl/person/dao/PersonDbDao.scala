@@ -16,12 +16,12 @@
 
 package biz.lobachev.annette.persons.impl.person.dao
 
-import akka.Done
-import akka.stream.Materializer
+import org.apache.pekko.Done
+import org.apache.pekko.stream.Materializer
 import biz.lobachev.annette.core.attribute.AttributeValues
 import biz.lobachev.annette.core.model.PersonId
-import biz.lobachev.annette.microservice_core.attribute.dao.{AttributesRecord, CassandraQuillDaoWithAttributes}
-import biz.lobachev.annette.microservice_core.db.CassandraTableBuilder
+import biz.lobachev.annette.microservice_core.pekko.attribute.dao.{AttributesRecord, CassandraQuillDaoWithAttributes}
+import biz.lobachev.annette.microservice_core.pekko.db.CassandraTableBuilder
 import biz.lobachev.annette.persons.api.person.Person
 import biz.lobachev.annette.persons.impl.person.PersonEntity.{
   PersonAttributesUpdated,
@@ -29,18 +29,26 @@ import biz.lobachev.annette.persons.impl.person.PersonEntity.{
   PersonDeleted,
   PersonUpdated
 }
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
-import io.getquill.EntityQuery
+import com.typesafe.config.Config
+import io.getquill.{CassandraContextConfig, EntityQuery}
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
 
-private[impl] class PersonDbDao(override val session: CassandraSession)(implicit
+private[impl] class PersonDbDao(
+  config: Config
+)(implicit
   override val ec: ExecutionContext,
   override val materializer: Materializer
 ) extends CassandraQuillDaoWithAttributes {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -56,26 +64,34 @@ private[impl] class PersonDbDao(override val session: CassandraSession)(implicit
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("persons")
-               .column("id", Text, true)
-               .column("lastname", Text)
-               .column("firstname", Text)
-               .column("middlename", Text)
-               .column("category_id", Text)
-               .column("phone", Text)
-               .column("email", Text)
-               .column("source", Text)
-               .column("external_id", Text)
-               .column("updated_at", Timestamp)
-               .column("updated_by", Text)
-               .build
-           )
-
-      _ <- createAttributeTable("attributes")
-    } yield Done
+    Future {
+      ctx.session.execute(
+        CassandraTableBuilder("persons")
+          .column("id", Text, true)
+          .column("lastname", Text)
+          .column("firstname", Text)
+          .column("middlename", Text)
+          .column("category_id", Text)
+          .column("phone", Text)
+          .column("email", Text)
+          .column("source", Text)
+          .column("external_id", Text)
+          .column("updated_at", Timestamp)
+          .column("updated_by", Text)
+          .build
+      )
+      ctx.session.execute(
+        CassandraTableBuilder("attributes")
+          .column("id", Text)
+          .column("attribute", Text)
+          .column("value", Text)
+          .column("updated_at", Timestamp)
+          .column("updated_by", Text)
+          .withPrimaryKey("id", "attribute")
+          .build
+      )
+      Done
+    }
   }
 
   def createPerson(event: PersonCreated): Future[Done] = {

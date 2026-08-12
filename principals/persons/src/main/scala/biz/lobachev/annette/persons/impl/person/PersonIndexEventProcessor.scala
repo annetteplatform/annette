@@ -16,31 +16,31 @@
 
 package biz.lobachev.annette.persons.impl.person
 
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.persons.impl.person.dao.PersonIndexDao
-import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class PersonIndexEventProcessor(
-  readSide: CassandraReadSide,
   indexDao: PersonIndexDao
 )(implicit
-  ec: ExecutionContext
-) extends ReadSideProcessor[PersonEntity.Event]
-    with SimpleEventHandling {
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[PersonEntity.Event] {
 
-  def buildHandler() =
-    readSide
-      .builder[PersonEntity.Event]("person-indexing")
-      .setGlobalPrepare(indexDao.createEntityIndex)
-      .setEventHandler[PersonEntity.PersonCreated](handle(indexDao.createPerson))
-      .setEventHandler[PersonEntity.PersonUpdated](handle(indexDao.updatePerson))
-      .setEventHandler[PersonEntity.PersonDeleted](handle(indexDao.deletePerson))
-      .setEventHandler[PersonEntity.PersonAttributesUpdated](handle(indexDao.updatePersonAttributes))
-      .build()
+  override val projectionName: String = "person-indexing"
+  override val tags: Seq[String] = Tagger.fromEventName[PersonEntity.Event](10).allTags
 
-  def aggregateTags = PersonEntity.Event.Tag.allTags
-
+  override def process(envelope: EventEnvelope[PersonEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: PersonEntity.PersonCreated           => indexDao.createPerson(evt).map(_ => Done)
+      case evt: PersonEntity.PersonUpdated           => indexDao.updatePerson(evt).map(_ => Done)
+      case evt: PersonEntity.PersonDeleted           => indexDao.deletePerson(evt).map(_ => Done)
+      case evt: PersonEntity.PersonAttributesUpdated => indexDao.updatePersonAttributes(evt).map(_ => Done)
+      case _                                          => Future.successful(Done)
+    }
 }

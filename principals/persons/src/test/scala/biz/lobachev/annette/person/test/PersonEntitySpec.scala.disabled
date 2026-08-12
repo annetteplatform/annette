@@ -2,17 +2,17 @@ package biz.lobachev.annette.person.test
 
 import java.util.UUID
 
-import akka.actor.testkit.typed.scaladsl.{LogCapturing, ScalaTestWithActorTestKit}
-import akka.persistence.typed.PersistenceId
+import org.apache.pekko.actor.testkit.typed.scaladsl.{LogCapturing, ScalaTestWithActorTestKit}
+import org.apache.pekko.persistence.typed.PersistenceId
 import biz.lobachev.annette.persons.impl.person.PersonEntity
 import org.scalatest.wordspec.AnyWordSpecLike
 
 class PersonEntitySpec
     extends ScalaTestWithActorTestKit(
       s"""
-         |akka.persistence.journal.plugin = "akka.persistence.journal.inmem"
-         |akka.persistence.snapshot-store.plugin = "akka.persistence.snapshot-store.local"
-         |akka.persistence.snapshot-store.local.dir = "target/snapshot-${UUID.randomUUID().toString}"
+         |pekko.persistence.journal.plugin = "pekko.persistence.testkit"
+         |pekko.persistence.snapshot-store.plugin = "pekko.persistence.testkit"
+         |pekko.persistence.testkit.max_incremental_retries = 2147483647
          |""".stripMargin
     )
     with AnyWordSpecLike
@@ -99,7 +99,7 @@ class PersonEntitySpec
 
       val deletePayload = generateDeletePersonPayload(createPayload.id)
       entity ! PersonEntity.DeletePerson(deletePayload, probe.ref)
-      val result3       = probe.receiveMessage()
+      val result3 = probe.receiveMessage()
       result3 shouldBe PersonEntity.Success
 
       entity ! PersonEntity.GetPerson(createPayload.id, Seq.empty, probe.ref)

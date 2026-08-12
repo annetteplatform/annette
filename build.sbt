@@ -603,22 +603,24 @@ lazy val `persons-api` = (project in file("principals/persons-api"))
 
 def personsProject(pr: Project) =
   pr
-    .enablePlugins(LagomScala)
+    .enablePlugins(JavaAppPackaging)
     .settings(
-      libraryDependencies ++= Seq(
-        lagomScaladslPersistenceCassandra,
-        lagomScaladslKafkaClient,
-        lagomScaladslTestKit,
-        Dependencies.macwire,
-        Dependencies.chimney
-      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery ++ Dependencies.quill
+      libraryDependencies ++= Dependencies.pekkoCore
+        ++ Dependencies.pekkoPersistenceCassandra
+        ++ Dependencies.pekkoProjection
+        ++ Seq(Dependencies.macwire, Dependencies.chimney)
+        ++ Dependencies.quillPekko
+        ++ Dependencies.tests
+        ++ Seq(
+          "org.apache.pekko" %% "pekko-actor-testkit-typed" % Dependencies.PekkoVersion.pekkoCore % Test,
+          "org.apache.pekko" %% "pekko-persistence-testkit" % Dependencies.PekkoVersion.pekkoCore % Test
+        )
     )
-    .settings(lagomForkedTestSettings: _*)
-    .settings(Test / fork := true) // survives slice 013 (which removes lagomForkedTestSettings)
+    .settings(Test / fork := true)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`persons-api`, `microservice-core`)
+    .dependsOn(`persons-api`, `microservice-core-pekko`, `microservice-core`)
 
 lazy val `persons-api-gateway` = (project in file("api-gateway/persons-api-gateway"))
   .settings(
