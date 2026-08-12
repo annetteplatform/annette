@@ -141,6 +141,8 @@ services:
       - traefik.enable=true
       - "traefik.http.routers.front.rule=PathPrefix(`/`)"
       - "traefik.http.services.front.loadbalancer.server.port=8080"
+    profiles:
+      - all
 
   api-gateway:
     image: "annetteplatform/api-gateway:${BACKEND_VERSION}"
@@ -156,6 +158,8 @@ services:
       - "traefik.http.routers.back.rule=PathPrefix(`/api`)"
       - "traefik.http.services.back.loadbalancer.server.port=9000"
 #      - traefik.http.routers.back.port=9000
+    profiles:
+      - all
 
   application:
     image: "annetteplatform/application:${BACKEND_VERSION}"
@@ -168,6 +172,8 @@ services:
         condition: service_healthy
       os-node1:
         condition: service_healthy
+    profiles:
+      - all
 
   service-catalog:
     image: "annetteplatform/service-catalog:${BACKEND_VERSION}"
@@ -180,6 +186,8 @@ services:
         condition: service_healthy
       os-node1:
         condition: service_healthy
+    profiles:
+      - all
 
   authorization:
     image: "annetteplatform/authorization:${BACKEND_VERSION}"
@@ -192,6 +200,8 @@ services:
         condition: service_healthy
       os-node1:
         condition: service_healthy
+    profiles:
+      - all
 
   bpm-repository:
     image: "annetteplatform/bpm-repository:${BACKEND_VERSION}"
@@ -202,6 +212,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    profiles:
+      - all
 
   cms:
     image: "annetteplatform/cms:${BACKEND_VERSION}"
@@ -215,6 +227,8 @@ services:
         condition: service_healthy
       os-node1:
         condition: service_healthy
+    profiles:
+      - all
 
   subscriptions:
     image: "annetteplatform/subscriptions:${BACKEND_VERSION}"
@@ -227,6 +241,8 @@ services:
         condition: service_healthy
       os-node1:
         condition: service_healthy
+    profiles:
+      - all
 
   org-structure:
     image: "annetteplatform/org-structure:${BACKEND_VERSION}"
@@ -239,6 +255,8 @@ services:
         condition: service_healthy
       os-node1:
         condition: service_healthy
+    profiles:
+      - all
 
   persons:
     image: "annetteplatform/persons:${BACKEND_VERSION}"
@@ -251,6 +269,8 @@ services:
         condition: service_healthy
       os-node1:
         condition: service_healthy
+    profiles:
+      - all
 
   principal-groups:
     image: "annetteplatform/principal-groups:${BACKEND_VERSION}"
@@ -263,6 +283,8 @@ services:
         condition: service_healthy
       os-node1:
         condition: service_healthy
+    profiles:
+      - all
 
 volumes:
   os-data1:
