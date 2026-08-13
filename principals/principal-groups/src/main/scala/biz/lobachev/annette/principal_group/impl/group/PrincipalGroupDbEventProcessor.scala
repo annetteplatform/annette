@@ -16,35 +16,34 @@
 
 package biz.lobachev.annette.principal_group.impl.group
 
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.principal_group.impl.group.dao.PrincipalGroupDbDao
-import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class PrincipalGroupDbEventProcessor(
-  readSide: CassandraReadSide,
   dbDao: PrincipalGroupDbDao
-)(implicit ec: ExecutionContext)
-    extends ReadSideProcessor[PrincipalGroupEntity.Event]
-    with SimpleEventHandling {
+)(implicit
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[PrincipalGroupEntity.Event] {
 
-  def buildHandler() =
-    readSide
-      .builder[PrincipalGroupEntity.Event]("principalGroup-cassandra")
-      .setGlobalPrepare(dbDao.createTables)
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupCreated](handle(dbDao.createPrincipalGroup))
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupNameUpdated](handle(dbDao.updatePrincipalGroupName))
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupDescriptionUpdated](
-        handle(dbDao.updatePrincipalGroupDescription)
-      )
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupCategoryUpdated](handle(dbDao.updatePrincipalGroupCategory))
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupDeleted](handle(dbDao.deletePrincipalGroup))
-      .setEventHandler[PrincipalGroupEntity.PrincipalAssigned](handle(dbDao.assignPrincipal))
-      .setEventHandler[PrincipalGroupEntity.PrincipalUnassigned](handle(dbDao.unassignPrincipal))
-      .build()
+  override val projectionName: String = "principalGroup-cassandra"
+  override val tags: Seq[String] = Tagger.fromEventName[PrincipalGroupEntity.Event](10).allTags
 
-  def aggregateTags = PrincipalGroupEntity.Event.Tag.allTags
-
+  override def process(envelope: EventEnvelope[PrincipalGroupEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: PrincipalGroupEntity.PrincipalGroupCreated            => dbDao.createPrincipalGroup(evt).map(_ => Done)
+      case evt: PrincipalGroupEntity.PrincipalGroupNameUpdated        => dbDao.updatePrincipalGroupName(evt).map(_ => Done)
+      case evt: PrincipalGroupEntity.PrincipalGroupDescriptionUpdated => dbDao.updatePrincipalGroupDescription(evt).map(_ => Done)
+      case evt: PrincipalGroupEntity.PrincipalGroupCategoryUpdated    => dbDao.updatePrincipalGroupCategory(evt).map(_ => Done)
+      case evt: PrincipalGroupEntity.PrincipalGroupDeleted            => dbDao.deletePrincipalGroup(evt).map(_ => Done)
+      case evt: PrincipalGroupEntity.PrincipalAssigned                => dbDao.assignPrincipal(evt).map(_ => Done)
+      case evt: PrincipalGroupEntity.PrincipalUnassigned              => dbDao.unassignPrincipal(evt).map(_ => Done)
+      case _                                                          => Future.successful(Done)
+    }
 }

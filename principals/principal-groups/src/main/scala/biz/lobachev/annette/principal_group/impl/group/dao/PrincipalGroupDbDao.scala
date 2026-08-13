@@ -16,9 +16,9 @@
 
 package biz.lobachev.annette.principal_group.impl.group.dao
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
 import biz.lobachev.annette.principal_group.api.group.{PrincipalGroup, PrincipalGroupId}
 import biz.lobachev.annette.principal_group.impl.group.PrincipalGroupEntity.{
   PrincipalAssigned,
@@ -29,7 +29,8 @@ import biz.lobachev.annette.principal_group.impl.group.PrincipalGroupEntity.{
   PrincipalGroupNameUpdated,
   PrincipalUnassigned
 }
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import com.typesafe.config.Config
+import io.getquill.CassandraContextConfig
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
@@ -37,10 +38,16 @@ import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class PrincipalGroupDbDao(
-  override val session: CassandraSession
+  config: Config
 )(implicit
   ec: ExecutionContext
 ) extends CassandraQuillDao {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -55,78 +62,86 @@ private[impl] class PrincipalGroupDbDao(
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("groups")
-               .column("id", Text, true)
-               .column("name", Text)
-               .column("description", Text)
-               .column("category_id", Text)
-               .column("updated_at", Timestamp)
-               .column("updated_by", Text)
-               .build
-           )
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("assignments")
-               .column("group_id", Text)
-               .column("principal", Text)
-               .withPrimaryKey("group_id", "principal")
-               .build
-           )
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("principal_assignments")
-               .column("principal", Text)
-               .column("group_id", Text)
-               .withPrimaryKey("principal", "group_id")
-               .build
-           )
-
-    } yield Done
+    Future {
+      ctx.session.execute(
+        CassandraTableBuilder("groups")
+          .column("id", Text, true)
+          .column("name", Text)
+          .column("description", Text)
+          .column("category_id", Text)
+          .column("updated_at", Timestamp)
+          .column("updated_by", Text)
+          .build
+      )
+      ctx.session.execute(
+        CassandraTableBuilder("assignments")
+          .column("group_id", Text)
+          .column("principal", Text)
+          .withPrimaryKey("group_id", "principal")
+          .build
+      )
+      ctx.session.execute(
+        CassandraTableBuilder("principal_assignments")
+          .column("principal", Text)
+          .column("group_id", Text)
+          .withPrimaryKey("principal", "group_id")
+          .build
+      )
+      Done
+    }
   }
 
-  def createPrincipalGroup(event: PrincipalGroupCreated) = {
+  def createPrincipalGroup(event: PrincipalGroupCreated): Future[Done] = {
     val entity = event
       .into[PrincipalGroup]
       .withFieldComputed(_.updatedAt, _.createdAt)
       .withFieldComputed(_.updatedBy, _.createdBy)
       .transform
-    ctx.run(groupSchema.insert(lift(entity)))
+    for {
+      _ <- ctx.run(groupSchema.insert(lift(entity)))
+    } yield Done
   }
 
-  def updatePrincipalGroupName(event: PrincipalGroupNameUpdated) =
-    ctx.run(
-      groupSchema
-        .filter(_.id == lift(event.id))
-        .update(
-          _.name      -> lift(event.name),
-          _.updatedAt -> lift(event.updatedAt),
-          _.updatedBy -> lift(event.updatedBy)
-        )
-    )
+  def updatePrincipalGroupName(event: PrincipalGroupNameUpdated): Future[Done] =
+    for {
+      _ <- ctx.run(
+             groupSchema
+               .filter(_.id == lift(event.id))
+               .update(
+                 _.name      -> lift(event.name),
+                 _.updatedAt -> lift(event.updatedAt),
+                 _.updatedBy -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
-  def updatePrincipalGroupDescription(event: PrincipalGroupDescriptionUpdated) =
-    ctx.run(
-      groupSchema
-        .filter(_.id == lift(event.id))
-        .update(
-          _.description -> lift(event.description),
-          _.updatedAt   -> lift(event.updatedAt),
-          _.updatedBy   -> lift(event.updatedBy)
-        )
-    )
+  def updatePrincipalGroupDescription(event: PrincipalGroupDescriptionUpdated): Future[Done] =
+    for {
+      _ <- ctx.run(
+             groupSchema
+               .filter(_.id == lift(event.id))
+               .update(
+                 _.description -> lift(event.description),
+                 _.updatedAt   -> lift(event.updatedAt),
+                 _.updatedBy   -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
-  def updatePrincipalGroupCategory(event: PrincipalGroupCategoryUpdated) =
-    ctx.run(
-      groupSchema
-        .filter(_.id == lift(event.id))
-        .update(
-          _.categoryId -> lift(event.categoryId),
-          _.updatedAt  -> lift(event.updatedAt),
-          _.updatedBy  -> lift(event.updatedBy)
-        )
-    )
+  def updatePrincipalGroupCategory(event: PrincipalGroupCategoryUpdated): Future[Done] =
+    for {
+      _ <- ctx.run(
+             groupSchema
+               .filter(_.id == lift(event.id))
+               .update(
+                 _.categoryId -> lift(event.categoryId),
+                 _.updatedAt  -> lift(event.updatedAt),
+                 _.updatedBy  -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
-  def deletePrincipalGroup(event: PrincipalGroupDeleted) =
+  def deletePrincipalGroup(event: PrincipalGroupDeleted): Future[Done] =
     for {
       principals <- getAssignments(event.id)
       _          <- ctx.run(groupSchema.filter(_.id == lift(event.id)).delete)
@@ -134,7 +149,7 @@ private[impl] class PrincipalGroupDbDao(
       _          <- ctx.run(principalAssignmentSchema.filter(b => liftQuery(principals).contains(b.principal)).delete)
     } yield Done
 
-  def assignPrincipal(event: PrincipalAssigned) =
+  def assignPrincipal(event: PrincipalAssigned): Future[Done] =
     for {
       _ <- ctx.run(assignmentSchema.insert(lift(AssignmentRecord(event.id, event.principal))))
       _ <- ctx.run(principalAssignmentSchema.insert(lift(AssignmentRecord(event.id, event.principal))))
@@ -148,7 +163,7 @@ private[impl] class PrincipalGroupDbDao(
            )
     } yield Done
 
-  def unassignPrincipal(event: PrincipalUnassigned) =
+  def unassignPrincipal(event: PrincipalUnassigned): Future[Done] =
     for {
       _ <- ctx.run(
              assignmentSchema

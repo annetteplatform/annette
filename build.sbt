@@ -646,31 +646,28 @@ lazy val `principal-groups-api` = (project in file("principals/principal-groups-
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
-      lagomScaladslTestKit,
       Dependencies.chimney
-    ) ++ Dependencies.tests
+    )
   )
   .settings(annetteSettings: _*)
   .dependsOn(`core`)
 
 def principalGroupsProject(pr: Project) =
   pr
-    .enablePlugins(LagomScala)
+    .enablePlugins(JavaAppPackaging)
     .settings(
-      libraryDependencies ++= Seq(
-        lagomScaladslPersistenceCassandra,
-        lagomScaladslKafkaClient,
-        lagomScaladslTestKit,
-        Dependencies.macwire,
-        Dependencies.chimney
-      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
+      libraryDependencies ++= Dependencies.pekkoCore
+        ++ Dependencies.pekkoPersistenceCassandra
+        ++ Dependencies.pekkoProjection
+        ++ Seq(Dependencies.macwire, Dependencies.chimney)
+        ++ Dependencies.quillPekko
+        ++ Dependencies.tests
     )
-    .settings(lagomForkedTestSettings: _*)
-    .settings(Test / fork := true) // survives slice 013 (which removes lagomForkedTestSettings)
+    .settings(Test / fork := true)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`principal-groups-api`, `microservice-core`)
+    .dependsOn(`principal-groups-api`, `microservice-core-pekko`, `microservice-core`)
 
 lazy val `principal-groups-api-gateway` = (project in file("api-gateway/principal-groups-api-gateway"))
   .settings(

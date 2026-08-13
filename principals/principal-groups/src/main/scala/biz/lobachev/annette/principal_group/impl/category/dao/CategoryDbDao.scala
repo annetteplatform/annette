@@ -16,11 +16,12 @@
 
 package biz.lobachev.annette.principal_group.impl.category.dao
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.core.model.category.{Category, CategoryId}
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
 import biz.lobachev.annette.principal_group.impl.category.CategoryEntity
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import com.typesafe.config.Config
+import io.getquill.CassandraContextConfig
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
@@ -28,9 +29,15 @@ import scala.collection.immutable.{Seq, Set}
 import scala.concurrent.{ExecutionContext, Future}
 
 class CategoryDbDao(
-  override val session: CassandraSession
+  config: Config
 )(implicit ec: ExecutionContext)
     extends CassandraQuillDao {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -43,16 +50,17 @@ class CategoryDbDao(
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("categories")
-               .column("id", Text, true)
-               .column("name", Text)
-               .column("updated_at", Timestamp)
-               .column("updated_by", Text)
-               .build
-           )
-    } yield Done
+    Future {
+      ctx.session.execute(
+        CassandraTableBuilder("categories")
+          .column("id", Text, true)
+          .column("name", Text)
+          .column("updated_at", Timestamp)
+          .column("updated_by", Text)
+          .build
+      )
+      Done
+    }
   }
 
   def createCategory(event: CategoryEntity.CategoryCreated): Future[Done] = {
@@ -61,16 +69,22 @@ class CategoryDbDao(
       .withFieldComputed(_.updatedAt, _.createdAt)
       .withFieldComputed(_.updatedBy, _.createdBy)
       .transform
-    ctx.run(categorySchema.insert(lift(category)))
+    for {
+      _ <- ctx.run(categorySchema.insert(lift(category)))
+    } yield Done
   }
 
   def updateCategory(event: CategoryEntity.CategoryUpdated): Future[Done] = {
     val category = event.transformInto[Category]
-    ctx.run(categorySchema.filter(_.id == lift(category.id)).update(lift(category)))
+    for {
+      _ <- ctx.run(categorySchema.filter(_.id == lift(category.id)).update(lift(category)))
+    } yield Done
   }
 
   def deleteCategory(event: CategoryEntity.CategoryDeleted): Future[Done] =
-    ctx.run(categorySchema.filter(_.id == lift(event.id)).delete)
+    for {
+      _ <- ctx.run(categorySchema.filter(_.id == lift(event.id)).delete)
+    } yield Done
 
   def getCategory(id: CategoryId): Future[Option[Category]] =
     ctx

@@ -16,36 +16,32 @@
 
 package biz.lobachev.annette.principal_group.impl.group
 
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.principal_group.impl.group.dao.PrincipalGroupIndexDao
-import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class PrincipalGroupIndexEventProcessor(
-  readSide: CassandraReadSide,
   indexDao: PrincipalGroupIndexDao
 )(implicit
-  ec: ExecutionContext
-) extends ReadSideProcessor[PrincipalGroupEntity.Event]
-    with SimpleEventHandling {
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[PrincipalGroupEntity.Event] {
 
-  def buildHandler() =
-    readSide
-      .builder[PrincipalGroupEntity.Event]("principalGroup-indexing")
-      .setGlobalPrepare(() => indexDao.createEntityIndex())
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupCreated](handle(indexDao.createPrincipalGroup))
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupNameUpdated](handle(indexDao.updatePrincipalGroupName))
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupDescriptionUpdated](
-        handle(indexDao.updatePrincipalGroupDescription)
-      )
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupCategoryUpdated](
-        handle(indexDao.updatePrincipalGroupCategory)
-      )
-      .setEventHandler[PrincipalGroupEntity.PrincipalGroupDeleted](handle(indexDao.deletePrincipalGroup))
-      .build()
+  override val projectionName: String = "principalGroup-indexing"
+  override val tags: Seq[String] = Tagger.fromEventName[PrincipalGroupEntity.Event](10).allTags
 
-  def aggregateTags = PrincipalGroupEntity.Event.Tag.allTags
-
+  override def process(envelope: EventEnvelope[PrincipalGroupEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: PrincipalGroupEntity.PrincipalGroupCreated            => indexDao.createPrincipalGroup(evt).map(_ => Done)
+      case evt: PrincipalGroupEntity.PrincipalGroupNameUpdated        => indexDao.updatePrincipalGroupName(evt).map(_ => Done)
+      case evt: PrincipalGroupEntity.PrincipalGroupDescriptionUpdated => indexDao.updatePrincipalGroupDescription(evt).map(_ => Done)
+      case evt: PrincipalGroupEntity.PrincipalGroupCategoryUpdated    => indexDao.updatePrincipalGroupCategory(evt).map(_ => Done)
+      case evt: PrincipalGroupEntity.PrincipalGroupDeleted            => indexDao.deletePrincipalGroup(evt).map(_ => Done)
+      case _                                                          => Future.successful(Done)
+    }
 }
