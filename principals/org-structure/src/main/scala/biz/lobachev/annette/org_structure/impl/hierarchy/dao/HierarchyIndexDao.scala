@@ -16,9 +16,9 @@
 
 package biz.lobachev.annette.org_structure.impl.hierarchy.dao
 
-import akka.Done
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Sink, Source}
+import org.apache.pekko.Done
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.microservice_core.attribute.dao.AttributeIndexing

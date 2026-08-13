@@ -16,23 +16,31 @@
 
 package biz.lobachev.annette.org_structure.impl.category.dao
 
-import akka.Done
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
+import org.apache.pekko.Done
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
 import biz.lobachev.annette.org_structure.api.category.{OrgCategory, OrgCategoryId}
 import biz.lobachev.annette.org_structure.impl.category.CategoryEntity.{
   CategoryCreated,
   CategoryDeleted,
   CategoryUpdated
 }
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import com.typesafe.config.Config
+import io.getquill.CassandraContextConfig
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-private[impl] class CategoryDbDao(override val session: CassandraSession)(implicit
-  ec: ExecutionContext
-) extends CassandraQuillDao {
+private[impl] class CategoryDbDao(
+  config: Config
+)(implicit ec: ExecutionContext)
+    extends CassandraQuillDao {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -44,37 +52,44 @@ private[impl] class CategoryDbDao(override val session: CassandraSession)(implic
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("categories")
-               .column("id", Text, true)
-               .column("name", Text)
-               .column("for_organization", Boolean)
-               .column("for_unit", Boolean)
-               .column("for_position", Boolean)
-               .column("updated_at", Timestamp)
-               .column("updated_by", Text)
-               .build
-           )
-    } yield Done
+    Future {
+      ctx.session.execute(
+        CassandraTableBuilder("categories")
+          .column("id", Text, true)
+          .column("name", Text)
+          .column("for_organization", Boolean)
+          .column("for_unit", Boolean)
+          .column("for_position", Boolean)
+          .column("updated_at", Timestamp)
+          .column("updated_by", Text)
+          .build
+      )
+      Done
+    }
   }
 
-  def createCategory(event: CategoryCreated) = {
+  def createCategory(event: CategoryCreated): Future[Done] = {
     val entity = event
       .into[OrgCategory]
       .withFieldComputed(_.updatedAt, _.createdAt)
       .withFieldComputed(_.updatedBy, _.createdBy)
       .transform
-    ctx.run(entitySchema.insert(lift(entity)))
+    for {
+      _ <- ctx.run(entitySchema.insert(lift(entity)))
+    } yield Done
   }
 
-  def updateCategory(event: CategoryUpdated) = {
+  def updateCategory(event: CategoryUpdated): Future[Done] = {
     val entity = event.transformInto[OrgCategory]
-    ctx.run(entitySchema.filter(_.id == lift(event.id)).update(lift(entity)))
+    for {
+      _ <- ctx.run(entitySchema.filter(_.id == lift(event.id)).update(lift(entity)))
+    } yield Done
   }
 
-  def deleteCategory(event: CategoryDeleted) =
-    ctx.run(entitySchema.filter(_.id == lift(event.id)).delete)
+  def deleteCategory(event: CategoryDeleted): Future[Done] =
+    for {
+      _ <- ctx.run(entitySchema.filter(_.id == lift(event.id)).delete)
+    } yield Done
 
   def getCategory(id: OrgCategoryId): Future[Option[OrgCategory]] =
     ctx

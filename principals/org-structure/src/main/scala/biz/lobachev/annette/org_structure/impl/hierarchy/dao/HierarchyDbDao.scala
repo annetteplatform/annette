@@ -16,30 +16,36 @@
 
 package biz.lobachev.annette.org_structure.impl.hierarchy.dao
 
-import akka.Done
-import akka.stream.Materializer
+import org.apache.pekko.Done
+import org.apache.pekko.stream.Materializer
 import biz.lobachev.annette.core.attribute.AttributeValues
 import biz.lobachev.annette.core.model._
 import biz.lobachev.annette.core.model.auth._
-import biz.lobachev.annette.microservice_core.attribute.dao.{AttributesRecord, CassandraQuillDaoWithAttributes}
-import biz.lobachev.annette.microservice_core.db.CassandraTableBuilder
+import biz.lobachev.annette.microservice_core.pekko.attribute.dao.{AttributesRecord, CassandraQuillDaoWithAttributes}
+import biz.lobachev.annette.microservice_core.pekko.db.CassandraTableBuilder
 import biz.lobachev.annette.org_structure.api.hierarchy
 import biz.lobachev.annette.org_structure.api.hierarchy.ItemTypes.ItemType
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.impl.hierarchy.entity.HierarchyEntity
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
-import io.getquill.EntityQuery
+import com.typesafe.config.Config
+import io.getquill.{CassandraContextConfig, EntityQuery}
 
 import java.time.OffsetDateTime
 import scala.collection.immutable.{Seq, _}
 import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class HierarchyDbDao(
-  override val session: CassandraSession
+  config: Config
 )(implicit
   override val ec: ExecutionContext,
   override val materializer: Materializer
 ) extends CassandraQuillDaoWithAttributes {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -65,48 +71,60 @@ private[impl] class HierarchyDbDao(
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
     for {
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("org_items")
-               .column("id", Text, true)
-               .column("org_id", Text)
-               .column("parent_id", Text)
-               .column("root_path", List(Text))
-               .column("name", Text)
-               .column("type", Text)
-               .column("category_id", Text)
-               .column("source", Text)
-               .column("external_id", Text)
-               .column("children", List(Text))
-               .column("chief", Text)
-               .column("person_limit", Int)
-               .column("persons", Set(Text))
-               .column("org_roles", Set(Text))
-               .column("updated_at", Timestamp)
-               .column("updated_by", Text)
-               .build
-           )
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("person_positions")
-               .column("person_id", Text)
-               .column("position_id", Text)
-               .withPrimaryKey("person_id", "position_id")
-               .build
-           )
+      _ <- Future {
+             ctx.session.execute(
+               CassandraTableBuilder("org_items")
+                 .column("id", Text, true)
+                 .column("org_id", Text)
+                 .column("parent_id", Text)
+                 .column("root_path", List(Text))
+                 .column("name", Text)
+                 .column("type", Text)
+                 .column("category_id", Text)
+                 .column("source", Text)
+                 .column("external_id", Text)
+                 .column("children", List(Text))
+                 .column("chief", Text)
+                 .column("person_limit", Int)
+                 .column("persons", Set(Text))
+                 .column("org_roles", Set(Text))
+                 .column("updated_at", Timestamp)
+                 .column("updated_by", Text)
+                 .build
+             )
+             Done
+           }
+      _ <- Future {
+             ctx.session.execute(
+               CassandraTableBuilder("person_positions")
+                 .column("person_id", Text)
+                 .column("position_id", Text)
+                 .withPrimaryKey("person_id", "position_id")
+                 .build
+             )
+             Done
+           }
 
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("chief_units")
-               .column("position_id", Text)
-               .column("unit_id", Text)
-               .withPrimaryKey("position_id", "unit_id")
-               .build
-           )
+      _ <- Future {
+             ctx.session.execute(
+               CassandraTableBuilder("chief_units")
+                 .column("position_id", Text)
+                 .column("unit_id", Text)
+                 .withPrimaryKey("position_id", "unit_id")
+                 .build
+             )
+             Done
+           }
 
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("external_ids")
-               .column("external_id", Text, true)
-               .column("item_id", Text)
-               .build
-           )
+      _ <- Future {
+             ctx.session.execute(
+               CassandraTableBuilder("external_ids")
+                 .column("external_id", Text, true)
+                 .column("item_id", Text)
+                 .build
+             )
+             Done
+           }
 
       _ <- createAttributeTable("attributes")
     } yield Done
@@ -188,16 +206,18 @@ private[impl] class HierarchyDbDao(
       _ <- deleteAttributes(event.unitId)
     } yield Done
 
-  def assignCategory(event: HierarchyEntity.CategoryAssigned) =
-    ctx.run(
-      itemSchema
-        .filter(_.id == lift(event.itemId))
-        .update(
-          _.categoryId -> lift(event.categoryId),
-          _.updatedAt  -> lift(event.updatedAt),
-          _.updatedBy  -> lift(event.updatedBy)
-        )
-    )
+  def assignCategory(event: HierarchyEntity.CategoryAssigned): Future[Done] =
+    for {
+      _ <- ctx.run(
+             itemSchema
+               .filter(_.id == lift(event.itemId))
+               .update(
+                 _.categoryId -> lift(event.categoryId),
+                 _.updatedAt  -> lift(event.updatedAt),
+                 _.updatedBy  -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
   def assignChief(event: HierarchyEntity.ChiefAssigned) =
     for {
@@ -294,27 +314,31 @@ private[impl] class HierarchyDbDao(
       _ <- deleteAttributes(event.positionId)
     } yield Done
 
-  def updateName(event: HierarchyEntity.NameUpdated) =
-    ctx.run(
-      itemSchema
-        .filter(_.id == lift(event.itemId))
-        .update(
-          _.name      -> lift(event.name),
-          _.updatedAt -> lift(event.updatedAt),
-          _.updatedBy -> lift(event.updatedBy)
-        )
-    )
+  def updateName(event: HierarchyEntity.NameUpdated): Future[Done] =
+    for {
+      _ <- ctx.run(
+             itemSchema
+               .filter(_.id == lift(event.itemId))
+               .update(
+                 _.name      -> lift(event.name),
+                 _.updatedAt -> lift(event.updatedAt),
+                 _.updatedBy -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
-  def updateSource(event: HierarchyEntity.SourceUpdated) =
-    ctx.run(
-      itemSchema
-        .filter(_.id == lift(event.itemId))
-        .update(
-          _.source    -> lift(event.source),
-          _.updatedAt -> lift(event.updatedAt),
-          _.updatedBy -> lift(event.updatedBy)
-        )
-    )
+  def updateSource(event: HierarchyEntity.SourceUpdated): Future[Done] =
+    for {
+      _ <- ctx.run(
+             itemSchema
+               .filter(_.id == lift(event.itemId))
+               .update(
+                 _.source    -> lift(event.source),
+                 _.updatedAt -> lift(event.updatedAt),
+                 _.updatedBy -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
   def updateExternalId(event: HierarchyEntity.ExternalIdUpdated) =
     for {
@@ -355,16 +379,18 @@ private[impl] class HierarchyDbDao(
              .getOrElse(Future.successful(Done))
     } yield Done
 
-  def changePositionLimit(event: HierarchyEntity.PositionLimitChanged) =
-    ctx.run(
-      itemSchema
-        .filter(_.id == lift(event.positionId))
-        .update(
-          _.personLimit -> lift(Option(event.limit)),
-          _.updatedAt   -> lift(event.updatedAt),
-          _.updatedBy   -> lift(event.updatedBy)
-        )
-    )
+  def changePositionLimit(event: HierarchyEntity.PositionLimitChanged): Future[Done] =
+    for {
+      _ <- ctx.run(
+             itemSchema
+               .filter(_.id == lift(event.positionId))
+               .update(
+                 _.personLimit -> lift(Option(event.limit)),
+                 _.updatedAt   -> lift(event.updatedAt),
+                 _.updatedBy   -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
   def assignPerson(event: HierarchyEntity.PersonAssigned) =
     for {
@@ -410,43 +436,49 @@ private[impl] class HierarchyDbDao(
            )
     } yield Done
 
-  def assignOrgRole(event: HierarchyEntity.OrgRoleAssigned) =
-    ctx.run(
-      itemSchema
-        .filter(_.id == lift(event.positionId))
-        .update(
-          _.orgRoles  -> lift(Option(event.orgRoles)),
-          _.updatedAt -> lift(event.updatedAt),
-          _.updatedBy -> lift(event.updatedBy)
-        )
-    )
+  def assignOrgRole(event: HierarchyEntity.OrgRoleAssigned): Future[Done] =
+    for {
+      _ <- ctx.run(
+             itemSchema
+               .filter(_.id == lift(event.positionId))
+               .update(
+                 _.orgRoles  -> lift(Option(event.orgRoles)),
+                 _.updatedAt -> lift(event.updatedAt),
+                 _.updatedBy -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
-  def unassignOrgRole(event: HierarchyEntity.OrgRoleUnassigned) =
-    ctx.run(
-      itemSchema
-        .filter(_.id == lift(event.positionId))
-        .update(
-          _.orgRoles  -> lift(Option(event.orgRoles)),
-          _.updatedAt -> lift(event.updatedAt),
-          _.updatedBy -> lift(event.updatedBy)
-        )
-    )
+  def unassignOrgRole(event: HierarchyEntity.OrgRoleUnassigned): Future[Done] =
+    for {
+      _ <- ctx.run(
+             itemSchema
+               .filter(_.id == lift(event.positionId))
+               .update(
+                 _.orgRoles  -> lift(Option(event.orgRoles)),
+                 _.updatedAt -> lift(event.updatedAt),
+                 _.updatedBy -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
   private def updateChildren(
     unitId: CompositeOrgItemId,
     children: Seq[CompositeOrgItemId],
     updatedBy: AnnettePrincipal,
     updatedAt: OffsetDateTime
-  ) =
-    ctx.run(
-      itemSchema
-        .filter(_.id == lift(unitId))
-        .update(
-          _.children  -> lift(Option(children.toList)),
-          _.updatedAt -> lift(updatedAt),
-          _.updatedBy -> lift(updatedBy)
-        )
-    )
+  ): Future[Done] =
+    for {
+      _ <- ctx.run(
+             itemSchema
+               .filter(_.id == lift(unitId))
+               .update(
+                 _.children  -> lift(Option(children.toList)),
+                 _.updatedAt -> lift(updatedAt),
+                 _.updatedBy -> lift(updatedBy)
+               )
+           )
+    } yield Done
 
   def moveItem(event: HierarchyEntity.ItemMoved) =
     for {
@@ -466,14 +498,16 @@ private[impl] class HierarchyDbDao(
   def changeItemOrder(event: HierarchyEntity.ItemOrderChanged) =
     updateChildren(event.parentId, event.parentChildren, event.updatedBy, event.updatedAt)
 
-  def updateRootPath(event: HierarchyEntity.RootPathUpdated) =
-    ctx.run(
-      itemSchema
-        .filter(_.id == lift(event.orgItemId))
-        .update(
-          _.rootPath -> lift(event.rootPath.toList)
-        )
-    )
+  def updateRootPath(event: HierarchyEntity.RootPathUpdated): Future[Done] =
+    for {
+      _ <- ctx.run(
+             itemSchema
+               .filter(_.id == lift(event.orgItemId))
+               .update(
+                 _.rootPath -> lift(event.rootPath.toList)
+               )
+           )
+    } yield Done
 
   def updateOrgItemAttributes(event: HierarchyEntity.OrgItemAttributesUpdated): Future[Done] =
     for {

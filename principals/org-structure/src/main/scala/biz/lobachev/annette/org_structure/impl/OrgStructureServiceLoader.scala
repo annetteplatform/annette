@@ -16,102 +16,118 @@
 
 package biz.lobachev.annette.org_structure.impl
 
-import akka.cluster.sharding.typed.scaladsl.Entity
-import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
-import biz.lobachev.annette.org_structure.api.OrgStructureServiceApi
-import biz.lobachev.annette.org_structure.impl.category.{
-  CategoryDbEventProcessor,
-  CategoryEntity,
-  CategoryEntityService,
-  CategoryIndexEventProcessor
-}
+import biz.lobachev.annette.org_structure.api.grpc.OrgStructureServiceHandler
+import biz.lobachev.annette.org_structure.impl.category._
 import biz.lobachev.annette.org_structure.impl.category.dao.{CategoryDbDao, CategoryIndexDao}
-import biz.lobachev.annette.org_structure.impl.category.model.CategorySerializerRegistry
 import biz.lobachev.annette.org_structure.impl.hierarchy._
 import biz.lobachev.annette.org_structure.impl.hierarchy.dao.{HierarchyDbDao, HierarchyIndexDao}
-import biz.lobachev.annette.org_structure.impl.hierarchy.entity.{HierarchyEntity, HierarchySerializerRegistry}
+import biz.lobachev.annette.org_structure.impl.hierarchy.entity.HierarchyEntity
 import biz.lobachev.annette.org_structure.impl.role._
 import biz.lobachev.annette.org_structure.impl.role.dao.{OrgRoleDbDao, OrgRoleIndexDao}
-import biz.lobachev.annette.org_structure.impl.role.model.OrgRoleSerializerRegistry
-import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
-import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
-import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
-import com.lightbend.lagom.scaladsl.server._
-import com.softwaremill.macwire._
-import play.api.LoggerConfigurator
-import play.api.libs.ws.ahc.AhcWSComponents
+import com.sksamuel.elastic4s.ElasticClient
+import com.typesafe.config.ConfigFactory
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity}
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.projection.ProjectionBehavior
+import org.apache.pekko.projection.cassandra.scaladsl.CassandraProjection
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.SystemMaterializer
+import org.slf4j.LoggerFactory
 
-import scala.collection.immutable
+import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.duration._
 
-class OrgStructureServiceLoader extends LagomApplicationLoader {
+object OrgStructureServiceMain {
 
-  override def load(context: LagomApplicationContext): LagomApplication =
-    new OrgStructureServiceApplication(context) with AnnetteDiscoveryComponents
+  def main(args: Array[String]): Unit = {
+    val config = ConfigFactory.load()
+    implicit val system: ActorSystem[Nothing] = ActorSystem[Nothing](
+      Behaviors.empty,
+      name = config.getString("annette.cluster.system-name"),
+      config
+    )
+    val app = new OrgStructureServiceApp()
+    app.run()(system)
+  }
+}
 
-  override def loadDevMode(context: LagomApplicationContext): LagomApplication = {
-    // workaround for custom logback.xml
-    val environment = context.playContext.environment
-    LoggerConfigurator(environment.classLoader).foreach {
-      _.configure(environment)
-    }
-    new OrgStructureServiceApplication(context) with LagomDevModeComponents
+private[impl] class OrgStructureServiceApp() {
+
+  private val log = LoggerFactory.getLogger(getClass)
+
+  def run()(implicit system: ActorSystem[_]): Unit = {
+    implicit val ec: ExecutionContext = system.executionContext
+    implicit val mat: Materializer   = SystemMaterializer(system).materializer
+    val config = system.settings.config
+
+    val indexingModule = new IndexingModule()
+    val elasticClient: ElasticClient = indexingModule.client
+
+    val hierarchyDbDao     = new HierarchyDbDao(config)
+    val categoryDbDao      = new CategoryDbDao(config)
+    val orgRoleDbDao       = new OrgRoleDbDao(config)
+    val hierarchyIndexDao  = new HierarchyIndexDao(elasticClient)
+    val categoryIndexDao   = new CategoryIndexDao(elasticClient)
+    val orgRoleIndexDao    = new OrgRoleIndexDao(elasticClient)
+
+    Await.result(CassandraProjection.createTablesIfNotExists(), 10.seconds)
+
+    val sharding = ClusterSharding(system)
+
+    val hierarchyEntityService = new HierarchyEntityService(sharding, hierarchyDbDao, hierarchyIndexDao, config)
+    val orgRoleEntityService   = new OrgRoleEntityService(sharding, orgRoleDbDao, orgRoleIndexDao, config)
+    val categoryEntityService  = new CategoryEntityService(sharding, categoryDbDao, categoryIndexDao, config)
+
+    val hierarchyDbProcessor     = new HierarchyDbEventProcessor(hierarchyDbDao)
+    val hierarchyIndexProcessor  = new HierarchyIndexEventProcessor(hierarchyIndexDao)
+    val orgRoleDbProcessor       = new OrgRoleDbEventProcessor(orgRoleDbDao, "role-cassandra")
+    val orgRoleIndexProcessor    = new OrgRoleIndexEventProcessor(orgRoleIndexDao, "role-indexing")
+    val categoryDbProcessor      = new CategoryDbEventProcessor(categoryDbDao, "category-cassandra")
+    val categoryIndexProcessor   = new CategoryIndexEventProcessor(categoryIndexDao, "category-indexing")
+
+    startProjection("hierarchy-cassandra", hierarchyDbProcessor)
+    startProjection("hierarchy-indexing", hierarchyIndexProcessor)
+    startProjection("role-cassandra", orgRoleDbProcessor)
+    startProjection("role-indexing", orgRoleIndexProcessor)
+    startProjection("category-cassandra", categoryDbProcessor)
+    startProjection("category-indexing", categoryIndexProcessor)
+
+    sharding.init(
+      Entity(HierarchyEntity.typeKey) { entityContext =>
+        HierarchyEntity(entityContext)
+      }
+    )
+    sharding.init(
+      Entity(OrgRoleEntity.typeKey) { entityContext =>
+        OrgRoleEntity(entityContext)
+      }
+    )
+    sharding.init(
+      Entity(CategoryEntity.typeKey) { entityContext =>
+        CategoryEntity(entityContext)
+      }
+    )
+
+    val serviceApi = new OrgStructureServiceApiImpl(hierarchyEntityService, orgRoleEntityService, categoryEntityService)
+    val handler    = OrgStructureServiceHandler(serviceApi)
+
+    val httpHost = config.getString("annette.http.host")
+    val httpPort = config.getInt("annette.http.port")
+    Await.result(Http().newServerAt(httpHost, httpPort).bind(handler), 10.seconds)
+    log.info("Org-structure gRPC service bound to {}:{}", httpHost, httpPort)
   }
 
-  override def describeService = Some(readDescriptor[OrgStructureServiceApi])
-}
-
-abstract class OrgStructureServiceApplication(context: LagomApplicationContext)
-    extends LagomApplication(context)
-    with CassandraPersistenceComponents
-    with AhcWSComponents
-    with ClusterComponents {
-
-  lazy val jsonSerializerRegistry = OrgStructureSerializerRegistry
-
-  val indexingModule = new IndexingModule()
-  import indexingModule._
-
-  override lazy val lagomServer = serverFor[OrgStructureServiceApi](wire[OrgStructureServiceApiImpl])
-
-  lazy val hierarchyElastic       = wire[HierarchyIndexDao]
-  lazy val hierarchyRepository    = wire[HierarchyDbDao]
-  readSide.register(wire[HierarchyDbEventProcessor])
-  readSide.register(wire[HierarchyIndexEventProcessor])
-  lazy val hierarchyEntityService = wire[HierarchyEntityService]
-  clusterSharding.init(
-    Entity(HierarchyEntity.typeKey) { entityContext =>
-      HierarchyEntity(entityContext)
+  private def startProjection[E](
+    processorName: String,
+    projection: biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase[E]
+  )(implicit
+    system: ActorSystem[_]
+  ): Unit = {
+    projection.tags.foreach { tag =>
+      system.systemActorOf(ProjectionBehavior(projection.projection(tag)), s"$processorName-$tag")
     }
-  )
-
-  lazy val orgRoleElastic       = wire[OrgRoleIndexDao]
-  lazy val orgRoleEntityService = wire[OrgRoleEntityService]
-  lazy val orgRoleRepository    = wire[OrgRoleDbDao]
-  readSide.register(wire[OrgRoleDbEventProcessor])
-  readSide.register(wire[OrgRoleIndexEventProcessor])
-  clusterSharding.init(
-    Entity(OrgRoleEntity.typeKey) { entityContext =>
-      OrgRoleEntity(entityContext)
-    }
-  )
-
-  lazy val categoryElastic       = wire[CategoryIndexDao]
-  lazy val categoryEntityService = wire[CategoryEntityService]
-  lazy val categoryRepository    = wire[CategoryDbDao]
-  readSide.register(wire[CategoryDbEventProcessor])
-  readSide.register(wire[CategoryIndexEventProcessor])
-  clusterSharding.init(
-    Entity(CategoryEntity.typeKey) { entityContext =>
-      CategoryEntity(entityContext)
-    }
-  )
-}
-
-object OrgStructureSerializerRegistry extends JsonSerializerRegistry {
-  override def serializers: immutable.Seq[JsonSerializer[_]] =
-    HierarchySerializerRegistry.serializers ++
-      OrgRoleSerializerRegistry.serializers ++
-      CategorySerializerRegistry.serializers
+  }
 }

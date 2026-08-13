@@ -16,274 +16,398 @@
 
 package biz.lobachev.annette.org_structure.impl
 
-import akka.util.Timeout
-import akka.{Done, NotUsed}
-import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues, UpdateAttributesPayload}
-import biz.lobachev.annette.core.model.PersonId
+import com.google.protobuf.empty.Empty
+import biz.lobachev.annette.core.attribute.UpdateAttributesPayload
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.core.model.indexing.FindResult
-import biz.lobachev.annette.org_structure.api.OrgStructureServiceApi
+import biz.lobachev.annette.core.model.indexing.SortBy
+import biz.lobachev.annette.org_structure.api.{grpc => g}
+import biz.lobachev.annette.org_structure.api.grpc.OrgStructureService
 import biz.lobachev.annette.org_structure.api.category._
 import biz.lobachev.annette.org_structure.api.hierarchy._
 import biz.lobachev.annette.org_structure.api.role._
 import biz.lobachev.annette.org_structure.impl.category.CategoryEntityService
 import biz.lobachev.annette.org_structure.impl.hierarchy.HierarchyEntityService
 import biz.lobachev.annette.org_structure.impl.role.OrgRoleEntityService
-import com.lightbend.lagom.scaladsl.api.ServiceCall
-import com.typesafe.config.Config
+import play.api.libs.json.Json
 
-import java.util.concurrent.TimeUnit
-import scala.collection.immutable.Map
-import scala.concurrent.duration._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.Try
 
 class OrgStructureServiceApiImpl(
   hierarchyEntityService: HierarchyEntityService,
   orgRoleEntityService: OrgRoleEntityService,
-  categoryEntityService: CategoryEntityService,
-  config: Config,
-  implicit val ec: ExecutionContext
-) extends OrgStructureServiceApi {
-  implicit val timeout =
-    Try(config.getDuration("annette.timeout"))
-      .map(d => Timeout(FiniteDuration(d.toNanos, TimeUnit.NANOSECONDS)))
-      .getOrElse(Timeout(60.seconds))
+  categoryEntityService: CategoryEntityService
+)(implicit ec: ExecutionContext) extends OrgStructureService {
 
-  // ****************************** Hierarchy methods ******************************
+  private def toDomain(p: Option[g.AnnettePrincipal]): AnnettePrincipal =
+    p.map(p => AnnettePrincipal(p.code)).getOrElse(throw new IllegalArgumentException("missing principal"))
 
-  override def createOrganization: ServiceCall[CreateOrganizationPayload, Done] =
-    ServiceCall { payload =>
-      for {
-        category <- categoryEntityService.getCategoryFromOrigin(payload.categoryId)
-        result   <- if (category.forOrganization) hierarchyEntityService.createOrganization(payload)
-                    else Future.failed(IncorrectCategory())
-      } yield result
+  private def fromDomain(p: AnnettePrincipal): g.AnnettePrincipal =
+    g.AnnettePrincipal(p.code)
+
+  private def fromDomain(c: OrgCategory): g.OrgCategory =
+    g.OrgCategory(
+      id = c.id,
+      name = c.name,
+      forOrganization = c.forOrganization,
+      forUnit = c.forUnit,
+      forPosition = c.forPosition,
+      updatedAt = c.updatedAt.toString,
+      updatedBy = Some(fromDomain(c.updatedBy))
+    )
+
+  private def fromDomain(r: OrgRole): g.OrgRole =
+    g.OrgRole(
+      id = r.id,
+      name = r.name,
+      description = r.description,
+      updatedAt = r.updatedAt.toString,
+      updatedBy = Some(fromDomain(r.updatedBy))
+    )
+
+  private def fromDomain(f: biz.lobachev.annette.core.model.indexing.FindResult): g.FindResult =
+    g.FindResult(
+      total = f.total,
+      hits = f.hits.map(h => g.HitResult(id = h.id, score = h.score, updatedAt = h.updatedAt.toString))
+    )
+
+  // === Hierarchy mutations ===
+
+  override def createOrganization(in: g.CreateOrganizationPayload): Future[Empty] =
+    for {
+      category <- categoryEntityService.getCategoryFromOrigin(in.categoryId)
+      _   <- if (category.forOrganization)
+                    hierarchyEntityService.createOrganization(
+                      CreateOrganizationPayload(
+                        orgId = in.orgId,
+                        name = in.name,
+                        categoryId = in.categoryId,
+                        source = in.source,
+                        externalId = in.externalId,
+                        attributes = if (in.attributes.isEmpty) None else Some(in.attributes),
+                        createdBy = toDomain(in.createdBy)
+                      )
+                    )
+                  else Future.failed(IncorrectCategory())
+    } yield Empty()
+
+  override def createUnit(in: g.CreateUnitPayload): Future[Empty] =
+    for {
+      category <- categoryEntityService.getCategoryFromOrigin(in.categoryId)
+      _   <- if (category.forUnit)
+                    hierarchyEntityService.createUnit(
+                      CreateUnitPayload(
+                        unitId = in.unitId,
+                        parentId = in.parentId,
+                        name = in.name,
+                        categoryId = in.categoryId,
+                        order = in.order,
+                        source = in.source,
+                        externalId = in.externalId,
+                        attributes = if (in.attributes.isEmpty) None else Some(in.attributes),
+                        createdBy = toDomain(in.createdBy)
+                      )
+                    )
+                  else Future.failed(IncorrectCategory())
+    } yield Empty()
+
+  override def createPosition(in: g.CreatePositionPayload): Future[Empty] =
+    for {
+      category <- categoryEntityService.getCategoryFromOrigin(in.categoryId)
+      _   <- if (category.forPosition)
+                    hierarchyEntityService.createPosition(
+                      CreatePositionPayload(
+                        positionId = in.positionId,
+                        parentId = in.parentId,
+                        name = in.name,
+                        limit = in.limit,
+                        categoryId = in.categoryId,
+                        order = in.order,
+                        source = in.source,
+                        externalId = in.externalId,
+                        attributes = if (in.attributes.isEmpty) None else Some(in.attributes),
+                        createdBy = toDomain(in.createdBy)
+                      )
+                    )
+                  else Future.failed(IncorrectCategory())
+    } yield Empty()
+
+  override def updateName(in: g.UpdateNamePayload): Future[Empty] =
+    hierarchyEntityService
+      .updateName(UpdateNamePayload(itemId = in.itemId, name = in.name, updatedBy = toDomain(in.updatedBy)))
+      .map(_ => Empty())
+
+  override def assignCategory(in: g.AssignCategoryPayload): Future[Empty] =
+    for {
+      category <- categoryEntityService.getCategoryFromOrigin(in.categoryId)
+      _   <- hierarchyEntityService.assignCategory(
+                    AssignCategoryPayload(itemId = in.itemId, categoryId = in.categoryId, updatedBy = toDomain(in.updatedBy)),
+                    category
+                  )
+    } yield Empty()
+
+  override def updateSource(in: g.UpdateSourcePayload): Future[Empty] =
+    hierarchyEntityService
+      .updateSource(UpdateSourcePayload(itemId = in.itemId, source = in.source, updatedBy = toDomain(in.updatedBy)))
+      .map(_ => Empty())
+
+  override def updateExternalId(in: g.UpdateExternalIdPayload): Future[Empty] =
+    hierarchyEntityService
+      .updateExternalId(
+        UpdateExternalIdPayload(itemId = in.itemId, externalId = in.externalId, updatedBy = toDomain(in.updatedBy))
+      )
+      .map(_ => Empty())
+
+  override def moveItem(in: g.MoveItemPayload): Future[Empty] =
+    hierarchyEntityService
+      .moveItem(
+        MoveItemPayload(itemId = in.itemId, newParentId = in.newParentId, order = in.order, updatedBy = toDomain(in.updatedBy))
+      )
+      .map(_ => Empty())
+
+  override def assignChief(in: g.AssignChiefPayload): Future[Empty] =
+    hierarchyEntityService
+      .assignChief(AssignChiefPayload(unitId = in.unitId, chiefId = in.chiefId, updatedBy = toDomain(in.updatedBy)))
+      .map(_ => Empty())
+
+  override def unassignChief(in: g.UnassignChiefPayload): Future[Empty] =
+    hierarchyEntityService
+      .unassignChief(UnassignChiefPayload(unitId = in.unitId, updatedBy = toDomain(in.updatedBy)))
+      .map(_ => Empty())
+
+  override def changePositionLimit(in: g.ChangePositionLimitPayload): Future[Empty] =
+    hierarchyEntityService
+      .changePositionLimit(
+        ChangePositionLimitPayload(positionId = in.positionId, limit = in.limit, updatedBy = toDomain(in.updatedBy))
+      )
+      .map(_ => Empty())
+
+  override def assignPerson(in: g.AssignPersonPayload): Future[Empty] =
+    hierarchyEntityService
+      .assignPerson(AssignPersonPayload(positionId = in.positionId, personId = in.personId, updatedBy = toDomain(in.updatedBy)))
+      .map(_ => Empty())
+
+  override def unassignPerson(in: g.UnassignPersonPayload): Future[Empty] =
+    hierarchyEntityService
+      .unassignPerson(
+        UnassignPersonPayload(positionId = in.positionId, personId = in.personId, updatedBy = toDomain(in.updatedBy))
+      )
+      .map(_ => Empty())
+
+  override def assignOrgRole(in: g.AssignOrgRolePayload): Future[Empty] =
+    hierarchyEntityService
+      .assignOrgRole(
+        AssignOrgRolePayload(positionId = in.positionId, orgRoleId = in.orgRoleId, updatedBy = toDomain(in.updatedBy))
+      )
+      .map(_ => Empty())
+
+  override def unassignOrgRole(in: g.UnassignOrgRolePayload): Future[Empty] =
+    hierarchyEntityService
+      .unassignOrgRole(
+        UnassignOrgRolePayload(positionId = in.positionId, orgRoleId = in.orgRoleId, updatedBy = toDomain(in.updatedBy))
+      )
+      .map(_ => Empty())
+
+  override def deleteOrgItem(in: g.DeleteOrgItemPayload): Future[Empty] =
+    hierarchyEntityService
+      .deleteOrgItem(DeleteOrgItemPayload(itemId = in.itemId, deletedBy = toDomain(in.deletedBy)))
+      .map(_ => Empty())
+
+  // === Hierarchy queries ===
+
+  override def getOrganization(in: g.GetOrganizationRequest): Future[g.GetOrganizationResponse] =
+    hierarchyEntityService.getOrganization(in.orgId).map { org =>
+      g.GetOrganizationResponse(organizationJson = Json.stringify(Json.toJson(org)))
     }
 
-  override def createUnit: ServiceCall[CreateUnitPayload, Done] =
-    ServiceCall { payload =>
-      for {
-        category <- categoryEntityService.getCategoryFromOrigin(payload.categoryId)
-        result   <- if (category.forUnit) hierarchyEntityService.createUnit(payload)
-                    else Future.failed(IncorrectCategory())
-      } yield result
+  override def getOrganizationTree(in: g.GetOrganizationTreeRequest): Future[g.GetOrganizationTreeResponse] =
+    hierarchyEntityService.getOrganizationTree(in.itemId).map { tree =>
+      g.GetOrganizationTreeResponse(organizationTreeJson = Json.stringify(Json.toJson(tree)))
     }
 
-  override def createPosition: ServiceCall[CreatePositionPayload, Done] =
-    ServiceCall { payload =>
-      for {
-        category <- categoryEntityService.getCategoryFromOrigin(payload.categoryId)
-        result   <- if (category.forPosition) hierarchyEntityService.createPosition(payload)
-                    else Future.failed(IncorrectCategory())
-      } yield result
+  override def getOrgItem(in: g.GetOrgItemRequest): Future[g.GetOrgItemResponse] =
+    hierarchyEntityService.getOrgItem(in.itemId, in.source, in.attributes).map { item =>
+      g.GetOrgItemResponse(orgItemJson = Json.stringify(Json.toJson(item)))
     }
 
-  override def updateName: ServiceCall[UpdateNamePayload, Done] =
-    ServiceCall { payload =>
-      hierarchyEntityService.updateName(payload)
-    }
+  override def getOrgItems(in: g.GetOrgItemsRequest): Future[g.GetOrgItemsResponse] =
+    hierarchyEntityService
+      .getOrgItems(in.ids.toSet, in.source, in.attributes)
+      .map(items => g.GetOrgItemsResponse(orgItemsJson = items.map(item => Json.stringify(Json.toJson(item)))))
 
-  override def assignCategory: ServiceCall[AssignCategoryPayload, Done] =
-    ServiceCall { payload =>
-      for {
-        category <- categoryEntityService.getCategoryFromOrigin(payload.categoryId)
-        result   <- hierarchyEntityService.assignCategory(payload, category)
-      } yield result
-    }
+  override def getItemIdsByExternalId(in: g.GetItemIdsByExternalIdRequest): Future[g.GetItemIdsByExternalIdResponse] =
+    hierarchyEntityService
+      .getItemIdsByExternalId(in.externalIds.toSet)
+      .map(m => g.GetItemIdsByExternalIdResponse(itemIds = m))
 
-  override def updateSource: ServiceCall[UpdateSourcePayload, Done] =
-    ServiceCall { payload =>
-      hierarchyEntityService.updateSource(payload)
-    }
+  override def getPersonPrincipals(in: g.GetPersonPrincipalsRequest): Future[g.GetPersonPrincipalsResponse] =
+    hierarchyEntityService
+      .getPersonPrincipals(in.personId)
+      .map(principals => g.GetPersonPrincipalsResponse(principals = principals.map(fromDomain).toSeq))
 
-  override def updateExternalId: ServiceCall[UpdateExternalIdPayload, Done] =
-    ServiceCall { payload =>
-      hierarchyEntityService.updateExternalId(payload)
-    }
+  override def getPersonPositions(in: g.GetPersonPositionsRequest): Future[g.GetPersonPositionsResponse] =
+    hierarchyEntityService
+      .getPersonPositions(in.personId)
+      .map(positions =>
+        g.GetPersonPositionsResponse(positions =
+          positions.map(pp => g.PersonPosition(personId = pp.personId, positionId = pp.positionId)).toSeq
+        )
+      )
 
-  override def moveItem: ServiceCall[MoveItemPayload, Done] =
-    ServiceCall { payload =>
-      hierarchyEntityService.moveItem(payload)
-    }
+  override def findOrgItems(in: g.OrgItemFindQuery): Future[g.FindResult] =
+    hierarchyEntityService
+      .findOrgItems(
+        OrgItemFindQuery(
+          offset = in.offset,
+          size = in.size,
+          filter = in.filter,
+          name = in.name,
+          orgUnits = if (in.orgUnits.isEmpty) None else Some(in.orgUnits.toSet),
+          persons = if (in.persons.isEmpty) None else Some(in.persons.toSet),
+          orgRoles = if (in.orgRoles.isEmpty) None else Some(in.orgRoles.toSet),
+          fromLevel = in.fromLevel,
+          toLevel = in.toLevel,
+          itemTypes = if (in.itemTypes.isEmpty) None else Some(in.itemTypes.map(ItemTypes.withName).toSet),
+          organizations = if (in.organizations.isEmpty) None else Some(in.organizations.toSet),
+          parents = if (in.parents.isEmpty) None else Some(in.parents.toSet),
+          chiefs = if (in.chiefs.isEmpty) None else Some(in.chiefs.toSet),
+          categories = if (in.categories.isEmpty) None else Some(in.categories.toSet),
+          sources = if (in.sources.isEmpty) None else Some(in.sources.toSet),
+          externalIds = if (in.externalIds.isEmpty) None else Some(in.externalIds.toSet),
+          sortBy = Some(in.sortBy.map(s => SortBy(field = s.field, descending = s.descending)).toSeq).filter(_.nonEmpty)
+        )
+      )
+      .map(fromDomain)
 
-  override def assignChief: ServiceCall[AssignChiefPayload, Done] =
-    ServiceCall { payload =>
-      hierarchyEntityService.assignChief(payload)
-    }
+  // === Attribute methods ===
 
-  override def unassignChief: ServiceCall[UnassignChiefPayload, Done] =
-    ServiceCall { payload =>
-      hierarchyEntityService.unassignChief(payload)
-    }
+  override def getOrgItemMetadata(in: Empty): Future[g.GetOrgItemMetadataResponse] =
+    hierarchyEntityService.getEntityMetadata
+      .map { metadata =>
+        g.GetOrgItemMetadataResponse(
+          metadataJson = metadata.map { case (k, v) => k -> Json.stringify(Json.toJson(v)) }
+        )
+      }
 
-  def changePositionLimit: ServiceCall[ChangePositionLimitPayload, Done] =
-    ServiceCall { payload =>
-      hierarchyEntityService.changePositionLimit(payload)
-    }
+  override def updateOrgItemAttributes(in: g.UpdateAttributesPayload): Future[Empty] =
+    hierarchyEntityService
+      .updateOrgItemAttributes(
+        UpdateAttributesPayload(id = in.id, attributes = in.attributes, updatedBy = toDomain(in.updatedBy))
+      )
+      .map(_ => Empty())
 
-  override def assignPerson: ServiceCall[AssignPersonPayload, Done] =
-    ServiceCall { payload =>
-      hierarchyEntityService.assignPerson(payload)
-    }
+  override def getOrgItemAttributes(in: g.GetOrgItemAttributesRequest): Future[g.AttributeValuesResponse] =
+    hierarchyEntityService
+      .getOrgItemAttributes(in.id, in.source, in.attributes)
+      .map(values => g.AttributeValuesResponse(values = values))
 
-  override def unassignPerson: ServiceCall[UnassignPersonPayload, Done] =
-    ServiceCall { payload =>
-      hierarchyEntityService.unassignPerson(payload)
-    }
+  override def getOrgItemsAttributes(in: g.GetOrgItemsAttributesRequest): Future[g.GetOrgItemsAttributesResponse] =
+    hierarchyEntityService
+      .getOrgItemsAttributes(in.ids.toSet, in.source, in.attributes)
+      .map { valuesMap =>
+        g.GetOrgItemsAttributesResponse(
+          values = valuesMap.map { case (k, v) => k -> g.AttributeValuesResponse(values = v) }
+        )
+      }
 
-  override def assignOrgRole: ServiceCall[AssignOrgRolePayload, Done] =
-    ServiceCall { payload =>
-      hierarchyEntityService.assignOrgRole(payload)
-    }
+  // === OrgRole methods ===
 
-  override def unassignOrgRole: ServiceCall[UnassignOrgRolePayload, Done] =
-    ServiceCall { payload =>
-      hierarchyEntityService.unassignOrgRole(payload)
-    }
+  override def createOrgRole(in: g.CreateOrgRolePayload): Future[Empty] =
+    orgRoleEntityService
+      .createOrgRole(
+        CreateOrgRolePayload(id = in.id, name = in.name, description = in.description, createdBy = toDomain(in.createdBy))
+      )
+      .map(_ => Empty())
 
-  override def deleteOrgItem: ServiceCall[DeleteOrgItemPayload, Done] =
-    ServiceCall { payload =>
-      hierarchyEntityService.deleteOrgItem(payload)
-    }
+  override def updateOrgRole(in: g.UpdateOrgRolePayload): Future[Empty] =
+    orgRoleEntityService
+      .updateOrgRole(
+        UpdateOrgRolePayload(id = in.id, name = in.name, description = in.description, updatedBy = toDomain(in.updatedBy))
+      )
+      .map(_ => Empty())
 
-  override def getOrganization(orgId: CompositeOrgItemId): ServiceCall[NotUsed, Organization] =
-    ServiceCall { _ =>
-      hierarchyEntityService.getOrganization(orgId)
-    }
+  override def deleteOrgRole(in: g.DeleteOrgRolePayload): Future[Empty] =
+    orgRoleEntityService
+      .deleteOrgRole(DeleteOrgRolePayload(id = in.id, updatedBy = toDomain(in.updatedBy)))
+      .map(_ => Empty())
 
-  override def getOrganizationTree(itemId: CompositeOrgItemId): ServiceCall[NotUsed, OrganizationTree] = { _ =>
-    hierarchyEntityService.getOrganizationTree(itemId)
-  }
+  override def getOrgRole(in: g.GetOrgRoleRequest): Future[g.OrgRole] =
+    orgRoleEntityService.getOrgRole(in.id, in.source).map(fromDomain)
 
-  override def getOrgItem(
-    itemId: CompositeOrgItemId,
-    source: Option[String],
-    attributes: Option[String] = None
-  ): ServiceCall[NotUsed, OrgItem] =
-    ServiceCall { _ =>
-      hierarchyEntityService.getOrgItem(itemId, source, attributes)
-    }
+  override def getOrgRoles(in: g.GetOrgRolesRequest): Future[g.GetOrgRolesResponse] =
+    orgRoleEntityService
+      .getOrgRoles(in.ids.toSet, in.source)
+      .map(roles => g.GetOrgRolesResponse(orgRoles = roles.map(fromDomain)))
 
-  override def getOrgItems(
-    source: Option[String],
-    attributes: Option[String] = None
-  ): ServiceCall[Set[CompositeOrgItemId], Seq[OrgItem]] =
-    ServiceCall { ids =>
-      hierarchyEntityService.getOrgItems(ids, source, attributes)
-    }
+  override def findOrgRoles(in: g.OrgRoleFindQuery): Future[g.FindResult] =
+    orgRoleEntityService
+      .findOrgRoles(
+        OrgRoleFindQuery(
+          offset = in.offset,
+          size = in.size,
+          filter = in.filter,
+          name = in.name,
+          description = in.description,
+          sortBy = Some(in.sortBy.map(s => SortBy(field = s.field, descending = s.descending)).toSeq).filter(_.nonEmpty)
+        )
+      )
+      .map(fromDomain)
 
-  override def getItemIdsByExternalId: ServiceCall[Set[String], Map[String, CompositeOrgItemId]] =
-    ServiceCall { externalIds =>
-      hierarchyEntityService.getItemIdsByExternalId(externalIds)
-    }
+  // === Category methods ===
 
-  override def getPersonPrincipals(personId: PersonId): ServiceCall[NotUsed, Set[AnnettePrincipal]] =
-    ServiceCall { _ =>
-      hierarchyEntityService.getPersonPrincipals(personId)
-    }
+  override def createCategory(in: g.CreateCategoryPayload): Future[Empty] =
+    categoryEntityService
+      .createCategory(
+        CreateCategoryPayload(
+          id = in.id,
+          name = in.name,
+          forOrganization = in.forOrganization,
+          forUnit = in.forUnit,
+          forPosition = in.forPosition,
+          createdBy = toDomain(in.createdBy)
+        )
+      )
+      .map(_ => Empty())
 
-  override def getPersonPositions(personId: PersonId): ServiceCall[NotUsed, Set[PersonPosition]] =
-    ServiceCall { _ =>
-      hierarchyEntityService.getPersonPositions(personId)
-    }
+  override def updateCategory(in: g.UpdateCategoryPayload): Future[Empty] =
+    categoryEntityService
+      .updateCategory(
+        UpdateCategoryPayload(
+          id = in.id,
+          name = in.name,
+          forOrganization = in.forOrganization,
+          forUnit = in.forUnit,
+          forPosition = in.forPosition,
+          updatedBy = toDomain(in.updatedBy)
+        )
+      )
+      .map(_ => Empty())
 
-  override def findOrgItems: ServiceCall[OrgItemFindQuery, FindResult] =
-    ServiceCall { payload =>
-      hierarchyEntityService.findOrgItems(payload)
-    }
+  override def deleteCategory(in: g.DeleteCategoryPayload): Future[Empty] =
+    categoryEntityService
+      .deleteCategory(DeleteCategoryPayload(id = in.id, updatedBy = toDomain(in.updatedBy)))
+      .map(_ => Empty())
 
-  // ****************************** OrgItem attribute methods ******************************
+  override def getCategory(in: g.GetCategoryRequest): Future[g.OrgCategory] =
+    categoryEntityService.getCategory(in.id, in.source).map(fromDomain)
 
-  def getOrgItemMetadata: ServiceCall[NotUsed, Map[String, AttributeMetadata]] =
-    ServiceCall { _ =>
-      hierarchyEntityService.getEntityMetadata
-    }
+  override def getCategories(in: g.GetCategoriesRequest): Future[g.GetCategoriesResponse] =
+    categoryEntityService
+      .getCategories(in.ids.toSet, in.source)
+      .map(categories => g.GetCategoriesResponse(categories = categories.map(fromDomain)))
 
-  def updateOrgItemAttributes: ServiceCall[UpdateAttributesPayload, Done] =
-    ServiceCall { payload =>
-      hierarchyEntityService.updateOrgItemAttributes(payload)
-    }
-
-  def getOrgItemAttributes(
-    id: CompositeOrgItemId,
-    source: Option[String] = None,
-    attributes: Option[String] = None
-  ): ServiceCall[NotUsed, AttributeValues] =
-    ServiceCall { _ =>
-      hierarchyEntityService.getOrgItemAttributes(id, source, attributes)
-    }
-
-  def getOrgItemsAttributes(
-    source: Option[String] = None,
-    attributes: Option[String] = None
-  ): ServiceCall[Set[CompositeOrgItemId], Map[String, AttributeValues]] =
-    ServiceCall { ids =>
-      hierarchyEntityService.getOrgItemsAttributes(ids, source, attributes)
-    }
-
-  // ****************************** OrgRoles methods ******************************
-
-  override def createOrgRole: ServiceCall[CreateOrgRolePayload, Done] =
-    ServiceCall { payload =>
-      orgRoleEntityService.createOrgRole(payload)
-    }
-
-  override def updateOrgRole: ServiceCall[UpdateOrgRolePayload, Done] =
-    ServiceCall { payload =>
-      orgRoleEntityService.updateOrgRole(payload)
-    }
-
-  override def deleteOrgRole: ServiceCall[DeleteOrgRolePayload, Done] =
-    ServiceCall { payload =>
-      orgRoleEntityService.deleteOrgRole(payload)
-    }
-
-  override def getOrgRole(id: OrgRoleId, source: Option[String]): ServiceCall[NotUsed, OrgRole] =
-    ServiceCall { _ =>
-      orgRoleEntityService.getOrgRole(id, source)
-    }
-
-  override def getOrgRoles(source: Option[String]): ServiceCall[Set[OrgRoleId], Seq[OrgRole]] =
-    ServiceCall { ids =>
-      orgRoleEntityService.getOrgRoles(ids, source)
-    }
-
-  override def findOrgRoles: ServiceCall[OrgRoleFindQuery, FindResult] =
-    ServiceCall { query =>
-      orgRoleEntityService.findOrgRoles(query)
-    }
-
-  // ****************************** Category methods ******************************
-
-  override def createCategory: ServiceCall[CreateCategoryPayload, Done] =
-    ServiceCall { payload =>
-      categoryEntityService.createCategory(payload)
-    }
-
-  override def updateCategory: ServiceCall[UpdateCategoryPayload, Done] =
-    ServiceCall { payload =>
-      categoryEntityService.updateCategory(payload)
-    }
-
-  override def deleteCategory: ServiceCall[DeleteCategoryPayload, Done] =
-    ServiceCall { payload =>
-      categoryEntityService.deleteCategory(payload)
-    }
-
-  override def getCategory(id: OrgCategoryId, source: Option[String]): ServiceCall[NotUsed, OrgCategory] =
-    ServiceCall { _ =>
-      categoryEntityService.getCategory(id, source)
-    }
-
-  override def getCategories(source: Option[String]): ServiceCall[Set[OrgCategoryId], Seq[OrgCategory]] =
-    ServiceCall { ids =>
-      categoryEntityService.getCategories(ids, source)
-    }
-
-  override def findCategories: ServiceCall[OrgCategoryFindQuery, FindResult] =
-    ServiceCall { query =>
-      categoryEntityService.findCategories(query)
-    }
-
+  override def findCategories(in: g.OrgCategoryFindQuery): Future[g.FindResult] =
+    categoryEntityService
+      .findCategories(
+        OrgCategoryFindQuery(
+          offset = in.offset,
+          size = in.size,
+          filter = in.filter,
+          name = in.name,
+          forOrganization = in.forOrganization,
+          forUnit = in.forUnit,
+          forPosition = in.forPosition,
+          sortBy = Some(in.sortBy.map(s => SortBy(field = s.field, descending = s.descending)).toSeq).filter(_.nonEmpty)
+        )
+      )
+      .map(fromDomain)
 }

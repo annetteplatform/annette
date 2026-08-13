@@ -16,17 +16,17 @@
 
 package biz.lobachev.annette.org_structure.impl.hierarchy.entity
 
-import akka.actor.typed.{ActorRef, Behavior}
-import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
-import akka.persistence.typed.PersistenceId
-import akka.persistence.typed.scaladsl.{EventSourcedBehavior, RetentionCriteria}
+import org.apache.pekko.actor.typed.{ActorRef, Behavior}
+import org.apache.pekko.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
+import org.apache.pekko.persistence.typed.PersistenceId
+import org.apache.pekko.persistence.typed.scaladsl.{EventSourcedBehavior, RetentionCriteria}
 import biz.lobachev.annette.core.attribute.AttributeValues
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
 import biz.lobachev.annette.org_structure.api.category.{OrgCategory, OrgCategoryId}
 import biz.lobachev.annette.org_structure.api.hierarchy.{CompositeOrgItemId, OrgItem, Organization, OrganizationTree}
 import biz.lobachev.annette.org_structure.api.role.OrgRoleId
-import com.lightbend.lagom.scaladsl.persistence._
 import play.api.libs.json.{Format, Json}
 
 import java.time.OffsetDateTime
@@ -248,13 +248,10 @@ object HierarchyEntity {
 
   implicit val confirmationFormat: Format[Confirmation] = Json.format[Confirmation]
 
-  sealed trait Event extends AggregateEvent[Event] {
-    override def aggregateTag: AggregateEventTagger[Event] = Event.Tag
-  }
+  sealed trait Event
 
-  object Event {
-    val Tag: AggregateEventShards[Event] = AggregateEventTag.sharded[Event](numShards = 10)
-  }
+  // Per 001-decisions.md §A: baseTagName is the Event trait's runtime class FQN.
+  private val tagger = Tagger.fromEventName[Event](numShards = 10)
 
   final case class OrganizationCreated(
     orgId: CompositeOrgItemId,
@@ -469,9 +466,11 @@ object HierarchyEntity {
         eventHandler = (entity, evt) => entity.applyEvent(evt)
       )
 
-  def apply(entityContext: EntityContext[Command]): Behavior[Command] =
-    apply(PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId))
-      .withTagger(AkkaTaggerAdapter.fromLagom(entityContext, Event.Tag))
+  def apply(entityContext: EntityContext[Command]): Behavior[Command] = {
+    val orgId = entityContext.entityId
+    apply(PersistenceId(entityContext.entityTypeKey.name, orgId))
+      .withTagger(_ => Set(tagger.tagFor(orgId)))
       .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2))
+  }
 
 }

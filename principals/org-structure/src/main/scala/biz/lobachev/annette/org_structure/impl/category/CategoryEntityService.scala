@@ -17,11 +17,11 @@
 package biz.lobachev.annette.org_structure.impl.category
 
 import java.util.concurrent.TimeUnit
-import akka.Done
-import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Sink, Source}
-import akka.util.Timeout
+import org.apache.pekko.Done
+import org.apache.pekko.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.{Sink, Source}
+import org.apache.pekko.util.Timeout
 import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.org_structure.api.category._

@@ -15,7 +15,7 @@
  */
 
 package biz.lobachev.annette.org_structure.impl.hierarchy.entity
-import akka.persistence.typed.scaladsl.{Effect, ReplyEffect}
+import org.apache.pekko.persistence.typed.scaladsl.{Effect, ReplyEffect}
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.org_structure.api.hierarchy._

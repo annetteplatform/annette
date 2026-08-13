@@ -554,22 +554,24 @@ lazy val `org-structure-api` = (project in file("principals/org-structure-api"))
 
 def orgStructureProject(pr: Project) =
   pr
-    .enablePlugins(LagomScala)
+    .enablePlugins(JavaAppPackaging)
     .settings(
-      libraryDependencies ++= Seq(
-        lagomScaladslPersistenceCassandra,
-        lagomScaladslTestKit,
-        Dependencies.macwire,
-        Dependencies.chimney,
-        Dependencies.pureConfig
-      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
+      libraryDependencies ++= Dependencies.pekkoCore
+        ++ Dependencies.pekkoPersistenceCassandra
+        ++ Dependencies.pekkoProjection
+        ++ Seq(Dependencies.macwire, Dependencies.chimney, Dependencies.pureConfig)
+        ++ Dependencies.quillPekko
+        ++ Dependencies.tests
+        ++ Seq(
+          "org.apache.pekko" %% "pekko-actor-testkit-typed" % Dependencies.PekkoVersion.pekkoCore % Test,
+          "org.apache.pekko" %% "pekko-persistence-testkit" % Dependencies.PekkoVersion.pekkoCore % Test
+        )
     )
-    .settings(lagomForkedTestSettings: _*)
-    .settings(Test / fork := true) // survives slice 013 (which removes lagomForkedTestSettings)
+    .settings(Test / fork := true)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`org-structure-api`, `microservice-core`)
+    .dependsOn(`org-structure-api`, `microservice-core-pekko`, `microservice-core`)
 
 lazy val `org-structure-api-gateway` = (project in file("api-gateway/org-structure-api-gateway"))
   .settings(

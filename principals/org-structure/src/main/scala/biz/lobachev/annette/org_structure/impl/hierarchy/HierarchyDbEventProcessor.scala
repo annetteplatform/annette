@@ -16,47 +16,49 @@
 
 package biz.lobachev.annette.org_structure.impl.hierarchy
 
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.org_structure.impl.hierarchy.dao.HierarchyDbDao
 import biz.lobachev.annette.org_structure.impl.hierarchy.entity.HierarchyEntity
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class HierarchyDbEventProcessor(
-  readSide: CassandraReadSide,
   dbDao: HierarchyDbDao
-)(implicit ec: ExecutionContext)
-    extends ReadSideProcessor[HierarchyEntity.Event]
-    with SimpleEventHandling {
+)(implicit
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[HierarchyEntity.Event] {
 
-  def buildHandler(): ReadSideProcessor.ReadSideHandler[HierarchyEntity.Event] =
-    readSide
-      .builder[HierarchyEntity.Event]("hierarchy-cassandra")
-      .setGlobalPrepare(dbDao.createTables)
-      .setEventHandler[HierarchyEntity.OrganizationCreated](handle(dbDao.createOrganization))
-      .setEventHandler[HierarchyEntity.UnitCreated](handle(dbDao.createUnit))
-      .setEventHandler[HierarchyEntity.PositionCreated](handle(dbDao.createPosition))
-      .setEventHandler[HierarchyEntity.NameUpdated](handle(dbDao.updateName))
-      .setEventHandler[HierarchyEntity.CategoryAssigned](handle(dbDao.assignCategory))
-      .setEventHandler[HierarchyEntity.SourceUpdated](handle(dbDao.updateSource))
-      .setEventHandler[HierarchyEntity.ExternalIdUpdated](handle(dbDao.updateExternalId))
-      .setEventHandler[HierarchyEntity.ItemMoved](handle(dbDao.moveItem))
-      .setEventHandler[HierarchyEntity.ItemOrderChanged](handle(dbDao.changeItemOrder))
-      .setEventHandler[HierarchyEntity.RootPathUpdated](handle(dbDao.updateRootPath))
-      .setEventHandler[HierarchyEntity.ChiefAssigned](handle(dbDao.assignChief))
-      .setEventHandler[HierarchyEntity.ChiefUnassigned](handle(dbDao.unassignChief))
-      .setEventHandler[HierarchyEntity.PositionLimitChanged](handle(dbDao.changePositionLimit))
-      .setEventHandler[HierarchyEntity.PersonAssigned](handle(dbDao.assignPerson))
-      .setEventHandler[HierarchyEntity.PersonUnassigned](handle(dbDao.unassignPerson))
-      .setEventHandler[HierarchyEntity.OrgRoleAssigned](handle(dbDao.assignOrgRole))
-      .setEventHandler[HierarchyEntity.OrgRoleUnassigned](handle(dbDao.unassignOrgRole))
-      .setEventHandler[HierarchyEntity.OrganizationDeleted](handle(dbDao.deleteOrganization))
-      .setEventHandler[HierarchyEntity.UnitDeleted](handle(dbDao.deleteUnit))
-      .setEventHandler[HierarchyEntity.PositionDeleted](handle(dbDao.deletePosition))
-      .setEventHandler[HierarchyEntity.OrgItemAttributesUpdated](handle(dbDao.updateOrgItemAttributes))
-      .build()
+  override val projectionName: String = "hierarchy-cassandra"
+  override val tags: Seq[String] = Tagger.fromEventName[HierarchyEntity.Event](10).allTags
 
-  def aggregateTags: Set[AggregateEventTag[HierarchyEntity.Event]] = HierarchyEntity.Event.Tag.allTags
+  override def process(envelope: EventEnvelope[HierarchyEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: HierarchyEntity.OrganizationCreated     => dbDao.createOrganization(evt).map(_ => Done)
+      case evt: HierarchyEntity.UnitCreated             => dbDao.createUnit(evt).map(_ => Done)
+      case evt: HierarchyEntity.PositionCreated         => dbDao.createPosition(evt).map(_ => Done)
+      case evt: HierarchyEntity.NameUpdated             => dbDao.updateName(evt).map(_ => Done)
+      case evt: HierarchyEntity.CategoryAssigned        => dbDao.assignCategory(evt).map(_ => Done)
+      case evt: HierarchyEntity.SourceUpdated           => dbDao.updateSource(evt).map(_ => Done)
+      case evt: HierarchyEntity.ExternalIdUpdated       => dbDao.updateExternalId(evt).map(_ => Done)
+      case evt: HierarchyEntity.ItemMoved               => dbDao.moveItem(evt).map(_ => Done)
+      case evt: HierarchyEntity.ItemOrderChanged        => dbDao.changeItemOrder(evt).map(_ => Done)
+      case evt: HierarchyEntity.RootPathUpdated         => dbDao.updateRootPath(evt).map(_ => Done)
+      case evt: HierarchyEntity.ChiefAssigned           => dbDao.assignChief(evt).map(_ => Done)
+      case evt: HierarchyEntity.ChiefUnassigned         => dbDao.unassignChief(evt).map(_ => Done)
+      case evt: HierarchyEntity.PositionLimitChanged    => dbDao.changePositionLimit(evt).map(_ => Done)
+      case evt: HierarchyEntity.PersonAssigned          => dbDao.assignPerson(evt).map(_ => Done)
+      case evt: HierarchyEntity.PersonUnassigned        => dbDao.unassignPerson(evt).map(_ => Done)
+      case evt: HierarchyEntity.OrgRoleAssigned         => dbDao.assignOrgRole(evt).map(_ => Done)
+      case evt: HierarchyEntity.OrgRoleUnassigned       => dbDao.unassignOrgRole(evt).map(_ => Done)
+      case evt: HierarchyEntity.OrganizationDeleted     => dbDao.deleteOrganization(evt).map(_ => Done)
+      case evt: HierarchyEntity.UnitDeleted             => dbDao.deleteUnit(evt).map(_ => Done)
+      case evt: HierarchyEntity.PositionDeleted         => dbDao.deletePosition(evt).map(_ => Done)
+      case evt: HierarchyEntity.OrgItemAttributesUpdated => dbDao.updateOrgItemAttributes(evt).map(_ => Done)
+      case _                                            => Future.successful(Done)
+    }
 }

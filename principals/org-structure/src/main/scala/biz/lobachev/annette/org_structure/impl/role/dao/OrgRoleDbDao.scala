@@ -16,20 +16,27 @@
 
 package biz.lobachev.annette.org_structure.impl.role.dao
 
-import akka.Done
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
+import org.apache.pekko.Done
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
 import biz.lobachev.annette.org_structure.api.role.{OrgRole, OrgRoleId}
 import biz.lobachev.annette.org_structure.impl.role.OrgRoleEntity.{OrgRoleCreated, OrgRoleDeleted, OrgRoleUpdated}
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import com.typesafe.config.Config
+import io.getquill.CassandraContextConfig
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class OrgRoleDbDao(
-  override val session: CassandraSession
+  config: Config
 )(implicit ec: ExecutionContext)
     extends CassandraQuillDao {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -41,35 +48,42 @@ private[impl] class OrgRoleDbDao(
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("org_roles")
-               .column("id", Text, true)
-               .column("name", Text)
-               .column("description", Text)
-               .column("updated_at", Timestamp)
-               .column("updated_by", Text)
-               .build
-           )
-    } yield Done
+    Future {
+      ctx.session.execute(
+        CassandraTableBuilder("org_roles")
+          .column("id", Text, true)
+          .column("name", Text)
+          .column("description", Text)
+          .column("updated_at", Timestamp)
+          .column("updated_by", Text)
+          .build
+      )
+      Done
+    }
   }
 
-  def createOrgRole(event: OrgRoleCreated) = {
+  def createOrgRole(event: OrgRoleCreated): Future[Done] = {
     val entity = event
       .into[OrgRole]
       .withFieldComputed(_.updatedAt, _.createdAt)
       .withFieldComputed(_.updatedBy, _.createdBy)
       .transform
-    ctx.run(entitySchema.insert(lift(entity)))
+    for {
+      _ <- ctx.run(entitySchema.insert(lift(entity)))
+    } yield Done
   }
 
-  def updateOrgRole(event: OrgRoleUpdated) = {
+  def updateOrgRole(event: OrgRoleUpdated): Future[Done] = {
     val entity = event.transformInto[OrgRole]
-    ctx.run(entitySchema.filter(_.id == lift(event.id)).update(lift(entity)))
+    for {
+      _ <- ctx.run(entitySchema.filter(_.id == lift(event.id)).update(lift(entity)))
+    } yield Done
   }
 
-  def deleteOrgRole(event: OrgRoleDeleted) =
-    ctx.run(entitySchema.filter(_.id == lift(event.id)).delete)
+  def deleteOrgRole(event: OrgRoleDeleted): Future[Done] =
+    for {
+      _ <- ctx.run(entitySchema.filter(_.id == lift(event.id)).delete)
+    } yield Done
 
   def getOrgRole(id: OrgRoleId): Future[Option[OrgRole]] =
     ctx
