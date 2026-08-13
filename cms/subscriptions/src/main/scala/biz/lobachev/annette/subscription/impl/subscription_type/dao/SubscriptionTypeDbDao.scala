@@ -16,18 +16,25 @@
 
 package biz.lobachev.annette.subscription.impl.subscription_type.dao
 
-import akka.Done
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
+import org.apache.pekko.Done
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
 import biz.lobachev.annette.subscription.api.subscription_type._
 import biz.lobachev.annette.subscription.impl.subscription_type.SubscriptionTypeEntity
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import com.typesafe.config.Config
+import io.getquill.CassandraContextConfig
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-private[impl] class SubscriptionTypeDbDao(override val session: CassandraSession)(implicit ec: ExecutionContext)
+private[impl] class SubscriptionTypeDbDao(config: Config)(implicit ec: ExecutionContext)
     extends CassandraQuillDao {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -40,34 +47,41 @@ private[impl] class SubscriptionTypeDbDao(override val session: CassandraSession
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("subscription_types")
-               .column("id", Text, true)
-               .column("name", Text)
-               .column("updated_at", Timestamp)
-               .column("updated_by", Text)
-               .build
-           )
-    } yield Done
+    Future {
+      ctx.session.execute(
+        CassandraTableBuilder("subscription_types")
+          .column("id", Text, true)
+          .column("name", Text)
+          .column("updated_at", Timestamp)
+          .column("updated_by", Text)
+          .build
+      )
+      Done
+    }
   }
 
-  def createSubscriptionType(event: SubscriptionTypeEntity.SubscriptionTypeCreated) = {
+  def createSubscriptionType(event: SubscriptionTypeEntity.SubscriptionTypeCreated): Future[Done] = {
     val entity = event
       .into[SubscriptionType]
       .withFieldComputed(_.updatedAt, _.createdAt)
       .withFieldComputed(_.updatedBy, _.createdBy)
       .transform
-    ctx.run(entitySchema.insert(lift(entity)))
+    for {
+      _ <- ctx.run(entitySchema.insert(lift(entity)))
+    } yield Done
   }
 
-  def updateSubscriptionType(event: SubscriptionTypeEntity.SubscriptionTypeUpdated) = {
+  def updateSubscriptionType(event: SubscriptionTypeEntity.SubscriptionTypeUpdated): Future[Done] = {
     val entity = event.transformInto[SubscriptionType]
-    ctx.run(entitySchema.filter(_.id == lift(event.id)).update(lift(entity)))
+    for {
+      _ <- ctx.run(entitySchema.filter(_.id == lift(event.id)).update(lift(entity)))
+    } yield Done
   }
 
-  def deleteSubscriptionType(event: SubscriptionTypeEntity.SubscriptionTypeDeleted) =
-    ctx.run(entitySchema.filter(_.id == lift(event.id)).delete)
+  def deleteSubscriptionType(event: SubscriptionTypeEntity.SubscriptionTypeDeleted): Future[Done] =
+    for {
+      _ <- ctx.run(entitySchema.filter(_.id == lift(event.id)).delete)
+    } yield Done
 
   def getSubscriptionType(id: SubscriptionTypeId): Future[Option[SubscriptionType]] =
     ctx

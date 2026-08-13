@@ -16,13 +16,14 @@
 
 package biz.lobachev.annette.subscription.impl.subscription.dao
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
 import biz.lobachev.annette.subscription.api.subscription.{ObjectId, Subscription, SubscriptionKey}
 import biz.lobachev.annette.subscription.api.subscription_type.SubscriptionTypeId
 import biz.lobachev.annette.subscription.impl.subscription.SubscriptionEntity.{SubscriptionCreated, SubscriptionDeleted}
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import com.typesafe.config.Config
+import io.getquill.CassandraContextConfig
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
@@ -30,10 +31,16 @@ import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class SubscriptionDbDao(
-  override val session: CassandraSession
+  config: Config
 )(implicit
   ec: ExecutionContext
 ) extends CassandraQuillDao {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -45,31 +52,32 @@ private[impl] class SubscriptionDbDao(
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("subscription_by_principals")
-               .column("subscription_type", Text)
-               .column("principal", Text)
-               .column("object_id", Text)
-               .column("updated_at", Timestamp)
-               .column("updated_by", Text)
-               .withPrimaryKey("subscription_type", "principal", "object_id")
-               .build
-           )
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("subscription_by_object_ids")
-               .column("subscription_type", Text)
-               .column("object_id", Text)
-               .column("principal", Text)
-               .column("updated_at", Timestamp)
-               .column("updated_by", Text)
-               .withPrimaryKey("subscription_type", "object_id", "principal")
-               .build
-           )
-    } yield Done
+    Future {
+      ctx.session.execute(
+        CassandraTableBuilder("subscription_by_principals")
+          .column("subscription_type", Text)
+          .column("principal", Text)
+          .column("object_id", Text)
+          .column("updated_at", Timestamp)
+          .column("updated_by", Text)
+          .withPrimaryKey("subscription_type", "principal", "object_id")
+          .build
+      )
+      ctx.session.execute(
+        CassandraTableBuilder("subscription_by_object_ids")
+          .column("subscription_type", Text)
+          .column("object_id", Text)
+          .column("principal", Text)
+          .column("updated_at", Timestamp)
+          .column("updated_by", Text)
+          .withPrimaryKey("subscription_type", "object_id", "principal")
+          .build
+      )
+      Done
+    }
   }
 
-  def createSubscription(event: SubscriptionCreated) = {
+  def createSubscription(event: SubscriptionCreated): Future[Done] = {
     val entity = event
       .into[Subscription]
       .withFieldComputed(_.updatedAt, _.createdAt)
@@ -81,7 +89,7 @@ private[impl] class SubscriptionDbDao(
     } yield Done
   }
 
-  def deleteSubscription(event: SubscriptionDeleted) =
+  def deleteSubscription(event: SubscriptionDeleted): Future[Done] =
     for {
       _ <- ctx.run(
              subscriptionByPrincipalSchema

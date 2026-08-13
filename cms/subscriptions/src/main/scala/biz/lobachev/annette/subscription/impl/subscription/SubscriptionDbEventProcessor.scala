@@ -16,28 +16,29 @@
 
 package biz.lobachev.annette.subscription.impl.subscription
 
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.subscription.impl.subscription.dao.SubscriptionDbDao
-import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class SubscriptionDbEventProcessor(
-  readSide: CassandraReadSide,
   dbDao: SubscriptionDbDao
-)(implicit ec: ExecutionContext)
-    extends ReadSideProcessor[SubscriptionEntity.Event]
-    with SimpleEventHandling {
+)(implicit
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[SubscriptionEntity.Event] {
 
-  def buildHandler() =
-    readSide
-      .builder[SubscriptionEntity.Event]("subscription-cassandra")
-      .setGlobalPrepare(dbDao.createTables)
-      .setEventHandler[SubscriptionEntity.SubscriptionCreated](handle(dbDao.createSubscription))
-      .setEventHandler[SubscriptionEntity.SubscriptionDeleted](handle(dbDao.deleteSubscription))
-      .build()
+  override val projectionName: String = "subscription-cassandra"
+  override val tags: Seq[String] = Tagger.fromEventName[SubscriptionEntity.Event](10).allTags
 
-  def aggregateTags = SubscriptionEntity.Event.Tag.allTags
-
+  override def process(envelope: EventEnvelope[SubscriptionEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: SubscriptionEntity.SubscriptionCreated => dbDao.createSubscription(evt).map(_ => Done)
+      case evt: SubscriptionEntity.SubscriptionDeleted => dbDao.deleteSubscription(evt).map(_ => Done)
+      case _                                            => Future.successful(Done)
+    }
 }

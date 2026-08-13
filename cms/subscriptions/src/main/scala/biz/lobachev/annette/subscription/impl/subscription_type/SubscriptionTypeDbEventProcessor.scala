@@ -16,28 +16,30 @@
 
 package biz.lobachev.annette.subscription.impl.subscription_type
 
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.subscription.impl.subscription_type.dao.SubscriptionTypeDbDao
-import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class SubscriptionTypeDbEventProcessor(
-  readSide: CassandraReadSide,
   dbDao: SubscriptionTypeDbDao
-)(implicit ec: ExecutionContext)
-    extends ReadSideProcessor[SubscriptionTypeEntity.Event]
-    with SimpleEventHandling {
+)(implicit
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[SubscriptionTypeEntity.Event] {
 
-  def buildHandler() =
-    readSide
-      .builder[SubscriptionTypeEntity.Event]("subscriptionType-cassandra")
-      .setGlobalPrepare(dbDao.createTables)
-      .setEventHandler[SubscriptionTypeEntity.SubscriptionTypeCreated](handle(dbDao.createSubscriptionType))
-      .setEventHandler[SubscriptionTypeEntity.SubscriptionTypeUpdated](handle(dbDao.updateSubscriptionType))
-      .setEventHandler[SubscriptionTypeEntity.SubscriptionTypeDeleted](handle(dbDao.deleteSubscriptionType))
-      .build()
+  override val projectionName: String = "subscriptionType-cassandra"
+  override val tags: Seq[String] = Tagger.fromEventName[SubscriptionTypeEntity.Event](10).allTags
 
-  def aggregateTags = SubscriptionTypeEntity.Event.Tag.allTags
+  override def process(envelope: EventEnvelope[SubscriptionTypeEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: SubscriptionTypeEntity.SubscriptionTypeCreated => dbDao.createSubscriptionType(evt).map(_ => Done)
+      case evt: SubscriptionTypeEntity.SubscriptionTypeUpdated => dbDao.updateSubscriptionType(evt).map(_ => Done)
+      case evt: SubscriptionTypeEntity.SubscriptionTypeDeleted => dbDao.deleteSubscriptionType(evt).map(_ => Done)
+      case _                                                   => Future.successful(Done)
+    }
 }

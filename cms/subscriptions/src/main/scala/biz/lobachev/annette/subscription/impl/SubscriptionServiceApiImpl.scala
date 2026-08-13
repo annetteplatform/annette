@@ -16,103 +16,195 @@
 
 package biz.lobachev.annette.subscription.impl
 
-import akka.{Done, NotUsed}
+import java.time.OffsetDateTime
+import com.google.protobuf.empty.Empty
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
-import biz.lobachev.annette.subscription.api.SubscriptionServiceApi
+import biz.lobachev.annette.subscription.api.{grpc => g}
+import biz.lobachev.annette.subscription.api.grpc.SubscriptionService
+import biz.lobachev.annette.subscription.api.subscription._
 import biz.lobachev.annette.subscription.api.subscription_type._
-import biz.lobachev.annette.subscription.api.subscription.{
-  CreateSubscriptionPayload,
-  DeleteSubscriptionPayload,
-  ObjectId,
-  Subscription,
-  SubscriptionFindQuery,
-  SubscriptionFindResult,
-  SubscriptionKey
-}
-import biz.lobachev.annette.subscription.impl.subscription_type.SubscriptionTypeEntityService
 import biz.lobachev.annette.subscription.impl.subscription.SubscriptionEntityService
-import com.lightbend.lagom.scaladsl.api.ServiceCall
+import biz.lobachev.annette.subscription.impl.subscription_type.SubscriptionTypeEntityService
+
+import scala.concurrent.{ExecutionContext, Future}
 
 class SubscriptionServiceApiImpl(
   subscriptionEntityService: SubscriptionEntityService,
   subscriptionTypeEntityService: SubscriptionTypeEntityService
-) extends SubscriptionServiceApi {
+)(implicit ec: ExecutionContext) extends SubscriptionService {
 
-  override def createSubscription: ServiceCall[CreateSubscriptionPayload, Done] =
-    ServiceCall { payload =>
-      subscriptionEntityService.createSubscription(payload)
-    }
+  private def toDomain(p: g.AnnettePrincipal): AnnettePrincipal =
+    AnnettePrincipal(p.code)
 
-  override def deleteSubscription: ServiceCall[DeleteSubscriptionPayload, Done] =
-    ServiceCall { payload =>
-      subscriptionEntityService.deleteSubscription(payload)
-    }
+  private def fromDomain(p: AnnettePrincipal): g.AnnettePrincipal =
+    g.AnnettePrincipal(p.code)
 
-  override def getSubscription(source: Option[String]): ServiceCall[SubscriptionKey, Subscription] =
-    ServiceCall { key =>
-      subscriptionEntityService.getSubscription(key, source)
-    }
+  private def unwrapPrincipal(p: Option[g.AnnettePrincipal]): AnnettePrincipal =
+    p.map(toDomain).getOrElse(throw new IllegalArgumentException("missing principal"))
 
-  override def getSubscriptions(source: Option[String]): ServiceCall[Set[SubscriptionKey], Set[Subscription]] =
-    ServiceCall { keys =>
-      subscriptionEntityService.getSubscriptions(keys, source)
-    }
+  private def fromDomain(k: SubscriptionKey): g.SubscriptionKey =
+    g.SubscriptionKey(
+      subscriptionType = k.subscriptionType,
+      objectId = k.objectId,
+      principal = Some(fromDomain(k.principal))
+    )
+
+  private def toDomain(k: g.SubscriptionKey): SubscriptionKey =
+    SubscriptionKey(
+      subscriptionType = k.subscriptionType,
+      objectId = k.objectId,
+      principal = unwrapPrincipal(k.principal)
+    )
+
+  private def fromDomain(s: Subscription): g.Subscription =
+    g.Subscription(
+      subscriptionType = s.subscriptionType,
+      objectId = s.objectId,
+      principal = Some(fromDomain(s.principal)),
+      updatedAt = s.updatedAt.toString,
+      updatedBy = Some(fromDomain(s.updatedBy))
+    )
+
+  private def fromDomain(t: SubscriptionType): g.SubscriptionType =
+    g.SubscriptionType(
+      id = t.id,
+      name = t.name,
+      updatedAt = t.updatedAt.toString,
+      updatedBy = Some(fromDomain(t.updatedBy))
+    )
+
+  private def formatOdt(odt: OffsetDateTime): String = odt.toString
+
+  // === Subscription CRUD ===
+
+  override def createSubscription(in: g.CreateSubscriptionPayload): Future[Empty] =
+    subscriptionEntityService
+      .createSubscription(
+        CreateSubscriptionPayload(
+          subscriptionType = in.subscriptionType,
+          objectId = in.objectId,
+          principal = unwrapPrincipal(in.principal),
+          createdBy = unwrapPrincipal(in.createdBy)
+        )
+      )
+      .map(_ => Empty())
+
+  override def deleteSubscription(in: g.DeleteSubscriptionPayload): Future[Empty] =
+    subscriptionEntityService
+      .deleteSubscription(
+        DeleteSubscriptionPayload(
+          subscriptionType = in.subscriptionType,
+          objectId = in.objectId,
+          principal = unwrapPrincipal(in.principal),
+          updatedBy = unwrapPrincipal(in.updatedBy)
+        )
+      )
+      .map(_ => Empty())
+
+  override def getSubscription(in: g.GetSubscriptionRequest): Future[g.Subscription] =
+    subscriptionEntityService
+      .getSubscription(toDomain(in.key.getOrElse(throw new IllegalArgumentException("missing key"))), in.source)
+      .map(fromDomain)
+
+  override def getSubscriptions(in: g.GetSubscriptionsRequest): Future[g.GetSubscriptionsResponse] =
+    subscriptionEntityService
+      .getSubscriptions(in.keys.map(toDomain).toSet, in.source)
+      .map(subscriptions => g.GetSubscriptionsResponse(subscriptions = subscriptions.map(fromDomain).toSeq))
 
   override def getSubscriptionsByPrincipals(
-    subscriptionType: SubscriptionTypeId
-  ): ServiceCall[Set[AnnettePrincipal], Set[SubscriptionKey]] =
-    ServiceCall { principals =>
-      subscriptionEntityService.getSubscriptionsByPrincipals(subscriptionType, principals)
-    }
+    in: g.GetSubscriptionsByPrincipalsRequest
+  ): Future[g.GetSubscriptionKeysResponse] =
+    subscriptionEntityService
+      .getSubscriptionsByPrincipals(in.subscriptionType, in.principals.map(toDomain).toSet)
+      .map(keys => g.GetSubscriptionKeysResponse(keys = keys.map(fromDomain).toSeq))
 
   override def getSubscriptionsByObjects(
-    subscriptionType: SubscriptionTypeId
-  ): ServiceCall[Set[ObjectId], Set[SubscriptionKey]] =
-    ServiceCall { objectIds =>
-      subscriptionEntityService.getSubscriptionsByObjects(subscriptionType, objectIds)
-    }
+    in: g.GetSubscriptionsByObjectsRequest
+  ): Future[g.GetSubscriptionKeysResponse] =
+    subscriptionEntityService
+      .getSubscriptionsByObjects(in.subscriptionType, in.objectIds.toSet)
+      .map(keys => g.GetSubscriptionKeysResponse(keys = keys.map(fromDomain).toSeq))
 
-  override def findSubscriptions: ServiceCall[SubscriptionFindQuery, SubscriptionFindResult] =
-    ServiceCall { query =>
-      subscriptionEntityService.findSubscriptions(query)
-    }
+  override def findSubscriptions(in: g.SubscriptionFindQuery): Future[g.SubscriptionFindResult] =
+    subscriptionEntityService
+      .findSubscriptions(
+        SubscriptionFindQuery(
+          offset = in.offset,
+          size = in.size,
+          subscriptionType = if (in.subscriptionTypes.isEmpty) None else Some(in.subscriptionTypes.toSet),
+          objects = if (in.objectIds.isEmpty) None else Some(in.objectIds.toSet),
+          principals = if (in.principals.isEmpty) None else Some(in.principals.map(toDomain).toSet),
+          sortBy = Some(in.sortBy.map(s => biz.lobachev.annette.core.model.indexing.SortBy(field = s.field, descending = s.descending)).toSeq).filter(_.nonEmpty)
+        )
+      )
+      .map(fromDomain)
 
-  // ****************************** SubscriptionType methods ******************************
+  // === SubscriptionType CRUD ===
 
-  override def createSubscriptionType: ServiceCall[CreateSubscriptionTypePayload, Done] =
-    ServiceCall { payload =>
-      subscriptionTypeEntityService.createSubscriptionType(payload)
-    }
+  override def createSubscriptionType(in: g.CreateSubscriptionTypePayload): Future[Empty] =
+    subscriptionTypeEntityService
+      .createSubscriptionType(
+        CreateSubscriptionTypePayload(
+          id = in.id,
+          name = in.name,
+          createdBy = unwrapPrincipal(in.createdBy)
+        )
+      )
+      .map(_ => Empty())
 
-  override def updateSubscriptionType: ServiceCall[UpdateSubscriptionTypePayload, Done] =
-    ServiceCall { payload =>
-      subscriptionTypeEntityService.updateSubscriptionType(payload)
-    }
+  override def updateSubscriptionType(in: g.UpdateSubscriptionTypePayload): Future[Empty] =
+    subscriptionTypeEntityService
+      .updateSubscriptionType(
+        UpdateSubscriptionTypePayload(
+          id = in.id,
+          name = in.name,
+          updatedBy = unwrapPrincipal(in.updatedBy)
+        )
+      )
+      .map(_ => Empty())
 
-  override def deleteSubscriptionType: ServiceCall[DeleteSubscriptionTypePayload, Done] =
-    ServiceCall { payload =>
-      subscriptionTypeEntityService.deleteSubscriptionType(payload)
-    }
+  override def deleteSubscriptionType(in: g.DeleteSubscriptionTypePayload): Future[Empty] =
+    subscriptionTypeEntityService
+      .deleteSubscriptionType(
+        DeleteSubscriptionTypePayload(id = in.id, updatedBy = unwrapPrincipal(in.updatedBy))
+      )
+      .map(_ => Empty())
 
-  override def getSubscriptionType(
-    id: SubscriptionTypeId,
-    source: Option[String]
-  ): ServiceCall[NotUsed, SubscriptionType] =
-    ServiceCall { _ =>
-      subscriptionTypeEntityService.getSubscriptionType(id, source)
-    }
+  override def getSubscriptionType(in: g.GetSubscriptionTypeRequest): Future[g.SubscriptionType] =
+    subscriptionTypeEntityService
+      .getSubscriptionType(in.id, in.source)
+      .map(fromDomain)
 
-  override def getSubscriptionTypes(
-    source: Option[String]
-  ): ServiceCall[Set[SubscriptionTypeId], Seq[SubscriptionType]] =
-    ServiceCall { ids =>
-      subscriptionTypeEntityService.getSubscriptionTypes(ids, source)
-    }
+  override def getSubscriptionTypes(in: g.GetSubscriptionTypesRequest): Future[g.GetSubscriptionTypesResponse] =
+    subscriptionTypeEntityService
+      .getSubscriptionTypes(in.ids.toSet, in.source)
+      .map(types => g.GetSubscriptionTypesResponse(subscriptionTypes = types.map(fromDomain)))
 
-  override def findSubscriptionTypes: ServiceCall[SubscriptionTypeFindQuery, FindResult] =
-    ServiceCall { query =>
-      subscriptionTypeEntityService.findSubscriptionTypes(query)
-    }
+  override def findSubscriptionTypes(in: g.SubscriptionTypeFindQuery): Future[g.FindResult] =
+    subscriptionTypeEntityService
+      .findSubscriptionTypes(
+        SubscriptionTypeFindQuery(
+          offset = in.offset,
+          size = in.size,
+          filter = in.filter,
+          name = in.name,
+          sortBy = Some(in.sortBy.map(s => biz.lobachev.annette.core.model.indexing.SortBy(field = s.field, descending = s.descending)).toSeq).filter(_.nonEmpty)
+        )
+      )
+      .map(fromDomain)
 
+  // === domain → proto (response converters) ===
+
+  private def fromDomain(r: SubscriptionFindResult): g.SubscriptionFindResult =
+    g.SubscriptionFindResult(
+      total = r.total,
+      hits = r.hits.map(h => g.SubscriptionHitResult(subscription = Some(fromDomain(h.subscription)), score = h.score, updatedAt = formatOdt(h.updatedAt)))
+    )
+
+  private def fromDomain(f: FindResult): g.FindResult =
+    g.FindResult(
+      total = f.total,
+      hits = f.hits.map(h => g.HitResult(id = h.id, score = h.score, updatedAt = formatOdt(h.updatedAt)))
+    )
 }

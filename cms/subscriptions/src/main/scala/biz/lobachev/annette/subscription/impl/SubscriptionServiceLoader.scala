@@ -16,87 +16,104 @@
 
 package biz.lobachev.annette.subscription.impl
 
-import akka.cluster.sharding.typed.scaladsl.Entity
-import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
-import biz.lobachev.annette.subscription.api.SubscriptionServiceApi
-import biz.lobachev.annette.subscription.impl.subscription_type.{
-  SubscriptionTypeDbEventProcessor,
-  SubscriptionTypeEntity,
-  SubscriptionTypeEntityService,
-  SubscriptionTypeIndexEventProcessor
-}
-import biz.lobachev.annette.subscription.impl.subscription_type.dao.{SubscriptionTypeDbDao, SubscriptionTypeIndexDao}
-import biz.lobachev.annette.subscription.impl.subscription_type.model.SubscriptionTypeSerializerRegistry
+import biz.lobachev.annette.subscription.api.grpc.SubscriptionServiceHandler
 import biz.lobachev.annette.subscription.impl.subscription._
 import biz.lobachev.annette.subscription.impl.subscription.dao.{SubscriptionDbDao, SubscriptionIndexDao}
-import biz.lobachev.annette.subscription.impl.subscription.model.SubscriptionSerializerRegistry
-import com.lightbend.lagom.scaladsl.broker.kafka.LagomKafkaClientComponents
-import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
-import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
-import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
-import com.lightbend.lagom.scaladsl.server._
-import com.softwaremill.macwire._
-import play.api.LoggerConfigurator
-import play.api.libs.ws.ahc.AhcWSComponents
+import biz.lobachev.annette.subscription.impl.subscription_type._
+import biz.lobachev.annette.subscription.impl.subscription_type.dao.{SubscriptionTypeDbDao, SubscriptionTypeIndexDao}
+import com.sksamuel.elastic4s.ElasticClient
+import com.typesafe.config.ConfigFactory
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity}
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.projection.ProjectionBehavior
+import org.apache.pekko.projection.cassandra.scaladsl.CassandraProjection
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.SystemMaterializer
+import org.slf4j.LoggerFactory
 
-import scala.collection.immutable
+import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.duration._
 
-class SubscriptionServiceLoader extends LagomApplicationLoader {
+object SubscriptionServiceMain {
 
-  override def load(context: LagomApplicationContext): LagomApplication =
-    new SubscriptionServiceApplication(context) with AnnetteDiscoveryComponents
+  def main(args: Array[String]): Unit = {
+    val config = ConfigFactory.load()
+    implicit val system: ActorSystem[Nothing] = ActorSystem[Nothing](
+      Behaviors.empty,
+      name = config.getString("annette.cluster.system-name"),
+      config
+    )
+    val app = new SubscriptionServiceApp()
+    app.run()(system)
+  }
+}
 
-  override def loadDevMode(context: LagomApplicationContext): LagomApplication = {
-    // workaround for custom logback.xml
-    val environment = context.playContext.environment
-    LoggerConfigurator(environment.classLoader).foreach {
-      _.configure(environment)
-    }
-    new SubscriptionServiceApplication(context) with LagomDevModeComponents
+private[impl] class SubscriptionServiceApp() {
+
+  private val log = LoggerFactory.getLogger(getClass)
+
+  def run()(implicit system: ActorSystem[_]): Unit = {
+    implicit val ec: ExecutionContext = system.executionContext
+    implicit val mat: Materializer   = SystemMaterializer(system).materializer
+    val config = system.settings.config
+
+    val indexingModule = new IndexingModule()
+    val elasticClient: ElasticClient = indexingModule.client
+
+    val subscriptionDbDao    = new SubscriptionDbDao(config)
+    val subscriptionTypeDbDao = new SubscriptionTypeDbDao(config)
+    val subscriptionIndexDao = new SubscriptionIndexDao(elasticClient)
+    val subscriptionTypeIndexDao = new SubscriptionTypeIndexDao(elasticClient)
+
+    Await.result(CassandraProjection.createTablesIfNotExists(), 10.seconds)
+
+    val sharding = ClusterSharding(system)
+    val subscriptionEntityService =
+      new SubscriptionEntityService(sharding, subscriptionDbDao, subscriptionIndexDao, config)
+    val subscriptionTypeEntityService =
+      new SubscriptionTypeEntityService(sharding, subscriptionTypeDbDao, subscriptionTypeIndexDao, config)
+
+    val subscriptionDbProcessor     = new SubscriptionDbEventProcessor(subscriptionDbDao)
+    val subscriptionIndexProcessor  = new SubscriptionIndexEventProcessor(subscriptionIndexDao)
+    val subscriptionTypeDbProcessor = new SubscriptionTypeDbEventProcessor(subscriptionTypeDbDao)
+    val subscriptionTypeIndexProcessor = new SubscriptionTypeIndexEventProcessor(subscriptionTypeIndexDao)
+
+    startProjection("subscription-cassandra", subscriptionDbProcessor)
+    startProjection("subscription-indexing", subscriptionIndexProcessor)
+    startProjection("subscriptionType-cassandra", subscriptionTypeDbProcessor)
+    startProjection("subscriptionType-indexing", subscriptionTypeIndexProcessor)
+
+    sharding.init(
+      Entity(SubscriptionEntity.typeKey) { entityContext =>
+        SubscriptionEntity(entityContext)
+      }
+    )
+    sharding.init(
+      Entity(SubscriptionTypeEntity.typeKey) { entityContext =>
+        SubscriptionTypeEntity(entityContext)
+      }
+    )
+
+    val serviceApi = new SubscriptionServiceApiImpl(subscriptionEntityService, subscriptionTypeEntityService)
+    val handler    = SubscriptionServiceHandler(serviceApi)
+
+    val httpHost = config.getString("annette.http.host")
+    val httpPort = config.getInt("annette.http.port")
+    Await.result(Http().newServerAt(httpHost, httpPort).bind(handler), 10.seconds)
+    log.info("Subscriptions gRPC service bound to {}:{}", httpHost, httpPort)
   }
 
-  override def describeService = Some(readDescriptor[SubscriptionServiceApi])
-}
-
-abstract class SubscriptionServiceApplication(context: LagomApplicationContext)
-    extends LagomApplication(context)
-    with CassandraPersistenceComponents
-    with LagomKafkaClientComponents
-    with AhcWSComponents
-    with ClusterComponents {
-
-  lazy val jsonSerializerRegistry = SubscriptionRepositorySerializerRegistry
-
-  val indexingModule = new IndexingModule()
-  import indexingModule._
-
-  override lazy val lagomServer   = serverFor[SubscriptionServiceApi](wire[SubscriptionServiceApiImpl])
-  lazy val subscriptionIndexDao   = wire[SubscriptionIndexDao]
-  lazy val subscriptionService    = wire[SubscriptionEntityService]
-  lazy val subscriptionRepository = wire[SubscriptionDbDao]
-  readSide.register(wire[SubscriptionDbEventProcessor])
-  readSide.register(wire[SubscriptionIndexEventProcessor])
-  clusterSharding.init(
-    Entity(SubscriptionEntity.typeKey) { entityContext =>
-      SubscriptionEntity(entityContext)
+  private def startProjection[E](
+    processorName: String,
+    projection: biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase[E]
+  )(implicit
+    system: ActorSystem[_]
+  ): Unit = {
+    projection.tags.foreach { tag =>
+      system.systemActorOf(ProjectionBehavior(projection.projection(tag)), s"$processorName-$tag")
     }
-  )
-
-  lazy val subscriptionTypeEntityService = wire[SubscriptionTypeEntityService]
-  lazy val subscriptionTypeIndexDao      = wire[SubscriptionTypeIndexDao]
-  lazy val subscriptionTypeRepository    = wire[SubscriptionTypeDbDao]
-  readSide.register(wire[SubscriptionTypeDbEventProcessor])
-  readSide.register(wire[SubscriptionTypeIndexEventProcessor])
-  clusterSharding.init(
-    Entity(SubscriptionTypeEntity.typeKey) { entityContext =>
-      SubscriptionTypeEntity(entityContext)
-    }
-  )
-}
-
-object SubscriptionRepositorySerializerRegistry extends JsonSerializerRegistry {
-  override def serializers: immutable.Seq[JsonSerializer[_]] =
-    SubscriptionSerializerRegistry.serializers ++ SubscriptionTypeSerializerRegistry.serializers
+  }
 }

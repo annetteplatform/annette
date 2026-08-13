@@ -695,7 +695,6 @@ lazy val `subscriptions-api` = (project in file("cms/subscriptions-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
-      lagomScaladslTestKit,
       Dependencies.chimney
     ) ++ Dependencies.tests
   )
@@ -704,22 +703,20 @@ lazy val `subscriptions-api` = (project in file("cms/subscriptions-api"))
 
 def subscriptionsProject(pr: Project) =
   pr
-    .enablePlugins(LagomScala)
+    .enablePlugins(JavaAppPackaging)
     .settings(
-      libraryDependencies ++= Seq(
-        lagomScaladslPersistenceCassandra,
-        lagomScaladslKafkaClient,
-        lagomScaladslTestKit,
-        Dependencies.macwire,
-        Dependencies.chimney
-      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
+      libraryDependencies ++= Dependencies.pekkoCore
+        ++ Dependencies.pekkoPersistenceCassandra
+        ++ Dependencies.pekkoProjection
+        ++ Seq(Dependencies.macwire, Dependencies.chimney)
+        ++ Dependencies.quillPekko
+        ++ Dependencies.tests
     )
-    .settings(lagomForkedTestSettings: _*)
-    .settings(Test / fork := true) // survives slice 013 (which removes lagomForkedTestSettings)
+    .settings(Test / fork := true)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`subscriptions-api`, `microservice-core`)
+    .dependsOn(`subscriptions-api`, `microservice-core-pekko`, `microservice-core`)
 
 lazy val `demo-ignition`    = ignitionDemoProject(project in file("ignition/demo-ignition"))
 lazy val `application`      = applicationProject(project in file("application/application"))
