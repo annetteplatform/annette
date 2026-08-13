@@ -16,9 +16,8 @@
 
 package biz.lobachev.annette.service_catalog.impl.scope.dao
 
-import akka.Done
-import akka.stream.Materializer
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
+import org.apache.pekko.Done
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
 import biz.lobachev.annette.service_catalog.api.scope.{Scope, ScopeId}
 import biz.lobachev.annette.service_catalog.impl.scope.ScopeEntity.{
   ScopeActivated,
@@ -27,7 +26,8 @@ import biz.lobachev.annette.service_catalog.impl.scope.ScopeEntity.{
   ScopeDeleted,
   ScopeUpdated
 }
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import com.typesafe.config.Config
+import io.getquill.CassandraContextConfig
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
@@ -36,10 +36,15 @@ import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 
-private[service_catalog] class ScopeDbDao(override val session: CassandraSession)(implicit
-  val ec: ExecutionContext,
-  val materializer: Materializer
+private[service_catalog] class ScopeDbDao(config: Config)(implicit
+  val ec: ExecutionContext
 ) extends CassandraQuillDao {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -52,20 +57,21 @@ private[service_catalog] class ScopeDbDao(override val session: CassandraSession
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("scopes")
-               .column("id", Text, true)
-               .column("name", Text)
-               .column("description", Text)
-               .column("category_id", Text)
-               .column("children", List(Text))
-               .column("active", Boolean)
-               .column("updated_at", Timestamp)
-               .column("updated_by", Text)
-               .build
-           )
-    } yield Done
+    Future {
+      ctx.session.execute(
+        CassandraTableBuilder("scopes")
+          .column("id", Text, true)
+          .column("name", Text)
+          .column("description", Text)
+          .column("category_id", Text)
+          .column("children", List(Text))
+          .column("active", Boolean)
+          .column("updated_at", Timestamp)
+          .column("updated_by", Text)
+          .build
+      )
+      Done
+    }
   }
 
   def createScope(event: ScopeCreated): Future[Done] = {
@@ -93,7 +99,7 @@ private[service_catalog] class ScopeDbDao(override val session: CassandraSession
     val update     = s"UPDATE scopes SET $updatesCql WHERE id = ?;"
     val params     = updates.map { case _ -> v => v } :+ event.id
     for {
-      _ <- session.executeWrite(update, params: _*)
+      _ <- Future { ctx.session.execute(update, params: _*); Done }
     } yield Done
   }
 

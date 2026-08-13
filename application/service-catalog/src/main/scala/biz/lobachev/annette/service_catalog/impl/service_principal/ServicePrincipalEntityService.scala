@@ -16,10 +16,10 @@
 
 package biz.lobachev.annette.service_catalog.impl.service_principal
 
-import akka.Done
-import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
-import akka.stream.Materializer
-import akka.util.Timeout
+import org.apache.pekko.Done
+import org.apache.pekko.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.util.Timeout
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.service_catalog.api.service_principal.{
   AssignServicePrincipalPayload,

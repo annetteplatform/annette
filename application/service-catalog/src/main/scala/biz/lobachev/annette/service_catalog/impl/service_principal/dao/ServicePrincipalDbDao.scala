@@ -16,17 +16,24 @@
 
 package biz.lobachev.annette.service_catalog.impl.service_principal.dao
 
-import akka.Done
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
+import org.apache.pekko.Done
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
 import biz.lobachev.annette.service_catalog.impl.service_principal.ServicePrincipalEntity
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import com.typesafe.config.Config
+import io.getquill.CassandraContextConfig
 
 import scala.concurrent.{ExecutionContext, Future}
 
 private[service_catalog] class ServicePrincipalDbDao(
-  override val session: CassandraSession
+  config: Config
 )(implicit ec: ExecutionContext)
     extends CassandraQuillDao {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -37,17 +44,18 @@ private[service_catalog] class ServicePrincipalDbDao(
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("service_principals")
-               .column("service_id", Text)
-               .column("principal", Text)
-               .column("updated_at", Timestamp)
-               .column("updated_by", Text)
-               .withPrimaryKey("service_id", "principal")
-               .build
-           )
-    } yield Done
+    Future {
+      ctx.session.execute(
+        CassandraTableBuilder("service_principals")
+          .column("service_id", Text)
+          .column("principal", Text)
+          .column("updated_at", Timestamp)
+          .column("updated_by", Text)
+          .withPrimaryKey("service_id", "principal")
+          .build
+      )
+      Done
+    }
   }
 
   def assignPrincipal(event: ServicePrincipalEntity.ServicePrincipalAssigned) = {
@@ -57,17 +65,21 @@ private[service_catalog] class ServicePrincipalDbDao(
       updatedBy = event.updatedBy,
       updatedAt = event.updatedAt
     )
-    ctx.run(schema.insert(lift(entity)))
+    for {
+      _ <- ctx.run(schema.insert(lift(entity)))
+    } yield Done
   }
 
   def unassignPrincipal(event: ServicePrincipalEntity.ServicePrincipalUnassigned) =
-    ctx.run(
-      schema
-        .filter(e =>
-          e.serviceId == lift(event.serviceId) &&
-            e.principal == lift(event.principal)
-        )
-        .delete
-    )
+    for {
+      _ <- ctx.run(
+             schema
+               .filter(e =>
+                 e.serviceId == lift(event.serviceId) &&
+                   e.principal == lift(event.principal)
+               )
+               .delete
+             )
+    } yield Done
 
 }

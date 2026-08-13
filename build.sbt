@@ -306,8 +306,7 @@ lazy val `service-catalog-api` = (project in file("application/service-catalog-a
   .enablePlugins(PekkoGrpcPlugin)
   .settings(
     libraryDependencies ++= Seq(
-      lagomScaladslApi,
-      lagomScaladslTestKit
+      lagomScaladslApi
     ) ++ Dependencies.tests
   )
   .settings(annetteSettings: _*)
@@ -315,21 +314,20 @@ lazy val `service-catalog-api` = (project in file("application/service-catalog-a
 
 def serviceCatalogProject(pr: Project) =
   pr
-    .enablePlugins(LagomScala)
+    .enablePlugins(JavaAppPackaging)
     .settings(
-      libraryDependencies ++= Seq(
-        lagomScaladslPersistenceCassandra,
-        lagomScaladslTestKit,
-        Dependencies.macwire,
-        Dependencies.chimney
-      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
+      libraryDependencies ++= Dependencies.pekkoCore
+        ++ Dependencies.pekkoPersistenceCassandra
+        ++ Dependencies.pekkoProjection
+        ++ Seq(Dependencies.macwire, Dependencies.chimney)
+        ++ Dependencies.quillPekko
+        ++ Dependencies.tests
     )
-    .settings(lagomForkedTestSettings: _*)
-    .settings(Test / fork := true) // survives slice 013 (which removes lagomForkedTestSettings)
+    .settings(Test / fork := true)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`service-catalog-api`, `microservice-core`)
+    .dependsOn(`service-catalog-api`, `microservice-core-pekko`, `microservice-core`)
 
 lazy val `application-api-gateway` = (project in file("api-gateway/application-api-gateway"))
   .settings(

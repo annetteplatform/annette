@@ -16,32 +16,32 @@
 
 package biz.lobachev.annette.service_catalog.impl.scope
 
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.service_catalog.impl.scope.dao.ScopeIndexDao
-import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-private[service_catalog] class ScopeIndexEventProcessor(
-  readSide: CassandraReadSide,
+private[impl] class ScopeIndexEventProcessor(
   indexDao: ScopeIndexDao
 )(implicit
-  ec: ExecutionContext
-) extends ReadSideProcessor[ScopeEntity.Event]
-    with SimpleEventHandling {
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[ScopeEntity.Event] {
 
-  def buildHandler() =
-    readSide
-      .builder[ScopeEntity.Event]("scope-indexing")
-      .setGlobalPrepare(indexDao.createEntityIndex)
-      .setEventHandler[ScopeEntity.ScopeCreated](handle(indexDao.createScope))
-      .setEventHandler[ScopeEntity.ScopeUpdated](handle(indexDao.updateScope))
-      .setEventHandler[ScopeEntity.ScopeActivated](handle(indexDao.activateScope))
-      .setEventHandler[ScopeEntity.ScopeDeactivated](handle(indexDao.deactivateScope))
-      .setEventHandler[ScopeEntity.ScopeDeleted](handle(indexDao.deleteScope))
-      .build()
+  override val projectionName: String = "scope-indexing"
+  override val tags: Seq[String] = Tagger.fromEventName[ScopeEntity.Event](10).allTags
 
-  def aggregateTags = ScopeEntity.Event.Tag.allTags
-
+  override def process(envelope: EventEnvelope[ScopeEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: ScopeEntity.ScopeCreated     => indexDao.createScope(evt).map(_ => Done)
+      case evt: ScopeEntity.ScopeUpdated     => indexDao.updateScope(evt).map(_ => Done)
+      case evt: ScopeEntity.ScopeActivated   => indexDao.activateScope(evt).map(_ => Done)
+      case evt: ScopeEntity.ScopeDeactivated => indexDao.deactivateScope(evt).map(_ => Done)
+      case evt: ScopeEntity.ScopeDeleted     => indexDao.deleteScope(evt).map(_ => Done)
+      case _                                 => Future.successful(Done)
+    }
 }

@@ -14,41 +14,18 @@
  * limitations under the License.
  */
 
-package biz.lobachev.annette.service_catalog.server
+package biz.lobachev.annette.service_catalog.impl
 
-import akka.cluster.sharding.typed.scaladsl.Entity
-import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
-import biz.lobachev.annette.service_catalog.client.http.ServiceCatalogServiceLagomApi
-import biz.lobachev.annette.service_catalog.impl.ServiceCatalogServiceImpl
-import biz.lobachev.annette.service_catalog.impl.category.model.CategorySerializerRegistry
-import biz.lobachev.annette.service_catalog.impl.category.{CategoryEntity, CategoryProvider}
-import biz.lobachev.annette.service_catalog.impl.scope.dao.{ScopeDbDao, ScopeIndexDao}
-import biz.lobachev.annette.service_catalog.impl.scope.model.ScopeSerializerRegistry
-import biz.lobachev.annette.service_catalog.impl.scope.{
-  ScopeDbEventProcessor,
-  ScopeEntity,
-  ScopeEntityService,
-  ScopeIndexEventProcessor
+import biz.lobachev.annette.service_catalog.api.grpc.ServiceCatalogServiceHandler
+import biz.lobachev.annette.service_catalog.impl.ServiceCatalogServiceApiImpl
+import biz.lobachev.annette.service_catalog.impl.category.{
+  CategoryDbEventProcessor,
+  CategoryEntity,
+  CategoryEntityService,
+  CategoryIndexEventProcessor
 }
-import biz.lobachev.annette.service_catalog.impl.scope_principal.dao.{ScopePrincipalDbDao, ScopePrincipalIndexDao}
-import biz.lobachev.annette.service_catalog.impl.scope_principal.model.ScopePrincipalSerializerRegistry
-import biz.lobachev.annette.service_catalog.impl.scope_principal.{
-  ScopePrincipalDbEventProcessor,
-  ScopePrincipalEntity,
-  ScopePrincipalEntityService,
-  ScopePrincipalIndexEventProcessor
-}
-import biz.lobachev.annette.service_catalog.impl.service_principal.dao.{ServicePrincipalDbDao, ServicePrincipalIndexDao}
-import biz.lobachev.annette.service_catalog.impl.service_principal.model.ServicePrincipalSerializerRegistry
-import biz.lobachev.annette.service_catalog.impl.service_principal.{
-  ServicePrincipalDbEventProcessor,
-  ServicePrincipalEntity,
-  ServicePrincipalEntityService,
-  ServicePrincipalIndexEventProcessor
-}
-import biz.lobachev.annette.service_catalog.impl.user.UserEntityService
-import biz.lobachev.annette.service_catalog.server.http.ServiceCatalogServiceLagomApiImpl
+import biz.lobachev.annette.service_catalog.impl.category.dao.{CategoryDbDao, CategoryIndexDao}
 import biz.lobachev.annette.service_catalog.impl.item.{
   ServiceItemDbEventProcessor,
   ServiceItemEntity,
@@ -56,121 +33,179 @@ import biz.lobachev.annette.service_catalog.impl.item.{
   ServiceItemIndexEventProcessor
 }
 import biz.lobachev.annette.service_catalog.impl.item.dao.{ServiceItemDbDao, ServiceItemIndexDao}
-import biz.lobachev.annette.service_catalog.impl.item.model.ServiceItemSerializerRegistry
-import com.lightbend.lagom.scaladsl.cluster.ClusterComponents
-import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraPersistenceComponents
-import com.lightbend.lagom.scaladsl.playjson.{JsonSerializer, JsonSerializerRegistry}
-import com.lightbend.lagom.scaladsl.server._
-import com.softwaremill.macwire._
-import play.api.LoggerConfigurator
-import play.api.libs.ws.ahc.AhcWSComponents
+import biz.lobachev.annette.service_catalog.impl.scope.{
+  ScopeDbEventProcessor,
+  ScopeEntity,
+  ScopeEntityService,
+  ScopeIndexEventProcessor
+}
+import biz.lobachev.annette.service_catalog.impl.scope.dao.{ScopeDbDao, ScopeIndexDao}
+import biz.lobachev.annette.service_catalog.impl.scope_principal.{
+  ScopePrincipalDbEventProcessor,
+  ScopePrincipalEntity,
+  ScopePrincipalEntityService,
+  ScopePrincipalIndexEventProcessor
+}
+import biz.lobachev.annette.service_catalog.impl.scope_principal.dao.{ScopePrincipalDbDao, ScopePrincipalIndexDao}
+import biz.lobachev.annette.service_catalog.impl.service_principal.{
+  ServicePrincipalDbEventProcessor,
+  ServicePrincipalEntity,
+  ServicePrincipalEntityService,
+  ServicePrincipalIndexEventProcessor
+}
+import biz.lobachev.annette.service_catalog.impl.service_principal.dao.{ServicePrincipalDbDao, ServicePrincipalIndexDao}
+import biz.lobachev.annette.service_catalog.impl.user.UserEntityService
+import com.sksamuel.elastic4s.ElasticClient
+import com.typesafe.config.ConfigFactory
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity, EntityTypeKey}
+import org.apache.pekko.http.scaladsl.Http
+import org.apache.pekko.projection.ProjectionBehavior
+import org.apache.pekko.projection.cassandra.scaladsl.CassandraProjection
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.SystemMaterializer
+import org.slf4j.LoggerFactory
 
-import scala.collection.immutable
+import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.duration._
 
-class ServiceCatalogServiceLoader extends LagomApplicationLoader {
+object ServiceCatalogServiceMain {
 
-  override def load(context: LagomApplicationContext): LagomApplication =
-    new ServiceCatalogServiceApplication(context) with AnnetteDiscoveryComponents
+  def main(args: Array[String]): Unit = {
+    val config = ConfigFactory.load()
+    implicit val system: ActorSystem[Nothing] = ActorSystem[Nothing](
+      Behaviors.empty,
+      name = config.getString("annette.cluster.system-name"),
+      config
+    )
+    val app = new ServiceCatalogServiceApp()
+    app.run()(system)
+  }
+}
 
-  override def loadDevMode(context: LagomApplicationContext): LagomApplication = {
-    // workaround for custom logback.xml
-    val environment = context.playContext.environment
-    LoggerConfigurator(environment.classLoader).foreach {
-      _.configure(environment)
-    }
-    new ServiceCatalogServiceApplication(context) with LagomDevModeComponents
+private[service_catalog] class ServiceCatalogServiceApp() {
+
+  private val log = LoggerFactory.getLogger(getClass)
+
+  def run()(implicit system: ActorSystem[_]): Unit = {
+    implicit val ec: ExecutionContext = system.executionContext
+    implicit val mat: Materializer   = SystemMaterializer(system).materializer
+    val config = system.settings.config
+
+    val indexingModule = new IndexingModule()
+    val elasticClient: ElasticClient = indexingModule.client
+
+    val categoryDbDao         = new CategoryDbDao(config)
+    val categoryIndexDao      = new CategoryIndexDao(elasticClient, "indexing.category-index")
+    val scopeDbDao            = new ScopeDbDao(config)
+    val scopePrincipalDbDao   = new ScopePrincipalDbDao(config)
+    val scopePrincipalIndexDao = new ScopePrincipalIndexDao(elasticClient)
+    val scopeIndexDao         = new ScopeIndexDao(elasticClient, scopePrincipalIndexDao)
+    val serviceItemDbDao      = new ServiceItemDbDao(config)
+    val serviceItemIndexDao   = new ServiceItemIndexDao(elasticClient)
+    val servicePrincipalDbDao = new ServicePrincipalDbDao(config)
+    val servicePrincipalIndexDao = new ServicePrincipalIndexDao(elasticClient)
+
+    Await.result(categoryDbDao.createTables(), 10.seconds)
+    Await.result(scopeDbDao.createTables(), 10.seconds)
+    Await.result(scopePrincipalDbDao.createTables(), 10.seconds)
+    Await.result(serviceItemDbDao.createTables(), 10.seconds)
+    Await.result(servicePrincipalDbDao.createTables(), 10.seconds)
+    Await.result(CassandraProjection.createTablesIfNotExists(), 10.seconds)
+
+    val sharding = ClusterSharding(system)
+
+    val categoryTypeKey: EntityTypeKey[CategoryEntity.Command] =
+      EntityTypeKey[CategoryEntity.Command]("Category")
+    val categoryEntityService =
+      new CategoryEntityService(sharding, categoryDbDao, categoryIndexDao, config, categoryTypeKey)
+
+    val scopeEntityService          = new ScopeEntityService(sharding, scopeDbDao, scopeIndexDao, config)
+    val scopePrincipalEntityService = new ScopePrincipalEntityService(sharding, scopePrincipalIndexDao, config)
+    val serviceItemEntityService    = new ServiceItemEntityService(sharding, serviceItemDbDao, serviceItemIndexDao, config)
+    val servicePrincipalEntityService =
+      new ServicePrincipalEntityService(sharding, servicePrincipalIndexDao, config)
+
+    val userService = new UserEntityService(
+      scopeEntityService,
+      scopePrincipalEntityService,
+      serviceItemEntityService,
+      servicePrincipalEntityService
+    )
+
+    val categoryDbProcessor       = new CategoryDbEventProcessor(categoryDbDao, "category-cassandra")
+    val categoryIndexProcessor    = new CategoryIndexEventProcessor(categoryIndexDao, "category-indexing")
+    val scopeDbProcessor          = new ScopeDbEventProcessor(scopeDbDao)
+    val scopeIndexProcessor       = new ScopeIndexEventProcessor(scopeIndexDao)
+    val scopePrincipalDbProcessor = new ScopePrincipalDbEventProcessor(scopePrincipalDbDao)
+    val scopePrincipalIndexProcessor = new ScopePrincipalIndexEventProcessor(scopePrincipalIndexDao)
+    val serviceItemDbProcessor    = new ServiceItemDbEventProcessor(serviceItemDbDao)
+    val serviceItemIndexProcessor = new ServiceItemIndexEventProcessor(serviceItemIndexDao)
+    val servicePrincipalDbProcessor = new ServicePrincipalDbEventProcessor(servicePrincipalDbDao)
+    val servicePrincipalIndexProcessor = new ServicePrincipalIndexEventProcessor(servicePrincipalIndexDao)
+
+    startProjection("category-cassandra", categoryDbProcessor)
+    startProjection("category-indexing", categoryIndexProcessor)
+    startProjection("scope-cassandra", scopeDbProcessor)
+    startProjection("scope-indexing", scopeIndexProcessor)
+    startProjection("scopePrincipal-cassandra", scopePrincipalDbProcessor)
+    startProjection("scopePrincipal-indexing", scopePrincipalIndexProcessor)
+    startProjection("service-cassandra", serviceItemDbProcessor)
+    startProjection("service-indexing", serviceItemIndexProcessor)
+    startProjection("servicePrincipal-cassandra", servicePrincipalDbProcessor)
+    startProjection("servicePrincipal-indexing", servicePrincipalIndexProcessor)
+
+    sharding.init(
+      Entity(categoryTypeKey) { entityContext =>
+        CategoryEntity(entityContext)
+      }
+    )
+    sharding.init(
+      Entity(ScopeEntity.typeKey) { entityContext =>
+        ScopeEntity(entityContext)
+      }
+    )
+    sharding.init(
+      Entity(ScopePrincipalEntity.typeKey) { entityContext =>
+        ScopePrincipalEntity(entityContext)
+      }
+    )
+    sharding.init(
+      Entity(ServiceItemEntity.typeKey) { entityContext =>
+        ServiceItemEntity(entityContext)
+      }
+    )
+    sharding.init(
+      Entity(ServicePrincipalEntity.typeKey) { entityContext =>
+        ServicePrincipalEntity(entityContext)
+      }
+    )
+
+    val serviceApi = new ServiceCatalogServiceApiImpl(
+      categoryEntityService,
+      scopeEntityService,
+      scopePrincipalEntityService,
+      serviceItemEntityService,
+      servicePrincipalEntityService,
+      userService
+    )
+    val handler = ServiceCatalogServiceHandler(serviceApi)
+
+    val httpHost = config.getString("annette.http.host")
+    val httpPort = config.getInt("annette.http.port")
+    Await.result(Http().newServerAt(httpHost, httpPort).bind(handler), 10.seconds)
+    log.info("Service-catalog gRPC service bound to {}:{}", httpHost, httpPort)
   }
 
-  override def describeService = Some(readDescriptor[ServiceCatalogServiceLagomApi])
-}
-
-abstract class ServiceCatalogServiceApplication(context: LagomApplicationContext)
-    extends LagomApplication(context)
-    with CassandraPersistenceComponents
-    with AhcWSComponents
-    with ClusterComponents {
-
-  lazy val jsonSerializerRegistry = ServiceCatalogSerializerRegistry
-
-  val indexingModule = new IndexingModule()
-  import indexingModule._
-
-  override lazy val lagomServer = serverFor[ServiceCatalogServiceLagomApi](wire[ServiceCatalogServiceLagomApiImpl])
-
-  val categoryProvider = new CategoryProvider(
-    typeKeyName = "Category",
-    dbReadSideId = "category-cassandra",
-    configPath = "indexing.category-index",
-    indexReadSideId = "category-indexing"
-  )
-
-  lazy val categoryElastic       = wireWith(categoryProvider.createIndexDao _)
-  lazy val categoryRepository    = wireWith(categoryProvider.createDbDao _)
-  readSide.register(wireWith(categoryProvider.createDbProcessor _))
-  readSide.register(wireWith(categoryProvider.createIndexProcessor _))
-  lazy val categoryEntityService = wireWith(categoryProvider.createEntityService _)
-  clusterSharding.init(
-    Entity(categoryProvider.typeKey) { entityContext =>
-      CategoryEntity(entityContext)
+  private def startProjection[E](
+    processorName: String,
+    projection: biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase[E]
+  )(implicit
+    system: ActorSystem[_]
+  ): Unit = {
+    projection.tags.foreach { tag =>
+      system.systemActorOf(ProjectionBehavior(projection.projection(tag)), s"$processorName-$tag")
     }
-  )
-
-  lazy val scopeIndexDao = wire[ScopeIndexDao]
-  lazy val scopeService  = wire[ScopeEntityService]
-  lazy val scopeDbDao    = wire[ScopeDbDao]
-  readSide.register(wire[ScopeDbEventProcessor])
-  readSide.register(wire[ScopeIndexEventProcessor])
-  clusterSharding.init(
-    Entity(ScopeEntity.typeKey) { entityContext =>
-      ScopeEntity(entityContext)
-    }
-  )
-
-  lazy val scopePrincipalIndexDao = wire[ScopePrincipalIndexDao]
-  lazy val scopePrincipalService  = wire[ScopePrincipalEntityService]
-  lazy val scopePrincipalDbDao    = wire[ScopePrincipalDbDao]
-  readSide.register(wire[ScopePrincipalDbEventProcessor])
-  readSide.register(wire[ScopePrincipalIndexEventProcessor])
-  clusterSharding.init(
-    Entity(ScopePrincipalEntity.typeKey) { entityContext =>
-      ScopePrincipalEntity(entityContext)
-    }
-  )
-
-  lazy val serviceItemIndexDao    = wire[ServiceItemIndexDao]
-  lazy val serviceItemServiceItem = wire[ServiceItemEntityService]
-  lazy val serviceItemDbDao       = wire[ServiceItemDbDao]
-  readSide.register(wire[ServiceItemDbEventProcessor])
-  readSide.register(wire[ServiceItemIndexEventProcessor])
-  clusterSharding.init(
-    Entity(ServiceItemEntity.typeKey) { entityContext =>
-      ServiceItemEntity(entityContext)
-    }
-  )
-
-  lazy val servicePrincipalIndexDao = wire[ServicePrincipalIndexDao]
-  lazy val servicePrincipalService  = wire[ServicePrincipalEntityService]
-  lazy val servicePrincipalDbDao    = wire[ServicePrincipalDbDao]
-  readSide.register(wire[ServicePrincipalDbEventProcessor])
-  readSide.register(wire[ServicePrincipalIndexEventProcessor])
-  clusterSharding.init(
-    Entity(ServicePrincipalEntity.typeKey) { entityContext =>
-      ServicePrincipalEntity(entityContext)
-    }
-  )
-
-  lazy val userService = wire[UserEntityService]
-
-  lazy val serviceCatalogService = wire[ServiceCatalogServiceImpl]
-
-}
-
-object ServiceCatalogSerializerRegistry extends JsonSerializerRegistry {
-  override def serializers: immutable.Seq[JsonSerializer[_]] =
-    CategorySerializerRegistry.serializers ++
-      ScopeSerializerRegistry.serializers ++
-      ScopePrincipalSerializerRegistry.serializers ++
-      ServiceItemSerializerRegistry.serializers ++
-      ServicePrincipalSerializerRegistry.serializers
+  }
 }

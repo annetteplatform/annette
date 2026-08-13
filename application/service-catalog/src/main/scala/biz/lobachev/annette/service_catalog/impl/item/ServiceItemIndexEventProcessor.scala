@@ -16,34 +16,34 @@
 
 package biz.lobachev.annette.service_catalog.impl.item
 
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.service_catalog.impl.item.dao.ServiceItemIndexDao
-import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-private[service_catalog] class ServiceItemIndexEventProcessor(
-  readSide: CassandraReadSide,
+private[impl] class ServiceItemIndexEventProcessor(
   indexDao: ServiceItemIndexDao
 )(implicit
-  ec: ExecutionContext
-) extends ReadSideProcessor[ServiceItemEntity.Event]
-    with SimpleEventHandling {
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[ServiceItemEntity.Event] {
 
-  def buildHandler() =
-    readSide
-      .builder[ServiceItemEntity.Event]("service-indexing")
-      .setGlobalPrepare(indexDao.createEntityIndex)
-      .setEventHandler[ServiceItemEntity.GroupCreated](handle(indexDao.createGroup))
-      .setEventHandler[ServiceItemEntity.GroupUpdated](handle(indexDao.updateGroup))
-      .setEventHandler[ServiceItemEntity.ServiceCreated](handle(indexDao.createService))
-      .setEventHandler[ServiceItemEntity.ServiceUpdated](handle(indexDao.updateService))
-      .setEventHandler[ServiceItemEntity.ServiceItemActivated](handle(indexDao.activateService))
-      .setEventHandler[ServiceItemEntity.ServiceItemDeactivated](handle(indexDao.deactivateService))
-      .setEventHandler[ServiceItemEntity.ServiceItemDeleted](handle(indexDao.deleteService))
-      .build()
+  override val projectionName: String = "service-indexing"
+  override val tags: Seq[String] = Tagger.fromEventName[ServiceItemEntity.Event](10).allTags
 
-  def aggregateTags = ServiceItemEntity.Event.Tag.allTags
-
+  override def process(envelope: EventEnvelope[ServiceItemEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: ServiceItemEntity.GroupCreated           => indexDao.createGroup(evt).map(_ => Done)
+      case evt: ServiceItemEntity.GroupUpdated           => indexDao.updateGroup(evt).map(_ => Done)
+      case evt: ServiceItemEntity.ServiceCreated         => indexDao.createService(evt).map(_ => Done)
+      case evt: ServiceItemEntity.ServiceUpdated         => indexDao.updateService(evt).map(_ => Done)
+      case evt: ServiceItemEntity.ServiceItemActivated   => indexDao.activateService(evt).map(_ => Done)
+      case evt: ServiceItemEntity.ServiceItemDeactivated => indexDao.deactivateService(evt).map(_ => Done)
+      case evt: ServiceItemEntity.ServiceItemDeleted     => indexDao.deleteService(evt).map(_ => Done)
+      case _                                             => Future.successful(Done)
+    }
 }

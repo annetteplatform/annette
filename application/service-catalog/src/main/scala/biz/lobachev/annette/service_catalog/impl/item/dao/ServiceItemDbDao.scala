@@ -16,9 +16,8 @@
 
 package biz.lobachev.annette.service_catalog.impl.item.dao
 
-import akka.Done
-import akka.stream.Materializer
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
+import org.apache.pekko.Done
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
 import biz.lobachev.annette.service_catalog.api.item.{ServiceItem, ServiceItemId, ServiceLink}
 import biz.lobachev.annette.service_catalog.impl.item.ServiceItemEntity.{
   GroupCreated,
@@ -29,7 +28,8 @@ import biz.lobachev.annette.service_catalog.impl.item.ServiceItemEntity.{
   ServiceItemDeleted,
   ServiceUpdated
 }
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import com.typesafe.config.Config
+import io.getquill.CassandraContextConfig
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.Json
@@ -39,10 +39,15 @@ import scala.collection.immutable._
 import scala.concurrent.{ExecutionContext, Future}
 import scala.jdk.CollectionConverters._
 
-private[service_catalog] class ServiceItemDbDao(override val session: CassandraSession)(implicit
-  val ec: ExecutionContext,
-  val materializer: Materializer
+private[service_catalog] class ServiceItemDbDao(config: Config)(implicit
+  val ec: ExecutionContext
 ) extends CassandraQuillDao {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -58,25 +63,25 @@ private[service_catalog] class ServiceItemDbDao(override val session: CassandraS
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("service_items")
-               .column("id", Text, true)
-               .column("name", Text)
-               .column("description", Text)
-               .column("icon", Text)
-               .column("label", Map(Text, Text))
-               .column("label_description", Map(Text, Text))
-               .column("item_type", Text)
-               .column("link", Text)
-               .column("children", List(Text))
-               .column("active", Boolean)
-               .column("updated_at", Timestamp)
-               .column("updated_by", Text)
-               .build
-           )
-    } yield Done
+    Future {
+      ctx.session.execute(
+        CassandraTableBuilder("service_items")
+          .column("id", Text, true)
+          .column("name", Text)
+          .column("description", Text)
+          .column("icon", Text)
+          .column("label", Map(Text, Text))
+          .column("label_description", Map(Text, Text))
+          .column("item_type", Text)
+          .column("link", Text)
+          .column("children", List(Text))
+          .column("active", Boolean)
+          .column("updated_at", Timestamp)
+          .column("updated_by", Text)
+          .build
+      )
+      Done
+    }
   }
 
   def createGroup(event: GroupCreated): Future[Done] = {
@@ -108,7 +113,7 @@ private[service_catalog] class ServiceItemDbDao(override val session: CassandraS
     val update     = s"UPDATE service_items SET $updatesCql WHERE id = ?;"
     val params     = updates.map { case _ -> v => v } :+ event.id
     for {
-      _ <- session.executeWrite(update, params: _*)
+      _ <- Future { ctx.session.execute(update, params: _*); Done }
     } yield Done
   }
 
@@ -141,7 +146,7 @@ private[service_catalog] class ServiceItemDbDao(override val session: CassandraS
     val update     = s"UPDATE service_items SET $updatesCql WHERE id = ?;"
     val params     = updates.map { case _ -> v => v } :+ event.id
     for {
-      _ <- session.executeWrite(update, params: _*)
+      _ <- Future { ctx.session.execute(update, params: _*); Done }
     } yield Done
   }
 

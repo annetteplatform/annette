@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.service_catalog.impl.scope.dao
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.microservice_core.indexing.dao.AbstractIndexDao
 import biz.lobachev.annette.service_catalog.api.scope._

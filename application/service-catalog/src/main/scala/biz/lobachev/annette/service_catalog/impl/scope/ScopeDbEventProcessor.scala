@@ -16,31 +16,32 @@
 
 package biz.lobachev.annette.service_catalog.impl.scope
 
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.service_catalog.impl.scope.dao.ScopeDbDao
-import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-private[service_catalog] class ScopeDbEventProcessor(
-  readSide: CassandraReadSide,
+private[impl] class ScopeDbEventProcessor(
   dbDao: ScopeDbDao
-)(implicit ec: ExecutionContext)
-    extends ReadSideProcessor[ScopeEntity.Event]
-    with SimpleEventHandling {
+)(implicit
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[ScopeEntity.Event] {
 
-  def buildHandler() =
-    readSide
-      .builder[ScopeEntity.Event]("scope-cassandra")
-      .setGlobalPrepare(dbDao.createTables)
-      .setEventHandler[ScopeEntity.ScopeCreated](handle(dbDao.createScope))
-      .setEventHandler[ScopeEntity.ScopeUpdated](handle(dbDao.updateScope))
-      .setEventHandler[ScopeEntity.ScopeActivated](handle(dbDao.activateScope))
-      .setEventHandler[ScopeEntity.ScopeDeactivated](handle(dbDao.deactivateScope))
-      .setEventHandler[ScopeEntity.ScopeDeleted](handle(dbDao.deleteScope))
-      .build()
+  override val projectionName: String = "scope-cassandra"
+  override val tags: Seq[String] = Tagger.fromEventName[ScopeEntity.Event](10).allTags
 
-  def aggregateTags = ScopeEntity.Event.Tag.allTags
-
+  override def process(envelope: EventEnvelope[ScopeEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: ScopeEntity.ScopeCreated     => dbDao.createScope(evt).map(_ => Done)
+      case evt: ScopeEntity.ScopeUpdated     => dbDao.updateScope(evt).map(_ => Done)
+      case evt: ScopeEntity.ScopeActivated   => dbDao.activateScope(evt).map(_ => Done)
+      case evt: ScopeEntity.ScopeDeactivated => dbDao.deactivateScope(evt).map(_ => Done)
+      case evt: ScopeEntity.ScopeDeleted     => dbDao.deleteScope(evt).map(_ => Done)
+      case _                                 => Future.successful(Done)
+    }
 }

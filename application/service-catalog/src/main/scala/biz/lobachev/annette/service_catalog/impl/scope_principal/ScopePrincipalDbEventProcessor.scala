@@ -16,28 +16,29 @@
 
 package biz.lobachev.annette.service_catalog.impl.scope_principal
 
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.service_catalog.impl.scope_principal.dao.ScopePrincipalDbDao
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-private[service_catalog] class ScopePrincipalDbEventProcessor(
-  readSide: CassandraReadSide,
+private[impl] class ScopePrincipalDbEventProcessor(
   dbDao: ScopePrincipalDbDao
 )(implicit
-  ec: ExecutionContext
-) extends ReadSideProcessor[ScopePrincipalEntity.Event]
-    with SimpleEventHandling {
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[ScopePrincipalEntity.Event] {
 
-  def buildHandler(): ReadSideProcessor.ReadSideHandler[ScopePrincipalEntity.Event] =
-    readSide
-      .builder[ScopePrincipalEntity.Event]("scopePrincipal-cassandra")
-      .setGlobalPrepare(dbDao.createTables)
-      .setEventHandler[ScopePrincipalEntity.ScopePrincipalAssigned](handle(dbDao.assignPrincipal))
-      .setEventHandler[ScopePrincipalEntity.ScopePrincipalUnassigned](handle(dbDao.unassignPrincipal))
-      .build()
+  override val projectionName: String = "scopePrincipal-cassandra"
+  override val tags: Seq[String] = Tagger.fromEventName[ScopePrincipalEntity.Event](10).allTags
 
-  def aggregateTags: Set[AggregateEventTag[ScopePrincipalEntity.Event]] = ScopePrincipalEntity.Event.Tag.allTags
+  override def process(envelope: EventEnvelope[ScopePrincipalEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: ScopePrincipalEntity.ScopePrincipalAssigned   => dbDao.assignPrincipal(evt).map(_ => Done)
+      case evt: ScopePrincipalEntity.ScopePrincipalUnassigned => dbDao.unassignPrincipal(evt).map(_ => Done)
+      case _                                                  => Future.successful(Done)
+    }
 }

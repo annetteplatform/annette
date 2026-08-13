@@ -16,16 +16,16 @@
 
 package biz.lobachev.annette.service_catalog.impl.scope
 
-import akka.actor.typed.{ActorRef, Behavior}
-import akka.cluster.sharding.typed.scaladsl._
-import akka.persistence.typed.PersistenceId
-import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
+import org.apache.pekko.actor.typed.{ActorRef, Behavior}
+import org.apache.pekko.cluster.sharding.typed.scaladsl._
+import org.apache.pekko.persistence.typed.PersistenceId
+import org.apache.pekko.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.category.CategoryId
 import biz.lobachev.annette.service_catalog.api.item.ServiceItemId
 import biz.lobachev.annette.service_catalog.api.scope._
 import biz.lobachev.annette.service_catalog.impl.scope.model.ScopeState
-import com.lightbend.lagom.scaladsl.persistence._
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json._
@@ -57,13 +57,11 @@ object ScopeEntity {
   implicit val confirmationAlreadyExistFormat: Format[AlreadyExist.type] = Json.format
   implicit val confirmationFormat: Format[Confirmation]                  = Json.format[Confirmation]
 
-  sealed trait Event extends AggregateEvent[Event] {
-    override def aggregateTag: AggregateEventTagger[Event] = Event.Tag
-  }
+  sealed trait Event
 
-  object Event {
-    val Tag: AggregateEventShards[Event] = AggregateEventTag.sharded[Event](numShards = 10)
-  }
+  // Per 001-decisions.md §A: baseTagName is the Event trait's runtime class FQN.
+  // Tag format: baseTagName + shardNo with NO separator.
+  private val tagger = Tagger.fromEventName[Event](numShards = 10)
 
   final case class ScopeCreated(
     id: ScopeId,
@@ -119,7 +117,13 @@ object ScopeEntity {
 
   def apply(entityContext: EntityContext[Command]): Behavior[Command] =
     apply(PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId))
-      .withTagger(AkkaTaggerAdapter.fromLagom(entityContext, Event.Tag))
+      .withTagger {
+        case evt: ScopeCreated     => Set(tagger.tagFor(evt.id))
+        case evt: ScopeUpdated     => Set(tagger.tagFor(evt.id))
+        case evt: ScopeActivated   => Set(tagger.tagFor(evt.id))
+        case evt: ScopeDeactivated => Set(tagger.tagFor(evt.id))
+        case evt: ScopeDeleted     => Set(tagger.tagFor(evt.id))
+      }
       .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2))
 
   implicit val scopeEntityFormat: Format[ScopeEntity] = Json.format
