@@ -16,34 +16,33 @@
 
 package biz.lobachev.annette.application.impl.application
 
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.application.impl.application.dao.ApplicationIndexDao
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-class ApplicationIndexEventProcessor(
-  readSide: CassandraReadSide,
+private[impl] class ApplicationIndexEventProcessor(
   indexDao: ApplicationIndexDao
 )(implicit
-  ec: ExecutionContext
-) extends ReadSideProcessor[ApplicationEntity.Event]
-    with SimpleEventHandling {
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[ApplicationEntity.Event] {
 
-  def buildHandler(): ReadSideProcessor.ReadSideHandler[ApplicationEntity.Event] =
-    readSide
-      .builder[ApplicationEntity.Event]("application-indexing")
-      .setGlobalPrepare(indexDao.createEntityIndex)
-      .setEventHandler[ApplicationEntity.ApplicationCreated](handle(indexDao.createApplication))
-      .setEventHandler[ApplicationEntity.ApplicationNameUpdated](handle(indexDao.updateApplicationName))
-      .setEventHandler[ApplicationEntity.ApplicationLabelUpdated](handle(indexDao.updateApplicationLabel))
-      .setEventHandler[ApplicationEntity.ApplicationLabelDescriptionUpdated](
-        handle(indexDao.updateApplicationLabelDescription)
-      )
-      .setEventHandler[ApplicationEntity.ApplicationDeleted](handle(indexDao.deleteApplication))
-      .build()
+  override val projectionName: String = "application-indexing"
+  override val tags: Seq[String] = Tagger.fromEventName[ApplicationEntity.Event](10).allTags
 
-  def aggregateTags: Set[AggregateEventTag[ApplicationEntity.Event]] = ApplicationEntity.Event.Tag.allTags
-
+  override def process(envelope: EventEnvelope[ApplicationEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: ApplicationEntity.ApplicationCreated     => indexDao.createApplication(evt).map(_ => Done)
+      case evt: ApplicationEntity.ApplicationNameUpdated => indexDao.updateApplicationName(evt).map(_ => Done)
+      case evt: ApplicationEntity.ApplicationLabelUpdated => indexDao.updateApplicationLabel(evt).map(_ => Done)
+      case evt: ApplicationEntity.ApplicationLabelDescriptionUpdated =>
+        indexDao.updateApplicationLabelDescription(evt).map(_ => Done)
+      case evt: ApplicationEntity.ApplicationDeleted => indexDao.deleteApplication(evt).map(_ => Done)
+      case _                                        => Future.successful(Done)
+    }
 }

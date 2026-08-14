@@ -16,29 +16,30 @@
 
 package biz.lobachev.annette.application.impl.translation
 
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.application.impl.translation.dao.TranslationDbDao
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-private[application] class TranslationDbEventProcessor(
-  readSide: CassandraReadSide,
+private[impl] class TranslationDbEventProcessor(
   dbDao: TranslationDbDao
 )(implicit
-  ec: ExecutionContext
-) extends ReadSideProcessor[TranslationEntity.Event]
-    with SimpleEventHandling {
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[TranslationEntity.Event] {
 
-  def buildHandler(): ReadSideProcessor.ReadSideHandler[TranslationEntity.Event] =
-    readSide
-      .builder[TranslationEntity.Event]("translation-cassandra")
-      .setGlobalPrepare(dbDao.createTables)
-      .setEventHandler[TranslationEntity.TranslationUpdated](handle(dbDao.updateTranslation))
-      .setEventHandler[TranslationEntity.TranslationCreated](handle(dbDao.createTranslation))
-      .setEventHandler[TranslationEntity.TranslationDeleted](handle(dbDao.deleteTranslation))
-      .build()
+  override val projectionName: String = "translation-cassandra"
+  override val tags: Seq[String] = Tagger.fromEventName[TranslationEntity.Event](10).allTags
 
-  def aggregateTags: Set[AggregateEventTag[TranslationEntity.Event]] = TranslationEntity.Event.Tag.allTags
+  override def process(envelope: EventEnvelope[TranslationEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: TranslationEntity.TranslationCreated => dbDao.createTranslation(evt).map(_ => Done)
+      case evt: TranslationEntity.TranslationUpdated => dbDao.updateTranslation(evt).map(_ => Done)
+      case evt: TranslationEntity.TranslationDeleted => dbDao.deleteTranslation(evt).map(_ => Done)
+      case _                                         => Future.successful(Done)
+    }
 }

@@ -16,11 +16,11 @@
 
 package biz.lobachev.annette.application.impl.translation
 
-import akka.Done
-import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Sink, Source}
-import akka.util.Timeout
+import org.apache.pekko.Done
+import org.apache.pekko.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityRef}
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.{Sink, Source}
+import org.apache.pekko.util.Timeout
 import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.application.impl.translation.dao.{TranslationDbDao, TranslationIndexDao}
 import biz.lobachev.annette.core.model.DataSource

@@ -16,20 +16,27 @@
 
 package biz.lobachev.annette.application.impl.application.dao
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.impl.application.ApplicationEntity
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
+import com.typesafe.config.Config
+import io.getquill.CassandraContextConfig
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class ApplicationDbDao(
-  override val session: CassandraSession
+private[impl] class ApplicationDbDao(
+  config: Config
 )(implicit ec: ExecutionContext)
     extends CassandraQuillDao {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -42,22 +49,23 @@ class ApplicationDbDao(
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("applications")
-               .column("id", Text, true)
-               .column("name", Text)
-               .column("icon", Text)
-               .column("label", Map(Text, Text))
-               .column("label_description", Map(Text, Text))
-               .column("translations", Set(Text))
-               .column("frontend_url", Text)
-               .column("backend_url", Text)
-               .column("updated_at", Timestamp)
-               .column("updated_by", Text)
-               .build
-           )
-    } yield Done
+    Future {
+      ctx.session.execute(
+        CassandraTableBuilder("applications")
+          .column("id", Text, true)
+          .column("name", Text)
+          .column("icon", Text)
+          .column("label", Map(Text, Text))
+          .column("label_description", Map(Text, Text))
+          .column("translations", Set(Text))
+          .column("frontend_url", Text)
+          .column("backend_url", Text)
+          .column("updated_at", Timestamp)
+          .column("updated_by", Text)
+          .build
+      )
+      Done
+    }
   }
 
   def createApplication(event: ApplicationEntity.ApplicationCreated): Future[Done] = {
@@ -66,91 +74,108 @@ class ApplicationDbDao(
       .withFieldComputed(_.updatedAt, _.createdAt)
       .withFieldComputed(_.updatedBy, _.createdBy)
       .transform
-    ctx.run(applicationSchema.insert(lift(application)))
-
+    for {
+      _ <- ctx.run(applicationSchema.insert(lift(application)))
+    } yield Done
   }
 
   def updateApplicationName(event: ApplicationEntity.ApplicationNameUpdated): Future[Done] =
-    ctx.run(
-      applicationSchema
-        .filter(_.id == lift(event.id))
-        .update(
-          _.name      -> lift(event.name),
-          _.updatedAt -> lift(event.updatedAt),
-          _.updatedBy -> lift(event.updatedBy)
-        )
-    )
+    for {
+      _ <- ctx.run(
+             applicationSchema
+               .filter(_.id == lift(event.id))
+               .update(
+                 _.name      -> lift(event.name),
+                 _.updatedAt -> lift(event.updatedAt),
+                 _.updatedBy -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
   def updateApplicationIcon(event: ApplicationEntity.ApplicationIconUpdated): Future[Done] =
-    ctx.run(
-      applicationSchema
-        .filter(_.id == lift(event.id))
-        .update(
-          _.icon      -> lift(event.icon),
-          _.updatedAt -> lift(event.updatedAt),
-          _.updatedBy -> lift(event.updatedBy)
-        )
-    )
+    for {
+      _ <- ctx.run(
+             applicationSchema
+               .filter(_.id == lift(event.id))
+               .update(
+                 _.icon      -> lift(event.icon),
+                 _.updatedAt -> lift(event.updatedAt),
+                 _.updatedBy -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
   def updateApplicationLabel(event: ApplicationEntity.ApplicationLabelUpdated): Future[Done] =
-    ctx.run(
-      applicationSchema
-        .filter(_.id == lift(event.id))
-        .update(
-          _.label     -> lift(event.label),
-          _.updatedAt -> lift(event.updatedAt),
-          _.updatedBy -> lift(event.updatedBy)
-        )
-    )
+    for {
+      _ <- ctx.run(
+             applicationSchema
+               .filter(_.id == lift(event.id))
+               .update(
+                 _.label     -> lift(event.label),
+                 _.updatedAt -> lift(event.updatedAt),
+                 _.updatedBy -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
   def updateApplicationLabelDescription(event: ApplicationEntity.ApplicationLabelDescriptionUpdated): Future[Done] =
-    ctx.run(
-      applicationSchema
-        .filter(_.id == lift(event.id))
-        .update(
-          _.labelDescription -> lift(event.labelDescription),
-          _.updatedAt        -> lift(event.updatedAt),
-          _.updatedBy        -> lift(event.updatedBy)
-        )
-    )
+    for {
+      _ <- ctx.run(
+             applicationSchema
+               .filter(_.id == lift(event.id))
+               .update(
+                 _.labelDescription -> lift(event.labelDescription),
+                 _.updatedAt        -> lift(event.updatedAt),
+                 _.updatedBy        -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
   def updateApplicationTranslations(
     event: ApplicationEntity.ApplicationTranslationsUpdated
   ): Future[Done] =
-    ctx.run(
-      applicationSchema
-        .filter(_.id == lift(event.id))
-        .update(
-          _.translations -> lift(event.translations),
-          _.updatedAt    -> lift(event.updatedAt),
-          _.updatedBy    -> lift(event.updatedBy)
-        )
-    )
+    for {
+      _ <- ctx.run(
+             applicationSchema
+               .filter(_.id == lift(event.id))
+               .update(
+                 _.translations -> lift(event.translations),
+                 _.updatedAt    -> lift(event.updatedAt),
+                 _.updatedBy    -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
   def updateApplicationBackendUrl(event: ApplicationEntity.ApplicationBackendUrlUpdated): Future[Done] =
-    ctx.run(
-      applicationSchema
-        .filter(_.id == lift(event.id))
-        .update(
-          _.backendUrl -> lift(event.backendUrl),
-          _.updatedAt  -> lift(event.updatedAt),
-          _.updatedBy  -> lift(event.updatedBy)
-        )
-    )
+    for {
+      _ <- ctx.run(
+             applicationSchema
+               .filter(_.id == lift(event.id))
+               .update(
+                 _.backendUrl -> lift(event.backendUrl),
+                 _.updatedAt  -> lift(event.updatedAt),
+                 _.updatedBy  -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
   def updateApplicationFrontendUrl(event: ApplicationEntity.ApplicationFrontendUrlUpdated): Future[Done] =
-    ctx.run(
-      applicationSchema
-        .filter(_.id == lift(event.id))
-        .update(
-          _.frontendUrl -> lift(event.frontendUrl),
-          _.updatedAt   -> lift(event.updatedAt),
-          _.updatedBy   -> lift(event.updatedBy)
-        )
-    )
+    for {
+      _ <- ctx.run(
+             applicationSchema
+               .filter(_.id == lift(event.id))
+               .update(
+                 _.frontendUrl -> lift(event.frontendUrl),
+                 _.updatedAt   -> lift(event.updatedAt),
+                 _.updatedBy   -> lift(event.updatedBy)
+               )
+           )
+    } yield Done
 
   def deleteApplication(event: ApplicationEntity.ApplicationDeleted): Future[Done] =
-    ctx.run(applicationSchema.filter(_.id == lift(event.id)).delete)
+    for {
+      _ <- ctx.run(applicationSchema.filter(_.id == lift(event.id)).delete)
+    } yield Done
 
   def getApplication(id: ApplicationId): Future[Option[Application]] =
     ctx

@@ -16,37 +16,39 @@
 
 package biz.lobachev.annette.application.impl.application
 
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.application.impl.application.dao.ApplicationDbDao
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-class ApplicationDbEventProcessor(
-  readSide: CassandraReadSide,
+private[impl] class ApplicationDbEventProcessor(
   dbDao: ApplicationDbDao
-)(implicit ec: ExecutionContext)
-    extends ReadSideProcessor[ApplicationEntity.Event]
-    with SimpleEventHandling {
+)(implicit
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[ApplicationEntity.Event] {
 
-  def buildHandler(): ReadSideProcessor.ReadSideHandler[ApplicationEntity.Event] =
-    readSide
-      .builder[ApplicationEntity.Event]("application-cassandra")
-      .setGlobalPrepare(dbDao.createTables)
-      .setEventHandler[ApplicationEntity.ApplicationCreated](handle(dbDao.createApplication))
-      .setEventHandler[ApplicationEntity.ApplicationNameUpdated](handle(dbDao.updateApplicationName))
-      .setEventHandler[ApplicationEntity.ApplicationIconUpdated](handle(dbDao.updateApplicationIcon))
-      .setEventHandler[ApplicationEntity.ApplicationLabelUpdated](handle(dbDao.updateApplicationLabel))
-      .setEventHandler[ApplicationEntity.ApplicationLabelDescriptionUpdated](
-        handle(dbDao.updateApplicationLabelDescription)
-      )
-      .setEventHandler[ApplicationEntity.ApplicationTranslationsUpdated](handle(dbDao.updateApplicationTranslations))
-      .setEventHandler[ApplicationEntity.ApplicationBackendUrlUpdated](handle(dbDao.updateApplicationBackendUrl))
-      .setEventHandler[ApplicationEntity.ApplicationFrontendUrlUpdated](handle(dbDao.updateApplicationFrontendUrl))
-      .setEventHandler[ApplicationEntity.ApplicationDeleted](handle(dbDao.deleteApplication))
-      .build()
+  override val projectionName: String = "application-cassandra"
+  override val tags: Seq[String] = Tagger.fromEventName[ApplicationEntity.Event](10).allTags
 
-  def aggregateTags: Set[AggregateEventTag[ApplicationEntity.Event]] = ApplicationEntity.Event.Tag.allTags
-
+  override def process(envelope: EventEnvelope[ApplicationEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: ApplicationEntity.ApplicationCreated     => dbDao.createApplication(evt).map(_ => Done)
+      case evt: ApplicationEntity.ApplicationNameUpdated => dbDao.updateApplicationName(evt).map(_ => Done)
+      case evt: ApplicationEntity.ApplicationIconUpdated => dbDao.updateApplicationIcon(evt).map(_ => Done)
+      case evt: ApplicationEntity.ApplicationLabelUpdated => dbDao.updateApplicationLabel(evt).map(_ => Done)
+      case evt: ApplicationEntity.ApplicationLabelDescriptionUpdated =>
+        dbDao.updateApplicationLabelDescription(evt).map(_ => Done)
+      case evt: ApplicationEntity.ApplicationTranslationsUpdated =>
+        dbDao.updateApplicationTranslations(evt).map(_ => Done)
+      case evt: ApplicationEntity.ApplicationBackendUrlUpdated => dbDao.updateApplicationBackendUrl(evt).map(_ => Done)
+      case evt: ApplicationEntity.ApplicationFrontendUrlUpdated =>
+        dbDao.updateApplicationFrontendUrl(evt).map(_ => Done)
+      case evt: ApplicationEntity.ApplicationDeleted => dbDao.deleteApplication(evt).map(_ => Done)
+      case _                                        => Future.successful(Done)
+    }
 }

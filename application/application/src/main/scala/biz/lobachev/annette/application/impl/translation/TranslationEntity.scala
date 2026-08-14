@@ -16,14 +16,14 @@
 
 package biz.lobachev.annette.application.impl.translation
 
-import akka.actor.typed.{ActorRef, Behavior}
-import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
-import akka.persistence.typed.PersistenceId
-import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
+import org.apache.pekko.actor.typed.{ActorRef, Behavior}
+import org.apache.pekko.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
+import org.apache.pekko.persistence.typed.PersistenceId
+import org.apache.pekko.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.application.impl.translation.model.TranslationState
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import com.lightbend.lagom.scaladsl.persistence._
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
@@ -63,13 +63,11 @@ object TranslationEntity {
   implicit val confirmationTranslationNotFoundFormat: Format[TranslationNotFound.type]         = Json.format
   implicit val confirmationFormat: Format[Confirmation]                                        = Json.format
 
-  sealed trait Event extends AggregateEvent[Event] {
-    override def aggregateTag: AggregateEventTagger[Event] = Event.Tag
-  }
+  sealed trait Event
 
-  object Event {
-    val Tag: AggregateEventShards[Event] = AggregateEventTag.sharded[Event](numShards = 10)
-  }
+  // Per 001-decisions.md §A: baseTagName is the Event trait's runtime class FQN.
+  // Tag format: baseTagName + shardNo with NO separator.
+  private val tagger = Tagger.fromEventName[Event](numShards = 10)
 
   final case class TranslationCreated(
     id: TranslationId,
@@ -108,7 +106,11 @@ object TranslationEntity {
 
   def apply(entityContext: EntityContext[Command]): Behavior[Command] =
     apply(PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId))
-      .withTagger(AkkaTaggerAdapter.fromLagom(entityContext, Event.Tag))
+      .withTagger {
+        case evt: TranslationCreated => Set(tagger.tagFor(evt.id))
+        case evt: TranslationUpdated => Set(tagger.tagFor(evt.id))
+        case evt: TranslationDeleted => Set(tagger.tagFor(evt.id))
+      }
       .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2))
 
   implicit val entityFormat: Format[TranslationEntity] = Json.format

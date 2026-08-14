@@ -16,20 +16,27 @@
 
 package biz.lobachev.annette.application.impl.translation.dao
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.application.impl.translation.TranslationEntity
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
+import com.typesafe.config.Config
+import io.getquill.CassandraContextConfig
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-private[application] class TranslationDbDao(
-  override val session: CassandraSession
+private[impl] class TranslationDbDao(
+  config: Config
 )(implicit ec: ExecutionContext)
     extends CassandraQuillDao {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -40,36 +47,43 @@ private[application] class TranslationDbDao(
   touch(insertEntityMeta)
   touch(updateEntityMeta)
 
-  def createTables() = {
+  def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("translations")
-               .column("id", Text, true)
-               .column("name", Text)
-               .column("updated_at", Timestamp)
-               .column("updated_by", Text)
-               .build
-           )
-    } yield Done
+    Future {
+      ctx.session.execute(
+        CassandraTableBuilder("translations")
+          .column("id", Text, true)
+          .column("name", Text)
+          .column("updated_at", Timestamp)
+          .column("updated_by", Text)
+          .build
+      )
+      Done
+    }
   }
 
-  def createTranslation(event: TranslationEntity.TranslationCreated) = {
+  def createTranslation(event: TranslationEntity.TranslationCreated): Future[Done] = {
     val entity = event
       .into[Translation]
       .withFieldComputed(_.updatedAt, _.createdAt)
       .withFieldComputed(_.updatedBy, _.createdBy)
       .transform
-    ctx.run(schema.insert(lift(entity)))
+    for {
+      _ <- ctx.run(schema.insert(lift(entity)))
+    } yield Done
   }
 
-  def updateTranslation(event: TranslationEntity.TranslationUpdated) = {
+  def updateTranslation(event: TranslationEntity.TranslationUpdated): Future[Done] = {
     val entity = event.transformInto[Translation]
-    ctx.run(schema.filter(_.id == lift(entity.id)).update(lift(entity)))
+    for {
+      _ <- ctx.run(schema.filter(_.id == lift(entity.id)).update(lift(entity)))
+    } yield Done
   }
 
-  def deleteTranslation(event: TranslationEntity.TranslationDeleted) =
-    ctx.run(schema.filter(_.id == lift(event.id)).delete)
+  def deleteTranslation(event: TranslationEntity.TranslationDeleted): Future[Done] =
+    for {
+      _ <- ctx.run(schema.filter(_.id == lift(event.id)).delete)
+    } yield Done
 
   def getTranslation(id: TranslationId): Future[Option[Translation]] =
     ctx

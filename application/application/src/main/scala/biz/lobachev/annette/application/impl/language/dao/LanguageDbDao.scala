@@ -16,21 +16,28 @@
 
 package biz.lobachev.annette.application.impl.language.dao
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.application.api.language._
 import biz.lobachev.annette.application.impl.language.LanguageEntity
 import biz.lobachev.annette.core.model.LanguageId
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
+import com.typesafe.config.Config
+import io.getquill.CassandraContextConfig
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 
 import scala.concurrent.{ExecutionContext, Future}
 
-private[application] class LanguageDbDao(
-  override val session: CassandraSession
+private[impl] class LanguageDbDao(
+  config: Config
 )(implicit ec: ExecutionContext)
     extends CassandraQuillDao {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -41,35 +48,42 @@ private[application] class LanguageDbDao(
   touch(insertEntityMeta)
   touch(updateEntityMeta)
 
-  def createTables() = {
+  def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("languages")
-               .column("id", Text, true)
-               .column("name", Text)
-               .column("updated_at", Timestamp)
-               .column("updated_by", Text)
-               .build
-           )
-    } yield Done
+    Future {
+      ctx.session.execute(
+        CassandraTableBuilder("languages")
+          .column("id", Text, true)
+          .column("name", Text)
+          .column("updated_at", Timestamp)
+          .column("updated_by", Text)
+          .build
+      )
+      Done
+    }
   }
 
-  def createLanguage(event: LanguageEntity.LanguageCreated) = {
+  def createLanguage(event: LanguageEntity.LanguageCreated): Future[Done] = {
     val entity = event
       .into[Language]
       .withFieldComputed(_.updatedAt, _.createdAt)
       .withFieldComputed(_.updatedBy, _.createdBy)
       .transform
-    ctx.run(schema.insert(lift(entity)))
+    for {
+      _ <- ctx.run(schema.insert(lift(entity)))
+    } yield Done
   }
-  def updateLanguage(event: LanguageEntity.LanguageUpdated) = {
+  def updateLanguage(event: LanguageEntity.LanguageUpdated): Future[Done] = {
     val entity = event.transformInto[Language]
-    ctx.run(schema.filter(_.id == lift(entity.id)).update(lift(entity)))
+    for {
+      _ <- ctx.run(schema.filter(_.id == lift(entity.id)).update(lift(entity)))
+    } yield Done
   }
 
-  def deleteLanguage(event: LanguageEntity.LanguageDeleted) =
-    ctx.run(schema.filter(_.id == lift(event.id)).delete)
+  def deleteLanguage(event: LanguageEntity.LanguageDeleted): Future[Done] =
+    for {
+      _ <- ctx.run(schema.filter(_.id == lift(event.id)).delete)
+    } yield Done
 
   def getLanguage(id: LanguageId): Future[Option[Language]] =
     ctx

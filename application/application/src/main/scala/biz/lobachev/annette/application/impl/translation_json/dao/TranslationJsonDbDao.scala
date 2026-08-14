@@ -16,23 +16,30 @@
 
 package biz.lobachev.annette.application.impl.translation_json.dao
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.application.api.translation._
 import biz.lobachev.annette.application.impl.translation_json.TranslationJsonEntity
 import biz.lobachev.annette.application.impl.translation_json.model.TranslationJsonInt
 import biz.lobachev.annette.core.model.LanguageId
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
+import com.typesafe.config.Config
+import io.getquill.CassandraContextConfig
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import play.api.libs.json.JsObject
 
 import scala.concurrent.{ExecutionContext, Future}
 
-private[application] class TranslationJsonDbDao(
-  override val session: CassandraSession
+private[impl] class TranslationJsonDbDao(
+  config: Config
 )(implicit ec: ExecutionContext)
     extends CassandraQuillDao {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -47,36 +54,41 @@ private[application] class TranslationJsonDbDao(
   touch(insertEntityMeta)
   touch(updateEntityMeta)
 
-  def createTables() = {
+  def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
+    Future {
+      ctx.session.execute(
+        CassandraTableBuilder("translation_jsons")
+          .column("translation_id", Text)
+          .column("language_id", Text)
+          .column("json", Text)
+          .column("updated_at", Timestamp)
+          .column("updated_by", Text)
+          .withPrimaryKey("translation_id", "language_id")
+          .build
+      )
+      Done
+    }
+  }
+
+  def updateTranslationJson(event: TranslationJsonEntity.TranslationJsonUpdated): Future[Done] = {
+    val entity = event.transformInto[TranslationJsonInt]
     for {
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("translation_jsons")
-               .column("translation_id", Text)
-               .column("language_id", Text)
-               .column("json", Text)
-               .column("updated_at", Timestamp)
-               .column("updated_by", Text)
-               .withPrimaryKey("translation_id", "language_id")
-               .build
-           )
+      _ <- ctx.run(schema.insert(lift(entity)))
     } yield Done
   }
 
-  def updateTranslationJson(event: TranslationJsonEntity.TranslationJsonUpdated) = {
-    val entity = event.transformInto[TranslationJsonInt]
-    ctx.run(schema.insert(lift(entity)))
-  }
-
-  def deleteTranslationJson(event: TranslationJsonEntity.TranslationJsonDeleted) =
-    ctx.run(
-      schema
-        .filter(e =>
-          e.translationId == lift(event.translationId) &&
-            e.languageId == lift(event.languageId)
-        )
-        .delete
-    )
+  def deleteTranslationJson(event: TranslationJsonEntity.TranslationJsonDeleted): Future[Done] =
+    for {
+      _ <- ctx.run(
+             schema
+               .filter(e =>
+                 e.translationId == lift(event.translationId) &&
+                   e.languageId == lift(event.languageId)
+               )
+               .delete
+           )
+    } yield Done
 
   def getTranslationLanguages(translationId: TranslationId): Future[Seq[LanguageId]] =
     ctx

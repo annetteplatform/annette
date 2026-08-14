@@ -16,30 +16,30 @@
 
 package biz.lobachev.annette.application.impl.language
 
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.application.impl.language.dao.LanguageDbDao
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-private[application] class LanguageDbEventProcessor(
-  readSide: CassandraReadSide,
+private[impl] class LanguageDbEventProcessor(
   dbDao: LanguageDbDao
 )(implicit
-  ec: ExecutionContext
-) extends ReadSideProcessor[LanguageEntity.Event]
-    with SimpleEventHandling {
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[LanguageEntity.Event] {
 
-  def buildHandler(): ReadSideProcessor.ReadSideHandler[LanguageEntity.Event] =
-    readSide
-      .builder[LanguageEntity.Event]("language-cassandra")
-      .setGlobalPrepare(dbDao.createTables)
-      .setEventHandler[LanguageEntity.LanguageCreated](handle(dbDao.createLanguage))
-      .setEventHandler[LanguageEntity.LanguageUpdated](handle(dbDao.updateLanguage))
-      .setEventHandler[LanguageEntity.LanguageDeleted](handle(dbDao.deleteLanguage))
-      .build()
+  override val projectionName: String = "language-cassandra"
+  override val tags: Seq[String] = Tagger.fromEventName[LanguageEntity.Event](10).allTags
 
-  def aggregateTags: Set[AggregateEventTag[LanguageEntity.Event]] = LanguageEntity.Event.Tag.allTags
-
+  override def process(envelope: EventEnvelope[LanguageEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: LanguageEntity.LanguageCreated => dbDao.createLanguage(evt).map(_ => Done)
+      case evt: LanguageEntity.LanguageUpdated => dbDao.updateLanguage(evt).map(_ => Done)
+      case evt: LanguageEntity.LanguageDeleted => dbDao.deleteLanguage(evt).map(_ => Done)
+      case _                                   => Future.successful(Done)
+    }
 }

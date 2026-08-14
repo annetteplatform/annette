@@ -16,29 +16,29 @@
 
 package biz.lobachev.annette.application.impl.translation_json
 
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.application.impl.translation_json.dao.TranslationJsonDbDao
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-private[application] class TranslationJsonDbEventProcessor(
-  readSide: CassandraReadSide,
+private[impl] class TranslationJsonDbEventProcessor(
   dbDao: TranslationJsonDbDao
 )(implicit
-  ec: ExecutionContext
-) extends ReadSideProcessor[TranslationJsonEntity.Event]
-    with SimpleEventHandling {
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[TranslationJsonEntity.Event] {
 
-  def buildHandler(): ReadSideProcessor.ReadSideHandler[TranslationJsonEntity.Event] =
-    readSide
-      .builder[TranslationJsonEntity.Event]("translationJson-cassandra")
-      .setGlobalPrepare(dbDao.createTables)
-      .setEventHandler[TranslationJsonEntity.TranslationJsonUpdated](handle(dbDao.updateTranslationJson))
-      .setEventHandler[TranslationJsonEntity.TranslationJsonDeleted](handle(dbDao.deleteTranslationJson))
-      .build()
+  override val projectionName: String = "translationJson-cassandra"
+  override val tags: Seq[String] = Tagger.fromEventName[TranslationJsonEntity.Event](10).allTags
 
-  def aggregateTags: Set[AggregateEventTag[TranslationJsonEntity.Event]] = TranslationJsonEntity.Event.Tag.allTags
-
+  override def process(envelope: EventEnvelope[TranslationJsonEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: TranslationJsonEntity.TranslationJsonUpdated => dbDao.updateTranslationJson(evt).map(_ => Done)
+      case evt: TranslationJsonEntity.TranslationJsonDeleted => dbDao.deleteTranslationJson(evt).map(_ => Done)
+      case _                                                 => Future.successful(Done)
+    }
 }
