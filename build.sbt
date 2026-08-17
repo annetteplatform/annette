@@ -447,23 +447,20 @@ lazy val `bpm-repository-api` = (project in file("bpm/bpm-repository-api"))
 
 def bpmRepositoryProject(pr: Project) =
   pr
-    .enablePlugins(LagomScala)
+    .enablePlugins(JavaAppPackaging)
     .settings(
-      libraryDependencies ++= Seq(
-        lagomScaladslTestKit,
-        Dependencies.macwire,
-        Dependencies.chimney,
-        Dependencies.postgresql
-      ) ++ Dependencies.tests ++
-        Dependencies.lagomAkkaDiscovery ++
+      libraryDependencies ++= Dependencies.pekkoCore // HTTP server + gRPC; no persistence/projection (Postgres-only service)
+        ++ Seq(
+          Dependencies.chimney,
+          Dependencies.postgresql
+        ) ++ Dependencies.tests ++
         Dependencies.slick
     )
-    .settings(lagomForkedTestSettings: _*)
     .settings(Test / fork := true) // survives slice 013 (which removes lagomForkedTestSettings)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`bpm-repository-api`, `microservice-core`)
+    .dependsOn(`bpm-repository-api`, `microservice-core-pekko`)
 
 lazy val `bpm-api-gateway` = (project in file("api-gateway/bpm-api-gateway"))
   .settings(

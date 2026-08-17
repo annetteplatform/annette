@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.bpm_repository.impl.schema
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.bpm_repository.api.domain.DataSchemaId
 import biz.lobachev.annette.bpm_repository.api.schema._
 import biz.lobachev.annette.bpm_repository.impl.db.{

@@ -1,12 +1,12 @@
 package biz.lobachev.annette.bpm_repository.test
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.bpm_repository.api.bp.{
   BusinessProcessVariable,
   CreateBusinessProcessPayload,
   DeleteBusinessProcessPayload
 }
-import biz.lobachev.annette.bpm_repository.api.domain.{BusinessProcessId, DataSchemaId, Datatype, VariableName}
+import biz.lobachev.annette.bpm_repository.api.domain.{BusinessProcessId, DataSchemaId, Datatype, ProcessDefinition, ProcessDefinitionType, VariableName}
 import biz.lobachev.annette.bpm_repository.api.schema._
 import biz.lobachev.annette.bpm_repository.impl.DBProvider
 import biz.lobachev.annette.bpm_repository.impl.bp.{BusinessProcessActions, BusinessProcessService}
@@ -451,6 +451,8 @@ class DataSchemaServiceSpec extends AsyncWordSpecLike with Matchers {
         id = businessProcessId,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         dataSchemaId = Some(id),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),

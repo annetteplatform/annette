@@ -16,56 +16,72 @@
 
 package biz.lobachev.annette.bpm_repository.impl
 
-import biz.lobachev.annette.bpm_repository.api.BpmRepositoryServiceApi
+import biz.lobachev.annette.bpm_repository.api.{grpc => g}
+import biz.lobachev.annette.bpm_repository.api.grpc.BpmRepositoryServiceHandler
 import biz.lobachev.annette.bpm_repository.impl.bp.{BusinessProcessActions, BusinessProcessService}
-import biz.lobachev.annette.bpm_repository.impl.db.BpmRepositorySchema
 import biz.lobachev.annette.bpm_repository.impl.model.{BpmModelActions, BpmModelService}
 import biz.lobachev.annette.bpm_repository.impl.schema.{DataSchemaActions, DataSchemaService}
-import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
-import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
-import com.lightbend.lagom.scaladsl.server._
-import com.softwaremill.macwire._
-import play.api.LoggerConfigurator
-import play.api.libs.ws.ahc.AhcWSComponents
+import com.typesafe.config.ConfigFactory
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.actor.typed.scaladsl.Behaviors
+import org.apache.pekko.grpc.scaladsl.{ServerReflection, ServiceHandler}
+import org.apache.pekko.http.scaladsl.Http
+import org.slf4j.LoggerFactory
 
-class BpmRepositoryServiceLoader extends LagomApplicationLoader {
+import scala.concurrent.{Await, ExecutionContext}
+import scala.concurrent.duration._
 
-  override def load(context: LagomApplicationContext): LagomApplication =
-    new BpmRepositoryServiceApplication(context) with AnnetteDiscoveryComponents
+object BpmRepositoryServiceMain {
 
-  override def loadDevMode(context: LagomApplicationContext): LagomApplication = {
-    // workaround for custom logback.xml
-    val environment = context.playContext.environment
-    LoggerConfigurator(environment.classLoader).foreach {
-      _.configure(environment)
-    }
-    new BpmRepositoryServiceApplication(context) with LagomDevModeComponents
+  def main(args: Array[String]): Unit = {
+    val config = ConfigFactory.load()
+    implicit val system: ActorSystem[Nothing] = ActorSystem[Nothing](
+      Behaviors.empty,
+      name = config.getString("annette.cluster.system-name"),
+      config
+    )
+    val app = new BpmRepositoryServiceApp()
+    app.run()(system)
   }
-
-  override def describeService = Some(readDescriptor[BpmRepositoryServiceApi])
 }
 
-abstract class BpmRepositoryServiceApplication(context: LagomApplicationContext)
-    extends LagomApplication(context)
-    with AhcWSComponents {
+// Postgres-only service: zero event-sourced entities, zero read-side
+// processors, no cluster sharding — the actor system stays local
+// (per dev/migration/012 analysis §3.3 the service runs standalone).
+private[impl] class BpmRepositoryServiceApp() {
 
-  override lazy val lagomServer = serverFor[BpmRepositoryServiceApi](wire[BpmRepositoryServiceApiImpl])
+  private val log = LoggerFactory.getLogger(getClass)
 
-  lazy val database               = DBProvider.databaseFactory("bpm-repository-db")
-  lazy val bpmModelActions        = wire[BpmModelActions]
-  lazy val bpmModelService        = wire[BpmModelService]
-  lazy val dataSchemaActions      = wire[DataSchemaActions]
-  lazy val dataSchemaService      = wire[DataSchemaService]
-  lazy val businessProcessActions = wire[BusinessProcessActions]
-  lazy val businessProcessService = wire[BusinessProcessService]
+  def run()(implicit system: ActorSystem[_]): Unit = {
+    implicit val ec: ExecutionContext = system.executionContext
+    val config                        = system.settings.config
 
-  println()
-  println("************************ BpmRepositorySchema ************************ ")
-  println()
-  println(BpmRepositorySchema.dataDefinition.dropIfExistsStatements.mkString(";\n"))
-  println()
-  println()
-  println(BpmRepositorySchema.dataDefinition.createStatements.mkString(";\n"))
-  println()
-  println()
+    val database = DBProvider.databaseFactory("bpm-repository-db")
+
+    val bpmModelActions        = new BpmModelActions
+    val bpmModelService        = new BpmModelService(database, bpmModelActions)
+    val dataSchemaActions      = new DataSchemaActions
+    val dataSchemaService      = new DataSchemaService(database, dataSchemaActions)
+    val businessProcessActions = new BusinessProcessActions
+    val businessProcessService = new BusinessProcessService(database, businessProcessActions)
+
+    // ************************** gRPC server **************************
+
+    val serviceApi = new BpmRepositoryServiceApiImpl(
+      bpmModelService,
+      dataSchemaService,
+      businessProcessService
+    )
+    // D6: gRPC reflection enabled — concat the service handler with ServerReflection
+    // so grpcurl/inspection tools work against the bound server.
+    val handler = ServiceHandler.concatOrNotFound(
+      BpmRepositoryServiceHandler.partial(serviceApi),
+      ServerReflection.partial(List(g.BpmRepositoryService))(system)
+    )
+
+    val httpHost = config.getString("annette.http.host")
+    val httpPort = config.getInt("annette.http.port")
+    Await.result(Http().newServerAt(httpHost, httpPort).bind(handler), 10.seconds)
+    log.info("BPM Repository gRPC service bound to {}:{}", httpHost, httpPort)
+  }
 }

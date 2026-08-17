@@ -84,18 +84,18 @@ Slices 005–012 may run in any order after 004, but all must land before 013.
 
 | Step | Status     | Commit SHA | Notes |
 |------|------------|------------|-------|
-| 001  | pending    | —          |       |
-| 002  | pending    | —          |       |
-| 003  | pending    | —          |       |
-| 004  | pending    | —          |       |
-| 005  | pending    | —          |       |
-| 006  | pending    | —          |       |
-| 007  | pending    | —          |       |
-| 008  | pending    | —          |       |
-| 009  | pending    | —          |       |
-| 010  | pending    | —          |       |
-| 011  | pending    | —          |       |
-| 012  | pending    | —          |       |
+| 001  | done       | `cc0a4285` | Phase-0 spikes; locked decisions + version matrix. |
+| 002  | done       | `ccd458d6` | Plugin/dependency foundations; gateway defers client swap (Play 3.0.11 blocker) to 013. |
+| 003  | done       | `970e759d` | `microservice-core-pekko`; `Tagger`/`ProjectionBase`/`CassandraQuillDao`. |
+| 004  | done       | `bb1400ca`, `882b65dc` | Template slice (authorization). Gateway client swap deferred to 013. |
+| 005  | done       | `79bf122d` | persons. Lagom API wrappers kept (013 deferral); service specs disabled pending gRPC testkit rewrite. |
+| 006  | done       | `54da3bc7` | principal-groups. Same deferrals as 005. |
+| 007  | done       | `cc357d16` | org-structure. Same deferrals as 005. |
+| 008  | done       | `486aedb1` | subscriptions. Same deferrals as 005. |
+| 009  | done       | `4a76f57f` | service-catalog. Two-trait pattern; Lagom wrappers kept for 013. |
+| 010  | done       | `7c34bcb8` | application. Two-trait pattern; Lagom wrappers kept for 013. |
+| 011  | done       | `9ca087bd` | cms. First live-boot slice; fixed shared latent runtime gaps (deps, `CassandraQuillDao`, `ProjectionBase` read-journal id, events-by-tag config paths). |
+| 012  | done       | this commit | bpm-repository. Standalone (no cluster); k8s `service-name` copy-paste bug fixed; pre-existing spec breakage (missing `processDefinitionType`/`processDefinition` args) repaired — all 4 specs green; live gRPC smoke passed. |
 | 013  | pending    | —          |       |
 
 ## Codebase corrections baked into this playbook

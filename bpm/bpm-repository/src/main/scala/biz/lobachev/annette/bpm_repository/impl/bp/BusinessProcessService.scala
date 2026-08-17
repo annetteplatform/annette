@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.bpm_repository.impl.bp
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.bpm_repository.api.bp._
 import biz.lobachev.annette.bpm_repository.api.domain.BusinessProcessId
 import biz.lobachev.annette.bpm_repository.api.model.BpmModelNotFound

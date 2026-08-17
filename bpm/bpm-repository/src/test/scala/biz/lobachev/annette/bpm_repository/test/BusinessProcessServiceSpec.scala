@@ -1,15 +1,16 @@
 package biz.lobachev.annette.bpm_repository.test
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.bpm_repository.api.bp._
 import biz.lobachev.annette.bpm_repository.api.domain.{
-  BpmModelId,
-  BusinessProcessId,
-  DataSchemaId,
-  Datatype,
-  Notation,
-  ProcessDefinition,
-  VariableName
+      BpmModelId,
+      BusinessProcessId,
+      DataSchemaId,
+      Datatype,
+      Notation,
+      ProcessDefinition,
+      ProcessDefinitionType,
+      VariableName
 }
 import biz.lobachev.annette.bpm_repository.api.model.{BpmModelNotFound, CreateBpmModelPayload, DeleteBpmModelPayload}
 import biz.lobachev.annette.bpm_repository.api.schema.{
@@ -50,6 +51,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
           "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -88,6 +91,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         dataSchemaId = Some(dataSchemaId),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
@@ -108,6 +113,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
           id = id,
           name = "business process name",
           description = "business process description",
+          processDefinitionType = ProcessDefinitionType.KEY,
+          processDefinition = ProcessDefinition("process definition"),
           dataSchemaId = Some(dataSchemaId),
           variables = Map(
             "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
@@ -130,6 +137,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         dataSchemaId = Some(dataSchemaId),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
@@ -158,6 +167,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         bpmModelId = Some(bpmModelId),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
@@ -179,6 +190,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
           id = id,
           name = "business process name",
           description = "business process description",
+          processDefinitionType = ProcessDefinitionType.KEY,
+          processDefinition = ProcessDefinition("process definition"),
           bpmModelId = Some(bpmModelId),
           variables = Map(
             "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
@@ -200,6 +213,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         bpmModelId = Some(bpmModelId),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
@@ -219,6 +234,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
           "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -230,6 +247,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "updated business process name",
         description = "updated business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hi"),
           "int2" -> BusinessProcessVariable("int2", "int2", Datatype.Integer, "123"),
@@ -276,6 +295,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
           "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -287,6 +308,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "updated business process name",
         description = "updated business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         dataSchemaId = Some(dataSchemaId),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hi"),
@@ -312,6 +335,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
           id = id,
           name = "updated business process name",
           description = "updated business process description",
+          processDefinitionType = ProcessDefinitionType.KEY,
+          processDefinition = ProcessDefinition("process definition"),
           dataSchemaId = Some(dataSchemaId),
           variables = Map(
             "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -335,6 +360,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
           "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -346,6 +373,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "updated business process name",
         description = "updated business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         dataSchemaId = Some(dataSchemaId),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hi"),
@@ -380,6 +409,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
           "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -391,6 +422,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "updated business process name",
         description = "updated business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         bpmModelId = Some(bpmModelId),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hi"),
@@ -413,6 +446,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
           id = id,
           name = "updated business process name",
           description = "updated business process description",
+          processDefinitionType = ProcessDefinitionType.KEY,
+          processDefinition = ProcessDefinition("process definition"),
           bpmModelId = Some(bpmModelId),
           variables = Map(
             "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hi"),
@@ -435,6 +470,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
           "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -446,6 +483,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "updated business process name",
         description = "updated business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         bpmModelId = Some(bpmModelId),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hi"),
@@ -471,6 +510,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
           "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -512,6 +553,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
           "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -565,6 +608,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
           "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -597,6 +642,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
           id = id,
           name = "business process name",
           description = "business process description",
+          processDefinitionType = ProcessDefinitionType.KEY,
+          processDefinition = ProcessDefinition("process definition"),
           dataSchemaId = Some(dataSchemaId),
           variables = Map(
             "var3" -> BusinessProcessVariable("var3", "var3", Datatype.Boolean, "true"),
@@ -620,6 +667,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
           "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -658,6 +707,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
           "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -689,6 +740,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
           id = id,
           name = "business process name",
           description = "business process description",
+          processDefinitionType = ProcessDefinitionType.KEY,
+          processDefinition = ProcessDefinition("process definition"),
           bpmModelId = Some(bpmModelId),
           variables = Map(
             "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
@@ -710,6 +763,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
           "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -741,6 +796,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
           "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -750,12 +807,14 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
       )
       val updatePayload  = UpdateBusinessProcessProcessDefinitionPayload(
         id = id,
-        processDefinition = Some(ProcessDefinition("process definition")),
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         updatedBy = PersonPrincipal("P0002")
       )
       val updatePayload2 = UpdateBusinessProcessProcessDefinitionPayload(
         id = id,
-        processDefinition = None,
+        processDefinitionType = ProcessDefinitionType.ID,
+        processDefinition = ProcessDefinition("another process definition"),
         updatedBy = PersonPrincipal("P0002")
       )
       for {
@@ -769,7 +828,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
           id = id,
           name = "business process name",
           description = "business process description",
-          processDefinition = Some(ProcessDefinition("process definition")),
+          processDefinitionType = ProcessDefinitionType.KEY,
+          processDefinition = ProcessDefinition("process definition"),
           variables = Map(
             "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
             "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -779,7 +839,11 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
           updatedAt = businessProcess1.updatedAt
         )
         businessProcess1 shouldBe targetSchema1
-        businessProcess2 shouldBe targetSchema1.copy(processDefinition = None, updatedAt = businessProcess2.updatedAt)
+        businessProcess2 shouldBe targetSchema1.copy(
+          processDefinitionType = ProcessDefinitionType.ID,
+          processDefinition = ProcessDefinition("another process definition"),
+          updatedAt = businessProcess2.updatedAt
+        )
       }
     }
 
@@ -789,6 +853,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
           "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -837,6 +903,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
           "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -885,6 +953,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
           "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -954,6 +1024,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
           "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -1012,6 +1084,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
           "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),
@@ -1041,6 +1115,8 @@ class BusinessProcessServiceSpec extends AsyncWordSpecLike with Matchers {
         id = id,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
           "var2" -> BusinessProcessVariable("var2", "var2", Datatype.Integer, "123"),

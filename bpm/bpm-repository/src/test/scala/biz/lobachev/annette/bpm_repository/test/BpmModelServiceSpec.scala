@@ -1,12 +1,12 @@
 package biz.lobachev.annette.bpm_repository.test
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.bpm_repository.api.bp.{
   BusinessProcessVariable,
   CreateBusinessProcessPayload,
   DeleteBusinessProcessPayload
 }
-import biz.lobachev.annette.bpm_repository.api.domain.{BpmModelId, BusinessProcessId, Datatype, Notation}
+import biz.lobachev.annette.bpm_repository.api.domain.{BpmModelId, BusinessProcessId, Datatype, Notation, ProcessDefinition, ProcessDefinitionType}
 import biz.lobachev.annette.bpm_repository.api.model.{
   BpmModel,
   BpmModelHasReference,
@@ -271,6 +271,8 @@ class BpmModelServiceSpec extends AsyncWordSpecLike with Matchers {
         id = businessProcessId,
         name = "business process name",
         description = "business process description",
+        processDefinitionType = ProcessDefinitionType.KEY,
+        processDefinition = ProcessDefinition("process definition"),
         bpmModelId = Some(id),
         variables = Map(
           "var1" -> BusinessProcessVariable("var1", "var1", Datatype.String, "hello"),
