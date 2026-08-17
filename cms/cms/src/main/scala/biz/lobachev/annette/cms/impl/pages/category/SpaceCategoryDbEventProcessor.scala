@@ -16,29 +16,31 @@
 
 package biz.lobachev.annette.cms.impl.pages.category
 
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
+import biz.lobachev.annette.cms.impl.pages.category.dao.SpaceCategoryDbDao
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-class SpaceCategoryDbEventProcessor(
-  readSide: CassandraReadSide,
-  dbDao: dao.SpaceCategoryDbDao,
+private[impl] class SpaceCategoryDbEventProcessor(
+  dbDao: SpaceCategoryDbDao,
   readSideId: String
-)(implicit ec: ExecutionContext)
-    extends ReadSideProcessor[SpaceCategoryEntity.Event]
-    with SimpleEventHandling {
+)(implicit
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[SpaceCategoryEntity.Event] {
 
-  def buildHandler() =
-    readSide
-      .builder[SpaceCategoryEntity.Event](readSideId)
-      .setGlobalPrepare(dbDao.createTables)
-      .setEventHandler[SpaceCategoryEntity.CategoryCreated](handle(dbDao.createCategory))
-      .setEventHandler[SpaceCategoryEntity.CategoryUpdated](handle(dbDao.updateCategory))
-      .setEventHandler[SpaceCategoryEntity.CategoryDeleted](handle(dbDao.deleteCategory))
-      .build()
+  override val projectionName: String = readSideId
+  override val tags: Seq[String] = Tagger.fromEventName[SpaceCategoryEntity.Event](10).allTags
 
-  def aggregateTags = SpaceCategoryEntity.Event.Tag.allTags
-
+  override def process(envelope: EventEnvelope[SpaceCategoryEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: SpaceCategoryEntity.CategoryCreated => dbDao.createCategory(evt).map(_ => Done)
+      case evt: SpaceCategoryEntity.CategoryUpdated => dbDao.updateCategory(evt).map(_ => Done)
+      case evt: SpaceCategoryEntity.CategoryDeleted => dbDao.deleteCategory(evt).map(_ => Done)
+      case _ => Future.successful(Done)
+    }
 }

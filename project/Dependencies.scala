@@ -88,7 +88,11 @@ object Dependencies {
   // from quill-cassandra. Slice 013 may consolidate this with `quill` once Lagom is gone.
   val quillPekko: Seq[ModuleID] = Seq(
     quillCore,
-    "io.getquill" %% "quill-cassandra" % Version.quill
+    "io.getquill" %% "quill-cassandra" % Version.quill,
+    // quill-cassandra's driver 3 (3.7.2) initializes JMX metrics against the legacy
+    // com.codahale namespace at Cluster.connect; nothing provides it transitively
+    // (first observed booting cms in slice 011).
+    "com.codahale.metrics" % "metrics-core" % "3.0.2"
   )
 
   val alpakkaS3: Seq[ModuleID] = Seq(
@@ -125,7 +129,22 @@ object Dependencies {
     "org.apache.pekko" %% "pekko-cluster-typed"          % PekkoVersion.pekkoCore,
     "org.apache.pekko" %% "pekko-cluster-sharding-typed" % PekkoVersion.pekkoCore,
     "org.apache.pekko" %% "pekko-persistence-typed"      % PekkoVersion.pekkoCore,
-    "org.apache.pekko" %% "pekko-http"                   % PekkoVersion.pekkoHttp
+    "org.apache.pekko" %% "pekko-http"                   % PekkoVersion.pekkoHttp,
+    // pekko-http 1.1.0 was built against Pekko 1.1.1 and drags pekko-discovery 1.1.1 in
+    // transitively; without this explicit pin the runtime mixed-version detector aborts
+    // startup (first observed booting cms in slice 011; latent in all Pekko services).
+    "org.apache.pekko" %% "pekko-discovery"              % PekkoVersion.pekkoCore,
+    // The `jackson-json` serializer alias used by every service's serialization-bindings
+    // is declared in this artifact's reference.conf; nothing pulls it in transitively, so
+    // without it actor-system startup fails with "key not found: jackson-json" (latent in
+    // all Pekko services since slice 004; first observed booting cms in slice 011).
+    "org.apache.pekko" %% "pekko-serialization-jackson"  % PekkoVersion.pekkoCore,
+    // Every microservice ships conf/logback.xml (on the runtime classpath via
+    // confDirSettings); Lagom used to supply the backend. Without it SLF4J falls back to
+    // NOP and the services log nothing (same latent-gap class; slice 011). 1.3.x is the
+    // slf4j-2.0-compatible line (Pekko 1.1.3 pulls slf4j-api 2.0.16) while still targeting
+    // Java 8/11.
+    "ch.qos.logback"    % "logback-classic"              % "1.3.14"
   )
 
   val pekkoPersistenceCassandra: Seq[ModuleID] = Seq(

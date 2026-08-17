@@ -16,10 +16,10 @@
 
 package biz.lobachev.annette.cms.impl.blogs.post
 
-import akka.actor.typed.{ActorRef, Behavior}
-import akka.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
-import akka.persistence.typed.PersistenceId
-import akka.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
+import org.apache.pekko.actor.typed.{ActorRef, Behavior}
+import org.apache.pekko.cluster.sharding.typed.scaladsl.{EntityContext, EntityTypeKey}
+import org.apache.pekko.persistence.typed.PersistenceId
+import org.apache.pekko.persistence.typed.scaladsl.{Effect, EventSourcedBehavior, ReplyEffect, RetentionCriteria}
 import biz.lobachev.annette.cms.api.blogs.blog.BlogId
 import biz.lobachev.annette.cms.api.blogs.post._
 import biz.lobachev.annette.cms.api.common.article.PublicationStatus
@@ -28,7 +28,7 @@ import biz.lobachev.annette.cms.api.content.ContentTypes.ContentType
 import biz.lobachev.annette.cms.impl.blogs.post.model.{PostInt, PostState}
 import biz.lobachev.annette.cms.impl.content.{ContentInt, WidgetInt}
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import com.lightbend.lagom.scaladsl.persistence._
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
 import org.slf4j.LoggerFactory
@@ -164,13 +164,11 @@ object PostEntity {
   implicit val confirmationPostPublicationDateClearNotAllowedFormat: Format[PostPublicationDateClearNotAllowed.type] =
     Json.format
 
-  sealed trait Event extends AggregateEvent[Event] {
-    override def aggregateTag: AggregateEventTagger[Event] = Event.Tag
-  }
+  sealed trait Event
 
-  object Event {
-    val Tag: AggregateEventShards[Event] = AggregateEventTag.sharded[Event](numShards = 10)
-  }
+  // Per 001-decisions.md §A: baseTagName is the Event trait's runtime class FQN.
+  // Tag format: baseTagName + shardNo with NO separator.
+  private val tagger = Tagger.fromEventName[Event](numShards = 10)
 
   final case class PostCreated(
     id: PostId,
@@ -306,7 +304,23 @@ object PostEntity {
 
   def apply(entityContext: EntityContext[Command]): Behavior[Command] =
     apply(PersistenceId(entityContext.entityTypeKey.name, entityContext.entityId))
-      .withTagger(AkkaTaggerAdapter.fromLagom(entityContext, Event.Tag))
+      .withTagger {
+        case evt: PostCreated => Set(tagger.tagFor(evt.id))
+        case evt: PostFeaturedUpdated => Set(tagger.tagFor(evt.id))
+        case evt: PostAuthorUpdated => Set(tagger.tagFor(evt.id))
+        case evt: PostTitleUpdated => Set(tagger.tagFor(evt.id))
+        case evt: ContentSettingsUpdated => Set(tagger.tagFor(evt.id))
+        case evt: PostWidgetUpdated => Set(tagger.tagFor(evt.id))
+        case evt: WidgetOrderChanged => Set(tagger.tagFor(evt.id))
+        case evt: WidgetDeleted => Set(tagger.tagFor(evt.id))
+        case evt: PostIndexChanged => Set(tagger.tagFor(evt.id))
+        case evt: PostPublicationTimestampUpdated => Set(tagger.tagFor(evt.id))
+        case evt: PostPublished => Set(tagger.tagFor(evt.id))
+        case evt: PostUnpublished => Set(tagger.tagFor(evt.id))
+        case evt: PostTargetPrincipalAssigned => Set(tagger.tagFor(evt.id))
+        case evt: PostTargetPrincipalUnassigned => Set(tagger.tagFor(evt.id))
+        case evt: PostDeleted => Set(tagger.tagFor(evt.id))
+      }
       .withRetention(RetentionCriteria.snapshotEvery(numberOfEvents = 100, keepNSnapshots = 2))
 
   implicit val entityFormat: Format[PostEntity] = Json.format

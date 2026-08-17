@@ -16,37 +16,38 @@
 
 package biz.lobachev.annette.cms.impl.blogs.blog
 
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.cms.impl.blogs.blog.dao.BlogIndexDao
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.{ExecutionContext}
+import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class BlogIndexEventProcessor(
-  readSide: CassandraReadSide,
   indexDao: BlogIndexDao
-)(implicit ec: ExecutionContext)
-    extends ReadSideProcessor[BlogEntity.Event]
-    with SimpleEventHandling {
+)(implicit
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[BlogEntity.Event] {
 
-  def buildHandler(): ReadSideProcessor.ReadSideHandler[BlogEntity.Event] =
-    readSide
-      .builder[BlogEntity.Event]("blog-index")
-      .setGlobalPrepare(indexDao.createEntityIndex)
-      .setEventHandler[BlogEntity.BlogCreated](handle(indexDao.createBlog))
-      .setEventHandler[BlogEntity.BlogNameUpdated](handle(indexDao.updateBlogName))
-      .setEventHandler[BlogEntity.BlogDescriptionUpdated](handle(indexDao.updateBlogDescription))
-      .setEventHandler[BlogEntity.BlogCategoryUpdated](handle(indexDao.updateBlogCategory))
-      .setEventHandler[BlogEntity.BlogAuthorPrincipalAssigned](handle(indexDao.assignBlogAuthorPrincipal))
-      .setEventHandler[BlogEntity.BlogAuthorPrincipalUnassigned](handle(indexDao.unassignBlogAuthorPrincipal))
-      .setEventHandler[BlogEntity.BlogTargetPrincipalAssigned](handle(indexDao.assignBlogTargetPrincipal))
-      .setEventHandler[BlogEntity.BlogTargetPrincipalUnassigned](handle(indexDao.unassignBlogTargetPrincipal))
-      .setEventHandler[BlogEntity.BlogActivated](handle(indexDao.activateBlog))
-      .setEventHandler[BlogEntity.BlogDeactivated](handle(indexDao.deactivateBlog))
-      .setEventHandler[BlogEntity.BlogDeleted](handle(indexDao.deleteBlog))
-      .build()
+  override val projectionName: String = "blog-index"
+  override val tags: Seq[String] = Tagger.fromEventName[BlogEntity.Event](10).allTags
 
-  def aggregateTags: Set[AggregateEventTag[BlogEntity.Event]] = BlogEntity.Event.Tag.allTags
-
+  override def process(envelope: EventEnvelope[BlogEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: BlogEntity.BlogCreated => indexDao.createBlog(evt).map(_ => Done)
+      case evt: BlogEntity.BlogNameUpdated => indexDao.updateBlogName(evt).map(_ => Done)
+      case evt: BlogEntity.BlogDescriptionUpdated => indexDao.updateBlogDescription(evt).map(_ => Done)
+      case evt: BlogEntity.BlogCategoryUpdated => indexDao.updateBlogCategory(evt).map(_ => Done)
+      case evt: BlogEntity.BlogAuthorPrincipalAssigned => indexDao.assignBlogAuthorPrincipal(evt).map(_ => Done)
+      case evt: BlogEntity.BlogAuthorPrincipalUnassigned => indexDao.unassignBlogAuthorPrincipal(evt).map(_ => Done)
+      case evt: BlogEntity.BlogTargetPrincipalAssigned => indexDao.assignBlogTargetPrincipal(evt).map(_ => Done)
+      case evt: BlogEntity.BlogTargetPrincipalUnassigned => indexDao.unassignBlogTargetPrincipal(evt).map(_ => Done)
+      case evt: BlogEntity.BlogActivated => indexDao.activateBlog(evt).map(_ => Done)
+      case evt: BlogEntity.BlogDeactivated => indexDao.deactivateBlog(evt).map(_ => Done)
+      case evt: BlogEntity.BlogDeleted => indexDao.deleteBlog(evt).map(_ => Done)
+      case _ => Future.successful(Done)
+    }
 }

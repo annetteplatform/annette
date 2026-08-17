@@ -16,37 +16,38 @@
 
 package biz.lobachev.annette.cms.impl.pages.space
 
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.cms.impl.pages.space.dao.SpaceIndexDao
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.{ExecutionContext}
+import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class SpaceIndexEventProcessor(
-  readSide: CassandraReadSide,
   indexDao: SpaceIndexDao
-)(implicit ec: ExecutionContext)
-    extends ReadSideProcessor[SpaceEntity.Event]
-    with SimpleEventHandling {
+)(implicit
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[SpaceEntity.Event] {
 
-  def buildHandler(): ReadSideProcessor.ReadSideHandler[SpaceEntity.Event] =
-    readSide
-      .builder[SpaceEntity.Event]("space-index")
-      .setGlobalPrepare(indexDao.createEntityIndex)
-      .setEventHandler[SpaceEntity.SpaceCreated](handle(indexDao.createSpace))
-      .setEventHandler[SpaceEntity.SpaceNameUpdated](handle(indexDao.updateSpaceName))
-      .setEventHandler[SpaceEntity.SpaceDescriptionUpdated](handle(indexDao.updateSpaceDescription))
-      .setEventHandler[SpaceEntity.SpaceCategoryUpdated](handle(indexDao.updateSpaceCategory))
-      .setEventHandler[SpaceEntity.SpaceAuthorPrincipalAssigned](handle(indexDao.assignSpaceAuthorPrincipal))
-      .setEventHandler[SpaceEntity.SpaceAuthorPrincipalUnassigned](handle(indexDao.unassignSpaceAuthorPrincipal))
-      .setEventHandler[SpaceEntity.SpaceTargetPrincipalAssigned](handle(indexDao.assignSpaceTargetPrincipal))
-      .setEventHandler[SpaceEntity.SpaceTargetPrincipalUnassigned](handle(indexDao.unassignSpaceTargetPrincipal))
-      .setEventHandler[SpaceEntity.SpaceActivated](handle(indexDao.activateSpace))
-      .setEventHandler[SpaceEntity.SpaceDeactivated](handle(indexDao.deactivateSpace))
-      .setEventHandler[SpaceEntity.SpaceDeleted](handle(indexDao.deleteSpace))
-      .build()
+  override val projectionName: String = "space-index"
+  override val tags: Seq[String] = Tagger.fromEventName[SpaceEntity.Event](10).allTags
 
-  def aggregateTags: Set[AggregateEventTag[SpaceEntity.Event]] = SpaceEntity.Event.Tag.allTags
-
+  override def process(envelope: EventEnvelope[SpaceEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: SpaceEntity.SpaceCreated => indexDao.createSpace(evt).map(_ => Done)
+      case evt: SpaceEntity.SpaceNameUpdated => indexDao.updateSpaceName(evt).map(_ => Done)
+      case evt: SpaceEntity.SpaceDescriptionUpdated => indexDao.updateSpaceDescription(evt).map(_ => Done)
+      case evt: SpaceEntity.SpaceCategoryUpdated => indexDao.updateSpaceCategory(evt).map(_ => Done)
+      case evt: SpaceEntity.SpaceAuthorPrincipalAssigned => indexDao.assignSpaceAuthorPrincipal(evt).map(_ => Done)
+      case evt: SpaceEntity.SpaceAuthorPrincipalUnassigned => indexDao.unassignSpaceAuthorPrincipal(evt).map(_ => Done)
+      case evt: SpaceEntity.SpaceTargetPrincipalAssigned => indexDao.assignSpaceTargetPrincipal(evt).map(_ => Done)
+      case evt: SpaceEntity.SpaceTargetPrincipalUnassigned => indexDao.unassignSpaceTargetPrincipal(evt).map(_ => Done)
+      case evt: SpaceEntity.SpaceActivated => indexDao.activateSpace(evt).map(_ => Done)
+      case evt: SpaceEntity.SpaceDeactivated => indexDao.deactivateSpace(evt).map(_ => Done)
+      case evt: SpaceEntity.SpaceDeleted => indexDao.deleteSpace(evt).map(_ => Done)
+      case _ => Future.successful(Done)
+    }
 }

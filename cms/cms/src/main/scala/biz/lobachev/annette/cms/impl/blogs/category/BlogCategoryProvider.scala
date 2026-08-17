@@ -16,9 +16,9 @@
 
 package biz.lobachev.annette.cms.impl.blogs.category
 
-import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityTypeKey}
-import akka.stream.Materializer
-import com.lightbend.lagom.scaladsl.persistence.cassandra.{CassandraReadSide, CassandraSession}
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityTypeKey}
+import org.apache.pekko.stream.Materializer
 import com.sksamuel.elastic4s.ElasticClient
 import com.typesafe.config.Config
 
@@ -33,15 +33,15 @@ class BlogCategoryProvider(
 
   val typeKey: EntityTypeKey[BlogCategoryEntity.Command] = EntityTypeKey[BlogCategoryEntity.Command](typeKeyName)
 
-  def createDbDao(session: CassandraSession, ec: ExecutionContext): dao.BlogCategoryDbDao =
-    new dao.BlogCategoryDbDao(session)(ec)
+  def createDbDao(config: Config, ec: ExecutionContext): dao.BlogCategoryDbDao =
+    new dao.BlogCategoryDbDao(config)(ec)
 
   def createDbProcessor(
-    readSide: CassandraReadSide,
     dbDao: dao.BlogCategoryDbDao,
-    ec: ExecutionContext
+    ec: ExecutionContext,
+    system: ActorSystem[_]
   ): BlogCategoryDbEventProcessor =
-    new BlogCategoryDbEventProcessor(readSide, dbDao, dbReadSideId)(ec)
+    new BlogCategoryDbEventProcessor(dbDao, dbReadSideId)(system, ec)
 
   def createIndexDao(
     elasticClient: ElasticClient,
@@ -50,11 +50,11 @@ class BlogCategoryProvider(
     new dao.BlogCategoryIndexDao(elasticClient, configPath)(ec)
 
   def createIndexProcessor(
-    readSide: CassandraReadSide,
     indexDao: dao.BlogCategoryIndexDao,
-    ec: ExecutionContext
+    ec: ExecutionContext,
+    system: ActorSystem[_]
   ): BlogCategoryIndexEventProcessor =
-    new BlogCategoryIndexEventProcessor(readSide, indexDao, indexReadSideId)(ec)
+    new BlogCategoryIndexEventProcessor(indexDao, indexReadSideId)(system, ec)
 
   def createEntityService(
     clusterSharding: ClusterSharding,

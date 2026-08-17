@@ -16,28 +16,29 @@
 
 package biz.lobachev.annette.cms.impl.home_pages
 
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.cms.impl.home_pages.dao.HomePageDbDao
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class HomePageDbEventProcessor(
-  readSide: CassandraReadSide,
   dbDao: HomePageDbDao
-)(implicit ec: ExecutionContext)
-    extends ReadSideProcessor[HomePageEntity.Event]
-    with SimpleEventHandling {
+)(implicit
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[HomePageEntity.Event] {
 
-  def buildHandler(): ReadSideProcessor.ReadSideHandler[HomePageEntity.Event] =
-    readSide
-      .builder[HomePageEntity.Event]("home-page-cas")
-      .setGlobalPrepare(dbDao.createTables)
-      .setEventHandler[HomePageEntity.HomePageAssigned](handle(dbDao.assignHomePage))
-      .setEventHandler[HomePageEntity.HomePageUnassigned](handle(dbDao.unassignHomePage))
-      .build()
+  override val projectionName: String = "home-page-cas"
+  override val tags: Seq[String] = Tagger.fromEventName[HomePageEntity.Event](10).allTags
 
-  def aggregateTags: Set[AggregateEventTag[HomePageEntity.Event]] = HomePageEntity.Event.Tag.allTags
-
+  override def process(envelope: EventEnvelope[HomePageEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: HomePageEntity.HomePageAssigned => dbDao.assignHomePage(evt).map(_ => Done)
+      case evt: HomePageEntity.HomePageUnassigned => dbDao.unassignHomePage(evt).map(_ => Done)
+      case _ => Future.successful(Done)
+    }
 }

@@ -16,38 +16,40 @@
 
 package biz.lobachev.annette.cms.impl.pages.page
 
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.cms.impl.pages.page.dao.PageIndexDao
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class PageIndexEventProcessor(
-  readSide: CassandraReadSide,
   indexDao: PageIndexDao
-)(implicit ec: ExecutionContext)
-    extends ReadSideProcessor[PageEntity.Event]
-    with SimpleEventHandling {
+)(implicit
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[PageEntity.Event] {
 
-  def buildHandler(): ReadSideProcessor.ReadSideHandler[PageEntity.Event] =
-    readSide
-      .builder[PageEntity.Event]("page-index")
-      .setGlobalPrepare(indexDao.createEntityIndex)
-      .setEventHandler[PageEntity.PageCreated](handle(indexDao.createPage))
-      .setEventHandler[PageEntity.PageAuthorUpdated](handle(indexDao.updatePageAuthor))
-      .setEventHandler[PageEntity.PageTitleUpdated](handle(indexDao.updatePageTitle))
-      .setEventHandler[PageEntity.PageWidgetUpdated](handle(indexDao.updatePageWidget))
-      .setEventHandler[PageEntity.WidgetOrderChanged](handle(indexDao.changeWidgetOrder))
-      .setEventHandler[PageEntity.WidgetDeleted](handle(indexDao.deleteWidget))
-      .setEventHandler[PageEntity.PageIndexChanged](handle(indexDao.changePageIndex))
-      .setEventHandler[PageEntity.PagePublicationTimestampUpdated](handle(indexDao.updatePagePublicationTimestamp))
-      .setEventHandler[PageEntity.PagePublished](handle(indexDao.publishPage))
-      .setEventHandler[PageEntity.PageUnpublished](handle(indexDao.unpublishPage))
-      .setEventHandler[PageEntity.PageTargetPrincipalAssigned](handle(indexDao.assignPageTargetPrincipal))
-      .setEventHandler[PageEntity.PageTargetPrincipalUnassigned](handle(indexDao.unassignPageTargetPrincipal))
-      .setEventHandler[PageEntity.PageDeleted](handle(indexDao.deletePage))
-      .build()
+  override val projectionName: String = "page-index"
+  override val tags: Seq[String] = Tagger.fromEventName[PageEntity.Event](10).allTags
 
-  def aggregateTags: Set[AggregateEventTag[PageEntity.Event]] = PageEntity.Event.Tag.allTags
+  override def process(envelope: EventEnvelope[PageEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: PageEntity.PageCreated => indexDao.createPage(evt).map(_ => Done)
+      case evt: PageEntity.PageAuthorUpdated => indexDao.updatePageAuthor(evt).map(_ => Done)
+      case evt: PageEntity.PageTitleUpdated => indexDao.updatePageTitle(evt).map(_ => Done)
+      case evt: PageEntity.PageWidgetUpdated => indexDao.updatePageWidget(evt).map(_ => Done)
+      case evt: PageEntity.WidgetOrderChanged => indexDao.changeWidgetOrder(evt).map(_ => Done)
+      case evt: PageEntity.WidgetDeleted => indexDao.deleteWidget(evt).map(_ => Done)
+      case evt: PageEntity.PageIndexChanged => indexDao.changePageIndex(evt).map(_ => Done)
+      case evt: PageEntity.PagePublicationTimestampUpdated => indexDao.updatePagePublicationTimestamp(evt).map(_ => Done)
+      case evt: PageEntity.PagePublished => indexDao.publishPage(evt).map(_ => Done)
+      case evt: PageEntity.PageUnpublished => indexDao.unpublishPage(evt).map(_ => Done)
+      case evt: PageEntity.PageTargetPrincipalAssigned => indexDao.assignPageTargetPrincipal(evt).map(_ => Done)
+      case evt: PageEntity.PageTargetPrincipalUnassigned => indexDao.unassignPageTargetPrincipal(evt).map(_ => Done)
+      case evt: PageEntity.PageDeleted => indexDao.deletePage(evt).map(_ => Done)
+      case _ => Future.successful(Done)
+    }
 }

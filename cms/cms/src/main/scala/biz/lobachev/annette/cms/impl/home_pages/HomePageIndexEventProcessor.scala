@@ -16,28 +16,29 @@
 
 package biz.lobachev.annette.cms.impl.home_pages
 
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.cms.impl.home_pages.dao.HomePageIndexDao
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.{ExecutionContext}
+import scala.concurrent.{ExecutionContext, Future}
 
-class HomePageIndexEventProcessor(
-  readSide: CassandraReadSide,
+private[impl] class HomePageIndexEventProcessor(
   indexDao: HomePageIndexDao
-)(implicit ec: ExecutionContext)
-    extends ReadSideProcessor[HomePageEntity.Event]
-    with SimpleEventHandling {
+)(implicit
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[HomePageEntity.Event] {
 
-  def buildHandler(): ReadSideProcessor.ReadSideHandler[HomePageEntity.Event] =
-    readSide
-      .builder[HomePageEntity.Event]("home-page-index")
-      .setGlobalPrepare(indexDao.createEntityIndex)
-      .setEventHandler[HomePageEntity.HomePageAssigned](handle(indexDao.assignHomePage))
-      .setEventHandler[HomePageEntity.HomePageUnassigned](handle(indexDao.unassignHomePage))
-      .build()
+  override val projectionName: String = "home-page-index"
+  override val tags: Seq[String] = Tagger.fromEventName[HomePageEntity.Event](10).allTags
 
-  def aggregateTags: Set[AggregateEventTag[HomePageEntity.Event]] = HomePageEntity.Event.Tag.allTags
-
+  override def process(envelope: EventEnvelope[HomePageEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: HomePageEntity.HomePageAssigned => indexDao.assignHomePage(evt).map(_ => Done)
+      case evt: HomePageEntity.HomePageUnassigned => indexDao.unassignHomePage(evt).map(_ => Done)
+      case _ => Future.successful(Done)
+    }
 }

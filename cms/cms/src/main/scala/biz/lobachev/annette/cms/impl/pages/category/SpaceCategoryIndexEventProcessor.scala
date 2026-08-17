@@ -16,29 +16,31 @@
 
 package biz.lobachev.annette.cms.impl.pages.category
 
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
+import biz.lobachev.annette.cms.impl.pages.category.dao.SpaceCategoryIndexDao
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-class SpaceCategoryIndexEventProcessor(
-  readSide: CassandraReadSide,
-  indexDao: dao.SpaceCategoryIndexDao,
+private[impl] class SpaceCategoryIndexEventProcessor(
+  indexDao: SpaceCategoryIndexDao,
   readSideId: String
 )(implicit
-  ec: ExecutionContext
-) extends ReadSideProcessor[SpaceCategoryEntity.Event]
-    with SimpleEventHandling {
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[SpaceCategoryEntity.Event] {
 
-  def buildHandler() =
-    readSide
-      .builder[SpaceCategoryEntity.Event](readSideId)
-      .setGlobalPrepare(indexDao.createEntityIndex)
-      .setEventHandler[SpaceCategoryEntity.CategoryCreated](handle(indexDao.createCategory))
-      .setEventHandler[SpaceCategoryEntity.CategoryUpdated](handle(indexDao.updateCategory))
-      .setEventHandler[SpaceCategoryEntity.CategoryDeleted](handle(indexDao.deleteCategory))
-      .build()
+  override val projectionName: String = readSideId
+  override val tags: Seq[String] = Tagger.fromEventName[SpaceCategoryEntity.Event](10).allTags
 
-  def aggregateTags = SpaceCategoryEntity.Event.Tag.allTags
+  override def process(envelope: EventEnvelope[SpaceCategoryEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: SpaceCategoryEntity.CategoryCreated => indexDao.createCategory(evt).map(_ => Done)
+      case evt: SpaceCategoryEntity.CategoryUpdated => indexDao.updateCategory(evt).map(_ => Done)
+      case evt: SpaceCategoryEntity.CategoryDeleted => indexDao.deleteCategory(evt).map(_ => Done)
+      case _ => Future.successful(Done)
+    }
 }

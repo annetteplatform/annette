@@ -16,29 +16,31 @@
 
 package biz.lobachev.annette.cms.impl.blogs.category
 
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import com.lightbend.lagom.scaladsl.persistence.ReadSideProcessor
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
+import biz.lobachev.annette.cms.impl.blogs.category.dao.BlogCategoryDbDao
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
-class BlogCategoryDbEventProcessor(
-  readSide: CassandraReadSide,
-  dbDao: dao.BlogCategoryDbDao,
+private[impl] class BlogCategoryDbEventProcessor(
+  dbDao: BlogCategoryDbDao,
   readSideId: String
-)(implicit ec: ExecutionContext)
-    extends ReadSideProcessor[BlogCategoryEntity.Event]
-    with SimpleEventHandling {
+)(implicit
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[BlogCategoryEntity.Event] {
 
-  def buildHandler() =
-    readSide
-      .builder[BlogCategoryEntity.Event](readSideId)
-      .setGlobalPrepare(dbDao.createTables)
-      .setEventHandler[BlogCategoryEntity.CategoryCreated](handle(dbDao.createCategory))
-      .setEventHandler[BlogCategoryEntity.CategoryUpdated](handle(dbDao.updateCategory))
-      .setEventHandler[BlogCategoryEntity.CategoryDeleted](handle(dbDao.deleteCategory))
-      .build()
+  override val projectionName: String = readSideId
+  override val tags: Seq[String] = Tagger.fromEventName[BlogCategoryEntity.Event](10).allTags
 
-  def aggregateTags = BlogCategoryEntity.Event.Tag.allTags
-
+  override def process(envelope: EventEnvelope[BlogCategoryEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: BlogCategoryEntity.CategoryCreated => dbDao.createCategory(evt).map(_ => Done)
+      case evt: BlogCategoryEntity.CategoryUpdated => dbDao.updateCategory(evt).map(_ => Done)
+      case evt: BlogCategoryEntity.CategoryDeleted => dbDao.deleteCategory(evt).map(_ => Done)
+      case _ => Future.successful(Done)
+    }
 }

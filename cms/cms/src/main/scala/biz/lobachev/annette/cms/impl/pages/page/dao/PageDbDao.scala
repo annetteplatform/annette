@@ -16,30 +16,37 @@
 
 package biz.lobachev.annette.cms.impl.pages.page.dao
 
-import akka.Done
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Sink, Source}
+import org.apache.pekko.Done
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.cms.api.common.article.{Metric, PublicationStatus}
 import biz.lobachev.annette.cms.api.content.Widget
 import biz.lobachev.annette.cms.api.common.article.PublicationStatus.PublicationStatus
 import biz.lobachev.annette.cms.api.pages.page._
 import biz.lobachev.annette.cms.impl.pages.page.PageEntity
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
+import com.typesafe.config.Config
+import io.getquill.CassandraContextConfig
 
 import java.time.OffsetDateTime
 import scala.collection.immutable.{Seq, _}
 import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class PageDbDao(
-  override val session: CassandraSession
+  config: Config
 )(implicit
   ec: ExecutionContext,
   materializer: Materializer
 ) extends CassandraQuillDao {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -65,8 +72,8 @@ private[impl] class PageDbDao(
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-      _ <- session.executeCreateTable(
+    Future {
+      ctx.session.execute(
              CassandraTableBuilder("pages")
                .column("id", Text, true)
                .column("space_id", Text)
@@ -81,7 +88,7 @@ private[impl] class PageDbDao(
                .build
            )
 
-      _ <- session.executeCreateTable(
+      ctx.session.execute(
              CassandraTableBuilder("page_widgets")
                .column("page_id", Text)
                .column("widget_id", Text)
@@ -91,7 +98,7 @@ private[impl] class PageDbDao(
                .withPrimaryKey("page_id", "widget_id")
                .build
            )
-      _ <- session.executeCreateTable(
+      ctx.session.execute(
              CassandraTableBuilder("page_targets")
                .column("page_id", Text)
                .column("principal", Text)
@@ -99,14 +106,14 @@ private[impl] class PageDbDao(
                .build
            )
 
-      _ <- session.executeCreateTable(
+      ctx.session.execute(
              CassandraTableBuilder("page_likes")
                .column("page_id", Text)
                .column("principal", Text)
                .withPrimaryKey("page_id", "principal")
                .build
            )
-      _ <- session.executeCreateTable(
+      ctx.session.execute(
              CassandraTableBuilder("page_views")
                .column("page_id", Text)
                .column("principal", Text)
@@ -115,7 +122,9 @@ private[impl] class PageDbDao(
                .build
            )
 
-    } yield Done
+      Done
+    }
+
   }
 
   def createPage(event: PageEntity.PageCreated) = {
@@ -384,7 +393,7 @@ private[impl] class PageDbDao(
                           )
                           .size
                       )
-    } yield maybeCount.map(_ > 0).getOrElse(false)
+    } yield maybeCount > 0
 
   def getPageViews(payload: GetPageViewsPayload): Future[Seq[Page]] =
     for {
@@ -414,30 +423,37 @@ private[impl] class PageDbDao(
 
   // ***************************** metrics update *****************************
 
-  def viewPage(id: PageId, principal: AnnettePrincipal): Future[Done] =
-    session
-      .executeWrite(
+  def viewPage(id: PageId, principal: AnnettePrincipal): Future[Done] = {
+    val stmt = ctx.session
+      .prepare(
         """UPDATE page_views SET views = views + 1
-   WHERE page_id = ? AND principal = ? """,
-        id,
-        principal.code
+   WHERE page_id = ? AND principal = ? """
       )
-      .map(_ => Done)
+      .bind(id, principal.code)
+    Future {
+      ctx.session.execute(stmt)
+      Done
+    }
+  }
 
   def likePage(id: PageId, principal: AnnettePrincipal): Future[Done] =
-    ctx.run(
-      pageLikeSchema.insert(
-        lift(
-          PageLikeRecord(
-            pageId = id,
-            principal = principal
-          )
-        )
-      )
-    )
+    for {
+      _ <- ctx.run(
+             pageLikeSchema.insert(
+               lift(
+                 PageLikeRecord(
+                   pageId = id,
+                   principal = principal
+                 )
+               )
+             )
+           )
+    } yield Done
 
   def unlikePage(id: PageId, principal: AnnettePrincipal): Future[Done] =
-    ctx.run(pageLikeSchema.filter(r => r.pageId == lift(id) && r.principal == lift(principal)).delete)
+    for {
+      _ <- ctx.run(pageLikeSchema.filter(r => r.pageId == lift(id) && r.principal == lift(principal)).delete)
+    } yield Done
 
   // ***************************** metrics *****************************
 
@@ -461,7 +477,7 @@ private[impl] class PageDbDao(
                           .filter(b => b.pageId == lift(id))
                           .size
                       )
-    } yield maybeCount.map(_.toInt).getOrElse(0)
+    } yield maybeCount.toInt
 
   private def getPageLikesCount(id: PageId): Future[Int] =
     for {
@@ -471,7 +487,7 @@ private[impl] class PageDbDao(
                           .filter(b => b.pageId == lift(id))
                           .size
                       )
-    } yield maybeCount.map(_.toInt).getOrElse(0)
+    } yield maybeCount.toInt
 
   private def getPageLikedByMe(id: PageId, principal: AnnettePrincipal): Future[Boolean] =
     for {

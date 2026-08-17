@@ -16,9 +16,9 @@
 
 package biz.lobachev.annette.cms.impl.pages.category
 
-import akka.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityTypeKey}
-import akka.stream.Materializer
-import com.lightbend.lagom.scaladsl.persistence.cassandra.{CassandraReadSide, CassandraSession}
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.cluster.sharding.typed.scaladsl.{ClusterSharding, EntityTypeKey}
+import org.apache.pekko.stream.Materializer
 import com.sksamuel.elastic4s.ElasticClient
 import com.typesafe.config.Config
 
@@ -33,15 +33,15 @@ class SpaceCategoryProvider(
 
   val typeKey: EntityTypeKey[SpaceCategoryEntity.Command] = EntityTypeKey[SpaceCategoryEntity.Command](typeKeyName)
 
-  def createDbDao(session: CassandraSession, ec: ExecutionContext): dao.SpaceCategoryDbDao =
-    new dao.SpaceCategoryDbDao(session)(ec)
+  def createDbDao(config: Config, ec: ExecutionContext): dao.SpaceCategoryDbDao =
+    new dao.SpaceCategoryDbDao(config)(ec)
 
   def createDbProcessor(
-    readSide: CassandraReadSide,
     dbDao: dao.SpaceCategoryDbDao,
-    ec: ExecutionContext
+    ec: ExecutionContext,
+    system: ActorSystem[_]
   ): SpaceCategoryDbEventProcessor =
-    new SpaceCategoryDbEventProcessor(readSide, dbDao, dbReadSideId)(ec)
+    new SpaceCategoryDbEventProcessor(dbDao, dbReadSideId)(system, ec)
 
   def createIndexDao(
     elasticClient: ElasticClient,
@@ -50,11 +50,11 @@ class SpaceCategoryProvider(
     new dao.SpaceCategoryIndexDao(elasticClient, configPath)(ec)
 
   def createIndexProcessor(
-    readSide: CassandraReadSide,
     indexDao: dao.SpaceCategoryIndexDao,
-    ec: ExecutionContext
+    ec: ExecutionContext,
+    system: ActorSystem[_]
   ): SpaceCategoryIndexEventProcessor =
-    new SpaceCategoryIndexEventProcessor(readSide, indexDao, indexReadSideId)(ec)
+    new SpaceCategoryIndexEventProcessor(indexDao, indexReadSideId)(system, ec)
 
   def createEntityService(
     clusterSharding: ClusterSharding,

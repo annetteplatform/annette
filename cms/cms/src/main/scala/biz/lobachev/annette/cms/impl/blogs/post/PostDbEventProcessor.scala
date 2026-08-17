@@ -16,39 +16,41 @@
 
 package biz.lobachev.annette.cms.impl.blogs.post
 
+import biz.lobachev.annette.microservice_core.pekko.event_processing.Tagger
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.cms.impl.blogs.post.dao.PostDbDao
-import biz.lobachev.annette.microservice_core.event_processing.SimpleEventHandling
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraReadSide
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEventTag, ReadSideProcessor}
+import org.apache.pekko.Done
+import org.apache.pekko.actor.typed.ActorSystem
+import org.apache.pekko.projection.eventsourced.EventEnvelope
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class PostDbEventProcessor(
-  readSide: CassandraReadSide,
   dbDao: PostDbDao
-)(implicit ec: ExecutionContext)
-    extends ReadSideProcessor[PostEntity.Event]
-    with SimpleEventHandling {
+)(implicit
+  val system: ActorSystem[_],
+  override val ec: ExecutionContext
+) extends ProjectionBase[PostEntity.Event] {
 
-  def buildHandler(): ReadSideProcessor.ReadSideHandler[PostEntity.Event] =
-    readSide
-      .builder[PostEntity.Event]("post-cas")
-      .setGlobalPrepare(dbDao.createTables)
-      .setEventHandler[PostEntity.PostCreated](handle(dbDao.createPost))
-      .setEventHandler[PostEntity.PostFeaturedUpdated](handle(dbDao.updatePostFeatured))
-      .setEventHandler[PostEntity.PostAuthorUpdated](handle(dbDao.updatePostAuthor))
-      .setEventHandler[PostEntity.PostTitleUpdated](handle(dbDao.updatePostTitle))
-      .setEventHandler[PostEntity.ContentSettingsUpdated](handle(dbDao.updateContentSettings))
-      .setEventHandler[PostEntity.PostWidgetUpdated](handle(dbDao.updatePostWidget))
-      .setEventHandler[PostEntity.WidgetOrderChanged](handle(dbDao.changeWidgetOrder))
-      .setEventHandler[PostEntity.WidgetDeleted](handle(dbDao.deleteWidget))
-      .setEventHandler[PostEntity.PostPublicationTimestampUpdated](handle(dbDao.updatePostPublicationTimestamp))
-      .setEventHandler[PostEntity.PostPublished](handle(dbDao.publishPost))
-      .setEventHandler[PostEntity.PostUnpublished](handle(dbDao.unpublishPost))
-      .setEventHandler[PostEntity.PostTargetPrincipalAssigned](handle(dbDao.assignPostTargetPrincipal))
-      .setEventHandler[PostEntity.PostTargetPrincipalUnassigned](handle(dbDao.unassignPostTargetPrincipal))
-      .setEventHandler[PostEntity.PostDeleted](handle(dbDao.deletePost))
-      .build()
+  override val projectionName: String = "post-cas"
+  override val tags: Seq[String] = Tagger.fromEventName[PostEntity.Event](10).allTags
 
-  def aggregateTags: Set[AggregateEventTag[PostEntity.Event]] = PostEntity.Event.Tag.allTags
+  override def process(envelope: EventEnvelope[PostEntity.Event]): Future[Done] =
+    envelope.event match {
+      case evt: PostEntity.PostCreated => dbDao.createPost(evt).map(_ => Done)
+      case evt: PostEntity.PostFeaturedUpdated => dbDao.updatePostFeatured(evt).map(_ => Done)
+      case evt: PostEntity.PostAuthorUpdated => dbDao.updatePostAuthor(evt).map(_ => Done)
+      case evt: PostEntity.PostTitleUpdated => dbDao.updatePostTitle(evt).map(_ => Done)
+      case evt: PostEntity.ContentSettingsUpdated => dbDao.updateContentSettings(evt).map(_ => Done)
+      case evt: PostEntity.PostWidgetUpdated => dbDao.updatePostWidget(evt).map(_ => Done)
+      case evt: PostEntity.WidgetOrderChanged => dbDao.changeWidgetOrder(evt).map(_ => Done)
+      case evt: PostEntity.WidgetDeleted => dbDao.deleteWidget(evt).map(_ => Done)
+      case evt: PostEntity.PostPublicationTimestampUpdated => dbDao.updatePostPublicationTimestamp(evt).map(_ => Done)
+      case evt: PostEntity.PostPublished => dbDao.publishPost(evt).map(_ => Done)
+      case evt: PostEntity.PostUnpublished => dbDao.unpublishPost(evt).map(_ => Done)
+      case evt: PostEntity.PostTargetPrincipalAssigned => dbDao.assignPostTargetPrincipal(evt).map(_ => Done)
+      case evt: PostEntity.PostTargetPrincipalUnassigned => dbDao.unassignPostTargetPrincipal(evt).map(_ => Done)
+      case evt: PostEntity.PostDeleted => dbDao.deletePost(evt).map(_ => Done)
+      case _ => Future.successful(Done)
+    }
 }

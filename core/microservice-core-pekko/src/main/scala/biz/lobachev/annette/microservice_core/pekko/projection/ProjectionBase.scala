@@ -70,7 +70,14 @@ trait ProjectionBase[E] {
    * `001-decisions.md` §B the offset store is shared with Pekko Persistence Cassandra.
    */
   def sourceProvider(tag: String): SourceProvider[Offset, EventEnvelope[E]] =
-    EventSourcedProvider.eventsByTag[E](system, readJournalPluginId = "pekko.persistence.cassandra.query.journal", tag = tag)
+    EventSourcedProvider.eventsByTag[E](
+      system,
+      // Read-journal plugin id per pekko-persistence-cassandra's reference.conf
+      // (verified at runtime in slice 011): the plugin path is
+      // "pekko.persistence.cassandra.query" — the trailing ".journal" is wrong.
+      readJournalPluginId = "pekko.persistence.cassandra.query",
+      tag = tag
+    )
 
   /**
    * Construct (but do not start) the at-least-once Cassandra projection for a single tag.

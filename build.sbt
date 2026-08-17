@@ -490,32 +490,30 @@ lazy val `cms-api` = (project in file("cms/cms-api"))
   .settings(
     libraryDependencies ++= Seq(
       lagomScaladslApi,
-      lagomScaladslTestKit,
       Dependencies.chimney
     ) ++ Dependencies.tests ++
-      Dependencies.alpakkaS3
+      Dependencies.alpakkaS3 // gateway still wires the akka/alpakka CmsStorage (until slice 013)
   )
   .settings(annetteSettings: _*)
   .dependsOn(`core`)
 
 def cmsProject(pr: Project) =
   pr
-    .enablePlugins(LagomScala)
+    .enablePlugins(JavaAppPackaging)
     .settings(
-      libraryDependencies ++= Seq(
-        lagomScaladslPersistenceCassandra,
-        lagomScaladslKafkaClient,
-        lagomScaladslTestKit,
-        Dependencies.macwire,
-        Dependencies.chimney
-      ) ++ Dependencies.tests ++ Dependencies.lagomAkkaDiscovery
+      libraryDependencies ++= Dependencies.pekkoCore
+        ++ Dependencies.pekkoPersistenceCassandra
+        ++ Dependencies.pekkoProjection
+        ++ Dependencies.pekkoConnectorsS3 // replaces alpakkaS3 (slice 011)
+        ++ Seq(Dependencies.macwire, Dependencies.chimney)
+        ++ Dependencies.quillPekko
+        ++ Dependencies.tests
     )
-    .settings(lagomForkedTestSettings: _*)
-    .settings(Test / fork := true) // survives slice 013 (which removes lagomForkedTestSettings)
+    .settings(Test / fork := true)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`cms-api`, `microservice-core`)
+    .dependsOn(`cms-api`, `microservice-core-pekko`, `microservice-core`)
 
 lazy val `cms-api-gateway` = (project in file("api-gateway/cms-api-gateway"))
   .settings(

@@ -16,26 +16,33 @@
 
 package biz.lobachev.annette.cms.impl.pages.space.dao
 
-import akka.Done
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Sink, Source}
+import org.apache.pekko.Done
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.cms.api.pages.space._
 import biz.lobachev.annette.cms.impl.pages.space.SpaceEntity
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
+import com.typesafe.config.Config
+import io.getquill.CassandraContextConfig
 
 import scala.collection.immutable.{Seq, _}
 import scala.concurrent.{ExecutionContext, Future}
 
 class SpaceDbDao(
-  override val session: CassandraSession
+  config: Config
 )(implicit
   val ec: ExecutionContext,
   val materializer: Materializer
 ) extends CassandraQuillDao {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -54,33 +61,34 @@ class SpaceDbDao(
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("spaces")
-               .column("id", Text, true)
-               .column("name", Text)
-               .column("description", Text)
-               .column("category_id", Text)
-               .column("active", Boolean)
-               .column("updated_at", Timestamp)
-               .column("updated_by", Text)
-               .build
-           )
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("space_authors")
-               .column("space_id", Text)
-               .column("principal", Text)
-               .withPrimaryKey("space_id", "principal")
-               .build
-           )
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("space_targets")
-               .column("space_id", Text)
-               .column("principal", Text)
-               .withPrimaryKey("space_id", "principal")
-               .build
-           )
-    } yield Done
+    Future {
+      ctx.session.execute(
+        CassandraTableBuilder("spaces")
+          .column("id", Text, true)
+          .column("name", Text)
+          .column("description", Text)
+          .column("category_id", Text)
+          .column("active", Boolean)
+          .column("updated_at", Timestamp)
+          .column("updated_by", Text)
+          .build
+      )
+      ctx.session.execute(
+        CassandraTableBuilder("space_authors")
+          .column("space_id", Text)
+          .column("principal", Text)
+          .withPrimaryKey("space_id", "principal")
+          .build
+      )
+      ctx.session.execute(
+        CassandraTableBuilder("space_targets")
+          .column("space_id", Text)
+          .column("principal", Text)
+          .withPrimaryKey("space_id", "principal")
+          .build
+      )
+      Done
+    }
   }
 
   def createSpace(event: SpaceEntity.SpaceCreated) = {
@@ -330,7 +338,7 @@ class SpaceDbDao(
                           )
                           .size
                       )
-    } yield maybeCount.map(_ > 0).getOrElse(false)
+    } yield maybeCount > 0
 
   def canAccessToSpace(id: SpaceId, principals: Set[AnnettePrincipal]): Future[Boolean] =
     for {
@@ -343,6 +351,6 @@ class SpaceDbDao(
                           )
                           .size
                       )
-    } yield maybeCount.map(_ > 0).getOrElse(false)
+    } yield maybeCount > 0
 
 }

@@ -16,25 +16,31 @@
 
 package biz.lobachev.annette.cms.impl.files.dao
 
-import akka.Done
-import biz.lobachev.annette.cms.api.CmsStorage
+import org.apache.pekko.Done
+import biz.lobachev.annette.cms.impl.CmsStoragePekko
 import biz.lobachev.annette.cms.api.files.FileTypes.FileType
 import biz.lobachev.annette.cms.api.files.{FileDescriptor, FileTypes}
 import biz.lobachev.annette.cms.impl.files.FileEntity
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
+import com.typesafe.config.Config
+import io.getquill.CassandraContextConfig
 
 import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class FileDbDao(
-  override val session: CassandraSession,
-  cmsStorage: CmsStorage
+  config: Config,
+  cmsStorage: CmsStoragePekko
 )(implicit
   ec: ExecutionContext
-//  materializer: Materializer
 ) extends CassandraQuillDao {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -51,27 +57,29 @@ private[impl] class FileDbDao(
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-      _ <- session.executeCreateTable(
-             CassandraTableBuilder("files")
-               .column("object_id", Text)
-               .column("file_type", Text)
-               .column("file_id", Text)
-               .column("filename", Text)
-               .column("content_type", Text)
-               .column("updated_at", Timestamp)
-               .column("updated_by", Text)
-               .withPrimaryKey("object_id", "file_type", "file_id")
-               .build
-           )
-
-    } yield Done
+    Future {
+      ctx.session.execute(
+        CassandraTableBuilder("files")
+          .column("object_id", Text)
+          .column("file_type", Text)
+          .column("file_id", Text)
+          .column("filename", Text)
+          .column("content_type", Text)
+          .column("updated_at", Timestamp)
+          .column("updated_by", Text)
+          .withPrimaryKey("object_id", "file_type", "file_id")
+          .build
+      )
+      Done
+    }
   }
 
   def storeFile(event: FileEntity.FileStored): Future[Done] =
-    ctx.run(
-      fileSchema.insert(lift(event.transformInto[FileDescriptor]))
-    )
+    for {
+      _ <- ctx.run(
+             fileSchema.insert(lift(event.transformInto[FileDescriptor]))
+           )
+    } yield Done
 
   def removeFile(event: FileEntity.FileRemoved): Future[Done] =
     for {

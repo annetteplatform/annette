@@ -16,9 +16,9 @@
 
 package biz.lobachev.annette.cms.impl.blogs.post.dao
 
-import akka.Done
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Sink, Source}
+import org.apache.pekko.Done
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.cms.api.content.ContentTypes.ContentType
 import biz.lobachev.annette.cms.api.common.article.PublicationStatus.PublicationStatus
 import biz.lobachev.annette.cms.api.blogs.post._
@@ -26,10 +26,11 @@ import biz.lobachev.annette.cms.api.common.article.{Metric, PublicationStatus}
 import biz.lobachev.annette.cms.api.content.{ContentTypes, Widget}
 import biz.lobachev.annette.cms.impl.blogs.post.PostEntity
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
+import com.typesafe.config.Config
+import io.getquill.CassandraContextConfig
 import play.api.libs.json.Json
 
 import java.time.OffsetDateTime
@@ -37,11 +38,17 @@ import scala.collection.immutable.{Seq, _}
 import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class PostDbDao(
-  override val session: CassandraSession
+  config: Config
 )(implicit
   ec: ExecutionContext,
   materializer: Materializer
 ) extends CassandraQuillDao {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -72,8 +79,8 @@ private[impl] class PostDbDao(
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-      _ <- session.executeCreateTable(
+    Future {
+      ctx.session.execute(
              CassandraTableBuilder("posts")
                .column("id", Text, true)
                .column("blog_id", Text)
@@ -91,7 +98,7 @@ private[impl] class PostDbDao(
                .build
            )
 
-      _ <- session.executeCreateTable(
+      ctx.session.execute(
              CassandraTableBuilder("post_widgets")
                .column("post_id", Text)
                .column("content_type", Text)
@@ -102,7 +109,7 @@ private[impl] class PostDbDao(
                .withPrimaryKey("post_id", "content_type", "widget_id")
                .build
            )
-      _ <- session.executeCreateTable(
+      ctx.session.execute(
              CassandraTableBuilder("post_targets")
                .column("post_id", Text)
                .column("principal", Text)
@@ -110,14 +117,14 @@ private[impl] class PostDbDao(
                .build
            )
 
-      _ <- session.executeCreateTable(
+      ctx.session.execute(
              CassandraTableBuilder("post_likes")
                .column("post_id", Text)
                .column("principal", Text)
                .withPrimaryKey("post_id", "principal")
                .build
            )
-      _ <- session.executeCreateTable(
+      ctx.session.execute(
              CassandraTableBuilder("post_views")
                .column("post_id", Text)
                .column("principal", Text)
@@ -126,7 +133,9 @@ private[impl] class PostDbDao(
                .build
            )
 
-    } yield Done
+      Done
+    }
+
   }
 
   def createPost(event: PostEntity.PostCreated) = {
@@ -502,7 +511,7 @@ private[impl] class PostDbDao(
                           )
                           .size
                       )
-    } yield maybeCount.map(_ > 0).getOrElse(false)
+    } yield maybeCount > 0
 
   def getPostViews(payload: GetPostViewsPayload): Future[Seq[Post]] =
     for {
@@ -533,30 +542,37 @@ private[impl] class PostDbDao(
 
   // ***************************** metrics update *****************************
 
-  def viewPost(id: PostId, principal: AnnettePrincipal): Future[Done] =
-    session
-      .executeWrite(
+  def viewPost(id: PostId, principal: AnnettePrincipal): Future[Done] = {
+    val stmt = ctx.session
+      .prepare(
         """UPDATE post_views SET views = views + 1
-   WHERE post_id = ? AND principal = ? """,
-        id,
-        principal.code
+   WHERE post_id = ? AND principal = ? """
       )
-      .map(_ => Done)
+      .bind(id, principal.code)
+    Future {
+      ctx.session.execute(stmt)
+      Done
+    }
+  }
 
   def likePost(id: PostId, principal: AnnettePrincipal): Future[Done] =
-    ctx.run(
-      postLikeSchema.insert(
-        lift(
-          PostLikeRecord(
-            postId = id,
-            principal = principal
-          )
-        )
-      )
-    )
+    for {
+      _ <- ctx.run(
+             postLikeSchema.insert(
+               lift(
+                 PostLikeRecord(
+                   postId = id,
+                   principal = principal
+                 )
+               )
+             )
+           )
+    } yield Done
 
   def unlikePost(id: PostId, principal: AnnettePrincipal): Future[Done] =
-    ctx.run(postLikeSchema.filter(r => r.postId == lift(id) && r.principal == lift(principal)).delete)
+    for {
+      _ <- ctx.run(postLikeSchema.filter(r => r.postId == lift(id) && r.principal == lift(principal)).delete)
+    } yield Done
 
   // ***************************** metrics *****************************
 
@@ -580,7 +596,7 @@ private[impl] class PostDbDao(
                           .filter(b => b.postId == lift(id))
                           .size
                       )
-    } yield maybeCount.map(_.toInt).getOrElse(0)
+    } yield maybeCount.toInt
 
   private def getPostLikesCount(id: PostId): Future[Int] =
     for {
@@ -590,7 +606,7 @@ private[impl] class PostDbDao(
                           .filter(b => b.postId == lift(id))
                           .size
                       )
-    } yield maybeCount.map(_.toInt).getOrElse(0)
+    } yield maybeCount.toInt
 
   private def getPostLikedByMe(id: PostId, principal: AnnettePrincipal): Future[Boolean] =
     for {

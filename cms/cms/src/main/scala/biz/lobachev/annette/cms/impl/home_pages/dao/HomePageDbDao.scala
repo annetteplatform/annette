@@ -16,24 +16,31 @@
 
 package biz.lobachev.annette.cms.impl.home_pages.dao
 
-import akka.Done
-import akka.stream.Materializer
+import org.apache.pekko.Done
+import org.apache.pekko.stream.Materializer
 import biz.lobachev.annette.cms.api.home_pages.{HomePage, HomePageId}
 import biz.lobachev.annette.cms.impl.home_pages.HomePageEntity
-import biz.lobachev.annette.microservice_core.db.{CassandraQuillDao, CassandraTableBuilder}
-import com.lightbend.lagom.scaladsl.persistence.cassandra.CassandraSession
+import biz.lobachev.annette.microservice_core.pekko.db.{CassandraQuillDao, CassandraTableBuilder}
 import biz.lobachev.annette.core.utils.ChimneyCommons._
 import io.scalaland.chimney.dsl._
+import com.typesafe.config.Config
+import io.getquill.CassandraContextConfig
 
 import scala.collection.immutable.{Seq, _}
 import scala.concurrent.{ExecutionContext, Future}
 
 class HomePageDbDao(
-  override val session: CassandraSession
+  config: Config
 )(implicit
   val ec: ExecutionContext,
   val materializer: Materializer
 ) extends CassandraQuillDao {
+
+  override protected def cassandraContextConfig: CassandraContextConfig =
+    if (config.hasPath("cassandra-quill"))
+      CassandraContextConfig(config.getConfig("cassandra-quill"))
+    else
+      CassandraContextConfig(config.getConfig("cassandra.default"))
 
   import ctx._
 
@@ -46,8 +53,8 @@ class HomePageDbDao(
 
   def createTables(): Future[Done] = {
     import CassandraTableBuilder.types._
-    for {
-      _ <- session.executeCreateTable(
+    Future {
+      ctx.session.execute(
              CassandraTableBuilder("home_pages")
                .column("id", Text, true)
                .column("application_id", Text)
@@ -59,7 +66,9 @@ class HomePageDbDao(
                .build
            )
 
-    } yield Done
+      Done
+    }
+
   }
 
   def assignHomePage(event: HomePageEntity.HomePageAssigned) = {
