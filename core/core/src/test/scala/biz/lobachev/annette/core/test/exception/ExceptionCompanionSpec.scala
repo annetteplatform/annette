@@ -6,7 +6,7 @@ import biz.lobachev.annette.core.exception.{
   AnnetteTransportExceptionCompanion2,
   AnnetteTransportExceptionCompanion3
 }
-import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
+import biz.lobachev.annette.core.exception.TransportErrorCode
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 

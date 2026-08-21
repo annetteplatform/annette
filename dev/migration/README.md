@@ -95,8 +95,8 @@ Slices 005–012 may run in any order after 004, but all must land before 013.
 | 009  | done       | `4a76f57f` | service-catalog. Two-trait pattern; Lagom wrappers kept for 013. |
 | 010  | done       | `7c34bcb8` | application. Two-trait pattern; Lagom wrappers kept for 013. |
 | 011  | done       | `9ca087bd` | cms. First live-boot slice; fixed shared latent runtime gaps (deps, `CassandraQuillDao`, `ProjectionBase` read-journal id, events-by-tag config paths). |
-| 012  | done       | this commit | bpm-repository. Standalone (no cluster); k8s `service-name` copy-paste bug fixed; pre-existing spec breakage (missing `processDefinitionType`/`processDefinition` args) repaired — all 4 specs green; live gRPC smoke passed. |
-| 013  | pending    | —          |       |
+| 012  | done       | `cd9c58f1` | bpm-repository. Standalone (no cluster); k8s `service-name` copy-paste bug fixed; pre-existing spec breakage (missing `processDefinitionType`/`processDefinition` args) repaired — all 4 specs green; live gRPC smoke passed. |
+| 013  | done       | this commit | Final cleanup: lagom-sbt-plugin + all Lagom deps/configs/logback refs removed; gateway Play 3 swap (9 gRPC clients, `clientFor` name fix); `IgnitionGrpcClient`; runtime gaps fixed repo-wide (cluster self-join, `pekko.http.server.preview.enable-http2`, nested `cassandra-quill` blocks, persistence autocreate + `datastax-java-driver`, `ProjectionBase.initAll` read-journal init, DbDao `createTables` calls, canonical `TransportErrorCode` rehydration); E2E smoke 8/8 REST categories 200; demo-ignition seeds end-to-end; all 119 tests green. |
 
 ## Codebase corrections baked into this playbook
 

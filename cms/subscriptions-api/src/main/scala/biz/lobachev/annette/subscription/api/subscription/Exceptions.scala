@@ -18,7 +18,7 @@ package biz.lobachev.annette.subscription.api.subscription
 
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionCompanion3
 
-import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
+import biz.lobachev.annette.core.exception.TransportErrorCode
 
 object SubscriptionNotFound extends AnnetteTransportExceptionCompanion3 {
   val ErrorCode       = TransportErrorCode.NotFound

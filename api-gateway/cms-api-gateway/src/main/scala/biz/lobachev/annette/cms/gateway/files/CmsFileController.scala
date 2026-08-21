@@ -16,9 +16,9 @@
 
 package biz.lobachev.annette.cms.gateway.files
 
-import akka.http.scaladsl.model.DateTime
-import akka.stream.Materializer
-import akka.util.ByteString
+import org.apache.pekko.http.scaladsl.model.DateTime
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.util.ByteString
 import biz.lobachev.annette.api_gateway_core.authentication.{AuthenticatedRequest, MaybeCookieAuthenticatedAction}
 import biz.lobachev.annette.cms.api.common.CanAccessToEntityPayload
 import biz.lobachev.annette.cms.api.files.FileTypes

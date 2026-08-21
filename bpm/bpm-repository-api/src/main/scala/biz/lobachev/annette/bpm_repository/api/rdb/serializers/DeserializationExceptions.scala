@@ -21,7 +21,7 @@ import biz.lobachev.annette.core.exception.{
   AnnetteTransportExceptionCompanion2,
   AnnetteTransportExceptionCompanion4
 }
-import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
+import biz.lobachev.annette.core.exception.TransportErrorCode
 
 object DeserializationStringMaximumLengthExceed extends AnnetteTransportExceptionCompanion4 {
   val ErrorCode       = TransportErrorCode.BadRequest

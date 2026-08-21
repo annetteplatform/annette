@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.cms.gateway.blogs
 
-import akka.stream.Materializer
+import org.apache.pekko.stream.Materializer
 import biz.lobachev.annette.api_gateway_core.authentication.{
   AuthenticatedAction,
   AuthenticatedRequest,

@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.cms.api
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.cms.api.blogs.blog._
 import biz.lobachev.annette.cms.api.blogs.post._
 import biz.lobachev.annette.cms.api.common.article.{

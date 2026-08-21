@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.core.exception
 
-import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
+import biz.lobachev.annette.core.exception.TransportErrorCode
 
 object AnnetteTransportThrowable {
   val ANNETTE_THROWABLE = "annette.throwable"

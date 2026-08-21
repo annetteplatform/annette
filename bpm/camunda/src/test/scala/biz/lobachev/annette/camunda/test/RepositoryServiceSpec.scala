@@ -1,7 +1,7 @@
 package biz.lobachev.annette.camunda.test
 
-import akka.Done
-import akka.actor.ActorSystem
+import org.apache.pekko.Done
+import org.apache.pekko.actor.ActorSystem
 import biz.lobachev.annette.camunda.api.repository._
 import biz.lobachev.annette.camunda.api._
 import biz.lobachev.annette.camunda.impl.RepositoryServiceImpl

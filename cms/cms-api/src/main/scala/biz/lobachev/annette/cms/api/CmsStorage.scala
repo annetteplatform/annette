@@ -16,15 +16,15 @@
 
 package biz.lobachev.annette.cms.api
 
-import akka.actor.ActorSystem
-import akka.http.scaladsl.model.ContentType
-import akka.http.scaladsl.model.headers.ByteRange
-import akka.stream.Materializer
-import akka.stream.alpakka.s3.scaladsl.S3
-import akka.stream.alpakka.s3.{BucketAccess, MetaHeaders, MultipartUploadResult, ObjectMetadata}
-import akka.stream.scaladsl.{FileIO, Sink, Source}
-import akka.util.ByteString
-import akka.{Done, NotUsed}
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.http.scaladsl.model.ContentType
+import org.apache.pekko.http.scaladsl.model.headers.ByteRange
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.connectors.s3.scaladsl.S3
+import org.apache.pekko.stream.connectors.s3.{BucketAccess, MetaHeaders, MultipartUploadResult, ObjectMetadata}
+import org.apache.pekko.stream.scaladsl.{FileIO, Sink, Source}
+import org.apache.pekko.util.ByteString
+import org.apache.pekko.{Done, NotUsed}
 import biz.lobachev.annette.cms.api.files.FileTypes.FileType
 import biz.lobachev.annette.cms.api.files.{FileNotFound, StoreFilePayload}
 import com.typesafe.config.Config
@@ -92,11 +92,21 @@ class CmsStorage(
     fileType: FileType,
     fileId: String,
     range: Option[ByteRange] = None
-  ): Future[(Source[ByteString, NotUsed], ObjectMetadata)] =
-    S3.download(fileBucket, makeS3FileKey(objectId, fileType, fileId), range).runWith(Sink.head).map {
-      case Some((source, metadata)) => (source, metadata)
-      case None                     => throw FileNotFound(objectId, fileType.toString, fileId)
-    }
+  ): Future[(Source[ByteString, NotUsed], ObjectMetadata)] = {
+    // S3.getObject materializes to Future[ObjectMetadata]; preMaterialize lets us hand
+    // the data source to the caller while awaiting the metadata. A missing key fails
+    // the metadata future (the old alpakka download returned None → FileNotFound).
+    val (metadataF, data) = S3
+      .getObject(fileBucket, makeS3FileKey(objectId, fileType, fileId), range)
+      .preMaterialize()
+    metadataF
+      .map(metadata => (data, metadata))
+      .recover {
+        case ex: org.apache.pekko.stream.connectors.s3.S3Exception
+            if ex.code == "NoSuchKey" || ex.code == "NotFound" =>
+          throw FileNotFound(objectId, fileType.toString, fileId)
+      }
+  }
 
   def deleteFile(
     objectId: String,

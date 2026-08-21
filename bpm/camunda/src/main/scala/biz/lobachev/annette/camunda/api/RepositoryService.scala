@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.camunda.api
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.camunda.api.repository.{
   CreateDeploymentPayload,
   DeleteDeploymentPayload,

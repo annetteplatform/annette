@@ -1,6 +1,6 @@
 package biz.lobachev.annette.camunda.test
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import biz.lobachev.annette.camunda.api._
 import biz.lobachev.annette.camunda.api.external_task.{CompleteExternalTaskPayload, FetchAndLockQuery, TopicQuery}
 import biz.lobachev.annette.camunda.api.repository.CreateDeploymentPayload

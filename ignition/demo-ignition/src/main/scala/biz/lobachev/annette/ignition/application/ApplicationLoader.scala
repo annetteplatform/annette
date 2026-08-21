@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.ignition.application
 
-import biz.lobachev.annette.application.client.http.{ApplicationServiceLagomApi, ApplicationServiceLagomImpl}
+import biz.lobachev.annette.application.api.ApplicationServiceGrpcImpl
 import biz.lobachev.annette.ignition.application.loaders.{
   ApplicationEntityLoader,
   LanguageEntityLoader,
@@ -24,16 +24,14 @@ import biz.lobachev.annette.ignition.application.loaders.{
   TranslationJsonEntityLoader
 }
 import biz.lobachev.annette.ignition.core.config.{DefaultEntityLoaderConfig, DefaultServiceLoaderConfig}
-import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionLagomClient, ServiceLoader}
-import com.softwaremill.macwire.wire
+import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionGrpcClient, ServiceLoader}
 
 class ApplicationLoader(
-  val client: IgnitionLagomClient,
+  val client: IgnitionGrpcClient,
   val config: DefaultServiceLoaderConfig
 ) extends ServiceLoader[DefaultServiceLoaderConfig] {
 
-  lazy val serviceApi = client.serviceClient.implement[ApplicationServiceLagomApi]
-  lazy val service    = wire[ApplicationServiceLagomImpl]
+  lazy val service    = new ApplicationServiceGrpcImpl(client.applicationGrpcClient)
 
   override val name: String = "application"
 

@@ -20,6 +20,6 @@ import com.typesafe.config.Config
 
 trait ServiceLoaderFactory {
 
-  def create(client: IgnitionLagomClient, config: Config): ServiceLoader[_]
+  def create(client: IgnitionGrpcClient, config: Config): ServiceLoader[_]
 
 }

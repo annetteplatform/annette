@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.authorization.api
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.authorization.api.assignment._
 import biz.lobachev.annette.authorization.api.role._
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal

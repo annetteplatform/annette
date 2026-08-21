@@ -1,2 +1,0 @@
-# Play routes (HTTP/1.1)
-GET     /                    spike.hello.HelloController.index()

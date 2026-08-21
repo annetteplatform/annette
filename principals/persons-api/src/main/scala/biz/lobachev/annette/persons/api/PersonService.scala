@@ -15,7 +15,7 @@
  */
 
 package biz.lobachev.annette.persons.api
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.core.attribute.{AttributeMetadata, AttributeValues, UpdateAttributesPayload}
 import biz.lobachev.annette.core.model.PersonId
 import biz.lobachev.annette.core.model.indexing.FindResult

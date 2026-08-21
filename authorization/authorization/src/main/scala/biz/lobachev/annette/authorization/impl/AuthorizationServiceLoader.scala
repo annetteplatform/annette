@@ -17,11 +17,13 @@
 package biz.lobachev.annette.authorization.impl
 
 import biz.lobachev.annette.authorization.api.grpc.AuthorizationServiceHandler
+import biz.lobachev.annette.core.exception.AnnetteGrpcExceptionMapping
 import biz.lobachev.annette.authorization.impl.assignment._
 import biz.lobachev.annette.authorization.impl.assignment.dao.{AssignmentDbDao, AssignmentIndexDao}
 import biz.lobachev.annette.authorization.impl.role._
 import biz.lobachev.annette.authorization.impl.role.dao.{RoleDbDao, RoleIndexDao}
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import com.sksamuel.elastic4s.ElasticClient
 import com.typesafe.config.ConfigFactory
 import org.apache.pekko.actor.typed.scaladsl.Behaviors
@@ -29,13 +31,12 @@ import org.apache.pekko.actor.typed.ActorSystem
 import org.apache.pekko.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity}
 import org.apache.pekko.http.scaladsl.Http
 import org.apache.pekko.projection.ProjectionBehavior
-import org.apache.pekko.projection.cassandra.scaladsl.CassandraProjection
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.SystemMaterializer
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{Await, ExecutionContext}
-import scala.concurrent.duration._
+import scala.concurrent.duration.{Duration, _}
 
 /**
  * Pekko-based entrypoint for the authorization service. Replaces the LagomApplicationLoader.
@@ -59,6 +60,10 @@ object AuthorizationServiceMain {
     )
     val app = new AuthorizationServiceApp()
     app.run()(system)
+    // A service main must not return: sbt (and the packaged app) tear the JVM down
+    // once main completes. Block until the actor system terminates.
+    Await.ready(system.whenTerminated, Duration.Inf)
+    (): Unit
   }
 }
 
@@ -82,7 +87,12 @@ private[impl] class AuthorizationServiceApp() {
     val assignmentIndexDao = new AssignmentIndexDao(elasticClient)
 
     // ----- Pekko Projection offset_store tables (idempotent; per 001-decisions.md §B) -----
-    Await.result(CassandraProjection.createTablesIfNotExists(), 10.seconds)
+    // Idempotent read-side table creation (mirrors the cms loader pattern; without it
+    // every read-side query fails with "unconfigured table" on a fresh keyspace —
+    // verified at runtime in slice 013).
+    Await.result(roleDbDao.createTables(), 30.seconds)
+    Await.result(assignmentDbDao.createTables(), 30.seconds)
+    Await.result(ProjectionBase.initAll(), 30.seconds)
 
     // ----- Entity services -----
     val sharding = ClusterSharding(system)
@@ -116,7 +126,7 @@ private[impl] class AuthorizationServiceApp() {
 
     // ----- gRPC server binding -----
     val serviceApi = new AuthorizationServiceApiImpl(roleEntityService, assignmentEntityService, config)
-    val handler    = AuthorizationServiceHandler(serviceApi)
+    val handler    = AuthorizationServiceHandler(serviceApi, AnnetteGrpcExceptionMapping.serverHandlerOrDefault _)
 
     val httpHost = config.getString("annette.http.host")
     val httpPort = config.getInt("annette.http.port")

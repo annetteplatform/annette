@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.camunda.impl
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.camunda.api._
 import biz.lobachev.annette.camunda.api.external_task._
 import play.api.libs.json.{JsValue, Json}

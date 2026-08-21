@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.application.api
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.application.api.application._
 import biz.lobachev.annette.application.api.language._
 import biz.lobachev.annette.application.api.translation._

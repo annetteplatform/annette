@@ -17,7 +17,7 @@
 package biz.lobachev.annette.microservice_core.attribute
 
 import biz.lobachev.annette.core.exception.{AnnetteTransportExceptionCompanion2, AnnetteTransportExceptionCompanion3}
-import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
+import biz.lobachev.annette.core.exception.TransportErrorCode
 
 object AttributeConfigError extends AnnetteTransportExceptionCompanion2 {
   val ErrorCode       = TransportErrorCode.InternalServerError

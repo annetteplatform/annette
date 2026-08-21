@@ -17,7 +17,9 @@
 package biz.lobachev.annette.cms.impl
 
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.cms.api.{grpc => g}
+import biz.lobachev.annette.cms.api.CmsStorage
 import biz.lobachev.annette.cms.api.grpc.CmsServiceHandler
 import biz.lobachev.annette.cms.impl.blogs.blog.{BlogDbEventProcessor, BlogEntity, BlogEntityService, BlogIndexEventProcessor}
 import biz.lobachev.annette.cms.impl.blogs.blog.dao.{BlogDbDao, BlogIndexDao}
@@ -40,19 +42,19 @@ import biz.lobachev.annette.cms.impl.pages.space.{SpaceDbEventProcessor, SpaceEn
 import biz.lobachev.annette.cms.impl.pages.space.dao.{SpaceDbDao, SpaceIndexDao}
 import com.sksamuel.elastic4s.ElasticClient
 import com.typesafe.config.ConfigFactory
+import biz.lobachev.annette.core.exception.AnnetteGrpcExceptionMapping
 import org.apache.pekko.actor.typed.scaladsl.Behaviors
 import org.apache.pekko.actor.typed.ActorSystem
 import org.apache.pekko.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity}
 import org.apache.pekko.http.scaladsl.Http
 import org.apache.pekko.grpc.scaladsl.{ServerReflection, ServiceHandler}
 import org.apache.pekko.projection.ProjectionBehavior
-import org.apache.pekko.projection.cassandra.scaladsl.CassandraProjection
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.SystemMaterializer
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{Await, ExecutionContext}
-import scala.concurrent.duration._
+import scala.concurrent.duration.{Duration, _}
 
 object CmsServiceMain {
 
@@ -65,6 +67,10 @@ object CmsServiceMain {
     )
     val app = new CmsServiceApp()
     app.run()(system)
+    // A service main must not return: sbt (and the packaged app) tear the JVM down
+    // once main completes. Block until the actor system terminates.
+    Await.ready(system.whenTerminated, Duration.Inf)
+    (): Unit
   }
 }
 
@@ -82,7 +88,7 @@ private[impl] class CmsServiceApp() {
 
     // ************************** CMS Files **************************
 
-    val cmsStorage = new CmsStoragePekko(config, system.classicSystem, mat, ec)
+    val cmsStorage = new CmsStorage(config, system.classicSystem, mat, ec)
     val fileDbDao  = new FileDbDao(config, cmsStorage)
 
     // ************************** CMS Blogs **************************
@@ -136,7 +142,7 @@ private[impl] class CmsServiceApp() {
     Await.result(spaceDbDao.createTables(), 10.seconds)
     Await.result(pageDbDao.createTables(), 10.seconds)
     Await.result(homePageDbDao.createTables(), 10.seconds)
-    Await.result(CassandraProjection.createTablesIfNotExists(), 10.seconds)
+    Await.result(ProjectionBase.initAll(), 30.seconds)
 
     // ************************** entity services **************************
 
@@ -245,7 +251,7 @@ private[impl] class CmsServiceApp() {
     // D6: gRPC reflection enabled — concat the service handler with ServerReflection
     // so grpcurl/inspection tools work against the bound server.
     val handler = ServiceHandler.concatOrNotFound(
-      CmsServiceHandler.partial(serviceApi),
+      CmsServiceHandler.partial(serviceApi, g.CmsService.name, AnnetteGrpcExceptionMapping.serverHandlerOrDefault _),
       ServerReflection.partial(List(g.CmsService))(system)
     )
 

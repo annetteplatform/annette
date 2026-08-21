@@ -17,7 +17,7 @@
 package biz.lobachev.annette.cms.impl.files.dao
 
 import org.apache.pekko.Done
-import biz.lobachev.annette.cms.impl.CmsStoragePekko
+import biz.lobachev.annette.cms.api.CmsStorage
 import biz.lobachev.annette.cms.api.files.FileTypes.FileType
 import biz.lobachev.annette.cms.api.files.{FileDescriptor, FileTypes}
 import biz.lobachev.annette.cms.impl.files.FileEntity
@@ -31,7 +31,7 @@ import scala.concurrent.{ExecutionContext, Future}
 
 private[impl] class FileDbDao(
   config: Config,
-  cmsStorage: CmsStoragePekko
+  cmsStorage: CmsStorage
 )(implicit
   ec: ExecutionContext
 ) extends CassandraQuillDao {

@@ -17,7 +17,9 @@
 package biz.lobachev.annette.org_structure.impl
 
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.org_structure.api.grpc.OrgStructureServiceHandler
+import biz.lobachev.annette.core.exception.AnnetteGrpcExceptionMapping
 import biz.lobachev.annette.org_structure.impl.category._
 import biz.lobachev.annette.org_structure.impl.category.dao.{CategoryDbDao, CategoryIndexDao}
 import biz.lobachev.annette.org_structure.impl.hierarchy._
@@ -32,13 +34,12 @@ import org.apache.pekko.actor.typed.ActorSystem
 import org.apache.pekko.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity}
 import org.apache.pekko.http.scaladsl.Http
 import org.apache.pekko.projection.ProjectionBehavior
-import org.apache.pekko.projection.cassandra.scaladsl.CassandraProjection
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.SystemMaterializer
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{Await, ExecutionContext}
-import scala.concurrent.duration._
+import scala.concurrent.duration.{Duration, _}
 
 object OrgStructureServiceMain {
 
@@ -51,6 +52,10 @@ object OrgStructureServiceMain {
     )
     val app = new OrgStructureServiceApp()
     app.run()(system)
+    // A service main must not return: sbt (and the packaged app) tear the JVM down
+    // once main completes. Block until the actor system terminates.
+    Await.ready(system.whenTerminated, Duration.Inf)
+    (): Unit
   }
 }
 
@@ -73,7 +78,13 @@ private[impl] class OrgStructureServiceApp() {
     val categoryIndexDao   = new CategoryIndexDao(elasticClient)
     val orgRoleIndexDao    = new OrgRoleIndexDao(elasticClient)
 
-    Await.result(CassandraProjection.createTablesIfNotExists(), 10.seconds)
+    // Idempotent read-side table creation (mirrors the cms loader pattern; without it
+    // every read-side query fails with "unconfigured table" on a fresh keyspace —
+    // verified at runtime in slice 013).
+    Await.result(hierarchyDbDao.createTables(), 30.seconds)
+    Await.result(categoryDbDao.createTables(), 30.seconds)
+    Await.result(orgRoleDbDao.createTables(), 30.seconds)
+    Await.result(ProjectionBase.initAll(), 30.seconds)
 
     val sharding = ClusterSharding(system)
 
@@ -112,7 +123,7 @@ private[impl] class OrgStructureServiceApp() {
     )
 
     val serviceApi = new OrgStructureServiceApiImpl(hierarchyEntityService, orgRoleEntityService, categoryEntityService)
-    val handler    = OrgStructureServiceHandler(serviceApi)
+    val handler    = OrgStructureServiceHandler(serviceApi, AnnetteGrpcExceptionMapping.serverHandlerOrDefault _)
 
     val httpHost = config.getString("annette.http.host")
     val httpPort = config.getInt("annette.http.port")

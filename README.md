@@ -24,7 +24,7 @@ This helps Annette users to communicate, collaborate and make them more producti
 The technological features:
 
 * High performance provided by implementation of [Reactive Manifesto](https://www.reactivemanifesto.org/) principles.
-* High scalability provided by [Akka](https://akka.io/) clustering technologies and [Kubernetes](https://kubernetes.io/) 
+* High scalability provided by [Apache Pekko](https://pekko.apache.io/) clustering technologies and [Kubernetes](https://kubernetes.io/) 
   production-grade container orchestration.  
 * Cloud native allows deploying Annette applications in on-premise, private cloud or public cloud environments. 
 * Enterprise-wide platform

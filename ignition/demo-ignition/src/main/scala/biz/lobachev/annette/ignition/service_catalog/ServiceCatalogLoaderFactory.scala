@@ -17,10 +17,10 @@
 package biz.lobachev.annette.ignition.service_catalog
 
 import biz.lobachev.annette.ignition.core.config.DefaultServiceLoaderConfig
-import biz.lobachev.annette.ignition.core.{IgnitionLagomClient, ServiceLoader, ServiceLoaderFactory}
+import biz.lobachev.annette.ignition.core.{IgnitionGrpcClient, ServiceLoader, ServiceLoaderFactory}
 import com.typesafe.config.Config
 
 object ServiceCatalogLoaderFactory extends ServiceLoaderFactory {
-  override def create(client: IgnitionLagomClient, config: Config): ServiceLoader[_] =
+  override def create(client: IgnitionGrpcClient, config: Config): ServiceLoader[_] =
     new ServiceCatalogLoader(client, DefaultServiceLoaderConfig(config))
 }

@@ -17,7 +17,7 @@
 package biz.lobachev.annette.cms.api.pages.page
 
 import biz.lobachev.annette.core.exception.{AnnetteTransportExceptionCompanion1, AnnetteTransportExceptionCompanion2}
-import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
+import biz.lobachev.annette.core.exception.TransportErrorCode
 
 object PageAlreadyExist extends AnnetteTransportExceptionCompanion1 {
   val ErrorCode       = TransportErrorCode.BadRequest

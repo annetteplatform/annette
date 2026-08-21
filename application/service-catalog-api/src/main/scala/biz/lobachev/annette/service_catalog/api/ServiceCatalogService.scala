@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.service_catalog.api
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.core.model.category._
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.service_catalog.api.user.{

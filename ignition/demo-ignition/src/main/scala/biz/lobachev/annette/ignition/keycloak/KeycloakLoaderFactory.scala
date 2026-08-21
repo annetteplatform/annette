@@ -16,18 +16,15 @@
 
 package biz.lobachev.annette.ignition.keycloak
 
-import biz.lobachev.annette.ignition.core.{IgnitionLagomClient, ServiceLoader, ServiceLoaderFactory}
+import biz.lobachev.annette.ignition.core.{IgnitionGrpcClient, ServiceLoader, ServiceLoaderFactory}
 import com.typesafe.config.Config
-import play.api.libs.ws.WSClient
+import play.api.libs.ws.StandaloneWSClient
 
-import scala.concurrent.{Await, ExecutionContext}
-import scala.concurrent.duration.Duration
+import scala.concurrent.ExecutionContext
 
-class KeycloakLoaderFactory(ws: WSClient)(implicit val ec: ExecutionContext) extends ServiceLoaderFactory {
-  override def create(client: IgnitionLagomClient, config: Config): ServiceLoader[_] = {
-    val url = Await
-      .result(client.serviceLocator.locate("keycloak").map(_.map(_.toString)), Duration.Inf)
-      .getOrElse(throw new RuntimeException("Service keycloak not found"))
+class KeycloakLoaderFactory(ws: StandaloneWSClient)(implicit val ec: ExecutionContext) extends ServiceLoaderFactory {
+  override def create(client: IgnitionGrpcClient, config: Config): ServiceLoader[_] = {
+    val url = config.getString("url")
     new KeycloakLoader(client, KeycloakServiceLoaderConfig(config, url), ws)
   }
 }

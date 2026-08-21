@@ -17,7 +17,7 @@
 package biz.lobachev.annette.cms.api.files
 
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionCompanion3
-import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
+import biz.lobachev.annette.core.exception.TransportErrorCode
 
 object FileNotFound extends AnnetteTransportExceptionCompanion3 {
   val ErrorCode       = TransportErrorCode.NotFound

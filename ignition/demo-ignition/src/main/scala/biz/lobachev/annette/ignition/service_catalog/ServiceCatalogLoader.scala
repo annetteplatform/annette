@@ -17,16 +17,14 @@
 package biz.lobachev.annette.ignition.service_catalog
 
 import biz.lobachev.annette.ignition.core.config.{DefaultEntityLoaderConfig, DefaultServiceLoaderConfig}
-import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionLagomClient, ServiceLoader}
+import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionGrpcClient, ServiceLoader}
 import biz.lobachev.annette.ignition.service_catalog.loaders._
-import biz.lobachev.annette.service_catalog.client.http.{ServiceCatalogServiceLagomApi, ServiceCatalogServiceLagomImpl}
-import com.softwaremill.macwire.wire
+import biz.lobachev.annette.service_catalog.api.ServiceCatalogServiceGrpcImpl
 
-class ServiceCatalogLoader(val client: IgnitionLagomClient, val config: DefaultServiceLoaderConfig)
+class ServiceCatalogLoader(val client: IgnitionGrpcClient, val config: DefaultServiceLoaderConfig)
     extends ServiceLoader[DefaultServiceLoaderConfig] {
 
-  lazy val serviceApi = client.serviceClient.implement[ServiceCatalogServiceLagomApi]
-  lazy val service    = wire[ServiceCatalogServiceLagomImpl]
+  lazy val service    = new ServiceCatalogServiceGrpcImpl(client.serviceCatalogGrpcClient)
 
   override def createEntityLoader(entity: String): EntityLoader[_, _] =
     entity match {

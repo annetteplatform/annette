@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.microservice_core.indexing.dao
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.core.model.indexing._
 import biz.lobachev.annette.microservice_core.indexing.config.TextFieldConf
 import biz.lobachev.annette.microservice_core.indexing.{

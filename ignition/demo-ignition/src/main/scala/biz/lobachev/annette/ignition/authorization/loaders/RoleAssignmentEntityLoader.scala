@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.ignition.authorization.loaders
 
-import akka.stream.Materializer
+import org.apache.pekko.stream.Materializer
 import biz.lobachev.annette.authorization.api.AuthorizationService
 import biz.lobachev.annette.authorization.api.role.AssignPrincipalPayload
 import biz.lobachev.annette.core.model.auth.SystemPrincipal

@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.ignition.application.loaders
 
-import akka.stream.Materializer
+import org.apache.pekko.stream.Materializer
 import biz.lobachev.annette.application.api.ApplicationService
 import biz.lobachev.annette.application.api.language.{
   CreateLanguagePayload,

@@ -15,7 +15,7 @@
  */
 
 package biz.lobachev.annette.principal_group.api
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.core.model.category._

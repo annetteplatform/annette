@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.ignition.persons.loaders
 
-import akka.stream.Materializer
+import org.apache.pekko.stream.Materializer
 import biz.lobachev.annette.core.model.auth.SystemPrincipal
 import biz.lobachev.annette.ignition.core.EntityLoader
 import biz.lobachev.annette.ignition.core.config.{DefaultEntityLoaderConfig, UpsertMode}

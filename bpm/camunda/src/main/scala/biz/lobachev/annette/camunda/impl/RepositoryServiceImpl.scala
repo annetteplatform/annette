@@ -16,9 +16,9 @@
 
 package biz.lobachev.annette.camunda.impl
 
-import akka.stream.scaladsl.Source
-import akka.util.ByteString
-import akka.{Done, NotUsed}
+import org.apache.pekko.stream.scaladsl.Source
+import org.apache.pekko.util.ByteString
+import org.apache.pekko.{Done, NotUsed}
 import biz.lobachev.annette.camunda.api.repository.{
   CreateDeploymentPayload,
   DeleteDeploymentPayload,

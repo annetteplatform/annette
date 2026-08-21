@@ -16,8 +16,8 @@
 
 package biz.lobachev.annette.ignition.core
 
-import akka.stream.Materializer
-import akka.stream.scaladsl.{Sink, Source}
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.ignition.core.config.{ServiceLoaderConfig, StopOnError}
 import biz.lobachev.annette.ignition.core.result.{EntityLoadResult, LoadFailed, LoadOk, ServiceLoadResult}
 import org.slf4j.{Logger, LoggerFactory}
@@ -27,7 +27,7 @@ import scala.util.{Failure, Success}
 
 trait ServiceLoader[C <: ServiceLoaderConfig] {
   val name: String
-  val client: IgnitionLagomClient
+  val client: IgnitionGrpcClient
   val config: C
   implicit val ec: ExecutionContext       = client.executionContext
   implicit val materializer: Materializer = client.materializer

@@ -16,10 +16,10 @@
 
 package biz.lobachev.annette.ignition.console
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.ignition.application.ApplicationLoaderFactory
 import biz.lobachev.annette.ignition.authorization.AuthorizationLoaderFactory
-import biz.lobachev.annette.ignition.core.{Ignition, IgnitionLagomClient, ServiceLoaderFactory}
+import biz.lobachev.annette.ignition.core.{Ignition, IgnitionGrpcClient, ServiceLoaderFactory}
 import biz.lobachev.annette.ignition.keycloak.KeycloakLoaderFactory
 import biz.lobachev.annette.ignition.org_structure.OrgStructureLoaderFactory
 import biz.lobachev.annette.ignition.persons.PersonLoaderFactory
@@ -30,7 +30,7 @@ import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 
 object ConsoleIgnitionApp extends App {
-  val client      = new IgnitionLagomClient()
+  val client      = new IgnitionGrpcClient()
   implicit val ec = client.executionContext
 
   val factories: Map[String, ServiceLoaderFactory] = Map(
@@ -47,7 +47,7 @@ object ConsoleIgnitionApp extends App {
 
   val ignitionFuture = for {
     _ <- ignition.run()
-    _ <- client.actorSystem.terminate()
+    _ <- client.close()
   } yield {
     println("Actor System terminated")
     Done

@@ -4,49 +4,64 @@ High-signal notes for working in the Annette Platform CE repo. Read this before 
 
 ## Stack
 
-Scala 2.13.9 + sbt 1.10.10 + **Lagom 1.6.7** (Scala DSL) microservices. Akka cluster sharding + Cassandra persistence,
-OpenSearch/Elastic via elastic4s 7.8.1, Keycloak auth, external Kafka, Postgres (bpm-repository only), MinIO/S3 (CMS).
+Scala 2.13 + sbt + **Apache Pekko 1.1.3** microservices (Pekko gRPC for inter-service calls, Pekko Persistence
+Cassandra + Pekko Projection for event-sourced services, Slick/Postgres for bpm-repository, Pekko Connectors S3
+for CMS files). The api-gateway is a **Play 3.0.11** app (org.playframework) exposing the public REST API and
+delegating to the services over gRPC. OpenSearch via elastic4s 7.8.1, Keycloak auth, Camunda (BPM engine REST).
 Published to Sonatype OSSRH under org `biz.lobachev.annette`; all Scala packages live under `biz.lobachev.annette.*`.
+Zero Lagom/Akka dependencies remain (removed in migration slice 013 — see `dev/migration/`).
 
 ## Build prerequisites (easily missed)
 
 - **JDK 11+ required.** `.jvmopts` uses `--add-opens=...` (Java 9+). Docker base image is `openjdk:11`.
-- **Embedded Lagom Kafka and Cassandra are disabled** in `build.sbt` (`lagomKafkaEnabled := false`,
-  `lagomCassandraEnabled := false`). You must run external services yourself.
+- External services (Cassandra, OpenSearch, Postgres, Keycloak, Camunda, MinIO) are **never embedded** — bring them
+  up yourself (`deploy/docker/deploy.sh`).
 - `.sbtopts` sets `-Xmx8G -Xss32M -XX:MaxMetaspaceSize=2G`. Don't shrink this for the full build.
 - `sbt-tpolecat` is enabled repo-wide → strict scalac flags. `microservice-core` additionally sets
   `-Wconf:cat=unused-nowarn:s`. New code must compile clean under `-Xlint`/deprecation as fatal.
+- Play 3.0.11 drags Pekko 1.0.3 transitively; `dependencyOverrides` in `build.sbt` pin every module to 1.1.3.
+  Don't remove them — the Pekko runtime aborts on mixed versions.
 
 ## External services required (dev + test)
 
-`runAll`, the Play entrypoint, and most specs all need live backing services. Bring them all up with:
+Services, specs, and the gateway all need live backing services:
 
 ```bash
 cd deploy/docker && ./deploy.sh        # Postgres, Cassandra 3.11, OpenSearch 2.8, MinIO, Keycloak, Camunda, Traefik, frontend
 ./demo-ignition.sh                      # after services are healthy — loads demo data
 ```
 
-Tests spin up keyspaces via `ServiceTest.defaultSetup.withCassandra(true)` but **do not start a Cassandra server** — a
-real Cassandra must already be on `localhost:9042`. Same for OpenSearch on `:9200`. Expect tests to fail/hang otherwise.
+Most integration specs need a real Cassandra on `localhost:9042`, OpenSearch on `:9200` (admin/admin), Postgres on
+`:5432`, Camunda on `:3090`. Expect tests to fail/hang otherwise. The four camunda specs share one engine and run
+sequentially (`Test / parallelExecution := false`).
 
-### Dev-mode service ports (post-Pekko migration)
+## Dev mode (per-process, tmux)
 
-After slice 002 the dev-mode port table is authoritative (D2). Microservices run as their own
-processes (no Lagom `runAll`). Pekko Artery ports 17361–17369 are reserved; HTTP/gRPC ports
-8510–8518 mirror the existing docker-compose host-port allocation.
+There is **no `sbt runAll`** — each microservice is its own process. `run-local.sh` opens a tmux session with one
+window per service plus the gateway (dev_ prefixes; gRPC ports from the table below):
+
+```bash
+./run-local.sh                 # all 9 services + api-gateway (tmux session "annette-dev")
+./run-local.sh cms api-gateway # subset
+tmux attach -t annette-dev
+```
+
+### Dev-mode port table (authoritative, migration decision D2)
 
 | Service           | Artery port | HTTP/gRPC port |
 |-------------------|-------------|----------------|
 | application       | 17361       | 8510           |
 | service-catalog   | 17362       | 8511           |
 | authorization     | 17363       | 8512           |
-| bpm-repository    | 17364       | 8513           |
+| bpm-repository    | — (standalone, no cluster) | 8513 |
 | cms               | 17365       | 8514           |
 | subscriptions     | 17366       | 8515           |
 | org-structure     | 17367       | 8516           |
 | persons           | 17368       | 8517           |
 | principal-groups  | 17369       | 8518           |
-| api-gateway       | 17355       | 9000           |
+| api-gateway       | 17355       | 9000 (REST)    |
+
+The gateway's gRPC client endpoints are `pekko.grpc.client.<service>` blocks in `api-gateway/api-gateway/conf/application.conf`.
 
 ## Module layout (real boundaries from `build.sbt`, ~30 sub-projects)
 
@@ -54,17 +69,18 @@ Each business domain is split into three layers — keep this when adding code:
 
 | Layer        | Suffix / location                                               | Role                                                       |
 |--------------|-----------------------------------------------------------------|------------------------------------------------------------|
-| Service API  | `*-api`                                                         | Lagom service trait + DTOs, depends only on `core`         |
-| Service impl | `application/`, `authorization/`, `bpm/`, `cms/`, `principals/` | `LagomScala` + Cassandra persistence, forked tests, Docker |
-| HTTP gateway | `*-api-gateway` (under `api-gateway/`)                          | Play/JWT facade delegating to service APIs                 |
+| Service API  | `*-api`                                                         | proto-generated gRPC traits + DTOs + `*ServiceGrpcImpl` client adapters, depends only on `core` |
+| Service impl | `application/`, `authorization/`, `bpm/`, `cms/`, `principals/` | `JavaAppPackaging` + Pekko persistence/projections, Docker |
+| HTTP gateway | `*-api-gateway` (under `api-gateway/`)                          | Play controllers delegating to the plain `*Service` traits |
 
 - `core/` = shared libs: `core`, `microservice-core`, `api-gateway-core`. Everything depends on `core`; microservices
   depend on `microservice-core`; gateways on `api-gateway-core`.
-- `api-gateway/api-gateway` is the **single runnable Play app** (`LagomPlay` + `LagomScala` enabled, port 9000). All
-  gateway modules are aggregated into it.
-- Microservice entrypoint convention: `biz.lobachev.annette.<service>.impl.<Service>Loader`, wired in each
-  `conf/application.conf` via `play.application.loader`.
-- `ignition/demo-ignition` is a standalone Java app (not a service) that seeds demo data; `run-ignition.sh` runs it.
+- `api-gateway/api-gateway` is the **single runnable Play 3 app** (port 9000). All gateway modules are aggregated
+  into it. Controllers get the plain `*Service` traits, implemented by `*ServiceGrpcImpl` (proto↔domain conversion +
+  `AnnetteGrpcExceptionMapping` error recovery).
+- Microservice entrypoint convention: `biz.lobachev.annette.<service>.impl.<Service>Main` (plain `main()`, constructs
+  the ActorSystem, shards entities, starts projections, binds gRPC on `annette.http.port`).
+- `ignition/demo-ignition` is a standalone app (not a service) that seeds demo data over gRPC; `run-ignition.sh` runs it.
 
 ## Config selection (per environment)
 
@@ -95,18 +111,18 @@ environment's data:
 # Compile everything
 sbt compile
 
-# Run all services locally in dev mode (one JVM via Lagom runAll; needs external services + dev_ prefixes)
+# Run all services locally in dev mode (tmux, one window per process; needs external services + dev_ prefixes)
 ./run-local.sh
 
 # Run ignition to seed demo data
 ./run-ignition.sh                       # sbt -Dconfig.resource=application.dev.conf demo-ignition/run
 
-# All tests (forked per service via lagomForkedTestSettings)
+# All tests
 sbt test
 
 # Single spec / single service
-./test-local.sh                         # example: runs PersonServiceApiSpec with test1_ prefixes
-sbt 'persons/testOnly biz.lobachev.annette.person.test.PersonServiceApiSpec'
+./test-local.sh                         # example: runs BpmModelServiceSpec with test1_ prefixes
+sbt 'bpm-repository/testOnly biz.lobachev.annette.bpm_repository.test.BpmModelServiceSpec'
 sbt persons/test                        # one service
 
 # Build + publish Docker images locally
@@ -117,9 +133,11 @@ sbt persons/test                        # one service
 
 ## Testing quirks
 
-- Tests are **forked** (`lagomForkedTestSettings`) per service module — slow startup, expect ~tens of seconds per spec.
-- Integration specs (`*ServiceApiSpec`) need live Cassandra + OpenSearch; entity specs (`*EntitySpec`) may not. Check
-  `Abstract*ServiceApiSpec` before assuming.
+- Service tests are forked (`Test / fork := true`) — slow startup, expect ~tens of seconds per spec.
+- The service-level `*ServiceApiSpec`s of the Cassandra services were disabled during the migration (`.disabled`
+  suffix); they need a rewrite onto the Pekko gRPC testkit. bpm-repository (Slick/Postgres) and camunda specs are
+  live and green.
+- Camunda specs share one engine → sequential execution is enforced.
 - Use distinct prefixes (`KEYSPACE_PREFIX=test_`, `INDEX_PREFIX=test-`) when running tests against a shared cluster.
 
 ## Formatting
@@ -130,11 +148,13 @@ sbt-scalafmt plugin** is registered — format via the `scalafmt` CLI or IDE, no
 ## Publishing
 
 `publishTo` targets Sonatype OSSRH (`oss.sonatype.org`). `sbt publish` / `publishSigned` are for releases — do not
-invoke casually. `version` is `0.5.1` (set in `build.sbt` and mirrored in `deploy/docker/deploy.sh`, `build-local.sh`).
+invoke casually. `version` is `0.6.0` (set in `build.sbt` and mirrored in `deploy/docker/deploy.sh`,
+`deploy/docker/demo-ignition.sh`, `build-local.sh`).
 
 ## Operational notes
 
-- No CI workflows, no pre-commit hooks, no OpenCode/Cursor/Claude instruction files exist yet — this is the canonical
-  agent guide.
+- No CI workflows, no pre-commit hooks — this is the canonical agent guide.
 - `.bsp/`, `.idea/`, `target/`, `.DS_Store` are present but gitignored; don't commit them.
 - Docker images are tagged `annetteplatform/<service>:<version>` by `dockerSettings`.
+- The Pekko migration (slices 001–013) is documented in `dev/migration/`; decisions (tagging, exception mapping,
+  port table) are locked in `dev/migration/001-decisions.md`.

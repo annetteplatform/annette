@@ -17,7 +17,7 @@
 package biz.lobachev.annette.core.model.category
 
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionCompanion1
-import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
+import biz.lobachev.annette.core.exception.TransportErrorCode
 
 object CategoryNotFound extends AnnetteTransportExceptionCompanion1 {
   val ErrorCode       = TransportErrorCode.NotFound

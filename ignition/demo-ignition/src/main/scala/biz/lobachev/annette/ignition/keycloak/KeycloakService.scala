@@ -18,12 +18,12 @@ package biz.lobachev.annette.ignition.keycloak
 
 import biz.lobachev.annette.ignition.keycloak.loaders.data.UserData
 import play.api.libs.json._
-import play.api.libs.ws.WSClient
+import play.api.libs.ws.StandaloneWSClient
 
 import scala.concurrent.{ExecutionContext, Future}
 
 class KeycloakService(
-  ws: WSClient,
+  ws: StandaloneWSClient,
   server: KeycloakConfig,
   targetRealm: String,
   defaultPassword: String,
@@ -45,7 +45,7 @@ class KeycloakService(
         )
       )
       .map { response =>
-        (response.json \ "access_token").as[String]
+        (Json.parse(response.body) \ "access_token").as[String]
       }
 
   def registerUser(user: UserData) =

@@ -1,10 +1,9 @@
 <configuration>
 
-    <conversionRule conversionWord="coloredLevel" converterClass="com.lightbend.lagom.internal.logback.ColoredLevel"/>
 
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%date{"HH:mm:ss.SSS"} %coloredLevel %logger [%mdc] - %msg%n</pattern>
+            <pattern>%date{"HH:mm:ss.SSS"} %-5level %logger [%mdc] - %msg%n</pattern>
         </encoder>
     </appender>
 

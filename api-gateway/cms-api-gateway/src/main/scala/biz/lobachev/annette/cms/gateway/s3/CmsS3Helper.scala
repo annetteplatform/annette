@@ -16,8 +16,8 @@
 
 package biz.lobachev.annette.cms.gateway.s3
 
-import akka.stream.Materializer
-import akka.stream.alpakka.s3.ObjectMetadata
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.stream.connectors.s3.ObjectMetadata
 import play.api.mvc.Results
 
 import java.net.URLDecoder

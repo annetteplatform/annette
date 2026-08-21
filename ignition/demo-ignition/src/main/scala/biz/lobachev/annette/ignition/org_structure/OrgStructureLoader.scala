@@ -17,21 +17,19 @@
 package biz.lobachev.annette.ignition.org_structure
 
 import biz.lobachev.annette.ignition.core.config.{DefaultEntityLoaderConfig, DefaultServiceLoaderConfig}
-import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionLagomClient, ServiceLoader}
+import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionGrpcClient, ServiceLoader}
 import biz.lobachev.annette.ignition.org_structure.loaders.{
   CategoryEntityLoader,
   HierarchyEntityLoader,
   HierarchyEntityLoaderConfig,
   OrgRoleEntityLoader
 }
-import biz.lobachev.annette.org_structure.api.{OrgStructureServiceApi, OrgStructureServiceImpl}
-import com.softwaremill.macwire.wire
+import biz.lobachev.annette.org_structure.api.OrgStructureServiceGrpcImpl
 
-class OrgStructureLoader(val client: IgnitionLagomClient, val config: DefaultServiceLoaderConfig)
+class OrgStructureLoader(val client: IgnitionGrpcClient, val config: DefaultServiceLoaderConfig)
     extends ServiceLoader[DefaultServiceLoaderConfig] {
 
-  lazy val serviceApi = client.serviceClient.implement[OrgStructureServiceApi]
-  lazy val service    = wire[OrgStructureServiceImpl]
+  lazy val service    = new OrgStructureServiceGrpcImpl(client.orgStructureGrpcClient)
 
   override val name: String = "org-structure"
 

@@ -16,14 +16,14 @@
 
 package biz.lobachev.annette.ignition.keycloak
 
-import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionLagomClient, ServiceLoader}
+import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionGrpcClient, ServiceLoader}
 import biz.lobachev.annette.ignition.keycloak.loaders.{KeycloakEntityLoader, KeycloakEntityLoaderConfig}
-import play.api.libs.ws.WSClient
+import play.api.libs.ws.StandaloneWSClient
 
 class KeycloakLoader(
-  val client: IgnitionLagomClient,
+  val client: IgnitionGrpcClient,
   val config: KeycloakServiceLoaderConfig,
-  ws: WSClient
+  ws: StandaloneWSClient
 ) extends ServiceLoader[KeycloakServiceLoaderConfig] {
 
   override def createEntityLoader(entity: String): EntityLoader[_, _] =

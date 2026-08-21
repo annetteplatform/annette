@@ -15,7 +15,7 @@
  */
 
 package biz.lobachev.annette.subscription.api
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.core.model.auth.AnnettePrincipal
 import biz.lobachev.annette.core.model.indexing.FindResult
 import biz.lobachev.annette.subscription.api.subscription.{

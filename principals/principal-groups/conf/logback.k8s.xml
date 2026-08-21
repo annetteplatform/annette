@@ -1,10 +1,8 @@
 <configuration>
 
-    <conversionRule conversionWord="coloredLevel" converterClass="com.lightbend.lagom.internal.logback.ColoredLevel" />
-
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%date{yyyy-MM-dd HH:mm:ss.SSS} %coloredLevel %logger [%mdc] - %msg%n</pattern>
+            <pattern>%date{yyyy-MM-dd HH:mm:ss.SSS} %-5level %logger [%mdc] - %msg%n</pattern>
         </encoder>
     </appender>
 
@@ -13,7 +11,6 @@
     <!-- Set logging for all Akka library classes to INFO -->
     <logger name="akka" level="WARN" />
     <!-- Set logging for all Lagom library classes to INFO -->
-    <logger name="com.lightbend.lagom" level="WARN" />
     <logger name="javax.management" level="INFO" />
 
     <logger name="io.netty" level="INFO" />

@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.bpm.gateway
 
-import akka.stream.Materializer
+import org.apache.pekko.stream.Materializer
 import biz.lobachev.annette.api_gateway_core.authentication.AuthenticatedAction
 import biz.lobachev.annette.api_gateway_core.authorization.Authorizer
 import biz.lobachev.annette.bpm.gateway.model._

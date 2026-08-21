@@ -16,8 +16,8 @@
 
 package biz.lobachev.annette.camunda.api.task
 
-import ai.x.play.json.Jsonx
 import ai.x.play.json.Encoders._
+import ai.x.play.json.Jsonx
 import biz.lobachev.annette.camunda.api.common.VariableExpression
 
 /**

@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.camunda.impl
 
-import akka.Done
+import org.apache.pekko.Done
 import biz.lobachev.annette.camunda.api._
 import biz.lobachev.annette.camunda.api.common.{VariableValue, VariableValues}
 import biz.lobachev.annette.camunda.api.task.{

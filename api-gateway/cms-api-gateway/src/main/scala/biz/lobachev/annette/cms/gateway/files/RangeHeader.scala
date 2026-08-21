@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.cms.gateway.files
 
-import akka.http.scaladsl.model.headers.ByteRange
+import org.apache.pekko.http.scaladsl.model.headers.ByteRange
 
 sealed trait RangeHeader
 

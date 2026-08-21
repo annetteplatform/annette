@@ -17,7 +17,7 @@
 package biz.lobachev.annette.camunda.api
 
 import biz.lobachev.annette.core.exception.{AnnetteTransportExceptionCompanion3, AnnetteTransportExceptionCompanion4}
-import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
+import biz.lobachev.annette.core.exception.TransportErrorCode
 
 object BPMEngineError extends AnnetteTransportExceptionCompanion3 {
   val ErrorCode       = TransportErrorCode.InternalServerError

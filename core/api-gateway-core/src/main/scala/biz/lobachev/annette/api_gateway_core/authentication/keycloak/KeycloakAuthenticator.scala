@@ -16,11 +16,11 @@
 
 package biz.lobachev.annette.api_gateway_core.authentication.keycloak
 
-import akka.actor.ActorSystem
-import akka.actor.typed.ActorRef
-import akka.actor.typed.scaladsl.AskPattern._
-import akka.actor.typed.scaladsl.adapter._
-import akka.util.Timeout
+import org.apache.pekko.actor.ActorSystem
+import org.apache.pekko.actor.typed.ActorRef
+import org.apache.pekko.actor.typed.scaladsl.AskPattern._
+import org.apache.pekko.actor.typed.scaladsl.adapter._
+import org.apache.pekko.util.Timeout
 import biz.lobachev.annette.api_gateway_core.authentication.{
   AuthenticationFailedException,
   BearerAuthenticator,
@@ -89,7 +89,7 @@ class KeycloakAuthenticator(keycloakConfOpt: Option[KeycloakConfig], ws: WSClien
       case Failure(_: Throwable)              => throw AuthenticationFailedException()
     }
 
-  import akka.actor.typed.scaladsl.adapter._
+  import org.apache.pekko.actor.typed.scaladsl.adapter._
 
   private def createRequestorActor: Option[ActorRef[PublicKeyRequestor.Command]] =
     keycloakConfOpt.map { keycloakConf =>

@@ -16,9 +16,9 @@
 
 package biz.lobachev.annette.ignition.org_structure.loaders
 
-import akka.Done
-import akka.stream.scaladsl.{RestartSource, Sink, Source}
-import akka.stream.{Materializer, RestartSettings}
+import org.apache.pekko.Done
+import org.apache.pekko.stream.scaladsl.{RestartSource, Sink, Source}
+import org.apache.pekko.stream.{Materializer, RestartSettings}
 import biz.lobachev.annette.core.attribute.UpdateAttributesPayload
 import biz.lobachev.annette.core.model.DataSource
 import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, SystemPrincipal}

@@ -17,7 +17,9 @@
 package biz.lobachev.annette.service_catalog.impl
 
 import biz.lobachev.annette.microservice_core.indexing.IndexingModule
+import biz.lobachev.annette.microservice_core.pekko.projection.ProjectionBase
 import biz.lobachev.annette.service_catalog.api.grpc.ServiceCatalogServiceHandler
+import biz.lobachev.annette.core.exception.AnnetteGrpcExceptionMapping
 import biz.lobachev.annette.service_catalog.impl.ServiceCatalogServiceApiImpl
 import biz.lobachev.annette.service_catalog.impl.category.{
   CategoryDbEventProcessor,
@@ -62,13 +64,12 @@ import org.apache.pekko.actor.typed.ActorSystem
 import org.apache.pekko.cluster.sharding.typed.scaladsl.{ClusterSharding, Entity, EntityTypeKey}
 import org.apache.pekko.http.scaladsl.Http
 import org.apache.pekko.projection.ProjectionBehavior
-import org.apache.pekko.projection.cassandra.scaladsl.CassandraProjection
 import org.apache.pekko.stream.Materializer
 import org.apache.pekko.stream.SystemMaterializer
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{Await, ExecutionContext}
-import scala.concurrent.duration._
+import scala.concurrent.duration.{Duration, _}
 
 object ServiceCatalogServiceMain {
 
@@ -81,6 +82,10 @@ object ServiceCatalogServiceMain {
     )
     val app = new ServiceCatalogServiceApp()
     app.run()(system)
+    // A service main must not return: sbt (and the packaged app) tear the JVM down
+    // once main completes. Block until the actor system terminates.
+    Await.ready(system.whenTerminated, Duration.Inf)
+    (): Unit
   }
 }
 
@@ -112,7 +117,7 @@ private[service_catalog] class ServiceCatalogServiceApp() {
     Await.result(scopePrincipalDbDao.createTables(), 10.seconds)
     Await.result(serviceItemDbDao.createTables(), 10.seconds)
     Await.result(servicePrincipalDbDao.createTables(), 10.seconds)
-    Await.result(CassandraProjection.createTablesIfNotExists(), 10.seconds)
+    Await.result(ProjectionBase.initAll(), 30.seconds)
 
     val sharding = ClusterSharding(system)
 
@@ -190,7 +195,7 @@ private[service_catalog] class ServiceCatalogServiceApp() {
       servicePrincipalEntityService,
       userService
     )
-    val handler = ServiceCatalogServiceHandler(serviceApi)
+    val handler = ServiceCatalogServiceHandler(serviceApi, AnnetteGrpcExceptionMapping.serverHandlerOrDefault _)
 
     val httpHost = config.getString("annette.http.host")
     val httpPort = config.getInt("annette.http.port")

@@ -17,16 +17,14 @@
 package biz.lobachev.annette.ignition.principal_group
 
 import biz.lobachev.annette.ignition.core.config.{DefaultEntityLoaderConfig, DefaultServiceLoaderConfig}
-import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionLagomClient, ServiceLoader}
+import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionGrpcClient, ServiceLoader}
 import biz.lobachev.annette.ignition.principal_group.loaders._
-import biz.lobachev.annette.principal_group.api.{PrincipalGroupServiceApi, PrincipalGroupServiceImpl}
-import com.softwaremill.macwire.wire
+import biz.lobachev.annette.principal_group.api.PrincipalGroupServiceGrpcImpl
 
-class PrincipalGroupLoader(val client: IgnitionLagomClient, val config: DefaultServiceLoaderConfig)
+class PrincipalGroupLoader(val client: IgnitionGrpcClient, val config: DefaultServiceLoaderConfig)
     extends ServiceLoader[DefaultServiceLoaderConfig] {
 
-  lazy val serviceApi = client.serviceClient.implement[PrincipalGroupServiceApi]
-  lazy val service    = wire[PrincipalGroupServiceImpl]
+  lazy val service    = new PrincipalGroupServiceGrpcImpl(client.principalGroupGrpcClient)
 
   override def createEntityLoader(entity: String): EntityLoader[_, _] =
     entity match {

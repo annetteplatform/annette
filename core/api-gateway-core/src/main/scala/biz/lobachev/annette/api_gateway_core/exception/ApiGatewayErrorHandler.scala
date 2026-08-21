@@ -18,7 +18,6 @@ package biz.lobachev.annette.api_gateway_core.exception
 
 import biz.lobachev.annette.core.exception.{AnnetteException, AnnetteTransportException, AnnetteTransportThrowable}
 import biz.lobachev.annette.core.message.ErrorMessage
-import com.lightbend.lagom.scaladsl.api.transport.TransportException
 import org.slf4j.LoggerFactory
 import play.api.http.HttpErrorHandler
 import play.api.http.Status.{BAD_REQUEST, FORBIDDEN, NOT_FOUND}
@@ -67,9 +66,6 @@ class ApiGatewayErrorHandler extends HttpErrorHandler {
 
       case ex: AnnetteException                                                                    =>
         Future.successful(Status(ex.errorMessage.errorCode)(Json.toJson(ex.errorMessage)))
-
-      case ex: TransportException                                                                  =>
-        Future.successful(Status(ex.errorCode.http)(Json.toJson(ex.exceptionMessage.name)))
 
       case th: Throwable                                                                           =>
         val id      = Random.nextInt(1000000).toString

@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.ignition.keycloak.loaders
 
-import akka.stream.Materializer
+import org.apache.pekko.stream.Materializer
 import biz.lobachev.annette.ignition.core.EntityLoader
 import biz.lobachev.annette.ignition.core.result.{LoadOk, LoadStatus}
 import biz.lobachev.annette.ignition.keycloak.KeycloakService

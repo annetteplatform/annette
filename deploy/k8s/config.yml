@@ -53,7 +53,7 @@ apiVersion: v1
 metadata:
   name: multi-instance-config
 data:
-  JAVA_OPTS: " -Dlogback.configurationFile=/opt/docker/conf/logback.k8s.xml -Dconfig.file=/opt/docker/conf/application.k8s.conf -Dlagom.circuit-breaker.default.enabled=off"
+  JAVA_OPTS: " -Dlogback.configurationFile=/opt/docker/conf/logback.k8s.xml -Dconfig.file=/opt/docker/conf/application.k8s.conf "
   REQUIRED_CONTACT_POINT_NR: "3"
 ---
 kind: ConfigMap
@@ -61,7 +61,7 @@ apiVersion: v1
 metadata:
   name: single-instance-config
 data:
-  JAVA_OPTS: " -Dlogback.configurationFile=/opt/docker/conf/logback.k8s.xml -Dconfig.file=/opt/docker/conf/application.k8s.conf -Dlagom.circuit-breaker.default.enabled=off -Dlagom.cluster.bootstrap.enabled=false -Dakka.cluster.min-nr-of-members=1 -Dlagom.cluster.join-self=on"
+  JAVA_OPTS: " -Dlogback.configurationFile=/opt/docker/conf/logback.k8s.xml -Dconfig.file=/opt/docker/conf/application.k8s.conf -Dpekko.management.cluster.bootstrap.form-single-member-cluster=on -Dpekko.cluster.min-nr-of-members=1"
   REQUIRED_CONTACT_POINT_NR: "1"
 ---
 kind: ConfigMap
@@ -82,7 +82,7 @@ metadata:
 data:
   application.k8s.conf: |
     include "application.conf"
-    akka.management {
+    pekko.management {
       cluster.bootstrap {
         contact-point-discovery {
           discovery-method = kubernetes-api
@@ -160,7 +160,7 @@ metadata:
 data:
   application.k8s.conf: |
     include "application.conf"
-    akka.management {
+    pekko.management {
       cluster.bootstrap {
         contact-point-discovery {
           discovery-method = kubernetes-api

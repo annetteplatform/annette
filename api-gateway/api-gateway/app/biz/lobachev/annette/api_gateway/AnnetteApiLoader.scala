@@ -25,14 +25,16 @@ import biz.lobachev.annette.api_gateway_core.authentication.keycloak.{KeycloakAu
 import biz.lobachev.annette.api_gateway_core.authentication._
 import biz.lobachev.annette.api_gateway_core.authorization.{AuthorizationServiceAuthorizer, ConfigurationAuthorizer}
 import biz.lobachev.annette.api_gateway_core.exception.ApiGatewayErrorHandler
-import biz.lobachev.annette.application.client.http.{ApplicationServiceLagomApi, ApplicationServiceLagomImpl}
+import biz.lobachev.annette.application.api.{grpc => applicationGrpc}
+import biz.lobachev.annette.application.api.ApplicationServiceGrpcImpl
 import biz.lobachev.annette.application.gateway.{
   ApplicationController,
   LanguageController,
   TranslationController,
   UserApplicationController
 }
-import biz.lobachev.annette.authorization.api.{AuthorizationServiceApi, AuthorizationServiceImpl}
+import biz.lobachev.annette.authorization.api.{grpc => authorizationGrpc}
+import biz.lobachev.annette.authorization.api.AuthorizationServiceGrpcImpl
 import biz.lobachev.annette.authorization.gateway.AuthorizationController
 import biz.lobachev.annette.bpm.gateway.{
   BpmModelController,
@@ -40,7 +42,8 @@ import biz.lobachev.annette.bpm.gateway.{
   CamundaRepositoryController,
   DataSchemaController
 }
-import biz.lobachev.annette.bpm_repository.api.{BpmRepositoryServiceApi, BpmRepositoryServiceImpl}
+import biz.lobachev.annette.bpm_repository.api.{grpc => bpmGrpc}
+import biz.lobachev.annette.bpm_repository.api.BpmRepositoryServiceGrpcImpl
 import biz.lobachev.annette.camunda.api.CamundaFactory
 import biz.lobachev.annette.camunda.impl.{
   ExternalTaskServiceImpl,
@@ -48,20 +51,24 @@ import biz.lobachev.annette.camunda.impl.{
   RuntimeServiceImpl,
   TaskServiceImpl
 }
-import biz.lobachev.annette.cms.api.{CmsServiceApi, CmsServiceImpl, CmsStorage}
+import biz.lobachev.annette.cms.api.{grpc => cmsGrpc}
+import biz.lobachev.annette.cms.api.{CmsServiceGrpcImpl, CmsStorage}
 import biz.lobachev.annette.cms.gateway.blogs._
 import biz.lobachev.annette.cms.gateway.files.CmsFileController
 import biz.lobachev.annette.cms.gateway.home_pages.CmsHomePageController
 import biz.lobachev.annette.cms.gateway.pages._
 import biz.lobachev.annette.cms.gateway.s3.CmsS3Helper
-import biz.lobachev.annette.core.discovery.AnnetteDiscoveryComponents
-import biz.lobachev.annette.org_structure.api.{OrgStructureServiceApi, OrgStructureServiceImpl}
+import biz.lobachev.annette.org_structure.api.{grpc => orgStructureGrpc}
+import biz.lobachev.annette.org_structure.api.OrgStructureServiceGrpcImpl
 import biz.lobachev.annette.org_structure.gateway.OrgStructureController
 import biz.lobachev.annette.person.gateway.PersonController
-import biz.lobachev.annette.persons.api.{PersonServiceApi, PersonServiceImpl}
-import biz.lobachev.annette.principal_group.api.{PrincipalGroupServiceApi, PrincipalGroupServiceImpl}
+import biz.lobachev.annette.persons.api.{grpc => personsGrpc}
+import biz.lobachev.annette.persons.api.PersonServiceGrpcImpl
+import biz.lobachev.annette.principal_group.api.{grpc => principalGroupGrpc}
+import biz.lobachev.annette.principal_group.api.PrincipalGroupServiceGrpcImpl
 import biz.lobachev.annette.principal_group.gateway.PrincipalGroupController
-import biz.lobachev.annette.service_catalog.client.http.{ServiceCatalogServiceLagomApi, ServiceCatalogServiceLagomImpl}
+import biz.lobachev.annette.service_catalog.api.{grpc => serviceCatalogGrpc}
+import biz.lobachev.annette.service_catalog.api.ServiceCatalogServiceGrpcImpl
 import biz.lobachev.annette.service_catalog.gateway.{
   CategoryController,
   ScopeController,
@@ -70,10 +77,8 @@ import biz.lobachev.annette.service_catalog.gateway.{
   ServicePrincipalController,
   UserServiceController
 }
-import biz.lobachev.annette.subscription.api.{SubscriptionServiceApi, SubscriptionServiceImpl}
-import com.lightbend.lagom.scaladsl.api.{LagomConfigComponent, ServiceAcl, ServiceInfo}
-import com.lightbend.lagom.scaladsl.client.LagomServiceClientComponents
-import com.lightbend.lagom.scaladsl.devmode.LagomDevModeComponents
+import biz.lobachev.annette.subscription.api.{grpc => subscriptionGrpc}
+import biz.lobachev.annette.subscription.api.SubscriptionServiceGrpcImpl
 import com.softwaremill.macwire._
 import controllers.AssetsComponents
 import org.apache.pekko.actor.ActorSystem
@@ -87,64 +92,54 @@ import play.filters.cors.CORSComponents
 import play.filters.gzip.GzipFilterComponents
 import router.Routes
 
-import scala.collection.immutable
 import scala.concurrent.ExecutionContext
 
 /**
- * Scaffold for the gRPC client factory introduced by slice 002 of the Pekko migration. Each
- * service slice (004-012) swaps one of the 9 `serviceClient.implement[T]` calls below to a
- * Pekko gRPC client built via this factory.
- *
- * The trait's `system` field is typed as [[org.apache.pekko.actor.ActorSystem]] (Pekko). The
- * gateway's `BuiltInComponentsFromContext.actorSystem` is currently `akka.actor.ActorSystem`
- * because Play is still on 2.8.x (the Lagom 1.6.7 plugin cannot coexist with Play 3.0.x —
- * see `project/plugins.sbt` for the binary-incompatibility evidence). Concrete wiring of
- * `system` from `actorSystem` is therefore deferred to slice 013, which removes Lagom and
- * upgrades Play to 3.0.11. Until then, this trait is compiled but unused; its
- * `clientFor` must not be invoked.
- *
- * Per `dev/migration/002-build-and-gateway-foundations.md` step 5 and `001-decisions.md` §D.
+ * Builds [[GrpcClientSettings]] for backend services from `pekko.grpc.client.<name>` config
+ * blocks (see api-gateway application.conf). Introduced by slice 002; wired to the live
+ * actor system since slice 013 (Play 3 / Pekko gateway).
  */
 trait GrpcClientFactory {
   def system: ActorSystem
   def ec: ExecutionContext
   def clientFor(name: String): GrpcClientSettings =
-    GrpcClientSettings.fromConfig(s"pekko.grpc.client.$name")(system)
+    GrpcClientSettings.fromConfig(name)(system)
 }
 
-abstract class ServiceGateway(context: Context)
+class ServiceGateway(context: Context)
     extends BuiltInComponentsFromContext(context)
     with AssetsComponents
     with HttpFiltersComponents
     with GzipFilterComponents
     with CORSComponents
-    with AhcWSComponents
-    with LagomConfigComponent
-    with LagomServiceClientComponents {
+    with AhcWSComponents {
 
   override def httpFilters: Seq[EssentialFilter] = Seq(corsFilter, securityHeadersFilter, gzipFilter)
 
-  override lazy val serviceInfo: ServiceInfo                    = ServiceInfo(
-    name = "annette-api-gateway",
-    acls = immutable.Seq(ServiceAcl.forPathRegex("/api/annette/.*"))
-  )
+  // Was provided by LagomConfigComponent; Play exposes the same via Configuration.
+  lazy val config: com.typesafe.config.Config = configuration.underlying
+
   implicit override lazy val executionContext: ExecutionContext = actorSystem.dispatcher
 
   override lazy val httpErrorHandler: ApiGatewayErrorHandler = wire[ApiGatewayErrorHandler]
 
-  // Scaffold for the Pekko gRPC client factory. The `system` field is left unimplemented
-  // because the gateway still runs on Akka (Play 2.8.x via Lagom 1.6.7); Play 3.0.x cannot
-  // coexist with Lagom 1.6.7 in the same sbt meta-build. Slice 013 removes Lagom, upgrades
-  // Play to 3.0.11, and wires `system = actorSystem` here (the type then matches). Until
-  // then, `clientFor` MUST NOT be invoked — it would throw on the unimplemented `system`.
+  // Slice 013: gateway runs on Play 3 / Pekko — the factory is wired to the app's
+  // (classic) ActorSystem, and every backend service is a Pekko gRPC client built
+  // from `pekko.grpc.client.<name>` config blocks.
   lazy val grpcClientFactory: GrpcClientFactory = new GrpcClientFactory {
-    override def system: ActorSystem =
-      throw new IllegalStateException(
-        "grpcClientFactory.system not wired: gateway is still on Akka (Lagom 1.6.7). " +
-          "Slice 013 upgrades Play to 3.0.x and wires this to actorSystem."
-      )
-    override def ec: ExecutionContext = executionContext
+    override def system: ActorSystem            = actorSystem
+    override def ec: ExecutionContext           = executionContext
   }
+
+  lazy val authorizationGrpcClient     = authorizationGrpc.AuthorizationServiceClient(grpcClientFactory.clientFor("authorization"))(actorSystem)
+  lazy val orgStructureGrpcClient      = orgStructureGrpc.OrgStructureServiceClient(grpcClientFactory.clientFor("org-structure"))(actorSystem)
+  lazy val personGrpcClient            = personsGrpc.PersonServiceClient(grpcClientFactory.clientFor("persons"))(actorSystem)
+  lazy val applicationGrpcClient       = applicationGrpc.ApplicationServiceClient(grpcClientFactory.clientFor("application"))(actorSystem)
+  lazy val serviceCatalogGrpcClient    = serviceCatalogGrpc.ServiceCatalogServiceClient(grpcClientFactory.clientFor("service-catalog"))(actorSystem)
+  lazy val principalGroupGrpcClient    = principalGroupGrpc.PrincipalGroupServiceClient(grpcClientFactory.clientFor("principal-groups"))(actorSystem)
+  lazy val subscriptionGrpcClient      = subscriptionGrpc.SubscriptionServiceClient(grpcClientFactory.clientFor("subscriptions"))(actorSystem)
+  lazy val cmsGrpcClient               = cmsGrpc.CmsServiceClient(grpcClientFactory.clientFor("cms"))(actorSystem)
+  lazy val bpmRepositoryGrpcClient     = bpmGrpc.BpmRepositoryServiceClient(grpcClientFactory.clientFor("bpm-repository"))(actorSystem)
 
   override lazy val router = {
     val prefix = "/"
@@ -154,7 +149,7 @@ abstract class ServiceGateway(context: Context)
 
   lazy val parser = wire[BodyParsers.Default]
 
-  val authorizerConf = config.getString("annette.authorization.authorizer")
+  val authorizerConf = configuration.get[String]("annette.authorization.authorizer")
 
   lazy val authorizer                     =
     if (authorizerConf == "config") wire[ConfigurationAuthorizer]
@@ -212,32 +207,15 @@ abstract class ServiceGateway(context: Context)
   lazy val businessProcessController   = wire[BusinessProcessController]
   lazy val camundaRepositoryController = wire[CamundaRepositoryController]
 
-  lazy val authorizationServiceApi = serviceClient.implement[AuthorizationServiceApi]
-  lazy val authorizationService    = wire[AuthorizationServiceImpl]
-
-  lazy val orgStructureServiceApi = serviceClient.implement[OrgStructureServiceApi]
-  lazy val orgStructureService    = wire[OrgStructureServiceImpl]
-
-  lazy val personServiceApi = serviceClient.implement[PersonServiceApi]
-  lazy val personService    = wire[PersonServiceImpl]
-
-  lazy val applicationServiceApi = serviceClient.implement[ApplicationServiceLagomApi]
-  lazy val applicationService    = wire[ApplicationServiceLagomImpl]
-
-  lazy val serviceCatalogServiceApi = serviceClient.implement[ServiceCatalogServiceLagomApi]
-  lazy val serviceCatalogService    = wire[ServiceCatalogServiceLagomImpl]
-
-  lazy val principalGroupServiceApi = serviceClient.implement[PrincipalGroupServiceApi]
-  lazy val principalGroupService    = wire[PrincipalGroupServiceImpl]
-
-  lazy val subscriptionServiceApi = serviceClient.implement[SubscriptionServiceApi]
-  lazy val subscriptionService    = wire[SubscriptionServiceImpl]
-
-  lazy val cmsServiceApi = serviceClient.implement[CmsServiceApi]
-  lazy val cmsService    = wire[CmsServiceImpl]
-
-  lazy val bpmRepositoryServiceApi = serviceClient.implement[BpmRepositoryServiceApi]
-  lazy val bpmRepositoryService    = wire[BpmRepositoryServiceImpl]
+  lazy val authorizationService: AuthorizationServiceGrpcImpl     = new AuthorizationServiceGrpcImpl(authorizationGrpcClient)(executionContext)
+  lazy val orgStructureService: OrgStructureServiceGrpcImpl       = new OrgStructureServiceGrpcImpl(orgStructureGrpcClient)(executionContext)
+  lazy val personService: PersonServiceGrpcImpl                   = new PersonServiceGrpcImpl(personGrpcClient)(executionContext)
+  lazy val applicationService: ApplicationServiceGrpcImpl         = new ApplicationServiceGrpcImpl(applicationGrpcClient)(executionContext)
+  lazy val serviceCatalogService: ServiceCatalogServiceGrpcImpl   = new ServiceCatalogServiceGrpcImpl(serviceCatalogGrpcClient)(executionContext)
+  lazy val principalGroupService: PrincipalGroupServiceGrpcImpl   = new PrincipalGroupServiceGrpcImpl(principalGroupGrpcClient)(executionContext)
+  lazy val subscriptionService: SubscriptionServiceGrpcImpl       = new SubscriptionServiceGrpcImpl(subscriptionGrpcClient)(executionContext)
+  lazy val cmsService: CmsServiceGrpcImpl                         = new CmsServiceGrpcImpl(cmsGrpcClient)(executionContext)
+  lazy val bpmRepositoryService: BpmRepositoryServiceGrpcImpl     = new BpmRepositoryServiceGrpcImpl(bpmRepositoryGrpcClient)(executionContext)
 
 }
 
@@ -250,8 +228,8 @@ class AnnetteApiLoader extends ApplicationLoader {
         LoggerConfigurator(environment.classLoader).foreach {
           _.configure(environment)
         }
-        (new ServiceGateway(context) with LagomDevModeComponents).application
+        new ServiceGateway(context).application
       case _        =>
-        (new ServiceGateway(context) with AnnetteDiscoveryComponents).application
+        new ServiceGateway(context).application
     }
 }

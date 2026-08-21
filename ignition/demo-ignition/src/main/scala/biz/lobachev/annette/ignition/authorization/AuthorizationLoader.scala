@@ -16,17 +16,15 @@
 
 package biz.lobachev.annette.ignition.authorization
 
-import biz.lobachev.annette.authorization.api.{AuthorizationServiceApi, AuthorizationServiceImpl}
+import biz.lobachev.annette.authorization.api.AuthorizationServiceGrpcImpl
 import biz.lobachev.annette.ignition.authorization.loaders.{RoleAssignmentEntityLoader, RoleEntityLoader}
 import biz.lobachev.annette.ignition.core.config.{DefaultEntityLoaderConfig, DefaultServiceLoaderConfig}
-import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionLagomClient, ServiceLoader}
-import com.softwaremill.macwire.wire
+import biz.lobachev.annette.ignition.core.{EntityLoader, IgnitionGrpcClient, ServiceLoader}
 
-class AuthorizationLoader(val client: IgnitionLagomClient, val config: DefaultServiceLoaderConfig)
+class AuthorizationLoader(val client: IgnitionGrpcClient, val config: DefaultServiceLoaderConfig)
     extends ServiceLoader[DefaultServiceLoaderConfig] {
 
-  lazy val serviceApi = client.serviceClient.implement[AuthorizationServiceApi]
-  lazy val service    = wire[AuthorizationServiceImpl]
+  lazy val service    = new AuthorizationServiceGrpcImpl(client.authorizationGrpcClient)
 
   override val name: String = "authorization"
 

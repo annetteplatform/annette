@@ -22,7 +22,7 @@ import biz.lobachev.annette.core.exception.{
   AnnetteTransportExceptionCompanion1,
   AnnetteTransportExceptionCompanion2
 }
-import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
+import biz.lobachev.annette.core.exception.TransportErrorCode
 
 object InvalidModel extends AnnetteTransportExceptionCompanion2 {
   val ErrorCode       = TransportErrorCode.BadRequest

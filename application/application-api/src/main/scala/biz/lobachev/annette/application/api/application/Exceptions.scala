@@ -17,7 +17,7 @@
 package biz.lobachev.annette.application.api.application
 
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionCompanion
-import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
+import biz.lobachev.annette.core.exception.TransportErrorCode
 
 object ApplicationAlreadyExist extends AnnetteTransportExceptionCompanion {
   val ErrorCode   = TransportErrorCode.BadRequest

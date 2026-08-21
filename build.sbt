@@ -40,10 +40,8 @@ ThisBuild / publishTo := {
 }
 ThisBuild / publishMavenStyle := true
 
-// Use external Kafka
-ThisBuild / lagomKafkaEnabled := false
-// Use external Cassandra
-ThisBuild / lagomCassandraEnabled := false
+// Keep every module on one Pekko version (Play 3.0.11 drags 1.0.3 transitively).
+ThisBuild / dependencyOverrides ++= Dependencies.pekkoDependencyOverrides
 
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-java8-compat" % "always"
 ThisBuild / libraryDependencySchemes += "org.scala-lang.modules" %% "scala-xml"          % "always"
@@ -56,8 +54,8 @@ def annetteSettings: Seq[Setting[_]] =
     scalaVersion := "2.13.18",
     // Scala 2.13.18 tightened implicit-explicit-type checks (new since 2.13.9).
     // Pre-existing codebase has ~700 `implicit val format = Json.format[X]` without
-    // explicit types; fixing them is out of scope for slice 002. Silent for now;
-    // the silence is per-message (not per-category) so other lint remains fatal.
+    // explicit types; fixing them is out of scope. Silent for now; the silence is
+    // per-message (not per-category) so other lint remains fatal.
     scalacOptions += "-Wconf:msg=Implicit definition should have explicit type:s"
   )
 
@@ -83,7 +81,6 @@ lazy val root = (project in file("."))
   .aggregate(
     `core`,
     `microservice-core`,
-    `microservice-core-pekko`,
     `api-gateway-core`,
     `api-gateway`,
     // initialization application
@@ -123,61 +120,27 @@ lazy val root = (project in file("."))
 lazy val `core` = (project in file("core/core"))
   .settings(
     libraryDependencies ++= Seq(
-      lagomScaladslApi,
-      lagomScaladslPersistenceCassandra,
-      lagomScaladslServer % Optional,
-      lagomScaladslTestKit,
+      Dependencies.playJson,
       Dependencies.chimney,
-      Dependencies.playJsonExt,
       Dependencies.macwire
-    ) ++ Dependencies.tests
+    ) ++ Dependencies.pekkoGrpcRuntime // AnnetteGrpcExceptionMapping (design 001 §D)
+      ++ Dependencies.tests
       ++ Dependencies.elastic
-      ++ Dependencies.lagomAkkaDiscovery
   )
   .settings(annetteSettings: _*)
 
-lazy val `microservice-core` = (project in file("core/microservice-core"))
-  .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslApi,
-      lagomScaladslPersistenceCassandra,
-      lagomScaladslServer % Optional,
-      lagomScaladslTestKit,
-      Dependencies.chimney,
-      Dependencies.pureConfig,
-      Dependencies.playJsonExt,
-//      Dependencies.logstashEncoder,
-      Dependencies.macwire
-    ) ++ Dependencies.tests
-      ++ Dependencies.elastic
-      ++ Dependencies.lagomAkkaDiscovery
-      ++ Dependencies.quill
-  )
-  .settings(annetteSettings: _*)
-  .settings(
-    scalacOptions += "-Wconf:cat=unused-nowarn:s",
-    scalacOptions += "-Wconf:msg=evidence parameter.*never used:s"
-  )
-  .dependsOn(
-    `core`
-  )
-
-// Pekko-variant shared core (slice 003). Coexists with `microservice-core` (Lagom variant)
-// during the migration. Slices 004-012 add `.dependsOn(microservice-core-pekko)` as they
-// migrate. Slice 013 deletes the Lagom variant and renames this back to `microservice-core`.
-//
-// NOTE: depends on `core` only, NOT on `microservice-core`. The two share no source.
+// Shared microservice core (Pekko variant; the Lagom variant was removed in slice 013).
 // Quill uses driver-3 (`com.datastax.driver.core.*`); Pekko Persistence Cassandra uses
 // driver-4 (`com.datastax.oss.driver.api.core.*`). Both jars coexist on the classpath.
 // Service slices obtain separate sessions for each driver.
-lazy val `microservice-core-pekko` = (project in file("core/microservice-core-pekko"))
+lazy val `microservice-core` = (project in file("core/microservice-core"))
   .settings(
     libraryDependencies ++= Dependencies.pekkoCore
       ++ Dependencies.pekkoPersistenceCassandra
       ++ Dependencies.pekkoProjection
-      ++ Dependencies.quillPekko
+      ++ Dependencies.quill
       ++ Dependencies.elastic
-      ++ Seq(Dependencies.chimney, Dependencies.pureConfig)
+      ++ Seq(Dependencies.chimney, Dependencies.pureConfig, Dependencies.macwire)
       ++ Dependencies.tests
   )
   .settings(annetteSettings: _*)
@@ -190,15 +153,13 @@ lazy val `microservice-core-pekko` = (project in file("core/microservice-core-pe
 
 lazy val `api-gateway-core` = (project in file("core/api-gateway-core"))
   .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslServer % Optional,
-      ws,
-      Dependencies.macwire,
-      Dependencies.playJsonExt,
-      Dependencies.jwt,
-      Dependencies.pureConfig,
-      Dependencies.chimney
-    ) ++
+    libraryDependencies ++= Dependencies.play // play, play-ahc-ws, play-filters-helpers (Play 3)
+      ++ Seq(
+        Dependencies.macwire,
+        Dependencies.jwt,
+        Dependencies.pureConfig,
+        Dependencies.chimney
+      ) ++
       Dependencies.tests
   )
   .settings(annetteSettings: _*)
@@ -211,13 +172,11 @@ lazy val `api-gateway-core` = (project in file("core/api-gateway-core"))
   )
 
 lazy val `api-gateway` = (project in file("api-gateway/api-gateway"))
-  .enablePlugins(LagomPlay, LagomScala, PekkoGrpcPlugin)
+  .enablePlugins(PlayScala, PekkoGrpcPlugin)
   .settings(
     // To disable Unused import error for routes
     RoutesKeys.routesImport := Seq.empty,
     libraryDependencies ++= Seq(
-      lagomScaladslServer,
-      ws,
       Dependencies.macwire
     ) ++
       Dependencies.tests
@@ -237,6 +196,20 @@ lazy val `api-gateway` = (project in file("api-gateway/api-gateway"))
     `bpm-api-gateway`
   )
 
+def gatewayProject(pr: Project) =
+  pr
+    .settings(
+      libraryDependencies ++= Dependencies.play
+        ++ Seq(
+          Dependencies.macwire,
+          Dependencies.jwt,
+          Dependencies.pureConfig,
+          Dependencies.chimney
+        ) ++
+        Dependencies.tests
+    )
+    .settings(annetteSettings: _*)
+
 def ignitionDemoProject(pr: Project) =
   pr
     .enablePlugins(UniversalPlugin)
@@ -244,14 +217,15 @@ def ignitionDemoProject(pr: Project) =
     .settings(
       // To disable Unused import error for routes
       RoutesKeys.routesImport := Seq.empty,
-      libraryDependencies ++= Seq(
-        ws,
-        Dependencies.macwire,
-        Dependencies.playJsonExt,
-        Dependencies.pureConfig,
-        Dependencies.chimney,
-        Dependencies.jacksonYaml
-      ) ++
+      libraryDependencies ++= Dependencies.pekkoCore
+        ++ Dependencies.pekkoGrpcRuntime
+        ++ Dependencies.play // play-ahc-ws for the Keycloak seeding client
+        ++ Seq(
+          Dependencies.macwire,
+          Dependencies.pureConfig,
+          Dependencies.chimney,
+          Dependencies.jacksonYaml
+        ) ++
         Dependencies.tests ++
         Dependencies.slf4j
     )
@@ -276,9 +250,7 @@ def ignitionDemoProject(pr: Project) =
 lazy val `application-api` = (project in file("application/application-api"))
   .enablePlugins(PekkoGrpcPlugin)
   .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslApi
-    ) ++ Dependencies.tests
+    libraryDependencies ++= Dependencies.tests
   )
   .settings(annetteSettings: _*)
   .dependsOn(`core`)
@@ -291,21 +263,19 @@ def applicationProject(pr: Project) =
         ++ Dependencies.pekkoPersistenceCassandra
         ++ Dependencies.pekkoProjection
         ++ Seq(Dependencies.macwire, Dependencies.chimney)
-        ++ Dependencies.quillPekko
+        ++ Dependencies.quill
         ++ Dependencies.tests
     )
     .settings(Test / fork := true)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`application-api`, `microservice-core-pekko`, `microservice-core`)
+    .dependsOn(`application-api`, `microservice-core`)
 
 lazy val `service-catalog-api` = (project in file("application/service-catalog-api"))
   .enablePlugins(PekkoGrpcPlugin)
   .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslApi
-    ) ++ Dependencies.tests
+    libraryDependencies ++= Dependencies.tests
   )
   .settings(annetteSettings: _*)
   .dependsOn(`core`)
@@ -318,48 +288,22 @@ def serviceCatalogProject(pr: Project) =
         ++ Dependencies.pekkoPersistenceCassandra
         ++ Dependencies.pekkoProjection
         ++ Seq(Dependencies.macwire, Dependencies.chimney)
-        ++ Dependencies.quillPekko
+        ++ Dependencies.quill
         ++ Dependencies.tests
     )
     .settings(Test / fork := true)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`service-catalog-api`, `microservice-core-pekko`, `microservice-core`)
+    .dependsOn(`service-catalog-api`, `microservice-core`)
 
-lazy val `application-api-gateway` = (project in file("api-gateway/application-api-gateway"))
-  .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslServer % Optional,
-      ws,
-      Dependencies.macwire,
-      Dependencies.playJsonExt,
-      Dependencies.jwt,
-      Dependencies.pureConfig,
-      Dependencies.chimney
-    ) ++
-      Dependencies.tests
-  )
-  .settings(annetteSettings: _*)
+lazy val `application-api-gateway` = gatewayProject(project in file("api-gateway/application-api-gateway"))
   .dependsOn(
     `api-gateway-core`,
     `application-api`
   )
 
-lazy val `service-catalog-api-gateway` = (project in file("api-gateway/service-catalog-api-gateway"))
-  .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslServer % Optional,
-      ws,
-      Dependencies.macwire,
-      Dependencies.playJsonExt,
-      Dependencies.jwt,
-      Dependencies.pureConfig,
-      Dependencies.chimney
-    ) ++
-      Dependencies.tests
-  )
-  .settings(annetteSettings: _*)
+lazy val `service-catalog-api-gateway` = gatewayProject(project in file("api-gateway/service-catalog-api-gateway"))
   .dependsOn(
     `api-gateway-core`,
     `application-api`,
@@ -370,7 +314,6 @@ lazy val `authorization-api` = (project in file("authorization/authorization-api
   .enablePlugins(PekkoGrpcPlugin)
   .settings(
     libraryDependencies ++= Seq(
-      lagomScaladslApi,
       Dependencies.chimney
     )
   )
@@ -379,9 +322,6 @@ lazy val `authorization-api` = (project in file("authorization/authorization-api
 
 def authorizationProject(pr: Project) =
   pr
-    // Slice 004: dropped LagomScala + lagomScaladsl* deps; replaced with Pekko.
-    // JavaAppPackaging provides the Universal/docker/scriptClasspath keys that confDirSettings
-    // and dockerSettings reference (previously inherited from LagomScala).
     .enablePlugins(JavaAppPackaging)
     .settings(
       libraryDependencies ++= Dependencies.pekkoCore
@@ -394,27 +334,9 @@ def authorizationProject(pr: Project) =
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    // Note: also depends on `microservice-core` (Lagom variant) for the indexing module
-    // (IndexingModule, AbstractIndexDao, RoleIndexDao, AssignmentIndexDao). That module uses
-    // akka.Done + Lagom's TransportErrorCode; not yet ported to microservice-core-pekko.
-    // Lagom deps come transitively but are unused by authorization sources. Slice 005+ should
-    // either port indexing to microservice-core-pekko OR add the same dep line.
-    .dependsOn(`authorization-api`, `microservice-core-pekko`, `microservice-core`)
+    .dependsOn(`authorization-api`, `microservice-core`)
 
-lazy val `authorization-api-gateway` = (project in file("api-gateway/authorization-api-gateway"))
-  .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslServer % Optional,
-      ws,
-      Dependencies.macwire,
-      Dependencies.playJsonExt,
-      Dependencies.jwt,
-      Dependencies.pureConfig,
-      Dependencies.chimney
-    ) ++
-      Dependencies.tests
-  )
-  .settings(annetteSettings: _*)
+lazy val `authorization-api-gateway` = gatewayProject(project in file("api-gateway/authorization-api-gateway"))
   .dependsOn(
     `api-gateway-core`,
     `authorization-api`
@@ -422,13 +344,18 @@ lazy val `authorization-api-gateway` = (project in file("api-gateway/authorizati
 
 lazy val `camunda` = (project in file("bpm/camunda"))
   .settings(
-    libraryDependencies ++= Seq(
-      ws,
-      Dependencies.macwire,
-      Dependencies.chimney,
-      Dependencies.playJson,
-      Dependencies.playJsonExt
-    ) ++
+    // The four integration specs share one live Camunda engine and the same process
+    // definitions; concurrent suites collide on task/variable updates (Camunda
+    // OptimisticLockingException). Each spec passes in isolation — run sequentially.
+    Test / parallelExecution := false)
+  .settings(
+    libraryDependencies ++= Dependencies.play // play-ahc-ws for the Camunda REST client
+      ++ Seq(
+        Dependencies.macwire,
+        Dependencies.chimney,
+        Dependencies.playJson,
+        Dependencies.playJsonExt // TaskFindQuery has >22 fields (play-json macro limit)
+      ) ++
       Dependencies.tests
   )
   .settings(annetteSettings: _*)
@@ -438,7 +365,6 @@ lazy val `bpm-repository-api` = (project in file("bpm/bpm-repository-api"))
   .enablePlugins(PekkoGrpcPlugin)
   .settings(
     libraryDependencies ++= Seq(
-      lagomScaladslApi,
       Dependencies.chimney
     )
   )
@@ -452,30 +378,18 @@ def bpmRepositoryProject(pr: Project) =
       libraryDependencies ++= Dependencies.pekkoCore // HTTP server + gRPC; no persistence/projection (Postgres-only service)
         ++ Seq(
           Dependencies.chimney,
-          Dependencies.postgresql
+          Dependencies.postgresql,
+          Dependencies.scalaXml // CodeExtractor (scala.xml.XML) — was a Lagom transitive
         ) ++ Dependencies.tests ++
         Dependencies.slick
     )
-    .settings(Test / fork := true) // survives slice 013 (which removes lagomForkedTestSettings)
+    .settings(Test / fork := true)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`bpm-repository-api`, `microservice-core-pekko`)
+    .dependsOn(`bpm-repository-api`, `microservice-core`)
 
-lazy val `bpm-api-gateway` = (project in file("api-gateway/bpm-api-gateway"))
-  .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslServer % Optional,
-      ws,
-      Dependencies.macwire,
-      Dependencies.playJsonExt,
-      Dependencies.jwt,
-      Dependencies.pureConfig,
-      Dependencies.chimney
-    ) ++
-      Dependencies.tests
-  )
-  .settings(annetteSettings: _*)
+lazy val `bpm-api-gateway` = gatewayProject(project in file("api-gateway/bpm-api-gateway"))
   .dependsOn(
     `api-gateway-core`,
     `bpm-repository-api`,
@@ -485,11 +399,10 @@ lazy val `bpm-api-gateway` = (project in file("api-gateway/bpm-api-gateway"))
 lazy val `cms-api` = (project in file("cms/cms-api"))
   .enablePlugins(PekkoGrpcPlugin)
   .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslApi,
-      Dependencies.chimney
-    ) ++ Dependencies.tests ++
-      Dependencies.alpakkaS3 // gateway still wires the akka/alpakka CmsStorage (until slice 013)
+    libraryDependencies ++= Dependencies.pekkoCore
+      ++ Dependencies.pekkoConnectorsS3 // CmsStorage (upload/download/delete) — service + gateway
+      ++ Seq(Dependencies.chimney)
+      ++ Dependencies.tests
   )
   .settings(annetteSettings: _*)
   .dependsOn(`core`)
@@ -501,31 +414,18 @@ def cmsProject(pr: Project) =
       libraryDependencies ++= Dependencies.pekkoCore
         ++ Dependencies.pekkoPersistenceCassandra
         ++ Dependencies.pekkoProjection
-        ++ Dependencies.pekkoConnectorsS3 // replaces alpakkaS3 (slice 011)
+        ++ Dependencies.pekkoConnectorsS3
         ++ Seq(Dependencies.macwire, Dependencies.chimney)
-        ++ Dependencies.quillPekko
+        ++ Dependencies.quill
         ++ Dependencies.tests
     )
     .settings(Test / fork := true)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`cms-api`, `microservice-core-pekko`, `microservice-core`)
+    .dependsOn(`cms-api`, `microservice-core`)
 
-lazy val `cms-api-gateway` = (project in file("api-gateway/cms-api-gateway"))
-  .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslServer % Optional,
-      ws,
-      Dependencies.macwire,
-      Dependencies.playJsonExt,
-      Dependencies.jwt,
-      Dependencies.pureConfig,
-      Dependencies.chimney
-    ) ++
-      Dependencies.tests
-  )
-  .settings(annetteSettings: _*)
+lazy val `cms-api-gateway` = gatewayProject(project in file("api-gateway/cms-api-gateway"))
   .dependsOn(
     `api-gateway-core`,
     `cms-api`,
@@ -536,7 +436,6 @@ lazy val `org-structure-api` = (project in file("principals/org-structure-api"))
   .enablePlugins(PekkoGrpcPlugin)
   .settings(
     libraryDependencies ++= Seq(
-      lagomScaladslApi,
       Dependencies.chimney
     )
   )
@@ -551,7 +450,7 @@ def orgStructureProject(pr: Project) =
         ++ Dependencies.pekkoPersistenceCassandra
         ++ Dependencies.pekkoProjection
         ++ Seq(Dependencies.macwire, Dependencies.chimney, Dependencies.pureConfig)
-        ++ Dependencies.quillPekko
+        ++ Dependencies.quill
         ++ Dependencies.tests
         ++ Seq(
           "org.apache.pekko" %% "pekko-actor-testkit-typed" % Dependencies.PekkoVersion.pekkoCore % Test,
@@ -562,22 +461,9 @@ def orgStructureProject(pr: Project) =
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`org-structure-api`, `microservice-core-pekko`, `microservice-core`)
+    .dependsOn(`org-structure-api`, `microservice-core`)
 
-lazy val `org-structure-api-gateway` = (project in file("api-gateway/org-structure-api-gateway"))
-  .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslServer % Optional,
-      ws,
-      Dependencies.macwire,
-      Dependencies.playJsonExt,
-      Dependencies.jwt,
-      Dependencies.pureConfig,
-      Dependencies.chimney
-    ) ++
-      Dependencies.tests
-  )
-  .settings(annetteSettings: _*)
+lazy val `org-structure-api-gateway` = gatewayProject(project in file("api-gateway/org-structure-api-gateway"))
   .dependsOn(
     `api-gateway-core`,
     `org-structure-api`
@@ -587,7 +473,6 @@ lazy val `persons-api` = (project in file("principals/persons-api"))
   .enablePlugins(PekkoGrpcPlugin)
   .settings(
     libraryDependencies ++= Seq(
-      lagomScaladslApi,
       Dependencies.chimney
     )
   )
@@ -602,7 +487,7 @@ def personsProject(pr: Project) =
         ++ Dependencies.pekkoPersistenceCassandra
         ++ Dependencies.pekkoProjection
         ++ Seq(Dependencies.macwire, Dependencies.chimney)
-        ++ Dependencies.quillPekko
+        ++ Dependencies.quill
         ++ Dependencies.tests
         ++ Seq(
           "org.apache.pekko" %% "pekko-actor-testkit-typed" % Dependencies.PekkoVersion.pekkoCore % Test,
@@ -613,22 +498,9 @@ def personsProject(pr: Project) =
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`persons-api`, `microservice-core-pekko`, `microservice-core`)
+    .dependsOn(`persons-api`, `microservice-core`)
 
-lazy val `persons-api-gateway` = (project in file("api-gateway/persons-api-gateway"))
-  .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslServer % Optional,
-      ws,
-      Dependencies.macwire,
-      Dependencies.playJsonExt,
-      Dependencies.jwt,
-      Dependencies.pureConfig,
-      Dependencies.chimney
-    ) ++
-      Dependencies.tests
-  )
-  .settings(annetteSettings: _*)
+lazy val `persons-api-gateway` = gatewayProject(project in file("api-gateway/persons-api-gateway"))
   .dependsOn(
     `api-gateway-core`,
     `persons-api`
@@ -638,7 +510,6 @@ lazy val `principal-groups-api` = (project in file("principals/principal-groups-
   .enablePlugins(PekkoGrpcPlugin)
   .settings(
     libraryDependencies ++= Seq(
-      lagomScaladslApi,
       Dependencies.chimney
     )
   )
@@ -653,29 +524,16 @@ def principalGroupsProject(pr: Project) =
         ++ Dependencies.pekkoPersistenceCassandra
         ++ Dependencies.pekkoProjection
         ++ Seq(Dependencies.macwire, Dependencies.chimney)
-        ++ Dependencies.quillPekko
+        ++ Dependencies.quill
         ++ Dependencies.tests
     )
     .settings(Test / fork := true)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`principal-groups-api`, `microservice-core-pekko`, `microservice-core`)
+    .dependsOn(`principal-groups-api`, `microservice-core`)
 
-lazy val `principal-groups-api-gateway` = (project in file("api-gateway/principal-groups-api-gateway"))
-  .settings(
-    libraryDependencies ++= Seq(
-      lagomScaladslServer % Optional,
-      ws,
-      Dependencies.macwire,
-      Dependencies.playJsonExt,
-      Dependencies.jwt,
-      Dependencies.pureConfig,
-      Dependencies.chimney
-    ) ++
-      Dependencies.tests
-  )
-  .settings(annetteSettings: _*)
+lazy val `principal-groups-api-gateway` = gatewayProject(project in file("api-gateway/principal-groups-api-gateway"))
   .dependsOn(
     `api-gateway-core`,
     `principal-groups-api`
@@ -685,7 +543,6 @@ lazy val `subscriptions-api` = (project in file("cms/subscriptions-api"))
   .enablePlugins(PekkoGrpcPlugin)
   .settings(
     libraryDependencies ++= Seq(
-      lagomScaladslApi,
       Dependencies.chimney
     ) ++ Dependencies.tests
   )
@@ -700,14 +557,14 @@ def subscriptionsProject(pr: Project) =
         ++ Dependencies.pekkoPersistenceCassandra
         ++ Dependencies.pekkoProjection
         ++ Seq(Dependencies.macwire, Dependencies.chimney)
-        ++ Dependencies.quillPekko
+        ++ Dependencies.quill
         ++ Dependencies.tests
     )
     .settings(Test / fork := true)
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(dockerSettings: _*)
-    .dependsOn(`subscriptions-api`, `microservice-core-pekko`, `microservice-core`)
+    .dependsOn(`subscriptions-api`, `microservice-core`)
 
 lazy val `demo-ignition`    = ignitionDemoProject(project in file("ignition/demo-ignition"))
 lazy val `application`      = applicationProject(project in file("application/application"))
@@ -719,3 +576,4 @@ lazy val `org-structure`    = orgStructureProject(project in file("principals/or
 lazy val `persons`          = personsProject(project in file("principals/persons"))
 lazy val `principal-groups` = principalGroupsProject(project in file("principals/principal-groups"))
 lazy val `subscriptions`    = subscriptionsProject(project in file("cms/subscriptions"))
+

@@ -17,7 +17,7 @@
 package biz.lobachev.annette.microservice_core.indexing
 
 import biz.lobachev.annette.core.exception.{AnnetteTransportExceptionCompanion1, AnnetteTransportExceptionCompanion2}
-import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
+import biz.lobachev.annette.core.exception.TransportErrorCode
 
 object IndexingRequestFailure extends AnnetteTransportExceptionCompanion2 {
   val ErrorCode       = TransportErrorCode.InternalServerError

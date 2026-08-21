@@ -22,6 +22,7 @@ import biz.lobachev.annette.bpm_repository.impl.bp.{BusinessProcessActions, Busi
 import biz.lobachev.annette.bpm_repository.impl.model.{BpmModelActions, BpmModelService}
 import biz.lobachev.annette.bpm_repository.impl.schema.{DataSchemaActions, DataSchemaService}
 import com.typesafe.config.ConfigFactory
+import biz.lobachev.annette.core.exception.AnnetteGrpcExceptionMapping
 import org.apache.pekko.actor.typed.ActorSystem
 import org.apache.pekko.actor.typed.scaladsl.Behaviors
 import org.apache.pekko.grpc.scaladsl.{ServerReflection, ServiceHandler}
@@ -29,7 +30,7 @@ import org.apache.pekko.http.scaladsl.Http
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{Await, ExecutionContext}
-import scala.concurrent.duration._
+import scala.concurrent.duration.{Duration, _}
 
 object BpmRepositoryServiceMain {
 
@@ -42,6 +43,10 @@ object BpmRepositoryServiceMain {
     )
     val app = new BpmRepositoryServiceApp()
     app.run()(system)
+    // A service main must not return: sbt (and the packaged app) tear the JVM down
+    // once main completes. Block until the actor system terminates.
+    Await.ready(system.whenTerminated, Duration.Inf)
+    (): Unit
   }
 }
 
@@ -75,7 +80,7 @@ private[impl] class BpmRepositoryServiceApp() {
     // D6: gRPC reflection enabled — concat the service handler with ServerReflection
     // so grpcurl/inspection tools work against the bound server.
     val handler = ServiceHandler.concatOrNotFound(
-      BpmRepositoryServiceHandler.partial(serviceApi),
+      BpmRepositoryServiceHandler.partial(serviceApi, g.BpmRepositoryService.name, AnnetteGrpcExceptionMapping.serverHandlerOrDefault _),
       ServerReflection.partial(List(g.BpmRepositoryService))(system)
     )
 

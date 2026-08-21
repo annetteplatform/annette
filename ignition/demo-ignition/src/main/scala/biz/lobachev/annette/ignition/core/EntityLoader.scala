@@ -16,9 +16,9 @@
 
 package biz.lobachev.annette.ignition.core
 
-import akka.pattern.CircuitBreakerOpenException
-import akka.stream.scaladsl.{RestartSource, Sink, Source}
-import akka.stream.{Materializer, RestartSettings}
+import org.apache.pekko.pattern.CircuitBreakerOpenException
+import org.apache.pekko.stream.scaladsl.{RestartSource, Sink, Source}
+import org.apache.pekko.stream.{Materializer, RestartSettings}
 import biz.lobachev.annette.ignition.core.config.{EntityLoaderConfig, StopOnError}
 import biz.lobachev.annette.ignition.core.result._
 import com.fasterxml.jackson.databind.ObjectMapper

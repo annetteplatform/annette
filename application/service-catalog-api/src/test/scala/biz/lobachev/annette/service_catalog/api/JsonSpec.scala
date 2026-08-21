@@ -2,8 +2,7 @@ package biz.lobachev.annette.service_catalog.api
 
 import biz.lobachev.annette.core.model.auth.PersonPrincipal
 import biz.lobachev.annette.core.model.text.{FileIcon, FrameworkIcon}
-import biz.lobachev.annette.service_catalog.api.group.Group
-import biz.lobachev.annette.service_catalog.api.item.{ExternalLink, InternalLink, Service}
+import biz.lobachev.annette.service_catalog.api.item.{ExternalLink, InternalLink, Group, Service}
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.libs.json.Json
@@ -27,7 +26,7 @@ class JsonSpec extends AnyWordSpec with Matchers {
           "ru" -> "Основные сервисы Annette",
           "en" -> "Annette main services"
         ),
-        services = Seq(
+        children = Seq(
           "ORG_STRUCTURE_SVC",
           "PERSON_SVC",
           "ANNETTE_EXT_SVC"
@@ -60,7 +59,7 @@ class JsonSpec extends AnyWordSpec with Matchers {
           link = InternalLink(
             applicationId = "ANNETE",
             url = "/org-structure/organizations",
-            openInNew = false
+            openInNew = Some(false)
           ),
           active = true,
           updatedBy = PersonPrincipal("P0001"),
@@ -80,7 +79,7 @@ class JsonSpec extends AnyWordSpec with Matchers {
           link = InternalLink(
             applicationId = "ANNETTE",
             url = "/person/persons",
-            openInNew = false
+            openInNew = Some(false)
           ),
           active = true,
           updatedBy = PersonPrincipal("P0001"),
@@ -99,7 +98,7 @@ class JsonSpec extends AnyWordSpec with Matchers {
           ),
           link = ExternalLink(
             url = "https://annetteplatform.github.io/",
-            openInNew = true
+            openInNew = Some(true)
           ),
           active = true,
           updatedBy = PersonPrincipal("P0001"),

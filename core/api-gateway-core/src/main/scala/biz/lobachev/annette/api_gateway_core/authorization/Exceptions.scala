@@ -17,7 +17,7 @@
 package biz.lobachev.annette.api_gateway_core.authorization
 
 import biz.lobachev.annette.core.exception.AnnetteTransportExceptionCompanion
-import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
+import biz.lobachev.annette.core.exception.TransportErrorCode
 
 object AuthorizationFailedException extends AnnetteTransportExceptionCompanion {
   override val ErrorCode: TransportErrorCode = TransportErrorCode.Forbidden

@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: api-gateway
-          image: "annetteplatform/api-gateway:0.5.1"
+          image: "annetteplatform/api-gateway:0.6.0"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -34,7 +34,7 @@ spec:
           ports:
             - containerPort: 9000
               name: http
-            - containerPort: 2552
+            - containerPort: 17355
               name: remoting
             - containerPort: 8558
               name: management
@@ -76,7 +76,7 @@ spec:
     spec:
       containers:
         - name: application
-          image: "annetteplatform/application:0.5.1"
+          image: "annetteplatform/application:0.6.0"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -94,7 +94,7 @@ spec:
           ports:
             - containerPort: 9000
               name: http
-            - containerPort: 2552
+            - containerPort: 17361
               name: remoting
             - containerPort: 8558
               name: management
@@ -150,7 +150,7 @@ spec:
     spec:
       containers:
         - name: authorization
-          image: "annetteplatform/authorization:0.5.1"
+          image: "annetteplatform/authorization:0.6.0"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -168,7 +168,7 @@ spec:
           ports:
             - containerPort: 9000
               name: http
-            - containerPort: 2552
+            - containerPort: 17363
               name: remoting
             - containerPort: 8558
               name: management
@@ -224,7 +224,7 @@ spec:
     spec:
       containers:
         - name: subscriptions
-          image: "annetteplatform/subscriptions:0.5.1"
+          image: "annetteplatform/subscriptions:0.6.0"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -242,7 +242,7 @@ spec:
           ports:
             - containerPort: 9000
               name: http
-            - containerPort: 2552
+            - containerPort: 17366
               name: remoting
             - containerPort: 8558
               name: management
@@ -298,7 +298,7 @@ spec:
     spec:
       containers:
         - name: principal-groups
-          image: "annetteplatform/principal-groups:0.5.1"
+          image: "annetteplatform/principal-groups:0.6.0"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -316,7 +316,7 @@ spec:
           ports:
             - containerPort: 9000
               name: http
-            - containerPort: 2552
+            - containerPort: 17369
               name: remoting
             - containerPort: 8558
               name: management
@@ -372,7 +372,7 @@ spec:
     spec:
       containers:
         - name: persons
-          image: "annetteplatform/persons:0.5.1"
+          image: "annetteplatform/persons:0.6.0"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -394,7 +394,7 @@ spec:
           ports:
             - containerPort: 9000
               name: http
-            - containerPort: 2552
+            - containerPort: 17368
               name: remoting
             - containerPort: 8558
               name: management
@@ -457,7 +457,7 @@ spec:
     spec:
       containers:
         - name: org-structure
-          image: "annetteplatform/org-structure:0.5.1"
+          image: "annetteplatform/org-structure:0.6.0"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -479,7 +479,7 @@ spec:
           ports:
             - containerPort: 9000
               name: http
-            - containerPort: 2552
+            - containerPort: 17367
               name: remoting
             - containerPort: 8558
               name: management
@@ -542,7 +542,7 @@ spec:
     spec:
       containers:
         - name: cms
-          image: "annetteplatform/cms:0.5.1"
+          image: "annetteplatform/cms:0.6.0"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -564,7 +564,7 @@ spec:
           ports:
             - containerPort: 9000
               name: http
-            - containerPort: 2552
+            - containerPort: 17365
               name: remoting
             - containerPort: 8558
               name: management
@@ -620,7 +620,7 @@ spec:
     spec:
       containers:
         - name: bpm-repository
-          image: "annetteplatform/bpm-repository:0.5.1"
+          image: "annetteplatform/bpm-repository:0.6.0"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -634,8 +634,6 @@ spec:
           ports:
             - containerPort: 9000
               name: http
-            - containerPort: 2552
-              name: remoting
             - containerPort: 8558
               name: management
 ---
@@ -716,7 +714,7 @@ spec:
     spec:
       containers:
         - name: service-catalog
-          image: "annetteplatform/service-catalog:0.5.1"
+          image: "annetteplatform/service-catalog:0.6.0"
           imagePullPolicy: Always
           envFrom:
             - configMapRef:
@@ -734,7 +732,7 @@ spec:
           ports:
             - containerPort: 9000
               name: http
-            - containerPort: 2552
+            - containerPort: 17362
               name: remoting
             - containerPort: 8558
               name: management

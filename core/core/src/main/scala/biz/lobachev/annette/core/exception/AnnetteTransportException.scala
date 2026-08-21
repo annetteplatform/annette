@@ -17,7 +17,7 @@
 package biz.lobachev.annette.core.exception
 
 import biz.lobachev.annette.core.message.ErrorMessage
-import com.lightbend.lagom.scaladsl.api.transport.TransportErrorCode
+import biz.lobachev.annette.core.exception.TransportErrorCode
 
 case class AnnetteTransportException(
   errorCode: TransportErrorCode,

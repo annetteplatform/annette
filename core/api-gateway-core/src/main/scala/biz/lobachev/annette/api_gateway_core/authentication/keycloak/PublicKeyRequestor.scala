@@ -16,8 +16,8 @@
 
 package biz.lobachev.annette.api_gateway_core.authentication.keycloak
 
-import akka.actor.typed.scaladsl.{ActorContext, Behaviors}
-import akka.actor.typed.{ActorRef, Behavior}
+import org.apache.pekko.actor.typed.scaladsl.{ActorContext, Behaviors}
+import org.apache.pekko.actor.typed.{ActorRef, Behavior}
 import org.slf4j.LoggerFactory
 import play.api.libs.ws.WSClient
 

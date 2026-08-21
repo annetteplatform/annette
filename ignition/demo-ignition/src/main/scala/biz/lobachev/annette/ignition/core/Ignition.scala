@@ -16,7 +16,7 @@
 
 package biz.lobachev.annette.ignition.core
 
-import akka.stream.scaladsl.{Sink, Source}
+import org.apache.pekko.stream.scaladsl.{Sink, Source}
 import biz.lobachev.annette.ignition.core.config.{IgnoreError, StopOnError}
 import biz.lobachev.annette.ignition.core.result.{LoadFailed, ServiceLoadResult}
 import com.typesafe.config.Config
@@ -27,7 +27,7 @@ import scala.jdk.CollectionConverters._
 import scala.util.Try
 
 class Ignition(
-  client: IgnitionLagomClient,
+  client: IgnitionGrpcClient,
   factories: Map[String, ServiceLoaderFactory]
 ) {
   implicit val ec: ExecutionContext = client.executionContext
