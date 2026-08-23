@@ -41,7 +41,7 @@ import io.getquill.{CassandraAsyncContext, CassandraContextConfig, SnakeCase}
  *       password = "cassandra"
  *     }
  *   }
- *   keyspace = ${?KEYSPACE_PREFIX}cms
+ *   keyspace = \${?KEYSPACE_PREFIX}cms
  *   keyspace-autocreate = true                   # optional (dev); SimpleStrategy
  *   replication-factor = 1                       # optional; used by autocreate
  * }

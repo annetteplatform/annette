@@ -95,7 +95,7 @@ import router.Routes
 import scala.concurrent.ExecutionContext
 
 /**
- * Builds [[GrpcClientSettings]] for backend services from `pekko.grpc.client.<name>` config
+ * Builds `GrpcClientSettings` for backend services from `pekko.grpc.client.<name>` config
  * blocks (see api-gateway application.conf). Introduced by slice 002; wired to the live
  * actor system since slice 013 (Play 3 / Pekko gateway).
  */

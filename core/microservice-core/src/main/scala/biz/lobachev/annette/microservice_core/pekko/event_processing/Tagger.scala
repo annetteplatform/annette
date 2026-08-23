@@ -29,21 +29,21 @@ import scala.reflect.ClassTag
  *   Math.abs(entityId.hashCode) % numShards
  *
  * def shardTag(baseTagName: String, shardNo: Int): String =
- *   s"$baseTagName$shardNo"
+ *   s"\$baseTagName\$shardNo"
  * }}}
  *
  * When `AggregateEventTag.sharded[Event](numShards)` is called WITHOUT an explicit baseTagName
  * (the universal pattern in all 28 Annette entities — verified by grep), the baseTagName is
  * `implicitly[ClassTag[Event]].runtimeClass.getName` — i.e. the JVM FQN of the Event trait.
- * For a sealed trait nested in an object companion, this is `"<pkg>.<Object>$Event"`.
+ * For a sealed trait nested in an object companion, this is `"<pkg>.<Object>\$Event"`.
  *
  * Therefore for e.g. `RoleEntity.Event` (Lagom base tag):
- *   biz.lobachev.annette.authorization.impl.role.RoleEntity$Event
+ *   biz.lobachev.annette.authorization.impl.role.RoleEntity\$Event
  * the per-shard tag strings are:
- *   biz.lobachev.annette.authorization.impl.role.RoleEntity$Event0
- *   biz.lobachev.annette.authorization.impl.role.RoleEntity$Event1
+ *   biz.lobachev.annette.authorization.impl.role.RoleEntity\$Event0
+ *   biz.lobachev.annette.authorization.impl.role.RoleEntity\$Event1
  *   ...
- *   biz.lobachev.annette.authorization.impl.role.RoleEntity$Event9
+ *   biz.lobachev.annette.authorization.impl.role.RoleEntity\$Event9
  *
  * NOTE: there is NO separator between baseTagName and shardNo — this corrects the
  * `"entityName|n"` guess in `dev/migrate-to-pekko.md` §4.3. See `001-decisions.md` §A for

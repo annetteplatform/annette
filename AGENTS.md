@@ -31,9 +31,17 @@ cd deploy/docker && ./deploy.sh        # Postgres, Cassandra 3.11, OpenSearch 2.
 ./demo-ignition.sh                      # after services are healthy — loads demo data
 ```
 
-Most integration specs need a real Cassandra on `localhost:9042`, OpenSearch on `:9200` (admin/admin), Postgres on
-`:5432`, Camunda on `:3090`. Expect tests to fail/hang otherwise. The four camunda specs share one engine and run
+Most integration specs need a real Cassandra on `localhost:9042`, OpenSearch on `:9200`, Postgres on `:5432`,
+Camunda on `:3090`. Expect tests to fail/hang otherwise. The four camunda specs share one engine and run
 sequentially (`Test / parallelExecution := false`).
+
+- OpenSearch 2.8 speaks **HTTPS** on `:9200` with a self-signed cert — `curl -k -u admin:admin ...`. Its disk
+  flood-stage watermark **re-arms on container restart** and silently blocks index writes (symptom: projections
+  retrying with `cluster_block_exception ... read-only-allow-delete`). Fix: raise the watermarks and clear
+  `index.blocks.read_only_allow_delete` on affected indices.
+- Keycloak serves on `:8080` **without** the legacy `/auth` prefix (`/realms/AnnetteDemo/...`, not
+  `/auth/realms/...`). Credentials: master realm `admin`/`admin`; demo user `kristina.fisher`/`abc` (realm
+  `AnnetteDemo`, public client `annette-console`).
 
 ## Dev mode (per-process, tmux)
 
@@ -80,7 +88,28 @@ Each business domain is split into three layers — keep this when adding code:
   `AnnetteGrpcExceptionMapping` error recovery).
 - Microservice entrypoint convention: `biz.lobachev.annette.<service>.impl.<Service>Main` (plain `main()`, constructs
   the ActorSystem, shards entities, starts projections, binds gRPC on `annette.http.port`).
+- **Startup contract (all three required; verified at runtime in slices 011/013):**
+  1. `main()` must end with `Await.ready(system.whenTerminated, Duration.Inf)` — sbt (and the packaged app) kill the
+     JVM once `main` returns.
+  2. Loaders must call `Await.result(ProjectionBase.initAll(), 30.seconds)` before binding — it creates the projection
+     offset tables AND runs `CassandraReadJournal.initialize()` (journal/snapshot keyspaces, `tag_views`). On a fresh
+     keyspace, skipping it fails every projection with "Keyspace ... does not exist" / "unconfigured table tag_views".
+  3. Every DbDao needs its `createTables()` awaited at startup (idempotent) — otherwise read-side queries fail with
+     "unconfigured table <name>".
 - `ignition/demo-ignition` is a standalone app (not a service) that seeds demo data over gRPC; `run-ignition.sh` runs it.
+
+## gRPC wiring & exception mapping
+
+- `GrpcClientSettings.fromConfig("<client-name>")` takes the client **name only** (`"persons"`, not
+  `"pekko.grpc.client.persons"`) — the prefix is applied internally. Passing the full path doubles it and fails only
+  at first call (`Config path 'pekko.grpc.client.pekko.grpc.client.<name>' does not exist`).
+- Server side: bind handlers via `XxxServiceHandler(api, AnnetteGrpcExceptionMapping.serverHandlerOrDefault _)`
+  (eta-expanded).
+- Client side: every generated-client call goes through `AnnetteGrpcExceptionMapping.recoverAnnette`, which decodes
+  the `annette-error-bin` trailer back into `AnnetteTransportException` with a **canonical** `TransportErrorCode`
+  (400→BadRequest etc.). Non-canonical codes silently break every typed `case XxxAlreadyExist(...)` unapply match
+  (companion `unapply` compares `errorCode` for equality) — this broke demo-ignition upserts until fixed.
+- HTTP→gRPC status mapping: 400→INVALID_ARGUMENT, 403→PERMISSION_DENIED, 404→NOT_FOUND, else INTERNAL.
 
 ## Config selection (per environment)
 
@@ -93,6 +122,26 @@ Each service ships four HOCON files in `conf/`; pick with `-Dconfig.resource=`:
 
 The `conf/` dir is added to runtime unmanaged classpath by `confDirSettings` in `build.sbt` — runtime configs are NOT
 under `src/main/resources`.
+
+### Cassandra service config checklist
+
+Every Cassandra-backed service's `application.conf` must carry all of the following (verified at runtime in slices
+011/013; `cms/cms/conf/application.conf` is the reference implementation):
+
+- `pekko.actor.provider = cluster` and `pekko.http.server.preview.enable-http2 = on` (gRPC needs h2c; without it
+  clients die with `Http2Exception: First received frame was not SETTINGS`).
+- A **nested** `cassandra-quill { session { contact-points, credentials } keyspace, keyspace-autocreate }` block —
+  a flat `cassandra-quill = ${cassandra.default}` alias breaks the Quill context ("No configuration setting found
+  for key 'session'"; the Pekko-variant `CassandraQuillDao` reads `session.*` directly).
+- A `datastax-java-driver` block (contact points + `load-balancing-policy.local-datacenter` + auth) — both Pekko
+  Persistence Cassandra and Pekko Projection resolve their session against it.
+- Explicit `pekko.persistence.journal.plugin` / `pekko.persistence.snapshot-store.plugin` ids plus
+  `keyspace-autocreate = true` / `tables-autocreate = true` in the journal/snapshot blocks.
+- `events-by-tag` keys live **directly** under `pekko.persistence.cassandra.events-by-tag.*` — the Lagom-era
+  `journal.events-by-tag` / `query.events-by-tag` paths are silently ignored (defaults = 5s EC delay, 2015
+  first-time-bucket → projections stall scanning thousands of empty day-buckets).
+- Dev: single-member self-join `pekko.cluster.seed-nodes = ["pekko://<system-name>@127.0.0.1:<artery-port>"]` in
+  `application.dev.conf` — without it the cluster never forms and ClusterSharding asks time out.
 
 ## Env-var namespacing (don't cross-contaminate)
 
@@ -129,6 +178,16 @@ sbt persons/test                        # one service
 ./build-local.sh                        # sbt clean docker:publishLocal
 # NOTE: build-local.sh ALSO tags and pushes to reg.cloud.ambergate.ru (maintainer-private registry).
 #       Do not run it unless you intend that push.
+
+# E2E smoke through the gateway (needs seeded demo data)
+TOKEN=$(curl -s -X POST "http://localhost:8080/realms/AnnetteDemo/protocol/openid-connect/token" \
+  -d "grant_type=password&client_id=annette-console&username=kristina.fisher&password=abc" \
+  -H "Content-Type: application/x-www-form-urlencoded" | jq -r .access_token)
+curl -s -X POST localhost:9000/api/annette/v1/person/findPersons \
+  -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+  -d '{"offset":0,"size":2,"filter":""}'       # expect 200, {"total":1000,...}
+# Sweep one find* call per REST-exposed category: application, authorization, serviceCatalog,
+# principalGroup, person, orgStructure, bpm, cms. subscriptions is internal-only (no public routes).
 ```
 
 ## Testing quirks

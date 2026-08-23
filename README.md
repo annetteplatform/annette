@@ -103,9 +103,45 @@ cd annette/deploy/docker
 ./demo-ignition.sh
 ```
 
-6. After demo ignition completes open Annette Console [http://localhost:8500](http://localhost:8500) (login: `kristina.fisher`, password: `abc`).
+5. After demo ignition completes open Annette Console [http://localhost:8500](http://localhost:8500) (login: `kristina.fisher`, password: `abc`).
 Keycloak administration console is running at [http://localhost:8080](http://localhost:8080) (login: `admin`, password: `admin`).
 
+## Technology stack
+
+* [Scala 2.13](https://www.scala-lang.org/) + [sbt](https://www.scala-sbt.org/) build
+* [Apache Pekko 1.1.3](https://pekko.apache.io/) — typed actors, clustering, Pekko Persistence (Cassandra)
+  and Pekko Projection for the event-sourced services
+* [Pekko gRPC](https://pekko.apache.org/docs/pekko-grpc/current/) for inter-service communication
+* [Play Framework 3](https://www.playframework.com/) REST API gateway
+* [Apache Cassandra](https://cassandra.apache.org/) event store / read sides, [PostgreSQL](https://www.postgresql.org/) (Slick) for BPM repository
+* [OpenSearch](https://opensearch.org/) full-text and attribute search
+* [Keycloak](https://www.keycloak.org/) authentication, [Camunda BPM](https://camunda.com/) engine,
+  S3-compatible object storage ([MinIO](https://min.io/)) for CMS files
+
+## Development
+
+Annette services are developed as separate sbt processes — there is no `sbt runAll`.
+
+1. Bring up external services and seed the demo data:
+
+```bash
+cd deploy/docker
+./deploy.sh
+./demo-ignition.sh
+```
+
+2. Run the platform locally (starts all 9 microservices plus the API gateway in a tmux session;
+   the gateway listens on [http://localhost:9000](http://localhost:9000)):
+
+```bash
+./run-local.sh              # all services + api-gateway
+./run-local.sh cms api-gateway   # or any subset
+```
+
+3. Run the test suite: `sbt test` (integration tests require the external services from step 1).
+
+See [AGENTS.md](AGENTS.md) for the full development guide — dev-mode port table, per-service configuration
+checklists, gRPC wiring notes and smoke-test recipes.
 
 ## Documentation 
 
@@ -118,4 +154,4 @@ Annette Platform Community Edition is Open Source and available under the [Apach
 
 ## Legal
 
-Copyright 2013 - 2020 Valery Lobachev and the Annette Contributors. All rights reserved.
+Copyright 2013 - 2026 Valery Lobachev and the Annette Contributors. All rights reserved.
