@@ -25,6 +25,7 @@ import biz.lobachev.annette.service_catalog.api.user.{
   FindUserServicesQuery,
   ScopeByCategoryFindQuery,
   ScopeServicesQuery,
+  ScopeServicesResult,
   UserService
 }
 import biz.lobachev.annette.service_catalog.gateway.Permissions.VIEW_SERVICE_CATALOG
@@ -61,15 +62,23 @@ class UserServiceController @Inject() (
                                principalCodes = principalCodes
                              )
                            )
-          // TODO: select scope by priority
-          scopeId        = scopes.head.scopeId
-          scopeServices <- serviceCatalogService.getScopeServices(
-                             ScopeServicesQuery(
-                               scopeId = scopeId,
-                               principalCodes = principalCodes,
-                               languageId = languageId
-                             )
-                           )
+           // TODO: select scope by priority
+           scopeServices <- scopes.headOption.map { scope =>
+                              serviceCatalogService.getScopeServices(
+                                ScopeServicesQuery(
+                                  scopeId = scope.scopeId,
+                                  principalCodes = principalCodes,
+                                  languageId = languageId
+                                )
+                              )
+                            }.getOrElse(
+                              Future.successful(
+                                ScopeServicesResult(
+                                  root = Seq.empty,
+                                  serviceItems = Seq.empty
+                                )
+                              )
+                            )
           applicationIds = scopeServices.serviceItems.flatMap {
                              case UserService(_, _, _, _, InternalLink(applicationId, _, _), _) => Some(applicationId)
                              case _                                                             => None

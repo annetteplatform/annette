@@ -54,6 +54,7 @@ import org.apache.pekko.stream.SystemMaterializer
 import org.slf4j.LoggerFactory
 
 import scala.concurrent.{Await, ExecutionContext}
+import scala.util.control.NonFatal
 import scala.concurrent.duration.{Duration, _}
 
 object CmsServiceMain {
@@ -66,7 +67,19 @@ object CmsServiceMain {
       config
     )
     val app = new CmsServiceApp()
-    app.run()(system)
+    // A startup failure (e.g. the concurrent CREATE TABLE IF NOT EXISTS race on the shared
+    // pekko_projection keyspace when many services bootstrap against a fresh Cassandra)
+    // must terminate the ActorSystem and exit non-zero: non-daemon Pekko threads otherwise
+    // keep a dead main() alive as a zombie JVM that no restart policy can recover.
+    try app.run()(system)
+    catch {
+      case NonFatal(e) =>
+        System.err.println(s"\n\n@@@@ Startup of CmsServiceApp failed, terminating ActorSystem and exiting: ${e}\n\n")
+        e.printStackTrace()
+        system.terminate()
+        Await.ready(system.whenTerminated, 10.seconds)
+        sys.exit(1)
+    }
     // A service main must not return: sbt (and the packaged app) tear the JVM down
     // once main completes. Block until the actor system terminates.
     Await.ready(system.whenTerminated, Duration.Inf)

@@ -68,6 +68,25 @@ abstract class AbstractIndexDao(client: ElasticClient)(implicit
 
     } yield result
 
+  /**
+   * Memoized createEntityIndex(). Lagom's `setGlobalPrepare` used to create indices
+   * with their configured mappings at read-side startup; the Pekko Projection migration
+   * dropped that hook, so indices were auto-created by the first indexed document with
+   * OpenSearch *dynamic* mappings (text fields) — exact-match term/keyword queries then
+   * match nothing (symptom: `empty.head` in UserServiceController.getUserServices).
+   * Ensuring the index before the first read/write restores the intended mappings.
+   * The memoized future is retried after a failure (e.g. once the admin has fixed an
+   * invalid mapping), and createEntityIndex itself is idempotent.
+   */
+  @volatile
+  private var ensuredIndex: Future[Done] = _
+
+  protected def ensureIndex(): Future[Done] = synchronized {
+    if (ensuredIndex == null || ensuredIndex.value.exists(_.isFailure))
+      ensuredIndex = createEntityIndex()
+    ensuredIndex
+  }
+
   protected def processResponse[T]: PartialFunction[Response[T], T] = {
     case failure: RequestFailure    =>
       log.error("indexing request failed", failure.error.asException)
@@ -187,26 +206,30 @@ abstract class AbstractIndexDao(client: ElasticClient)(implicit
   def createIndexDoc(id: String, doc: List[(String, Any)]): Future[Done] = createIndexDoc(id, doc: _*)
 
   def createIndexDoc(id: String, doc: (String, Any)*): Future[Done] =
-    client.execute {
-      indexInto(indexName)
-        .id(id)
-        .fields(alias2FieldNameDoc(doc))
-        .refresh(RefreshPolicy.Immediate)
-    }.map { res =>
-      processResponse(res)
-      Done
+    ensureIndex().flatMap { _ =>
+      client.execute {
+        indexInto(indexName)
+          .id(id)
+          .fields(alias2FieldNameDoc(doc))
+          .refresh(RefreshPolicy.Immediate)
+      }.map { res =>
+        processResponse(res)
+        Done
+      }
     }
 
   def updateIndexDoc(id: String, doc: List[(String, Any)]): Future[Done] = updateIndexDoc(id, doc: _*)
 
   def updateIndexDoc(id: String, doc: (String, Any)*): Future[Done] =
-    client.execute {
-      updateById(indexName, id)
-        .doc(alias2FieldNameDoc(doc))
-        .refresh(RefreshPolicy.Immediate)
-    }.map { res =>
-      processResponse(res)
-      Done
+    ensureIndex().flatMap { _ =>
+      client.execute {
+        updateById(indexName, id)
+          .doc(alias2FieldNameDoc(doc))
+          .refresh(RefreshPolicy.Immediate)
+      }.map { res =>
+        processResponse(res)
+        Done
+      }
     }
 
   def deleteIndexDoc(id: String): Future[Done] =
@@ -218,17 +241,19 @@ abstract class AbstractIndexDao(client: ElasticClient)(implicit
     }
 
   protected def findEntity(searchRequest: SearchRequest): Future[FindResult] =
-    client.execute(searchRequest).map { res =>
-      val result = processResponse(res)
-      val total  = result.hits.total.value
-      val hits   = result.hits.hits.map { hit =>
-        val updatedAt = hit.sourceAsMap
-          .get(alias2FieldName("updatedAt"))
-          .map(v => OffsetDateTime.parse(v.toString))
-          .getOrElse(OffsetDateTime.now)
-        HitResult(hit.id, hit.score, updatedAt)
-      }.toSeq
-      FindResult(total, hits)
+    ensureIndex().flatMap { _ =>
+      client.execute(searchRequest).map { res =>
+        val result = processResponse(res)
+        val total  = result.hits.total.value
+        val hits   = result.hits.hits.map { hit =>
+          val updatedAt = hit.sourceAsMap
+            .get(alias2FieldName("updatedAt"))
+            .map(v => OffsetDateTime.parse(v.toString))
+            .getOrElse(OffsetDateTime.now)
+          HitResult(hit.id, hit.score, updatedAt)
+        }.toSeq
+        FindResult(total, hits)
+      }
     }
 
   protected def buildFilterQuery(filter: Option[String], fieldBoosts: Seq[(String, Double)]) =
