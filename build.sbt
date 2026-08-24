@@ -5,7 +5,7 @@ import play.sbt.routes.RoutesKeys
 
 scalaVersion := "2.13.18"
 
-ThisBuild / version := "0.6.0"
+ThisBuild / version := "0.6.0-RC"
 ThisBuild / scalaVersion := "2.13.18"
 
 ThisBuild / organization := "biz.lobachev.annette"
@@ -68,7 +68,7 @@ def confDirSettings: Seq[Setting[_]] =
 
 def dockerSettings: Seq[Setting[_]] =
   Seq(
-    dockerBaseImage := "openjdk:11",
+    dockerBaseImage := "eclipse-temurin:17-jre",
     dockerEntrypoint += "-Dpidfile.path=/dev/null", // в common settings
     dockerExposedPorts += 9000,
     dockerChmodType := DockerChmodType.UserGroupWriteExecute,
@@ -232,7 +232,7 @@ def ignitionDemoProject(pr: Project) =
     .settings(confDirSettings: _*)
     .settings(annetteSettings: _*)
     .settings(
-      dockerBaseImage := "openjdk:11",
+      dockerBaseImage := "eclipse-temurin:17-jre",
       dockerChmodType := DockerChmodType.UserGroupWriteExecute,
       dockerUsername := Some("annetteplatform")
     )

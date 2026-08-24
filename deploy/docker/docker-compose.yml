@@ -1,6 +1,27 @@
-version: '3'
+name: annette
+
+# Profiles:
+#   (none) — development: core infrastructure only (backend services run from sbt via ./run-local.sh)
+#   full   — the complete platform: traefik, frontend, api-gateway, all backend services, demo-ignition
+#   tools  — dev conveniences: pgAdmin, OpenSearch Dashboards, traefik (can be combined with dev/full)
+#
+# Start via deploy.sh (pins image versions), e.g.:
+#   ./deploy.sh            # development infrastructure
+#   ./deploy.sh full       # full stack (incl. demo-data seeding)
+#   ./deploy.sh full --tools
+
+x-service-healthcheck: &service-healthcheck
+  # Pekko HTTP/gRPC port: any HTTP response (incl. 404) means the server is up.
+  # curl without -f exits 0 on every HTTP status, non-zero only on connection errors.
+  test: ["CMD-SHELL", "curl -s -o /dev/null --max-time 3 http://localhost:9000/"]
+  interval: 10s
+  timeout: 5s
+  retries: 10
+  start_period: 90s
 
 services:
+
+  # ---------------------------------------------------------------- infrastructure
 
   postgres:
     build: ./postgres/
@@ -16,17 +37,6 @@ services:
       timeout: 5s
       retries: 5
 
-  pgadmin:
-    image: dpage/pgadmin4
-    ports:
-      - 15433:80
-    environment:
-      PGADMIN_DEFAULT_PASSWORD: postgres
-      PGADMIN_DEFAULT_EMAIL: postgres@example.com
-    depends_on:
-      postgres:
-        condition: service_healthy
-
   cassandra:
     image: cassandra:3.11.15
     ports:
@@ -36,7 +46,8 @@ services:
     environment:
       - CASSANDRA_CLUSTER_NAME=AnnetteCluster
     healthcheck:
-      test: [ "CMD-SHELL", "[ $$(nodetool statusgossip) = running ]" ]
+      # statusbinary = CQL native transport readiness (statusgossip alone is insufficient)
+      test: [ "CMD-SHELL", "[ $$(nodetool statusbinary) = running ]" ]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -67,27 +78,20 @@ services:
       timeout: 10s
       retries: 5
 
-  os-dashboards:
-    image: opensearchproject/opensearch-dashboards:2.8.0
-    ports:
-      - 5601:5601 # Map host port 5601 to container port 5601
-    expose:
-      - "5601" # Expose port 5601 for web access to OpenSearch Dashboards
-    environment:
-      OPENSEARCH_HOSTS: '["https://os-node1:9200"]' # Define the OpenSearch nodes that OpenSearch Dashboards will query
-    depends_on:
-      os-node1:
-        condition: service_healthy
-
   minio:
     image: 'minio/minio:latest'
     ports:
-      - '9002:9000'
-      - '9001:9001'
+      - '9002:9000' # S3 API
+      - '9001:9001' # web console
     volumes:
       - minio-data:/data
     command: 'server /data --console-address ":9001"'
-
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:9000/minio/health/live"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
 
   keycloak:
     build: ./keycloak
@@ -98,12 +102,19 @@ services:
       KC_DB_PASSWORD: postgres
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-    command:  start-dev --hostname-port=8080 --import-realm
+    command: start-dev --hostname-port=8080 --import-realm --health-enabled=true
     ports:
       - 8080:8080
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      # the keycloak image ships no curl; probe /health/ready over bash's /dev/tcp
+      test: ['CMD-SHELL', 'exec 3<>/dev/tcp/127.0.0.1/8080; printf ''GET /health/ready HTTP/1.0\r\nHost: localhost\r\n\r\n'' >&3; grep -q ''^HTTP/1.[01] 200'' <&3']
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
 
   camunda:
     build: ./camunda/
@@ -120,29 +131,69 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf -u camunda:camunda http://localhost:8080/engine-rest/engine"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  # ---------------------------------------------------------------- tools profile
+
+  pgadmin:
+    image: dpage/pgadmin4
+    profiles:
+      - tools
+    ports:
+      - 15433:80
+    environment:
+      PGADMIN_DEFAULT_PASSWORD: postgres
+      PGADMIN_DEFAULT_EMAIL: postgres@example.com
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  os-dashboards:
+    image: opensearchproject/opensearch-dashboards:2.8.0
+    profiles:
+      - tools
+    ports:
+      - 5601:5601 # Map host port 5601 to container port 5601
+    expose:
+      - "5601" # Expose port 5601 for web access to OpenSearch Dashboards
+    environment:
+      OPENSEARCH_HOSTS: '["https://os-node1:9200"]' # Define the OpenSearch nodes that OpenSearch Dashboards will query
+    depends_on:
+      os-node1:
+        condition: service_healthy
 
   traefik:
     image: traefik:latest
+    profiles:
+      - tools
+      - full
     command: --api.insecure=true --providers.docker
     ports:
-      - 8500:80
+      - 8500:80 # single origin: frontend + /api -> api-gateway
       - 8443:443
-      - 8400:8080
+      - 8400:8080 # dashboard
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     container_name: traefik
 
+  # ---------------------------------------------------------------- full profile
 
   frontend:
     image: "annetteplatform/annette-frontend:${FRONTEND_VERSION}"
+    profiles:
+      - full
+    restart: unless-stopped
     ports:
       - "8501:8080"
     labels:
       - traefik.enable=true
       - "traefik.http.routers.front.rule=PathPrefix(`/`)"
       - "traefik.http.services.front.loadbalancer.server.port=8080"
-    profiles:
-      - all
 
   api-gateway:
     image: "annetteplatform/api-gateway:${BACKEND_VERSION}"
@@ -151,20 +202,42 @@ services:
       - env/keycloak.env
       - env/cms-minio.env
       - env/play-secret.env
+    profiles:
+      - full
+    restart: unless-stopped
     ports:
       - "8502:9000"
     labels:
       - traefik.enable=true
       - "traefik.http.routers.back.rule=PathPrefix(`/api`)"
       - "traefik.http.services.back.loadbalancer.server.port=9000"
-#      - traefik.http.routers.back.port=9000
-    profiles:
-      - all
+    depends_on:
+      postgres:
+        condition: service_healthy
+      cassandra:
+        condition: service_healthy
+      os-node1:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      camunda:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -o /dev/null --max-time 3 http://localhost:9000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
 
   application:
     image: "annetteplatform/application:${BACKEND_VERSION}"
     env_file:
       - env/ms.env
+    profiles:
+      - full
+    restart: unless-stopped
     ports:
       - "8510:9000"
     depends_on:
@@ -172,13 +245,15 @@ services:
         condition: service_healthy
       os-node1:
         condition: service_healthy
-    profiles:
-      - all
+    healthcheck: *service-healthcheck
 
   service-catalog:
     image: "annetteplatform/service-catalog:${BACKEND_VERSION}"
     env_file:
       - env/ms.env
+    profiles:
+      - full
+    restart: unless-stopped
     ports:
       - "8511:9000"
     depends_on:
@@ -186,13 +261,15 @@ services:
         condition: service_healthy
       os-node1:
         condition: service_healthy
-    profiles:
-      - all
+    healthcheck: *service-healthcheck
 
   authorization:
     image: "annetteplatform/authorization:${BACKEND_VERSION}"
     env_file:
       - env/ms.env
+    profiles:
+      - full
+    restart: unless-stopped
     ports:
       - "8512:9000"
     depends_on:
@@ -200,26 +277,30 @@ services:
         condition: service_healthy
       os-node1:
         condition: service_healthy
-    profiles:
-      - all
+    healthcheck: *service-healthcheck
 
   bpm-repository:
     image: "annetteplatform/bpm-repository:${BACKEND_VERSION}"
     env_file:
       - env/bpm-repository.env
+    profiles:
+      - full
+    restart: unless-stopped
     ports:
       - "8513:9000"
     depends_on:
       postgres:
         condition: service_healthy
-    profiles:
-      - all
+    healthcheck: *service-healthcheck
 
   cms:
     image: "annetteplatform/cms:${BACKEND_VERSION}"
     env_file:
       - env/ms.env
       - env/cms-minio.env
+    profiles:
+      - full
+    restart: unless-stopped
     ports:
       - "8514:9000"
     depends_on:
@@ -227,13 +308,17 @@ services:
         condition: service_healthy
       os-node1:
         condition: service_healthy
-    profiles:
-      - all
+      minio:
+        condition: service_healthy
+    healthcheck: *service-healthcheck
 
   subscriptions:
     image: "annetteplatform/subscriptions:${BACKEND_VERSION}"
     env_file:
       - env/ms.env
+    profiles:
+      - full
+    restart: unless-stopped
     ports:
       - "8515:9000"
     depends_on:
@@ -241,13 +326,15 @@ services:
         condition: service_healthy
       os-node1:
         condition: service_healthy
-    profiles:
-      - all
+    healthcheck: *service-healthcheck
 
   org-structure:
     image: "annetteplatform/org-structure:${BACKEND_VERSION}"
     env_file:
       - env/ms.env
+    profiles:
+      - full
+    restart: unless-stopped
     ports:
       - "8516:9000"
     depends_on:
@@ -255,13 +342,15 @@ services:
         condition: service_healthy
       os-node1:
         condition: service_healthy
-    profiles:
-      - all
+    healthcheck: *service-healthcheck
 
   persons:
     image: "annetteplatform/persons:${BACKEND_VERSION}"
     env_file:
       - env/ms.env
+    profiles:
+      - full
+    restart: unless-stopped
     ports:
       - "8517:9000"
     depends_on:
@@ -269,13 +358,15 @@ services:
         condition: service_healthy
       os-node1:
         condition: service_healthy
-    profiles:
-      - all
+    healthcheck: *service-healthcheck
 
   principal-groups:
     image: "annetteplatform/principal-groups:${BACKEND_VERSION}"
     env_file:
       - env/ms.env
+    profiles:
+      - full
+    restart: unless-stopped
     ports:
       - "8518:9000"
     depends_on:
@@ -283,12 +374,39 @@ services:
         condition: service_healthy
       os-node1:
         condition: service_healthy
+    healthcheck: *service-healthcheck
+
+  # One-shot demo-data seeder. Seeds the 6 gRPC services + Keycloak realm users
+  # (see ignition/demo-ignition/conf/ignition.conf); exits 0 when done — a stopped
+  # demo-ignition container is the success state, not a failure.
+  demo-ignition:
+    image: "annetteplatform/demo-ignition:${BACKEND_VERSION}"
     profiles:
-      - all
+      - full
+    environment:
+      JAVA_OPTS: "-Dconfig.file=/opt/docker/conf/application.demo.conf"
+      KEYCLOAK_URL: "http://keycloak:8080"
+    restart: "no"
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+      keycloak:
+        condition: service_healthy
+      application:
+        condition: service_healthy
+      service-catalog:
+        condition: service_healthy
+      authorization:
+        condition: service_healthy
+      org-structure:
+        condition: service_healthy
+      persons:
+        condition: service_healthy
+      principal-groups:
+        condition: service_healthy
 
 volumes:
   os-data1:
   cassandra-data:
   minio-data:
   pg-data:
-
