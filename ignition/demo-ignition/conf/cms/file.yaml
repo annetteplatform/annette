@@ -1,0 +1,15 @@
+- objectId: page-welcome
+  fileType: media
+  filename: annette-logo.svg
+  contentType: image/svg+xml
+  source: cms/files/annette-logo.svg
+- objectId: page-welcome
+  fileType: doc
+  filename: getting-started.txt
+  contentType: text/plain
+  source: cms/files/getting-started.txt
+- objectId: post-pekko-01
+  fileType: media
+  filename: annette-logo.svg
+  contentType: image/svg+xml
+  source: cms/files/annette-logo.svg

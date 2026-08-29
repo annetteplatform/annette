@@ -1,0 +1,20 @@
+- id: company
+  name: Company handbook
+  description: Everything employees need to know about working at the company
+  categoryId: corporate
+  authors:
+    - person~P0001
+  targets:
+    - person~P0001
+    - descendant-unit~ANSOFT
+    - descendant-unit~ANN-RETAIL
+- id: hr
+  name: People and HR
+  description: Policies, processes and news from the HR department
+  categoryId: hr
+  authors:
+    - person~P0002
+  targets:
+    - person~P0001
+    - person~P0002
+    - descendant-unit~ANSOFT

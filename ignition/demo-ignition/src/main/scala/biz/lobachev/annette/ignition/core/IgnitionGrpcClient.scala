@@ -19,6 +19,7 @@ package biz.lobachev.annette.ignition.core
 import org.apache.pekko.Done
 import biz.lobachev.annette.application.api.grpc.ApplicationServiceClient
 import biz.lobachev.annette.authorization.api.grpc.AuthorizationServiceClient
+import biz.lobachev.annette.cms.api.grpc.CmsServiceClient
 import biz.lobachev.annette.org_structure.api.grpc.OrgStructureServiceClient
 import biz.lobachev.annette.persons.api.grpc.PersonServiceClient
 import biz.lobachev.annette.principal_group.api.grpc.PrincipalGroupServiceClient
@@ -60,6 +61,7 @@ class IgnitionGrpcClient() {
   lazy val orgStructureGrpcClient    = OrgStructureServiceClient(clientSettings("org-structure"))(actorSystem)
   lazy val serviceCatalogGrpcClient  = ServiceCatalogServiceClient(clientSettings("service-catalog"))(actorSystem)
   lazy val applicationGrpcClient     = ApplicationServiceClient(clientSettings("application"))(actorSystem)
+  lazy val cmsGrpcClient             = CmsServiceClient(clientSettings("cms"))(actorSystem)
 
   // Play 3's WSClient.close() returns Unit (AutoCloseable).
   def close(): Future[Done] = {

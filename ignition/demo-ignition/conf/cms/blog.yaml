@@ -1,0 +1,57 @@
+- id: fin-ar
+  name: Account receivable blog
+  description: This blog is related to FI-AR
+  categoryId: finance
+  authors:
+    - person~P0001
+  targets:
+    - person~P0001
+    - descendant-unit~ANSOFT
+    - descendant-unit~AR-0001
+- id: fin-ap
+  name: Account payable blog
+  description: This blog is related to FI-AP
+  categoryId: finance
+  authors:
+    - person~P0001
+    - person~P0002
+  targets:
+    - person~P0001
+    - descendant-unit~ANSOFT
+- id: fin-aa
+  name: Asset accounting blog
+  description: This blog is related to FI-AA
+  categoryId: finance
+  authors:
+    - person~P0001
+  targets:
+    - person~P0001
+    - descendant-unit~ANSOFT
+- id: co
+  name: Controlling blog
+  description: This blog is related to CO
+  categoryId: finance
+  authors:
+    - person~P0002
+  targets:
+    - person~P0001
+    - person~P0002
+    - descendant-unit~ANSOFT
+- id: pekko
+  name: Pekko documentation
+  description: This blog is related to Apache Pekko
+  categoryId: it
+  authors:
+    - person~P0001
+  targets:
+    - person~P0001
+    - descendant-unit~ANSOFT
+- id: logistics
+  name: Warehouse management blog
+  description: This blog is related to warehouse management
+  categoryId: logistics
+  authors:
+    - person~P0001
+  targets:
+    - person~P0001
+    - descendant-unit~ANN-RETAIL

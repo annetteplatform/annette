@@ -1,0 +1,10 @@
+Getting started with the Annette demo environment
+==================================================
+
+This sample document is seeded by demo-ignition into the CMS file storage
+(MinIO) and attached to the "Welcome to Annette" page as a download.
+
+1. Log in to the console with your demo user.
+2. Browse the blogs under Communication.
+3. Open the Company handbook space for policies and the onboarding checklist.
+4. Ask the IT helpdesk space if anything is unclear.

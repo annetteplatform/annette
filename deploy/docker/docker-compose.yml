@@ -386,6 +386,9 @@ services:
     environment:
       JAVA_OPTS: "-Dconfig.file=/opt/docker/conf/application.demo.conf"
       KEYCLOAK_URL: "http://keycloak:8080"
+      # CMS file uploads must land in the bucket the cms service reads from
+      CMS_STORAGE_BUCKET_PREFIX: "annette-"
+      MINIO_URL: "http://minio:9000"
     restart: "no"
     depends_on:
       api-gateway:
@@ -403,6 +406,8 @@ services:
       persons:
         condition: service_healthy
       principal-groups:
+        condition: service_healthy
+      cms:
         condition: service_healthy
 
 volumes:

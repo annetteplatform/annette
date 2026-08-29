@@ -19,6 +19,7 @@ package biz.lobachev.annette.ignition.console
 import org.apache.pekko.Done
 import biz.lobachev.annette.ignition.application.ApplicationLoaderFactory
 import biz.lobachev.annette.ignition.authorization.AuthorizationLoaderFactory
+import biz.lobachev.annette.ignition.cms.CmsLoaderFactory
 import biz.lobachev.annette.ignition.core.{Ignition, IgnitionGrpcClient, ServiceLoaderFactory}
 import biz.lobachev.annette.ignition.keycloak.KeycloakLoaderFactory
 import biz.lobachev.annette.ignition.org_structure.OrgStructureLoaderFactory
@@ -40,7 +41,8 @@ object ConsoleIgnitionApp extends App {
     "person"          -> PersonLoaderFactory,
     "keycloak"        -> new KeycloakLoaderFactory(client.wsClient),
     "org-structure"   -> OrgStructureLoaderFactory,
-    "principal-group" -> PrincipalGroupLoaderFactory
+    "principal-group" -> PrincipalGroupLoaderFactory,
+    "cms"             -> CmsLoaderFactory
   )
 
   val ignition = new Ignition(client, factories)

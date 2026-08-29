@@ -1,0 +1,61 @@
+- id: welcome
+  spaceId: company
+  authorId: person~P0001
+  title: Welcome to Annette
+  publicationStatus: published
+  publicationTimestamp: "2026-07-15T08:00:00Z"
+  content:
+    settings: {}
+    widgetOrder: ["w1", "w2"]
+    widgets:
+      w1:
+        id: w1
+        widgetType: text
+        data:
+          text: "This page is the starting point for every new employee. It gives a short overview of the company and links the most important handbooks."
+      w2:
+        id: w2
+        widgetType: text
+        data:
+          text: |
+            The company was founded to build software that makes business applications easy to
+            assemble and operate. The Annette Platform is our cloud-native application platform:
+            microservices on the JVM, event-sourced services and a web console. Have a look at
+            the Pekko documentation blog to learn how it is built.
+- id: code-of-conduct
+  spaceId: company
+  authorId: person~P0001
+  title: Code of conduct
+  publicationStatus: published
+  publicationTimestamp: "2026-07-15T08:30:00Z"
+  content:
+    settings: {}
+    widgetOrder: ["w1"]
+    widgets:
+      w1:
+        id: w1
+        widgetType: text
+        data:
+          text: |
+            We treat colleagues, customers and partners with respect. We communicate openly and
+            give constructive feedback. Decisions are documented in the respective spaces so
+            that everyone can follow them. When in doubt, ask - there are no stupid questions.
+- id: onboarding
+  spaceId: hr
+  authorId: person~P0002
+  title: Onboarding checklist
+  publicationStatus: published
+  publicationTimestamp: "2026-08-01T09:00:00Z"
+  content:
+    settings: {}
+    widgetOrder: ["w1"]
+    widgets:
+      w1:
+        id: w1
+        widgetType: text
+        data:
+          text: |
+            1. Get your accounts from the IT helpdesk (console, email, VPN).
+            2. Read the company handbook, starting with the code of conduct.
+            3. Meet your onboarding buddy and your team lead in the first week.
+            4. Complete the security awareness training within 30 days.

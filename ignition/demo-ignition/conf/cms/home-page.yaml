@@ -1,0 +1,8 @@
+- applicationId: ANNETTE-CONSOLE
+  principal: person~P0001
+  priority: 1
+  pageId: welcome
+- applicationId: ANNETTE-CONSOLE
+  principal: person~P0002
+  priority: 1
+  pageId: onboarding

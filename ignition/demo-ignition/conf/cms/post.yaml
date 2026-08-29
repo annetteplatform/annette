@@ -1,0 +1,309 @@
+- id: pekko-01
+  blogId: pekko
+  authorId: person~P0001
+  title: What is Pekko?
+  featured: true
+  publicationStatus: published
+  publicationTimestamp: "2026-07-01T09:00:00Z"
+  introContent:
+    settings: {}
+    widgetOrder: ["intro"]
+    widgets:
+      intro:
+        id: intro
+        widgetType: text
+        data:
+          text: "Apache Pekko is a toolkit for building highly concurrent, distributed and resilient message-driven applications on the JVM."
+  content:
+    settings: {}
+    widgetOrder: ["w1", "w2"]
+    widgets:
+      w1:
+        id: w1
+        widgetType: text
+        data:
+          text: |
+            The key to building an elastic, resilient and responsive system is starting with the
+            right architecture - one rooted in a solid understanding of microservices, including
+            concepts and best practices. Apache Pekko provides an opinionated toolkit that acts
+            like guide rails to speed you along the journey.
+      w2:
+        id: w2
+        widgetType: text
+        data:
+          text: |
+            Pekko is a fork of Akka, developed under the Apache Software Foundation. It keeps the
+            actor model at its core: applications are built from actors that communicate only by
+            exchanging messages, which makes systems easy to scale out across a cluster.
+- id: pekko-02
+  blogId: pekko
+  authorId: person~P0001
+  title: Event sourcing with Pekko Persistence
+  publicationStatus: published
+  publicationTimestamp: "2026-07-05T10:30:00Z"
+  introContent:
+    settings: {}
+    widgetOrder: ["intro"]
+    widgets:
+      intro:
+        id: intro
+        widgetType: text
+        data:
+          text: "Pekko Persistence enables event-sourced actors: every state change is stored as an immutable event in a journal and replayed to rebuild state."
+  content:
+    settings: {}
+    widgetOrder: ["w1"]
+    widgets:
+      w1:
+        id: w1
+        widgetType: text
+        data:
+          text: |
+            An event-sourced actor never persists its current state directly. Instead it persists
+            the events that led to the state. The journal is backed by Apache Cassandra in the
+            Annette Platform, and Pekko Projection feeds read-side databases such as OpenSearch
+            for querying. This combination gives the platform an audit log for free and lets
+            read models be rebuilt at any time from the journal.
+- id: pekko-03
+  blogId: pekko
+  authorId: person~P0001
+  title: Service-to-service calls with Pekko gRPC
+  publicationStatus: published
+  publicationTimestamp: "2026-07-12T08:15:00Z"
+  introContent:
+    settings: {}
+    widgetOrder: ["intro"]
+    widgets:
+      intro:
+        id: intro
+        widgetType: text
+        data:
+          text: "Every Annette microservice exposes its API twice: as HTTP through the gateway and as Pekko gRPC for inter-service calls."
+  content:
+    settings: {}
+    widgetOrder: ["w1"]
+    widgets:
+      w1:
+        id: w1
+        widgetType: text
+        data:
+          text: |
+            The API of each service is defined once in a protobuf file. The generated gRPC
+            server is bound on the service HTTP port, while Play 3-based api-gateway acts as
+            the single public REST entry point and delegates to the services over gRPC.
+            Error semantics travel in a dedicated trailer so typed exceptions survive the hop.
+- id: pekko-04
+  blogId: pekko
+  authorId: person~P0002
+  title: Managing clusters in production
+  publicationStatus: draft
+  introContent:
+    settings: {}
+    widgetOrder: ["intro"]
+    widgets:
+      intro:
+        id: intro
+        widgetType: text
+        data:
+          text: "Draft: notes on running Pekko clusters in production, including sharding, split-brain resolution and rolling updates."
+  content:
+    settings: {}
+    widgetOrder: ["w1"]
+    widgets:
+      w1:
+        id: w1
+        widgetType: text
+        data:
+          text: |
+            This post is still a draft. It will cover cluster singletons, sharding strategies
+            and graceful termination of shard regions during rolling deployments.
+- id: fin-ar-01
+  blogId: fin-ar
+  authorId: person~P0001
+  title: Dunning procedure update
+  featured: true
+  publicationStatus: published
+  publicationTimestamp: "2026-08-03T12:00:00Z"
+  introContent:
+    settings: {}
+    widgetOrder: ["intro"]
+    widgets:
+      intro:
+        id: intro
+        widgetType: text
+        data:
+          text: "The dunning levels and reminder texts have been updated for the second half of the year."
+  content:
+    settings: {}
+    widgetOrder: ["w1"]
+    widgets:
+      w1:
+        id: w1
+        widgetType: text
+        data:
+          text: |
+            Starting next month the dunning procedure switches to the new three-level model.
+            Level 1 reminds the customer after 14 days, level 2 after 30 days and level 3
+            escalates to the collection department after 60 days. The new reminder texts are
+            available in all supported languages in the correspondence templates.
+- id: fin-ar-02
+  blogId: fin-ar
+  authorId: person~P0001
+  title: Month-end closing checklist
+  publicationStatus: published
+  publicationTimestamp: "2026-08-20T07:45:00Z"
+  introContent:
+    settings: {}
+    widgetOrder: ["intro"]
+    widgets:
+      intro:
+        id: intro
+        widgetType: text
+        data:
+          text: "A short checklist for the accounts receivable month-end closing."
+  content:
+    settings: {}
+    widgetOrder: ["w1"]
+    widgets:
+      w1:
+        id: w1
+        widgetType: text
+        data:
+          text: |
+            1. Post incoming payments and clear open items.
+            2. Run the dunning proposal and send dunning notices.
+            3. Reconcile the accounts receivable subledger with the general ledger.
+            4. Create the foreign currency valuation run.
+- id: fin-ap-01
+  blogId: fin-ap
+  authorId: person~P0002
+  title: New supplier payment terms
+  publicationStatus: published
+  publicationTimestamp: "2026-08-10T09:30:00Z"
+  introContent:
+    settings: {}
+    widgetOrder: ["intro"]
+    widgets:
+      intro:
+        id: intro
+        widgetType: text
+        data:
+          text: "Supplier payment terms change from net 30 to net 20 starting with Q4 purchase orders."
+  content:
+    settings: {}
+    widgetOrder: ["w1"]
+    widgets:
+      w1:
+        id: w1
+        widgetType: text
+        data:
+          text: |
+            Procurement and finance have agreed to shorten supplier payment terms to net 20 for
+            new purchase orders. Existing contracts keep their agreed terms until renewal.
+            Please update recurring payment proposals accordingly.
+- id: fin-aa-01
+  blogId: fin-aa
+  authorId: person~P0001
+  title: Depreciation keys for the new fiscal year
+  publicationStatus: published
+  publicationTimestamp: "2026-07-25T14:00:00Z"
+  introContent:
+    settings: {}
+    widgetOrder: ["intro"]
+    widgets:
+      intro:
+        id: intro
+        widgetType: text
+        data:
+          text: "The depreciation key catalog has been extended for the upcoming fiscal year."
+  content:
+    settings: {}
+    widgetOrder: ["w1"]
+    widgets:
+      w1:
+        id: w1
+        widgetType: text
+        data:
+          text: |
+            Two new depreciation keys support the declining-balance method with a mandatory
+            switch to straight-line. Asset classes created after the fiscal year changeover
+            default to the new keys; existing assets keep their assigned keys.
+- id: co-01
+  blogId: co
+  authorId: person~P0002
+  title: Cost center planning cycle has started
+  publicationStatus: published
+  publicationTimestamp: "2026-08-28T11:20:00Z"
+  introContent:
+    settings: {}
+    widgetOrder: ["intro"]
+    widgets:
+      intro:
+        id: intro
+        widgetType: text
+        data:
+          text: "The annual cost center planning cycle started this week; planning is due by the end of September."
+  content:
+    settings: {}
+    widgetOrder: ["w1"]
+    widgets:
+      w1:
+        id: w1
+        widgetType: text
+        data:
+          text: |
+            Cost center owners have been notified by email. Planning figures are entered in the
+            console and validated against the previous year's actuals. The controlling team is
+            available for questions every Wednesday afternoon during the cycle.
+- id: co-02
+  blogId: co
+  authorId: person~P0002
+  title: Internal activity allocation redesign
+  publicationStatus: draft
+  introContent:
+    settings: {}
+    widgetOrder: ["intro"]
+    widgets:
+      intro:
+        id: intro
+        widgetType: text
+        data:
+          text: "Draft: proposal to simplify internal activity allocations between production cost centers."
+  content:
+    settings: {}
+    widgetOrder: ["w1"]
+    widgets:
+      w1:
+        id: w1
+        widgetType: text
+        data:
+          text: |
+            This draft proposes collapsing the current six allocation cycles into two,
+            reducing the closing runtime and making the allocation logic easier to audit.
+- id: logistics-01
+  blogId: logistics
+  authorId: person~P0001
+  title: Barcode scanners replaced in the retail warehouses
+  publicationStatus: published
+  publicationTimestamp: "2026-08-15T06:50:00Z"
+  introContent:
+    settings: {}
+    widgetOrder: ["intro"]
+    widgets:
+      intro:
+        id: intro
+        widgetType: text
+        data:
+          text: "All retail warehouses are switching to the new generation of barcode scanners this quarter."
+  content:
+    settings: {}
+    widgetOrder: ["w1"]
+    widgets:
+      w1:
+        id: w1
+        widgetType: text
+        data:
+          text: |
+            The new scanners pair with the warehouse management app over the local network and
+            no longer require a dedicated terminal session. Training sessions are scheduled per
+            warehouse; see the company space for the calendar and the quick reference card.
