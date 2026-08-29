@@ -6,8 +6,16 @@
     icon: workspaces
   label:
     en: Applications
+    de: Anwendungen
+    fr: Applications
+    pl: Aplikacje
+    ru: Приложения
   labelDescription:
     en: Maintain languages, translations and applications
+    de: Sprachen, Übersetzungen und Anwendungen verwalten
+    fr: Gérer les langues, les traductions et les applications
+    pl: Zarządzanie językami, tłumaczeniami i aplikacjami
+    ru: Управление языками, переводами и приложениями
   children:
     - LANGUAGES_SERVICE
     - TRANSLATIONS_SERVICE
@@ -20,8 +28,16 @@
     icon: apps
   label:
     en: Service Catalog
+    de: Servicekatalog
+    fr: Catalogue de services
+    pl: Katalog usług
+    ru: Каталог сервисов
   labelDescription:
     en: Maintain scopes, service group and services
+    de: Scopes, Servicegruppen und Services verwalten
+    fr: Gérer les périmètres, groupes de services et services
+    pl: Zarządzanie zakresami, grupami usług i usługami
+    ru: Управление областями, группами сервисов и сервисами
   children:
     - SERVICE_CATALOG_CATEGORIES_SERVICE
     - SCOPES_SERVICE
@@ -36,8 +52,16 @@
     icon: people
   label:
     en: Persons
+    de: Personen
+    fr: Personnes
+    pl: Osoby
+    ru: Персоны
   labelDescription:
     en: View person list, create, update and delete persons
+    de: Personenliste anzeigen sowie Personen anlegen, ändern und löschen
+    fr: Consulter la liste des personnes, créer, modifier et supprimer des personnes
+    pl: Przeglądanie listy osób, tworzenie, zmiana i usuwanie osób
+    ru: Просмотр списка персон, создание, изменение и удаление персон
   children:
     - PERSON_CATEGORIES_SERVICE
     - PERSON_SERVICE
@@ -50,8 +74,16 @@
     icon: account_balance
   label:
     en: Organizational Structures
+    de: Organisationsstrukturen
+    fr: Structures organisationnelles
+    pl: Struktury organizacyjne
+    ru: Организационные структуры
   labelDescription:
     en: Maintain organizational structures and roles
+    de: Organisationsstrukturen und Rollen verwalten
+    fr: Gérer les structures organisationnelles et les rôles
+    pl: Zarządzanie strukturami organizacyjnymi i rolami
+    ru: Управление организационными структурами и ролями
   children:
     - ORG_CATEGORIES_SERVICE
     - HIERARCHY_SERVICE
@@ -65,8 +97,16 @@
     icon: admin_panel_settings
   label:
     en: Authorization
+    de: Berechtigungen
+    fr: Autorisation
+    pl: Autoryzacja
+    ru: Авторизация
   labelDescription:
     en: Maintain authorization roles and assign permissions
+    de: Berechtigungsrollen verwalten und Berechtigungen zuweisen
+    fr: Gérer les rôles d'autorisation et attribuer des permissions
+    pl: Zarządzanie rolami autoryzacji i przypisywanie uprawnień
+    ru: Управление ролями авторизации и назначение прав доступа
   children:
     - AUTH_ROLES_SERVICE
     - PERMISSIONS_SERVICE
@@ -79,8 +119,16 @@
     icon: admin_panel_settings
   label:
     en: Principal Group
+    de: Prinzipalgruppen
+    fr: Groupes de principaux
+    pl: Grupy podmiotów
+    ru: Группы принципалов
   labelDescription:
     en: Maintain principal groups
+    de: Prinzipalgruppen verwalten
+    fr: Gérer les groupes de principaux
+    pl: Zarządzanie grupami podmiotów
+    ru: Управление группами принципалов
   children:
     - PRINCIPAL_GROUP_CATEGORIES_SERVICE
     - PRINCIPAL_GROUPS_SERVICE
@@ -93,8 +141,16 @@
     icon: inventory
   label:
     en: Blog Administration
+    de: Blog-Verwaltung
+    fr: Administration des blogs
+    pl: Administracja blogami
+    ru: Администрирование блогов
   labelDescription:
     en: Maintain blogs and blog's posts
+    de: Blogs und Blogbeiträge verwalten
+    fr: Gérer les blogs et leurs articles
+    pl: Zarządzanie blogami i wpisami na blogach
+    ru: Управление блогами и их записями
   children:
     - BLOG_CATEGORIES_SERVICE
     - BLOGS_EDIT_SERVICE
@@ -108,8 +164,16 @@
     icon: feed
   label:
     en: Blogs
+    de: Blogs
+    fr: Blogs
+    pl: Blogi
+    ru: Блоги
   labelDescription:
     en: Subscribe to blogs and view blog posts
+    de: Blogs abonnieren und Blogbeiträge anzeigen
+    fr: S'abonner aux blogs et consulter les articles
+    pl: Subskrybowanie blogów i przeglądanie wpisów
+    ru: Подписка на блоги и просмотр записей блогов
   children:
     - POSTS_VIEW_SERVICE
     - BLOGS_VIEW_SERVICE
@@ -122,8 +186,16 @@
     icon: inventory
   label:
     en: Space & Page Administration
+    de: Verwaltung von Bereichen und Seiten
+    fr: Administration des espaces et pages
+    pl: Administracja przestrzeni i stron
+    ru: Администрирование пространств и страниц
   labelDescription:
     en: Maintain spaces and pages
+    de: Bereiche und Seiten verwalten
+    fr: Gérer les espaces et les pages
+    pl: Zarządzanie przestrzeniami i stronami
+    ru: Управление пространствами и страницами
   children:
     - SPACE_CATEGORIES_SERVICE
     - SPACES_EDIT_SERVICE
@@ -138,8 +210,16 @@
     icon: feed
   label:
     en: Spaces & Pages
+    de: Bereiche & Seiten
+    fr: Espaces & pages
+    pl: Przestrzenie i strony
+    ru: Пространства и страницы
   labelDescription:
     en: Subscribe to blogs and view blog posts
+    de: Bereiche und Seiten anzeigen
+    fr: Consulter les espaces et les pages
+    pl: Przeglądanie przestrzeni i stron
+    ru: Просмотр пространств и страниц
   children:
     - PAGES_VIEW_SERVICE
     - SPACES_VIEW_SERVICE
@@ -152,8 +232,16 @@
     icon: schema
   label:
     en: BPM Administration
+    de: BPM-Verwaltung
+    fr: Administration BPM
+    pl: Administracja BPM
+    ru: Администрирование BPM
   labelDescription:
     en: Maintain BPM models, data scemas and business processes
+    de: BPM-Modelle, Datenschemata und Geschäftsprozesse verwalten
+    fr: Gérer les modèles BPM, les schémas de données et les processus métier
+    pl: Zarządzanie modelami BPM, schematami danych i procesami biznesowymi
+    ru: Управление BPM-моделями, схемами данных и бизнес-процессами
   children:
     - BPM_MODELS_SERVICE
     - DATA_SCHEMAS_SERVICE

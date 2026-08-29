@@ -6,8 +6,16 @@
     icon: fa-brands fa-github
   label:
     en: Annette Docs
+    de: Annette Docs
+    fr: Annette Docs
+    pl: Annette Docs
+    ru: Annette Docs
   labelDescription:
     en: Annette Platform documentation site
+    de: Dokumentationsseite der Annette Platform
+    fr: Site de documentation de la plateforme Annette
+    pl: Strona dokumentacji platformy Annette
+    ru: Сайт документации платформы Annette
   link:
     type: external
     url: https://annetteplatform.github.io/
@@ -20,8 +28,16 @@
     icon: fa-brands fa-github
   label:
     en: Annette sources
+    de: Annette-Quellcode
+    fr: Code source d'Annette
+    pl: Kod źródłowy Annette
+    ru: Исходный код Annette
   labelDescription:
     en: Annette Platform source code
+    de: Quellcode der Annette Platform
+    fr: Code source de la plateforme Annette
+    pl: Kod źródłowy platformy Annette
+    ru: Исходный код платформы Annette
   link:
     type: external
     url: https://github.com/annetteplatform/annette
@@ -35,6 +51,10 @@
     icon: language
   label:
     en: Languages
+    de: Sprachen
+    fr: Langues
+    pl: Języki
+    ru: Языки
   labelDescription:
     en: ""
   link:
@@ -50,6 +70,10 @@
     icon: translate
   label:
     en: Translations
+    de: Übersetzungen
+    fr: Traductions
+    pl: Tłumaczenia
+    ru: Переводы
   labelDescription:
     en: ""
   link:
@@ -65,6 +89,10 @@
     icon: apps
   label:
     en: Applications
+    de: Anwendungen
+    fr: Applications
+    pl: Aplikacje
+    ru: Приложения
   labelDescription:
     en: ""
   link:
@@ -80,6 +108,10 @@
     icon: local_offer
   label:
     en: Categories
+    de: Kategorien
+    fr: Catégories
+    pl: Kategorie
+    ru: Категории
   labelDescription:
     en: ""
   link:
@@ -95,6 +127,10 @@
     icon: apps
   label:
     en: Scopes
+    de: Scopes
+    fr: Périmètres
+    pl: Zakresy
+    ru: Области
   labelDescription:
     en: ""
   link:
@@ -110,6 +146,10 @@
     icon: policy
   label:
     en: Scope principals
+    de: Scope-Prinzipale
+    fr: Principaux du périmètre
+    pl: Podmioty zakresu
+    ru: Принципалы областей
   labelDescription:
     en: ""
   link:
@@ -125,6 +165,10 @@
     icon: apps
   label:
     en: Services & service groups
+    de: Services & Servicegruppen
+    fr: Services et groupes de services
+    pl: Usługi i grupy usług
+    ru: Сервисы и группы сервисов
   labelDescription:
     en: ""
   link:
@@ -140,6 +184,10 @@
     icon: policy
   label:
     en: Service principals
+    de: Service-Prinzipale
+    fr: Principaux de service
+    pl: Podmioty usług
+    ru: Принципалы сервисов
   labelDescription:
     en: ""
   link:
@@ -155,6 +203,10 @@
     icon: search
   label:
     en: Search services
+    de: Servicesuche
+    fr: Recherche de services
+    pl: Wyszukiwanie usług
+    ru: Поиск сервисов
   labelDescription:
     en: ""
   link:
@@ -170,8 +222,16 @@
     icon: people
   label:
     en: Persons
+    de: Personen
+    fr: Personnes
+    pl: Osoby
+    ru: Персоны
   labelDescription:
     en: View person list, create, update and delete persons
+    de: Personenliste anzeigen sowie Personen anlegen, ändern und löschen
+    fr: Consulter la liste des personnes, créer, modifier et supprimer des personnes
+    pl: Przeglądanie listy osób, tworzenie, zmiana i usuwanie osób
+    ru: Просмотр списка персон, создание, изменение и удаление персон
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -185,8 +245,16 @@
     icon: people
   label:
     en: Person categories
+    de: Personenkategorien
+    fr: Catégories de personnes
+    pl: Kategorie osób
+    ru: Категории персон
   labelDescription:
     en: Maintain person categories
+    de: Personenkategorien verwalten
+    fr: Gérer les catégories de personnes
+    pl: Zarządzanie kategoriami osób
+    ru: Управление категориями персон
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -200,8 +268,16 @@
     icon: local_offer
   label:
     en: Org. categories
+    de: Org.-Kategorien
+    fr: Catégories d'organisation
+    pl: Kategorie organizacji
+    ru: Категории организаций
   labelDescription:
     en: Maintain org. categories
+    de: Org.-Kategorien verwalten
+    fr: Gérer les catégories d'organisation
+    pl: Zarządzanie kategoriami organizacji
+    ru: Управление категориями организаций
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -215,8 +291,16 @@
     icon: account_balance
   label:
     en: Organizations
+    de: Organisationen
+    fr: Organisations
+    pl: Organizacje
+    ru: Организации
   labelDescription:
     en: Maintain organizations, hierarchies, person assignments to positions
+    de: Organisationen, Hierarchien und Zuweisungen von Personen zu Positionen verwalten
+    fr: Gérer les organisations, les hiérarchies et l'affectation des personnes aux postes
+    pl: Zarządzanie organizacjami, hierarchiami i przypisaniem osób do stanowisk
+    ru: Управление организациями, иерархиями и назначением персон на должности
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -230,8 +314,16 @@
     icon: category
   label:
     en: Organizational roles
+    de: Organisationsrollen
+    fr: Rôles organisationnels
+    pl: Role organizacyjne
+    ru: Организационные роли
   labelDescription:
     en: Maintain organizational roles
+    de: Organisationsrollen verwalten
+    fr: Gérer les rôles organisationnels
+    pl: Zarządzanie rolami organizacyjnymi
+    ru: Управление организационными ролями
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -245,8 +337,16 @@
     icon: admin_panel_settings
   label:
     en: Authorization roles
+    de: Berechtigungsrollen
+    fr: Rôles d'autorisation
+    pl: Role autoryzacji
+    ru: Роли авторизации
   labelDescription:
     en: Maintain authorization roles, assign principals to roles
+    de: Berechtigungsrollen verwalten und Prinzipale zu Rollen zuweisen
+    fr: Gérer les rôles d'autorisation et attribuer des principaux aux rôles
+    pl: Zarządzanie rolami autoryzacji i przypisywanie podmiotów do ról
+    ru: Управление ролями авторизации и назначение принципалов на роли
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -260,8 +360,16 @@
     icon: policy
   label:
     en: Permission assignments
+    de: Berechtigungszuweisungen
+    fr: Attributions de permissions
+    pl: Przypisania uprawnień
+    ru: Назначение прав
   labelDescription:
     en: View permission assignments to principals
+    de: Berechtigungszuweisungen an Prinzipale anzeigen
+    fr: Consulter les attributions de permissions aux principaux
+    pl: Przeglądanie przypisań uprawnień do podmiotów
+    ru: Просмотр назначения прав принципалам
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -275,8 +383,16 @@
     icon: local_offer
   label:
     en: Group categories
+    de: Kategorien von Prinzipalgruppen
+    fr: Catégories de groupes de principaux
+    pl: Kategorie grup podmiotów
+    ru: Категории групп принципалов
   labelDescription:
     en: Maintain principal group categories
+    de: Kategorien von Prinzipalgruppen verwalten
+    fr: Gérer les catégories de groupes de principaux
+    pl: Zarządzanie kategoriami grup podmiotów
+    ru: Управление категориями групп принципалов
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -290,8 +406,16 @@
     icon: groups
   label:
     en: Principal groups
+    de: Prinzipalgruppen
+    fr: Groupes de principaux
+    pl: Grupy podmiotów
+    ru: Группы принципалов
   labelDescription:
     en: View principal group list, create, update and delete groups
+    de: Liste der Prinzipalgruppen anzeigen sowie Gruppen anlegen, ändern und löschen
+    fr: Consulter la liste des groupes de principaux, créer, modifier et supprimer des groupes
+    pl: Przeglądanie listy grup podmiotów, tworzenie, zmiana i usuwanie grup
+    ru: Просмотр списка групп принципалов, создание, изменение и удаление групп
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -305,8 +429,16 @@
     icon: local_offer
   label:
     en: Blog categories
+    de: Blogkategorien
+    fr: Catégories de blogs
+    pl: Kategorie blogów
+    ru: Категории блогов
   labelDescription:
     en: Maintain blog categories
+    de: Blogkategorien verwalten
+    fr: Gérer les catégories de blogs
+    pl: Zarządzanie kategoriami blogów
+    ru: Управление категориями блогов
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -320,8 +452,16 @@
     icon: inventory
   label:
     en: Blogs
+    de: Blogs
+    fr: Blogs
+    pl: Blogi
+    ru: Блоги
   labelDescription:
     en: Maintain blogs
+    de: Blogs verwalten
+    fr: Gérer les blogs
+    pl: Zarządzanie blogami
+    ru: Управление блогами
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -335,8 +475,16 @@
     icon: feed
   label:
     en: Posts
+    de: Beiträge
+    fr: Articles
+    pl: Wpisy
+    ru: Записи
   labelDescription:
     en: Maintain posts
+    de: Beiträge verwalten
+    fr: Gérer les articles
+    pl: Zarządzanie wpisami
+    ru: Управление записями
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -350,8 +498,16 @@
     icon: feed
   label:
     en: Blog posts
+    de: Blogbeiträge
+    fr: Articles de blog
+    pl: Wpisy na blogach
+    ru: Записи блогов
   labelDescription:
     en: View blog posts
+    de: Blogbeiträge anzeigen
+    fr: Consulter les articles de blog
+    pl: Przeglądanie wpisów na blogach
+    ru: Просмотр записей блогов
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -365,8 +521,16 @@
     icon: inventory
   label:
     en: Blogs
+    de: Blogs
+    fr: Blogs
+    pl: Blogi
+    ru: Блоги
   labelDescription:
     en: View list of blogs
+    de: Liste der Blogs anzeigen
+    fr: Consulter la liste des blogs
+    pl: Przeglądanie listy blogów
+    ru: Просмотр списка блогов
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -380,8 +544,16 @@
     icon: local_offer
   label:
     en: Space categories
+    de: Bereichskategorien
+    fr: Catégories d'espaces
+    pl: Kategorie przestrzeni
+    ru: Категории пространств
   labelDescription:
     en: Maintain space categories
+    de: Bereichskategorien verwalten
+    fr: Gérer les catégories d'espaces
+    pl: Zarządzanie kategoriami przestrzeni
+    ru: Управление категориями пространств
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -395,8 +567,16 @@
     icon: inventory
   label:
     en: Spaces
+    de: Bereiche
+    fr: Espaces
+    pl: Przestrzenie
+    ru: Пространства
   labelDescription:
     en: Maintain spaces
+    de: Bereiche verwalten
+    fr: Gérer les espaces
+    pl: Zarządzanie przestrzeniami
+    ru: Управление пространствами
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -410,8 +590,16 @@
     icon: feed
   label:
     en: Pages
+    de: Seiten
+    fr: Pages
+    pl: Strony
+    ru: Страницы
   labelDescription:
     en: Maintain pages
+    de: Seiten verwalten
+    fr: Gérer les pages
+    pl: Zarządzanie stronami
+    ru: Управление страницами
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -425,8 +613,16 @@
     icon: feed
   label:
     en: Home Page Assignments
+    de: Startseiten-Zuweisungen
+    fr: Affectations de pages d'accueil
+    pl: Przypisania stron głównych
+    ru: Назначение домашних страниц
   labelDescription:
     en: Assign home pages to principals
+    de: Startseiten für Prinzipale zuweisen
+    fr: Affecter des pages d'accueil aux principaux
+    pl: Przypisywanie stron głównych do podmiotów
+    ru: Назначение домашних страниц принципалам
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -441,8 +637,16 @@
     icon: feed
   label:
     en: Pages
+    de: Seiten
+    fr: Pages
+    pl: Strony
+    ru: Страницы
   labelDescription:
     en: View pages
+    de: Seiten anzeigen
+    fr: Consulter les pages
+    pl: Przeglądanie stron
+    ru: Просмотр страниц
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -456,8 +660,16 @@
     icon: inventory
   label:
     en: Spaces
+    de: Bereiche
+    fr: Espaces
+    pl: Przestrzenie
+    ru: Пространства
   labelDescription:
     en: View list of spaces
+    de: Liste der Bereiche anzeigen
+    fr: Consulter la liste des espaces
+    pl: Przeglądanie listy przestrzeni
+    ru: Просмотр списка пространств
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -472,8 +684,16 @@
     icon: schema
   label:
     en: BPM Models
+    de: BPM-Modelle
+    fr: Modèles BPM
+    pl: Modele BPM
+    ru: BPM-модели
   labelDescription:
     en: View list of BPM models
+    de: Liste der BPM-Modelle anzeigen
+    fr: Consulter la liste des modèles BPM
+    pl: Przeglądanie listy modeli BPM
+    ru: Просмотр списка BPM-моделей
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -487,8 +707,16 @@
     icon: account_tree
   label:
     en: Data Schemas
+    de: Datenschemata
+    fr: Schémas de données
+    pl: Schematy danych
+    ru: Схемы данных
   labelDescription:
     en: View list of data schemas
+    de: Liste der Datenschemata anzeigen
+    fr: Consulter la liste des schémas de données
+    pl: Przeglądanie listy schematów danych
+    ru: Просмотр списка схем данных
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
@@ -502,8 +730,16 @@
     icon: video_library
   label:
     en: Business processes
+    de: Geschäftsprozesse
+    fr: Processus métier
+    pl: Procesy biznesowe
+    ru: Бизнес-процессы
   labelDescription:
     en: View list of business processes
+    de: Liste der Geschäftsprozesse anzeigen
+    fr: Consulter la liste des processus métier
+    pl: Przeglądanie listy procesów biznesowych
+    ru: Просмотр списка бизнес-процессов
   link:
     type: internal
     applicationId: ANNETTE-CONSOLE
