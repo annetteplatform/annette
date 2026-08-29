@@ -21,12 +21,9 @@ import org.apache.pekko.Done
 import org.apache.pekko.stream.Materializer
 import biz.lobachev.annette.cms.api.CmsService
 import biz.lobachev.annette.cms.api.blogs.post.{CreatePostPayload, PostAlreadyExist, UpdatePostFeaturedPayload}
-import biz.lobachev.annette.cms.api.common.article.{
-  PublishPayload,
-  UpdateAuthorPayload,
-  UpdatePublicationTimestampPayload,
-  UpdateTitlePayload
-}
+import biz.lobachev.annette.cms.api.common.article.{PublishPayload, UpdateAuthorPayload, UpdatePublicationTimestampPayload, UpdateTitlePayload}
+import biz.lobachev.annette.cms.api.content.{Content, ContentTypes, DeleteWidgetPayload, UpdateWidgetPayload, Widget}
+import biz.lobachev.annette.cms.api.content.UpdateContentSettingsPayload
 import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, SystemPrincipal}
 import biz.lobachev.annette.ignition.cms.loaders.data.PostData
 import biz.lobachev.annette.ignition.core.EntityLoader
@@ -49,19 +46,19 @@ class PostEntityLoader(
 
   def loadItem(item: PostData): Future[LoadStatus] =
     parseTimestamp(item.publicationTimestamp) match {
-      case Left(error) => Future.successful(error)
+      case Left(error) =>
+        Future.successful(error)
       case Right(publishedAt) =>
         val published     = item.publicationStatus.forall(_.equalsIgnoreCase("published"))
-        val featured      = item.featured.getOrElse(false)
         val createdBy     = SystemPrincipal()
         val createPayload = CreatePostPayload(
           id = item.id,
           blogId = item.blogId,
-          featured = featured,
+          featured = item.featured.getOrElse(false),
           authorId = AnnettePrincipal(item.authorId),
           title = item.title,
-          introContent = ContentOps.withDerivedIndexData(item.introContent.getOrElse(ContentOps.empty)),
-          content = ContentOps.withDerivedIndexData(item.content.getOrElse(ContentOps.empty)),
+          introContent = introContent(item),
+          content = mainContent(item),
           createdBy = createdBy
         )
         service
@@ -70,26 +67,64 @@ class PostEntityLoader(
           .map(_ => LoadOk)
           .recoverWith {
             case PostAlreadyExist(_) if config.mode == UpsertMode =>
-              updatePost(item, featured, published, publishedAt, createdBy)
+              updatePost(item, published, publishedAt, createdBy)
             case th                                               => Future.failed(th)
           }
     }
 
-  // Featured flag, author and title are updated in place; publication status is re-applied.
-  // Post content created earlier is left untouched (first write wins).
+  // Featured flag, author, title and content are synced to the demo data; publication
+  // status is re-applied. Content convergence includes pruning widgets that are no
+  // longer part of the data.
   private def updatePost(
     item: PostData,
-    featured: Boolean,
     published: Boolean,
     publishedAt: Option[OffsetDateTime],
     updatedBy: AnnettePrincipal
   ): Future[LoadStatus] =
     for {
-      _ <- service.updatePostFeatured(UpdatePostFeaturedPayload(item.id, featured, updatedBy))
+      _ <- service.updatePostFeatured(UpdatePostFeaturedPayload(item.id, item.featured.getOrElse(false), updatedBy))
       _ <- service.updatePostAuthor(UpdateAuthorPayload(item.id, AnnettePrincipal(item.authorId), updatedBy))
       _ <- service.updatePostTitle(UpdateTitlePayload(item.id, item.title, updatedBy))
+      _ <- syncContent(item, updatedBy)
       _ <- publish(item, published, publishedAt, updatedBy)
     } yield LoadOk
+
+  private def syncContent(item: PostData, updatedBy: AnnettePrincipal): Future[Done] = {
+    def update(contentType: ContentTypes.ContentType, widget: Widget, order: Int): Future[Done] =
+      service
+        .updatePostWidget(UpdateWidgetPayload(item.id, Some(contentType), widget, Some(order), updatedBy))
+        .map(_ => Done)
+    def remove(contentType: ContentTypes.ContentType, widgetId: String): Future[Done] =
+      service.deletePostWidget(DeleteWidgetPayload(item.id, Some(contentType), widgetId, updatedBy)).map(_ => Done)
+    service
+      .getPost(item.id, None, Some(true), Some(true), None)
+      .flatMap { current =>
+        for {
+          _ <- service.updatePostContentSettings(
+                 UpdateContentSettingsPayload(item.id, Some(ContentTypes.Intro), introContent(item).settings, updatedBy)
+               )
+          _ <- service.updatePostContentSettings(
+                 UpdateContentSettingsPayload(item.id, Some(ContentTypes.Post), mainContent(item).settings, updatedBy)
+               )
+          _ <- ContentOps.replaceWidgets(
+                 (widget, order) => update(ContentTypes.Intro, widget, order),
+                 remove(ContentTypes.Intro, _),
+                 introContent(item),
+                 current.introContent
+               )
+          _ <- ContentOps.replaceWidgets(
+                 (widget, order) => update(ContentTypes.Post, widget, order),
+                 remove(ContentTypes.Post, _),
+                 mainContent(item),
+                 current.content
+               )
+        } yield Done
+      }
+  }
+
+  private def introContent(item: PostData): Content = ContentOps.prepare(item.introContent.getOrElse(ContentOps.empty))
+
+  private def mainContent(item: PostData): Content = ContentOps.prepare(item.content.getOrElse(ContentOps.empty))
 
   private def publish(
     item: PostData,
@@ -116,8 +151,8 @@ class PostEntityLoader(
       case None     => Right(None)
       case Some(ts) =>
         Try(OffsetDateTime.parse(ts)) match {
-          case Success(parsed)     => Right(Some(parsed))
-          case Failure(exception)  =>
+          case Success(parsed)    => Right(Some(parsed))
+          case Failure(exception) =>
             Left(LoadFailed(s"Invalid publicationTimestamp '$ts': ${exception.getMessage}"))
         }
     }

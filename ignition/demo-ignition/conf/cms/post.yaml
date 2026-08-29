@@ -11,30 +11,33 @@
     widgets:
       intro:
         id: intro
-        widgetType: text
+        widgetType: markdown
         data:
-          text: "Apache Pekko is a toolkit for building highly concurrent, distributed and resilient message-driven applications on the JVM."
+          markdown: "Apache Pekko is a toolkit for building highly concurrent, distributed and resilient message-driven applications on the JVM."
   content:
     settings: {}
     widgetOrder: ["w1", "w2"]
     widgets:
       w1:
         id: w1
-        widgetType: text
+        widgetType: markdown
         data:
-          text: |
+          markdown: |
             The key to building an elastic, resilient and responsive system is starting with the
             right architecture - one rooted in a solid understanding of microservices, including
             concepts and best practices. Apache Pekko provides an opinionated toolkit that acts
             like guide rails to speed you along the journey.
       w2:
         id: w2
-        widgetType: text
+        widgetType: markdown
         data:
-          text: |
-            Pekko is a fork of Akka, developed under the Apache Software Foundation. It keeps the
-            actor model at its core: applications are built from actors that communicate only by
-            exchanging messages, which makes systems easy to scale out across a cluster.
+          markdown: |
+            ## The actor model
+
+            Pekko keeps the actor model at its core: applications are built from actors that
+            communicate only by exchanging messages, which makes systems easy to scale out
+            across a cluster. Pekko is developed under the Apache Software Foundation as a
+            fork of Akka and stays true to its reactive roots.
 - id: pekko-02
   blogId: pekko
   authorId: person~P0001
@@ -47,18 +50,18 @@
     widgets:
       intro:
         id: intro
-        widgetType: text
+        widgetType: markdown
         data:
-          text: "Pekko Persistence enables event-sourced actors: every state change is stored as an immutable event in a journal and replayed to rebuild state."
+          markdown: "Pekko Persistence enables event-sourced actors: every state change is stored as an immutable event in a journal and replayed to rebuild state."
   content:
     settings: {}
     widgetOrder: ["w1"]
     widgets:
       w1:
         id: w1
-        widgetType: text
+        widgetType: markdown
         data:
-          text: |
+          markdown: |
             An event-sourced actor never persists its current state directly. Instead it persists
             the events that led to the state. The journal is backed by Apache Cassandra in the
             Annette Platform, and Pekko Projection feeds read-side databases such as OpenSearch
@@ -76,18 +79,18 @@
     widgets:
       intro:
         id: intro
-        widgetType: text
+        widgetType: markdown
         data:
-          text: "Every Annette microservice exposes its API twice: as HTTP through the gateway and as Pekko gRPC for inter-service calls."
+          markdown: "Every Annette microservice exposes its API twice: as HTTP through the gateway and as Pekko gRPC for inter-service calls."
   content:
     settings: {}
     widgetOrder: ["w1"]
     widgets:
       w1:
         id: w1
-        widgetType: text
+        widgetType: markdown
         data:
-          text: |
+          markdown: |
             The API of each service is defined once in a protobuf file. The generated gRPC
             server is bound on the service HTTP port, while Play 3-based api-gateway acts as
             the single public REST entry point and delegates to the services over gRPC.
@@ -103,18 +106,18 @@
     widgets:
       intro:
         id: intro
-        widgetType: text
+        widgetType: markdown
         data:
-          text: "Draft: notes on running Pekko clusters in production, including sharding, split-brain resolution and rolling updates."
+          markdown: "Draft: notes on running Pekko clusters in production, including sharding, split-brain resolution and rolling updates."
   content:
     settings: {}
     widgetOrder: ["w1"]
     widgets:
       w1:
         id: w1
-        widgetType: text
+        widgetType: markdown
         data:
-          text: |
+          markdown: |
             This post is still a draft. It will cover cluster singletons, sharding strategies
             and graceful termination of shard regions during rolling deployments.
 - id: fin-ar-01
@@ -130,18 +133,18 @@
     widgets:
       intro:
         id: intro
-        widgetType: text
+        widgetType: markdown
         data:
-          text: "The dunning levels and reminder texts have been updated for the second half of the year."
+          markdown: "The dunning levels and reminder texts have been updated for the second half of the year."
   content:
     settings: {}
     widgetOrder: ["w1"]
     widgets:
       w1:
         id: w1
-        widgetType: text
+        widgetType: markdown
         data:
-          text: |
+          markdown: |
             Starting next month the dunning procedure switches to the new three-level model.
             Level 1 reminds the customer after 14 days, level 2 after 30 days and level 3
             escalates to the collection department after 60 days. The new reminder texts are
@@ -158,18 +161,18 @@
     widgets:
       intro:
         id: intro
-        widgetType: text
+        widgetType: markdown
         data:
-          text: "A short checklist for the accounts receivable month-end closing."
+          markdown: "A short checklist for the accounts receivable month-end closing."
   content:
     settings: {}
     widgetOrder: ["w1"]
     widgets:
       w1:
         id: w1
-        widgetType: text
+        widgetType: markdown
         data:
-          text: |
+          markdown: |
             1. Post incoming payments and clear open items.
             2. Run the dunning proposal and send dunning notices.
             3. Reconcile the accounts receivable subledger with the general ledger.
@@ -186,18 +189,18 @@
     widgets:
       intro:
         id: intro
-        widgetType: text
+        widgetType: markdown
         data:
-          text: "Supplier payment terms change from net 30 to net 20 starting with Q4 purchase orders."
+          markdown: "Supplier payment terms change from net 30 to net 20 starting with Q4 purchase orders."
   content:
     settings: {}
     widgetOrder: ["w1"]
     widgets:
       w1:
         id: w1
-        widgetType: text
+        widgetType: markdown
         data:
-          text: |
+          markdown: |
             Procurement and finance have agreed to shorten supplier payment terms to net 20 for
             new purchase orders. Existing contracts keep their agreed terms until renewal.
             Please update recurring payment proposals accordingly.
@@ -213,18 +216,18 @@
     widgets:
       intro:
         id: intro
-        widgetType: text
+        widgetType: markdown
         data:
-          text: "The depreciation key catalog has been extended for the upcoming fiscal year."
+          markdown: "The depreciation key catalog has been extended for the upcoming fiscal year."
   content:
     settings: {}
     widgetOrder: ["w1"]
     widgets:
       w1:
         id: w1
-        widgetType: text
+        widgetType: markdown
         data:
-          text: |
+          markdown: |
             Two new depreciation keys support the declining-balance method with a mandatory
             switch to straight-line. Asset classes created after the fiscal year changeover
             default to the new keys; existing assets keep their assigned keys.
@@ -240,18 +243,18 @@
     widgets:
       intro:
         id: intro
-        widgetType: text
+        widgetType: markdown
         data:
-          text: "The annual cost center planning cycle started this week; planning is due by the end of September."
+          markdown: "The annual cost center planning cycle started this week; planning is due by the end of September."
   content:
     settings: {}
     widgetOrder: ["w1"]
     widgets:
       w1:
         id: w1
-        widgetType: text
+        widgetType: markdown
         data:
-          text: |
+          markdown: |
             Cost center owners have been notified by email. Planning figures are entered in the
             console and validated against the previous year's actuals. The controlling team is
             available for questions every Wednesday afternoon during the cycle.
@@ -266,18 +269,18 @@
     widgets:
       intro:
         id: intro
-        widgetType: text
+        widgetType: markdown
         data:
-          text: "Draft: proposal to simplify internal activity allocations between production cost centers."
+          markdown: "Draft: proposal to simplify internal activity allocations between production cost centers."
   content:
     settings: {}
     widgetOrder: ["w1"]
     widgets:
       w1:
         id: w1
-        widgetType: text
+        widgetType: markdown
         data:
-          text: |
+          markdown: |
             This draft proposes collapsing the current six allocation cycles into two,
             reducing the closing runtime and making the allocation logic easier to audit.
 - id: logistics-01
@@ -292,18 +295,18 @@
     widgets:
       intro:
         id: intro
-        widgetType: text
+        widgetType: markdown
         data:
-          text: "All retail warehouses are switching to the new generation of barcode scanners this quarter."
+          markdown: "All retail warehouses are switching to the new generation of barcode scanners this quarter."
   content:
     settings: {}
     widgetOrder: ["w1"]
     widgets:
       w1:
         id: w1
-        widgetType: text
+        widgetType: markdown
         data:
-          text: |
+          markdown: |
             The new scanners pair with the warehouse management app over the local network and
             no longer require a dedicated terminal session. Training sessions are scheduled per
             warehouse; see the company space for the calendar and the quick reference card.

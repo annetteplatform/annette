@@ -16,26 +16,85 @@
 
 package biz.lobachev.annette.ignition.cms.loaders
 
-import biz.lobachev.annette.cms.api.content.Content
-import play.api.libs.json.Json
+import org.apache.pekko.Done
+import biz.lobachev.annette.cms.api.content.{Content, Widget}
+import play.api.libs.json.{JsObject, JsValue, Json}
+
+import scala.concurrent.{ExecutionContext, Future}
 
 /**
- * Helpers shared by the post and page entity loaders: widgets carry their searchable
- * plain text in `indexData`; when the demo data omits it, it is derived from the
- * widget's `text`/`content` data field so full-text search works out of the box.
+ * Prepares widget content for the CMS and keeps existing content in sync with the
+ * demo data. The CMS frontend renders markdown widgets with an editor-shaped payload
+ * (`anchor`, `markdown`, `layout`); demo data may omit the editor defaults, and the
+ * searchable plain text (`indexData`) is derived from the markdown body.
  */
 object ContentOps {
 
   val empty: Content = Content(Json.obj(), Seq.empty, Map.empty)
 
-  def withDerivedIndexData(content: Content): Content =
+  private val defaultLayout: JsValue = Json.parse(
+    """
+      |{
+      |  "padding": {"top": "0px", "right": "0px", "bottom": "0px", "left": "0px"},
+      |  "margin": {"top": "0px", "right": "0px", "bottom": "0px", "left": "0px"},
+      |  "backgroundColor": "#ffffff"
+      |}
+    """.stripMargin
+  )
+
+  def prepare(content: Content): Content =
+    withDerivedIndexData(
+      content.copy(
+        widgets = content.widgets.map { case (key, widget) =>
+          val data =
+            if (widget.widgetType == "markdown") fillEditorDefaults(widget.data)
+            else widget.data
+          key -> widget.copy(data = data)
+        }
+      )
+    )
+
+  private def fillEditorDefaults(data: JsValue): JsValue = {
+    val filled = Json.obj("anchor" -> "") ++ data.asOpt[JsObject].getOrElse(Json.obj())
+    (filled \ "layout").asOpt[JsObject].map(_ => filled).getOrElse(filled ++ Json.obj("layout" -> defaultLayout))
+  }
+
+  private def withDerivedIndexData(content: Content): Content =
     content.copy(
       widgets = content.widgets.map { case (key, widget) =>
         val indexData = widget.indexData.orElse(
-          (widget.data \ "text").asOpt[String].orElse((widget.data \ "content").asOpt[String])
+          (widget.data \ "markdown")
+            .asOpt[String]
+            .orElse((widget.data \ "text").asOpt[String])
+            .orElse((widget.data \ "content").asOpt[String])
         )
         key -> widget.copy(indexData = indexData)
       }
     )
+
+  /**
+   * Converges one content block to the desired state: widgets are upserted at their
+   * data-defined position, widgets that are no longer in the data are deleted.
+   */
+  def replaceWidgets(
+    update: (Widget, Int) => Future[Done],
+    delete: String => Future[Done],
+    desired: Content,
+    current: Option[Content]
+  )(implicit ec: ExecutionContext): Future[Done] = {
+    val stale = current.map(_.widgets.keySet -- desired.widgets.keySet).getOrElse(Set.empty)
+    val upserts = desired.widgetOrder.zipWithIndex.collect {
+      case (widgetId, order) if desired.widgets.contains(widgetId) => (desired.widgets(widgetId), order)
+    }.foldLeft(Future.successful(Done): Future[Done]) { case (acc, (widget, order)) =>
+      acc.flatMap(_ => update(widget, order))
+    }
+    val deletions = stale.foldLeft(Future.successful(Done): Future[Done]) { (acc, widgetId) =>
+      acc.flatMap(_ => delete(widgetId))
+    }
+    for {
+      _ <- upserts
+      _ <- deletions
+    } yield Done
+  }
 
 }

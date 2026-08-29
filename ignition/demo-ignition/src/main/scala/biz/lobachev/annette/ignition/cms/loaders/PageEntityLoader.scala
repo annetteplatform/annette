@@ -20,11 +20,13 @@ import java.time.OffsetDateTime
 import org.apache.pekko.Done
 import org.apache.pekko.stream.Materializer
 import biz.lobachev.annette.cms.api.CmsService
-import biz.lobachev.annette.cms.api.common.article.{
-  PublishPayload,
-  UpdateAuthorPayload,
-  UpdatePublicationTimestampPayload,
-  UpdateTitlePayload
+import biz.lobachev.annette.cms.api.common.article.{PublishPayload, UpdateAuthorPayload, UpdatePublicationTimestampPayload, UpdateTitlePayload}
+import biz.lobachev.annette.cms.api.content.{
+  Content,
+  DeleteWidgetPayload,
+  UpdateContentSettingsPayload,
+  UpdateWidgetPayload,
+  Widget
 }
 import biz.lobachev.annette.cms.api.pages.page.{CreatePagePayload, PageAlreadyExist}
 import biz.lobachev.annette.core.model.auth.{AnnettePrincipal, SystemPrincipal}
@@ -49,7 +51,8 @@ class PageEntityLoader(
 
   def loadItem(item: PageData): Future[LoadStatus] =
     parseTimestamp(item.publicationTimestamp) match {
-      case Left(error) => Future.successful(error)
+      case Left(error) =>
+        Future.successful(error)
       case Right(publishedAt) =>
         val published     = item.publicationStatus.forall(_.equalsIgnoreCase("published"))
         val createdBy     = SystemPrincipal()
@@ -58,7 +61,7 @@ class PageEntityLoader(
           spaceId = item.spaceId,
           authorId = AnnettePrincipal(item.authorId),
           title = item.title,
-          content = ContentOps.withDerivedIndexData(item.content.getOrElse(ContentOps.empty)),
+          content = pageContent(item),
           createdBy = createdBy
         )
         service
@@ -72,8 +75,9 @@ class PageEntityLoader(
           }
     }
 
-  // Author and title are updated in place; publication status is re-applied.
-  // Page content created earlier is left untouched (first write wins).
+  // Author, title and content are synced to the demo data; publication status is
+  // re-applied. Content convergence includes pruning widgets that are no longer
+  // part of the data.
   private def updatePage(
     item: PageData,
     published: Boolean,
@@ -83,8 +87,28 @@ class PageEntityLoader(
     for {
       _ <- service.updatePageAuthor(UpdateAuthorPayload(item.id, AnnettePrincipal(item.authorId), updatedBy))
       _ <- service.updatePageTitle(UpdateTitlePayload(item.id, item.title, updatedBy))
+      _ <- syncContent(item, updatedBy)
       _ <- publish(item, published, publishedAt, updatedBy)
     } yield LoadOk
+
+  private def syncContent(item: PageData, updatedBy: AnnettePrincipal): Future[Done] = {
+    def update(widget: Widget, order: Int): Future[Done] =
+      service.updatePageWidget(UpdateWidgetPayload(item.id, None, widget, Some(order), updatedBy)).map(_ => Done)
+    def remove(widgetId: String): Future[Done] =
+      service.deletePageWidget(DeleteWidgetPayload(item.id, None, widgetId, updatedBy)).map(_ => Done)
+    service
+      .getPage(item.id, None, Some(true), None)
+      .flatMap { current =>
+        for {
+          _ <- service.updatePageContentSettings(
+                 UpdateContentSettingsPayload(item.id, None, pageContent(item).settings, updatedBy)
+               )
+          _ <- ContentOps.replaceWidgets(update, remove, pageContent(item), current.content)
+        } yield Done
+      }
+  }
+
+  private def pageContent(item: PageData): Content = ContentOps.prepare(item.content.getOrElse(ContentOps.empty))
 
   private def publish(
     item: PageData,

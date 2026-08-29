@@ -10,14 +10,16 @@
     widgets:
       w1:
         id: w1
-        widgetType: text
+        widgetType: markdown
         data:
-          text: "This page is the starting point for every new employee. It gives a short overview of the company and links the most important handbooks."
+          markdown: "This page is the starting point for every new employee. It gives a short overview of the company and links the most important handbooks."
       w2:
         id: w2
-        widgetType: text
+        widgetType: markdown
         data:
-          text: |
+          markdown: |
+            ## About the company
+
             The company was founded to build software that makes business applications easy to
             assemble and operate. The Annette Platform is our cloud-native application platform:
             microservices on the JVM, event-sourced services and a web console. Have a look at
@@ -34,9 +36,9 @@
     widgets:
       w1:
         id: w1
-        widgetType: text
+        widgetType: markdown
         data:
-          text: |
+          markdown: |
             We treat colleagues, customers and partners with respect. We communicate openly and
             give constructive feedback. Decisions are documented in the respective spaces so
             that everyone can follow them. When in doubt, ask - there are no stupid questions.
@@ -52,9 +54,9 @@
     widgets:
       w1:
         id: w1
-        widgetType: text
+        widgetType: markdown
         data:
-          text: |
+          markdown: |
             1. Get your accounts from the IT helpdesk (console, email, VPN).
             2. Read the company handbook, starting with the code of conduct.
             3. Meet your onboarding buddy and your team lead in the first week.
