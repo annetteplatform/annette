@@ -1,0 +1,13 @@
+[
+  {
+    "translationId": "annette.console",
+    "languageId": "ru",
+    "json": {
+      "annette": {
+        "console": {
+          "title": "Консоль Annette"
+        }
+      }
+    }
+  }
+]

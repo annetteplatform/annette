@@ -5,12 +5,16 @@
     url: https://annetteplatform.github.io/annette_logo.svg
   label:
     en: Annette Console
-    ru: Annette Console
-    pl: Annette Console
+    ru: Консоль Annette
+    fr: Console Annette
+    pl: Konsola Annette
+    de: Annette-Konsole
   labelDescription:
     en: Annette Platform management application
     ru: Приложение для управления платформой Annette
+    fr: Application de gestion de la plateforme Annette
     pl: Aplikacja do zarządzania platformą Annette
+    de: Verwaltungsanwendung der Annette-Plattform
   translations:
     - annette.core
     - annette.services

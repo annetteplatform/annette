@@ -16,7 +16,7 @@
 
 set -eo pipefail
 
-export FRONTEND_VERSION="0.5.1"
+export FRONTEND_VERSION="0.6.0-RC"
 export BACKEND_VERSION="0.6.0-RC"
 
 MODE="dev"
