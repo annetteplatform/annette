@@ -1,3 +1,5 @@
+.zcode/
+
 queries.sql
 build-local.sh
 run-local*.sh
